@@ -6,7 +6,7 @@
 	  <version>0.1-SNAPSHOT</version>
   </parent>
   <artifactId>plom-core</artifactId>
-  <packaging>gwt-app</packaging>
+  <packaging>war</packaging>
 
   <name>Plom Core Code</name>
   <description></description>
