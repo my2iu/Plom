@@ -6,7 +6,7 @@
 	  <version>0.1-SNAPSHOT</version>
   </parent>
   <artifactId>plom-core</artifactId>
-  <packaging>war</packaging>
+  <packaging>gwt-app</packaging>
 
   <name>Plom Core Code</name>
   <description></description>
@@ -56,9 +56,8 @@
             <arg>-compileReport</arg>
             <arg>-XcompilerMetrics</arg>
             <arg>-generateJsInteropExports</arg>
-            <arg>-style</arg>
-            <arg>PRETTY</arg>
           </compilerArgs>
+          <style>PRETTY</style>
           <warDir>${project.build.directory}/${project.build.finalName}</warDir>
           <classpathScope>compile+runtime</classpathScope>
           <!-- <devmodeArgs>-style,PRETTY,-bindAddress,0.0.0.0,-generateJsInteropExports</devmodeArgs>  -->
@@ -68,6 +67,30 @@
           </startupUrls>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <!-- here the phase you need -->
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+              <resources>          
+                <resource>
+                  <directory>src/main/webapp</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>              
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+      
     </plugins>
   </build>
 </project>
