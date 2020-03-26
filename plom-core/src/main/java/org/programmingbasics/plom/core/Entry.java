@@ -9,6 +9,9 @@ import com.google.gwt.core.client.EntryPoint;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.events.Event;
+import elemental.events.EventListener;
+import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 
 public class Entry implements EntryPoint
@@ -19,10 +22,15 @@ public class Entry implements EntryPoint
       DivElement mainDiv = (DivElement)Browser.getDocument().querySelector("div.main");
       mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
       
-      DivElement codeDiv = (DivElement)mainDiv.querySelector("div.code");
-      DivElement choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
+      codeDiv = (DivElement)mainDiv.querySelector("div.code");
+      choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
-      StatementContainer codeList = new StatementContainer();
+      renderTokens(codeDiv, codeList);
+      showTokenInput(choicesDiv);
+   }
+   
+   StatementContainer codeList = new StatementContainer();
+   {
       codeList.statements.addAll(Arrays.asList(
             new TokenContainer(Arrays.asList(
                   new Token.SimpleToken("1"),
@@ -36,8 +44,10 @@ public class Entry implements EntryPoint
                   new Token.SimpleToken("4")
                   ))
             ));
-      renderTokens(codeDiv, codeList);
    }
+   DivElement codeDiv;
+   DivElement choicesDiv;
+   CodePosition cursorPos = new CodePosition();
    
    void renderTokens(DivElement codeDiv, StatementContainer codeList)
    {
@@ -69,6 +79,54 @@ public class Entry implements EntryPoint
          
       }
       
+   }
+   
+   Element makeButton(String text, Runnable onclick)
+   {
+      Document doc = Browser.getDocument();
+      DivElement div = doc.createDivElement();
+      div.setClassName("tokenchoice");
+      div.setTextContent(text);
+      AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setHref("#");
+      a.appendChild(div);
+      a.addEventListener(Event.CLICK, (evt)-> {
+         evt.preventDefault();
+         onclick.run();
+      }, false);
+      return a;
+   }
+   
+   void insertToken(CodePosition pos, String tokenText)
+   {
+      TokenContainer line = codeList.statements.get(pos.line);
+      line.tokens.add(pos.token, new SimpleToken(tokenText));
+      pos.token++;
+      codeDiv.setInnerHTML("");
+      renderTokens(codeDiv, codeList);
+   }
+   
+   void showTokenInput(DivElement choicesDiv)
+   {
+      // Buttons for next and enter
+      choicesDiv.appendChild(makeButton("\u27a0", () -> {}));
+      choicesDiv.appendChild(makeButton("\u21b5", () -> {
+         TokenContainer line = codeList.statements.get(cursorPos.line);
+         TokenContainer newline = new TokenContainer(line.tokens.subList(cursorPos.token, line.tokens.size()));
+         for (int n = line.tokens.size() - 1; n >= cursorPos.token; n--)
+            line.tokens.remove(n);
+         cursorPos.line++;
+         codeList.statements.add(cursorPos.line, newline);
+         cursorPos.token = 0;
+         codeDiv.setInnerHTML("");
+         renderTokens(codeDiv, codeList);
+      }));
+      
+      // Just some random tokens for initial prototyping
+      for (String tokenText: new String[] {"a", "+", "-", "5", "3"})
+      {
+         choicesDiv.appendChild(makeButton(tokenText, () -> { insertToken(cursorPos, tokenText); }));
+      }
    }
    
 }
