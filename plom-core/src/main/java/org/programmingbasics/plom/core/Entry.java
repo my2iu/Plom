@@ -22,15 +22,24 @@ public class Entry implements EntryPoint
       DivElement codeDiv = (DivElement)mainDiv.querySelector("div.code");
       DivElement choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
-      TokenContainer codeList = new TokenContainer();
-      codeList.tokens.addAll(Arrays.asList(
-            new Token.SimpleToken("1"),
-            new Token.SimpleToken("+"),
-            new Token.SimpleToken("1")));
+      StatementContainer codeList = new StatementContainer();
+      codeList.statements.addAll(Arrays.asList(
+            new TokenContainer(Arrays.asList(
+                  new Token.SimpleToken("1"),
+                  new Token.SimpleToken("+"),
+                  new Token.SimpleToken("1")
+                  )),
+            new TokenContainer(Arrays.asList()),
+            new TokenContainer(Arrays.asList(
+                  new Token.SimpleToken("a"),
+                  new Token.SimpleToken("="),
+                  new Token.SimpleToken("4")
+                  ))
+            ));
       renderTokens(codeDiv, codeList);
    }
    
-   void renderTokens(DivElement codeDiv, TokenContainer codeList)
+   void renderTokens(DivElement codeDiv, StatementContainer codeList)
    {
       Document doc = Browser.getDocument();
       class TokenRenderer implements Token.TokenVisitor<Element>
@@ -46,10 +55,18 @@ public class Entry implements EntryPoint
       }
       
       TokenRenderer renderer = new TokenRenderer();
-      for (Token tok: codeList.tokens)
+      for (TokenContainer line: codeList.statements)
       {
-         Element el = tok.visit(renderer);
-         codeDiv.appendChild(el);
+         DivElement div = doc.createDivElement();
+         for (Token tok: line.tokens)
+         {
+            Element el = tok.visit(renderer);
+            div.appendChild(el);
+         }
+         if (line.tokens.isEmpty())
+            div.setTextContent("\u00A0");
+         codeDiv.appendChild(div);
+         
       }
       
    }
