@@ -5,7 +5,13 @@ enum Symbol
   EMPTY(true),
   Statement(false),
   Expression(false),
+  AdditiveExpression(false),
+  AdditiveExpressionMore(false),
+  ValueExpression(false),
+  EndStatement(true),
   Number(true),
+  Plus(true),
+  Minus(true),
   String(true),
   
   DUMMY_IF(true),

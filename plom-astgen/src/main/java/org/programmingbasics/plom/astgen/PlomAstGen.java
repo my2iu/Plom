@@ -2,6 +2,11 @@ package org.programmingbasics.plom.astgen;
 
 import static org.programmingbasics.plom.astgen.Symbol.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,9 +27,15 @@ public class PlomAstGen
   //   Map<String, Set<String>> noAcceptTokenException = new HashMap<String, Set<String>>();
 
   Production[] grammar = new Production[] {
-      rule(Statement, Expression),
-      rule(Expression, Number),
-      rule(Expression, String)
+      rule(Statement, Expression, EndStatement),
+      rule(Statement, EndStatement),
+      rule(Expression, AdditiveExpression),
+      rule(AdditiveExpression, ValueExpression, AdditiveExpressionMore),
+      rule(AdditiveExpressionMore, Plus, AdditiveExpression),
+      rule(AdditiveExpressionMore, Minus, AdditiveExpression),
+      rule(AdditiveExpressionMore),
+      rule(ValueExpression, Number),
+      rule(ValueExpression, String)
   };
 
   static Production rule(Symbol from, Symbol ... to)
@@ -247,16 +258,68 @@ public class PlomAstGen
     }
     parsingTable.get(from).put(token, p);
   }
+  
+  void generateFiles(File dir) throws IOException
+  {
+    dir.mkdirs();
+    try (PrintWriter out = new PrintWriter(new File(dir, "Symbol.java"), "UTF-8"))
+    {
+      out.println("package org.programmingbasics.plom.core.ast.gen;");
+      out.println("");
+      out.println("public enum Symbol");
+      out.println("{");
+      boolean isFirst = true;
+      for (Symbol sym: Symbol.values())
+      {
+        if (!isFirst) out.println(",");
+        isFirst = false;
+        out.print("\t" + sym.name());
+      }
+      out.println();
+      out.println("}");
+    }
+    
+    try (PrintWriter out = new PrintWriter(new File(dir, "Parser.java"), "UTF-8"))
+    {
+      out.println("package org.programmingbasics.plom.core.ast.gen;");
+      out.println("");
+      out.println("import java.util.Map;"); 
+      out.println("import java.util.HashMap;"); 
+      out.println();
+      out.println("public class Parser");
+      out.println("{");
+      out.println("\tpublic Map<Symbol, Map<Symbol, Symbol[]>> parsingTable = new HashMap<>();");
+      out.println("\t{");
+      for (Map.Entry<Symbol, Map<Symbol, Production>> stackTop: parsingTable.entrySet())
+      {
+        out.println("\t\tparsingTable.put(Symbol." + stackTop.getKey().name() + ", new HashMap<>());");
+        for (Map.Entry<Symbol, Production> expansion: stackTop.getValue().entrySet())
+        {
+          out.print("\t\tparsingTable.get(Symbol." + stackTop.getKey().name() + ").put(Symbol." + expansion.getKey().name() + ", new Symbol[] {");
+          for (Symbol to: expansion.getValue().to)
+          {
+            out.print("Symbol." + to.name() +", ");
+          }
+          out.println("});");
+        }
+      }
+      out.println("\t}");
+      
+      out.println("}");
+    }
 
-  public void go()
+  }
+
+  public void go(File dir) throws IOException
   {
     calculateFirsts();
     calculateFollows();
     createLLParsingTable();
+    generateFiles(dir);
   }
 
-  public static void main(String [] args)
+  public static void main(String [] args) throws IOException
   {
-    new PlomAstGen().go();
+    new PlomAstGen().go(new File("../plom-core/src/main/java/org/programmingbasics/plom/core/ast/gen"));
   }
 }
