@@ -10,7 +10,6 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
-import elemental.events.EventListener;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 
@@ -25,7 +24,7 @@ public class Entry implements EntryPoint
       codeDiv = (DivElement)mainDiv.querySelector("div.code");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
-      renderTokens(codeDiv, codeList);
+      renderTokens(codeDiv, codeList, cursorPos);
       showTokenInput(choicesDiv);
    }
    
@@ -49,7 +48,7 @@ public class Entry implements EntryPoint
    DivElement choicesDiv;
    CodePosition cursorPos = new CodePosition();
    
-   void renderTokens(DivElement codeDiv, StatementContainer codeList)
+   static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos)
    {
       Document doc = Browser.getDocument();
       class TokenRenderer implements Token.TokenVisitor<Element>
@@ -65,18 +64,27 @@ public class Entry implements EntryPoint
       }
       
       TokenRenderer renderer = new TokenRenderer();
+      int lineno = 0;
       for (TokenContainer line: codeList.statements)
       {
          DivElement div = doc.createDivElement();
+         int tokenno = 0;
          for (Token tok: line.tokens)
          {
+            if (lineno == pos.line && tokenno == pos.token)
+            {
+               DivElement toInsert = doc.createDivElement();
+               toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+               div.appendChild(toInsert.querySelector("div"));
+            }
             Element el = tok.visit(renderer);
             div.appendChild(el);
+            tokenno++;
          }
          if (line.tokens.isEmpty())
             div.setTextContent("\u00A0");
          codeDiv.appendChild(div);
-         
+         lineno++;
       }
       
    }
@@ -103,7 +111,7 @@ public class Entry implements EntryPoint
       line.tokens.add(pos.token, new SimpleToken(tokenText));
       pos.token++;
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList);
+      renderTokens(codeDiv, codeList, cursorPos);
    }
    
    void showTokenInput(DivElement choicesDiv)
@@ -119,7 +127,7 @@ public class Entry implements EntryPoint
          codeList.statements.add(cursorPos.line, newline);
          cursorPos.token = 0;
          codeDiv.setInnerHTML("");
-         renderTokens(codeDiv, codeList);
+         renderTokens(codeDiv, codeList, cursorPos);
       }));
       
       // Just some random tokens for initial prototyping
