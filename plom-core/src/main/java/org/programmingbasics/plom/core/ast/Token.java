@@ -1,4 +1,6 @@
-package org.programmingbasics.plom.core;
+package org.programmingbasics.plom.core.ast;
+
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 public abstract class Token
 {
@@ -6,10 +8,12 @@ public abstract class Token
    
    public static class SimpleToken extends Token
    {
-      String contents;
-      public SimpleToken(String contents)
+      public String contents;
+      Symbol type;
+      public SimpleToken(String contents, Symbol type)
       {
          this.contents = contents;
+         this.type = type;
       }
       public <S> S visit(TokenVisitor<S> visitor)
       {
@@ -17,7 +21,7 @@ public abstract class Token
       }
    }
    
-   static interface TokenVisitor<S>
+   public static interface TokenVisitor<S>
    {
       public S visitSimpleToken(SimpleToken token);
    }
