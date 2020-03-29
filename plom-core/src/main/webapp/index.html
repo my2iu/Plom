@@ -21,6 +21,8 @@
     		display: flex;
     		flex-direction: row;
     		flex-grow: 1;
+    		flex-shrink: 1;
+    		overflow: hidden;
     	}
     	.code {
        		background-color: #eef;
@@ -33,7 +35,9 @@
     	}
     	.choices {
     		background-color: #fee;
-    		flex-grow: 1;
+    		flex-grow: 0;
+    		flex-shrink: 0;
+    		height: 50%;
     	}
     	.codemain div.token {
     		background-color: #ccc;

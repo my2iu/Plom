@@ -2,7 +2,9 @@ package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -18,6 +20,7 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 
@@ -32,8 +35,9 @@ public class Entry implements EntryPoint
       codeDiv = (DivElement)mainDiv.querySelector("div.code");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
-      renderTokens(codeDiv, codeList, cursorPos);
+      renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
+      hookCodeClick(codeDiv);
    }
    
    StatementContainer codeList = new StatementContainer();
@@ -56,7 +60,10 @@ public class Entry implements EntryPoint
    DivElement choicesDiv;
    CodePosition cursorPos = new CodePosition();
    
-   static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos)
+   /**
+    * Returns a mapping of divs for each line and their line numbers
+    */
+   static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, Map<Element, Integer> lineDivs)
    {
       Document doc = Browser.getDocument();
       class TokenRenderer implements Token.TokenVisitor<Element>
@@ -89,12 +96,19 @@ public class Entry implements EntryPoint
             div.appendChild(el);
             tokenno++;
          }
-         if (line.tokens.isEmpty())
+         if (lineno == pos.line && pos.token == line.tokens.size()) 
+         {
+            DivElement toInsert = doc.createDivElement();
+            toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+            div.appendChild(toInsert.querySelector("div"));
+         }
+         else if (line.tokens.isEmpty())
             div.setTextContent("\u00A0");
          codeDiv.appendChild(div);
+         if (lineDivs != null)
+            lineDivs.put(div, lineno);
          lineno++;
       }
-      
    }
    
    Element makeButton(String text, Runnable onclick)
@@ -119,7 +133,7 @@ public class Entry implements EntryPoint
       line.tokens.add(pos.token, new SimpleToken(tokenText, tokenType));
       pos.token++;
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos);
+      renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
    }
    
@@ -151,7 +165,7 @@ public class Entry implements EntryPoint
             codeList.statements.add(cursorPos.line, newline);
             cursorPos.token = 0;
             codeDiv.setInnerHTML("");
-            renderTokens(codeDiv, codeList, cursorPos);
+            renderTokens(codeDiv, codeList, cursorPos, null);
             showPredictedTokenInput(choicesDiv);
          }));
       }
@@ -172,33 +186,38 @@ public class Entry implements EntryPoint
          String tokenText = text;
          choicesDiv.appendChild(makeButton(tokenText, () -> { insertToken(cursorPos, tokenText, sym); }));
       }
-      
-      
    }
    
-//   void showTokenInput(DivElement choicesDiv)
-//   {
-//      showPredictedTokenInput(choicesDiv);
-//      
-//      // Buttons for next and enter
-//      choicesDiv.appendChild(makeButton("\u27a0", () -> {}));
-//      choicesDiv.appendChild(makeButton("\u21b5", () -> {
-//         TokenContainer line = codeList.statements.get(cursorPos.line);
-//         TokenContainer newline = new TokenContainer(line.tokens.subList(cursorPos.token, line.tokens.size()));
-//         for (int n = line.tokens.size() - 1; n >= cursorPos.token; n--)
-//            line.tokens.remove(n);
-//         cursorPos.line++;
-//         codeList.statements.add(cursorPos.line, newline);
-//         cursorPos.token = 0;
-//         codeDiv.setInnerHTML("");
-//         renderTokens(codeDiv, codeList, cursorPos);
-//      }));
-//      
-//      // Just some random tokens for initial prototyping
-//      for (String tokenText: new String[] {"a", "+", "-", "5", "3"})
-//      {
-//         choicesDiv.appendChild(makeButton(tokenText, () -> { insertToken(cursorPos, tokenText, Symbol.Number); }));
-//      }
-//   }
+   void hookCodeClick(DivElement div)
+   {
+      div.addEventListener(Event.CLICK, (evt)-> {
+         MouseEvent mevt = (MouseEvent)evt;
+         int x = mevt.getClientX() + div.getScrollLeft();
+         int y = mevt.getClientY() + div.getScrollTop();
+         Map<Element, Integer> lineDivs = new HashMap<>();
+         codeDiv.setInnerHTML("");
+         renderTokens(codeDiv, codeList, cursorPos, lineDivs);
+         int bestMatchY = -1;
+         int lineno = -1;
+         for (Element el: lineDivs.keySet())
+         {
+            Browser.getWindow().getConsole().log(el);
+            Browser.getWindow().getConsole().log(el.getOffsetTop() + " " + y);
+            if (el.getOffsetTop() < y && el.getOffsetTop() > bestMatchY)
+            {
+               bestMatchY = el.getOffsetTop();
+               lineno = lineDivs.get(el);
+            }
+         }
+         if (lineno >= 0)
+         {
+            cursorPos = new CodePosition();
+            cursorPos.line = lineno;
+            codeDiv.setInnerHTML("");
+            renderTokens(codeDiv, codeList, cursorPos, null);
+            showPredictedTokenInput(choicesDiv);
+        }
+      }, false);
+   }
    
 }
