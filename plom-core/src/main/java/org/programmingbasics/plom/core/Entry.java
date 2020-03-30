@@ -179,6 +179,11 @@ public class Entry implements EntryPoint
          {
          case Plus: text = "+"; break;
          case Minus: text = "-"; break;
+         case Multiply: text = "*"; break;
+         case Divide: text = "/"; break;
+         case OpenParenthesis: text = "("; break;
+         case ClosedParenthesis: text = ")"; break;
+         case DUMMY_COMMENT: text = "//"; break;
          case Number: text = "123"; break;
          case String: text = "\"...\""; break;
          default:

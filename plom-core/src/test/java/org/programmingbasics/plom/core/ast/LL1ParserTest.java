@@ -18,7 +18,7 @@ public class LL1ParserTest extends TestCase
       
       new SimpleToken("", Symbol.Number).visit(parser);
       Assert.assertEquals(false, parser.isError);
-      Assert.assertEquals(Symbol.AdditiveExpressionMore, parser.stack.get(parser.stack.size() - 1));
+      Assert.assertEquals(Symbol.MultiplicativeExpressionMore, parser.stack.get(parser.stack.size() - 1));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Plus));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Minus));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));
@@ -29,7 +29,18 @@ public class LL1ParserTest extends TestCase
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Number));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.String));
       Assert.assertTrue(!parser.allowedNextSymbols().contains(Symbol.EndStatement));
+   }
 
+   @Test
+   public void testStatementComment()
+   {
+      LL1Parser parser = new LL1Parser();
+      parser.stack.add(Symbol.Statement);
+      
+      new SimpleToken("", Symbol.DUMMY_COMMENT).visit(parser);
+      Assert.assertEquals(false, parser.isError);
+      Assert.assertEquals(Symbol.EndStatement, parser.stack.get(parser.stack.size() - 1));
+      Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));
    }
 
 }

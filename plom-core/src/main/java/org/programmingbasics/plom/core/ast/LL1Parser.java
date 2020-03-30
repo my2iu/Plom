@@ -57,6 +57,7 @@ public class LL1Parser implements TokenVisitor<Void>
       if (isError) return allowed;
       if (stack.isEmpty()) return allowed;
       Symbol topOfStack = stack.get(stack.size() - 1);
+      if (topOfStack.isTerminal()) allowed.add(topOfStack);
       if (parser.parsingTable.get(topOfStack) == null) return allowed;
       allowed.addAll(parser.parsingTable.get(topOfStack).keySet());
       return allowed;
