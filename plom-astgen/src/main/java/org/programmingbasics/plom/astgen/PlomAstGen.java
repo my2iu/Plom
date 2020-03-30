@@ -28,12 +28,19 @@ public class PlomAstGen
 
   Production[] grammar = new Production[] {
       rule(Statement, Expression, EndStatement),
+      rule(Statement, DUMMY_COMMENT, EndStatement),
       rule(Statement, EndStatement),
       rule(Expression, AdditiveExpression),
-      rule(AdditiveExpression, ValueExpression, AdditiveExpressionMore),
+      rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
       rule(AdditiveExpressionMore, Plus, AdditiveExpression),
       rule(AdditiveExpressionMore, Minus, AdditiveExpression),
       rule(AdditiveExpressionMore),
+      rule(MultiplicativeExpression, ParenthesisExpression, MultiplicativeExpressionMore),
+      rule(MultiplicativeExpressionMore, Multiply, MultiplicativeExpression),
+      rule(MultiplicativeExpressionMore, Divide, MultiplicativeExpression),
+      rule(MultiplicativeExpressionMore),
+      rule(ParenthesisExpression, OpenParenthesis, Expression, ClosedParenthesis),
+      rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
       rule(ValueExpression, String)
   };
@@ -275,7 +282,20 @@ public class PlomAstGen
         isFirst = false;
         out.print("\t" + sym.name());
       }
-      out.println();
+      out.println(";");
+      out.println("\tpublic boolean isTerminal()");
+      out.println("\t{");
+      out.println("\t\tswitch(this) {");
+      for (Symbol sym: Symbol.values())
+      {
+        if (sym.isTerminal)
+          out.println("\t\tcase " + sym.name() + ":");
+      }
+      out.println("\t\t\treturn true;");
+      out.println("\t\tdefault:");
+      out.println("\t\t\treturn false;");
+      out.println("\t\t}");
+      out.println("\t}");
       out.println("}");
     }
     
