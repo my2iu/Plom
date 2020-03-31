@@ -20,24 +20,30 @@ public class LL1Parser implements TokenVisitor<Void>
    @Override public Void visitSimpleToken(SimpleToken token)
    {
       if (isError) return null;
+      if (!matchSymbol(stack, parser, token.type))
+         isError = true;
+      return null;
+   }
+
+   /**
+    * Tries to parse a single symbol using the stack given
+    * @return false on error
+    */
+   static boolean matchSymbol(List<Symbol> stack, Parser parser, Symbol sym)
+   {
       if (stack.isEmpty())
       {
-         isError = true;
-         return null;
+         return false;
       }
       Symbol topOfStack = stack.get(stack.size() - 1);
-      if (parser.parsingTable.get(topOfStack) == null)
+      while (topOfStack != sym)
       {
-         isError = true;
-         return null;
-      }
-      while (topOfStack != token.type)
-      {
-         Symbol[] expansion = parser.parsingTable.get(topOfStack).get(token.type);
+         if (parser.parsingTable.get(topOfStack) == null)
+            return false;
+         Symbol[] expansion = parser.parsingTable.get(topOfStack).get(sym);
          if (expansion == null)
          {
-            isError = true;
-            return null;
+            return false;
          }
          stack.remove(stack.size() - 1);
          for (int n = expansion.length - 1; n >= 0; n--)
@@ -48,7 +54,7 @@ public class LL1Parser implements TokenVisitor<Void>
       }
       
       stack.remove(stack.size() - 1);
-      return null;
+      return true;
    }
    
    public Set<Symbol> allowedNextSymbols()
@@ -59,7 +65,14 @@ public class LL1Parser implements TokenVisitor<Void>
       Symbol topOfStack = stack.get(stack.size() - 1);
       if (topOfStack.isTerminal()) allowed.add(topOfStack);
       if (parser.parsingTable.get(topOfStack) == null) return allowed;
-      allowed.addAll(parser.parsingTable.get(topOfStack).keySet());
+      // Go through each possible token and run through a sample parse to
+      // see if it resolves to something useful.
+      for (Symbol sym: parser.parsingTable.get(topOfStack).keySet())
+      {
+         List<Symbol> stackCopy = new ArrayList<>(stack);
+         if (matchSymbol(stackCopy, parser, sym))
+            allowed.add(sym);
+      }
       return allowed;
    }
 
