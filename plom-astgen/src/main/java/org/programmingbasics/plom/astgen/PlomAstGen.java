@@ -42,7 +42,11 @@ public class PlomAstGen
       rule(ParenthesisExpression, OpenParenthesis, Expression, ClosedParenthesis),
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
-      rule(ValueExpression, String)
+      rule(ValueExpression, String),
+      rule(Statement, COMPOUND_IF, IfMore, EndStatement),
+      rule(IfMore),
+      rule(IfMore, COMPOUND_ELSEIF, IfMore),
+      rule(IfMore, COMPOUND_ELSE),
   };
 
   static Production rule(Symbol from, Symbol ... to)

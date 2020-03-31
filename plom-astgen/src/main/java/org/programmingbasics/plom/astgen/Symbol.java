@@ -4,6 +4,7 @@ enum Symbol
 {
   EMPTY(true),
   Statement(false),
+  IfMore(false),
   Expression(false),
   AdditiveExpression(false),
   AdditiveExpressionMore(false),
@@ -22,7 +23,9 @@ enum Symbol
   String(true),
   
   DUMMY_COMMENT(true),
-  DUMMY_IF(true),
+  COMPOUND_IF(true),
+  COMPOUND_ELSE(true),
+  COMPOUND_ELSEIF(true),
   DUMMY_BEGIN(true),
   DUMMY_END(true);
   Symbol(boolean isTerminal)
@@ -32,6 +35,6 @@ enum Symbol
   boolean isTerminal;
   boolean isDummy()
   {
-    return name().startsWith("DUMMY_");
+    return name().startsWith("DUMMY_") || name().startsWith("COMPOUND_");
   }
 }

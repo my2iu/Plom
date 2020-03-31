@@ -4,6 +4,7 @@ public enum Symbol
 {
 	EMPTY,
 	Statement,
+	IfMore,
 	Expression,
 	AdditiveExpression,
 	AdditiveExpressionMore,
@@ -21,7 +22,9 @@ public enum Symbol
 	ClosedParenthesis,
 	String,
 	DUMMY_COMMENT,
-	DUMMY_IF,
+	COMPOUND_IF,
+	COMPOUND_ELSE,
+	COMPOUND_ELSEIF,
 	DUMMY_BEGIN,
 	DUMMY_END;
 	public boolean isTerminal()
@@ -38,7 +41,9 @@ public enum Symbol
 		case ClosedParenthesis:
 		case String:
 		case DUMMY_COMMENT:
-		case DUMMY_IF:
+		case COMPOUND_IF:
+		case COMPOUND_ELSE:
+		case COMPOUND_ELSEIF:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
 			return true;

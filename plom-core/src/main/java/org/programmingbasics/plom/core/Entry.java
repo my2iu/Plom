@@ -197,6 +197,9 @@ public class Entry implements EntryPoint
          case DUMMY_COMMENT: text = "//"; break;
          case Number: text = "123"; break;
          case String: text = "\"...\""; break;
+         case COMPOUND_IF: text = "if"; break;
+         case COMPOUND_ELSE: text = "else"; break;
+         case COMPOUND_ELSEIF: text = "elseif"; break;
          default:
          }
          String tokenText = text;
