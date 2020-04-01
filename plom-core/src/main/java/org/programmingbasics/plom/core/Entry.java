@@ -37,6 +37,7 @@ public class Entry implements EntryPoint
       codeDiv = (DivElement)mainDiv.querySelector("div.code");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
+      codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
       hookCodeClick(codeDiv);
@@ -44,12 +45,19 @@ public class Entry implements EntryPoint
    
    StatementContainer codeList = new StatementContainer();
    {
-      codeList.statements.addAll(Arrays.asList(
+      Token.OneExpressionOneBlockToken ifToken = new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF);
+      ifToken.expression.tokens.addAll(Arrays.asList(
+            new Token.SimpleToken("1", Symbol.Number)));
+      ifToken.block.statements.add(
             new TokenContainer(Arrays.asList(
                   new Token.SimpleToken("1", Symbol.Number),
                   new Token.SimpleToken("+", Symbol.Number),
                   new Token.SimpleToken("1", Symbol.Number)
-                  )),
+                  ))
+            );
+      codeList.statements.addAll(Arrays.asList(
+            new TokenContainer(Arrays.asList(
+                  ifToken)),
             new TokenContainer(Arrays.asList()),
             new TokenContainer(Arrays.asList(
                   new Token.SimpleToken("a", Symbol.Number),

@@ -10,6 +10,7 @@ import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -48,16 +49,26 @@ public class CodeRenderer
          SpanElement start = doc.createSpanElement();
          start.setTextContent(token.contents + " (");
          SpanElement expression = doc.createSpanElement();
+         int level = 1;
+         CodePosition pos = null;
+         renderLine(token.expression, pos, level, expression, this, null);
+         if (token.expression.tokens.isEmpty())
+            expression.setTextContent("\u00A0");
          SpanElement middle = doc.createSpanElement();
          middle.setTextContent(") {");
          startLine.appendChild(start);
          startLine.appendChild(expression);
          startLine.appendChild(middle);
          
+         DivElement block = doc.createDivElement();
+         block.getStyle().setPaddingLeft(1, Unit.EM);
+         renderStatementContainer(block, token.block, pos, level, null);
+         
          DivElement endLine = doc.createDivElement();
          endLine.setTextContent("}");
          
          div.appendChild(startLine);
+         div.appendChild(block);
          div.appendChild(endLine);
          return div;
       }
@@ -79,14 +90,14 @@ public class CodeRenderer
             lineHitBox.children = new ArrayList<>();
             renderedHitBoxes.children.add(lineHitBox);
          }
-         renderStatement(line, lineno == pos.getOffset(level) ? pos : null, level + 1, div, renderer, lineHitBox);
+         renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, renderer, lineHitBox);
          
          codeDiv.appendChild(div);
          lineno++;
       }
    }
    
-   static void renderStatement(TokenContainer line, CodePosition pos, int level, DivElement div, TokenRenderer renderer, RenderedHitBox lineHitBox)
+   static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox)
    {
       Document doc = div.getOwnerDocument();
       int tokenno = 0;

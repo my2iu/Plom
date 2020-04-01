@@ -25,8 +25,8 @@ public abstract class Token
    {
       public String contents;
       Symbol type;
-      TokenContainer expression;
-      StatementContainer block;
+      public TokenContainer expression = new TokenContainer();
+      public StatementContainer block = new StatementContainer();
       public OneExpressionOneBlockToken(String contents, Symbol type)
       {
          this.contents = contents;
