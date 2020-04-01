@@ -21,6 +21,17 @@ public class CodePosition
          offsets.add(0);
       offsets.set(level, val);
    }
+   boolean hasOffset(int level)
+   {
+      if (level >= offsets.size()) return false;
+      if (offsets.get(level) < 0) return false;
+      return true;
+   }
+   void setMaxOffset(int level)
+   {
+      for (int n = level; level < offsets.size(); level++)
+         offsets.set(n, -1);
+   }
 //   int line;
 //   int token;
 }

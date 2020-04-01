@@ -69,6 +69,7 @@ public class Entry implements EntryPoint
    DivElement codeDiv;
    DivElement choicesDiv;
    CodePosition cursorPos = new CodePosition();
+
    
    /**
     * Returns a mapping of divs for each line and their line numbers

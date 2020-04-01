@@ -23,7 +23,7 @@ public class CodeRenderer
       renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes);
    }
    
-   static class TokenRenderer implements Token.TokenVisitor<Element>
+   static class TokenRenderer implements Token.TokenVisitor3<Element, CodePosition, Integer, RenderedHitBox>
    {
       Document doc;
       TokenRenderer(Document doc)
@@ -31,27 +31,40 @@ public class CodeRenderer
          this.doc = doc;
       }
       @Override
-      public Element visitSimpleToken(SimpleToken token)
+      public Element visitSimpleToken(SimpleToken token, CodePosition pos, Integer level, RenderedHitBox hitBox)
       {
          DivElement div = doc.createDivElement();
          div.setClassName("token");
          div.setTextContent(token.contents);
+         if (hitBox != null)
+            hitBox.el = div;
          return div;
       }
       @Override
       public Element visitOneExpressionOneBlockToken(
-            OneExpressionOneBlockToken token)
+            OneExpressionOneBlockToken token, CodePosition pos, Integer level, RenderedHitBox hitBox)
       {
          DivElement div = doc.createDivElement();
          div.setClassName("token");
+
+         RenderedHitBox exprHitBox = null;
+         RenderedHitBox blockHitBox = null;
+         if (hitBox != null)
+         {
+            exprHitBox = new RenderedHitBox();
+            exprHitBox.children = new ArrayList<>();
+            blockHitBox = new RenderedHitBox();
+            blockHitBox.children = new ArrayList<>();
+            hitBox.children = new ArrayList<>();
+            hitBox.children.add(exprHitBox);
+            hitBox.children.add(blockHitBox);
+         }
          
          DivElement startLine = doc.createDivElement();
          SpanElement start = doc.createSpanElement();
          start.setTextContent(token.contents + " (");
          SpanElement expression = doc.createSpanElement();
-         int level = 1;
-         CodePosition pos = null;
-         renderLine(token.expression, pos, level, expression, this, null);
+         renderLine(token.expression, pos != null && pos.getOffset(level) == 0 ? pos : null, level + 1, expression, this, exprHitBox);
          if (token.expression.tokens.isEmpty())
             expression.setTextContent("\u00A0");
          SpanElement middle = doc.createSpanElement();
@@ -62,7 +75,7 @@ public class CodeRenderer
          
          DivElement block = doc.createDivElement();
          block.getStyle().setPaddingLeft(1, Unit.EM);
-         renderStatementContainer(block, token.block, pos, level, null);
+         renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == 1 ? pos : null, level + 1, blockHitBox);
          
          DivElement endLine = doc.createDivElement();
          endLine.setTextContent("}");
@@ -70,6 +83,8 @@ public class CodeRenderer
          div.appendChild(startLine);
          div.appendChild(block);
          div.appendChild(endLine);
+         if (hitBox != null)
+            hitBox.el = div;
          return div;
       }
    }
@@ -109,12 +124,13 @@ public class CodeRenderer
             toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
             div.appendChild(toInsert.querySelector("div"));
          }
-         Element el = tok.visit(renderer);
+         RenderedHitBox hitBox = null;
+         if (lineHitBox != null)
+            hitBox = new RenderedHitBox();
+         Element el = tok.visit(renderer, pos != null && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
          div.appendChild(el);
          if (lineHitBox != null)
-         {
-            lineHitBox.children.add(new RenderedHitBox(el));
-         }
+            lineHitBox.children.add(hitBox);
          tokenno++;
       }
       if (pos != null && pos.getOffset(level) == line.tokens.size()) 
