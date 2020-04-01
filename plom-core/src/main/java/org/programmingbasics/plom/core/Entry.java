@@ -93,7 +93,7 @@ public class Entry implements EntryPoint
          int tokenno = 0;
          for (Token tok: line.tokens)
          {
-            if (lineno == pos.line && tokenno == pos.token)
+            if (lineno == pos.getOffset(0) && tokenno == pos.getOffset(1))
             {
                DivElement toInsert = doc.createDivElement();
                toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
@@ -107,7 +107,7 @@ public class Entry implements EntryPoint
             }
             tokenno++;
          }
-         if (lineno == pos.line && pos.token == line.tokens.size()) 
+         if (lineno == pos.getOffset(0) && pos.getOffset(1) == line.tokens.size()) 
          {
             DivElement toInsert = doc.createDivElement();
             toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
@@ -140,9 +140,9 @@ public class Entry implements EntryPoint
    
    void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
    {
-      TokenContainer line = codeList.statements.get(pos.line);
-      line.tokens.add(pos.token, new SimpleToken(tokenText, tokenType));
-      pos.token++;
+      TokenContainer line = codeList.statements.get(pos.getOffset(0));
+      line.tokens.add(pos.getOffset(1), new SimpleToken(tokenText, tokenType));
+      pos.setOffset(1, pos.getOffset(1) + 1);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null, null);
       showPredictedTokenInput(choicesDiv);
@@ -153,10 +153,10 @@ public class Entry implements EntryPoint
       choicesDiv.setInnerHTML("");
       
       // Parse the current statement up to the cursor position
-      TokenContainer curLine = codeList.statements.get(cursorPos.line);
+      TokenContainer curLine = codeList.statements.get(cursorPos.getOffset(0));
       LL1Parser stmtParser = new LL1Parser();
       stmtParser.stack.add(Symbol.Statement);
-      for (int n = 0; n < cursorPos.token; n++)
+      for (int n = 0; n < cursorPos.getOffset(1); n++)
       {
          Token tok = curLine.tokens.get(n);
          tok.visit(stmtParser);
@@ -168,13 +168,13 @@ public class Entry implements EntryPoint
       if (allowedSymbols.contains(Symbol.EndStatement))
       {
          choicesDiv.appendChild(makeButton("\u21b5", () -> {
-            TokenContainer line = codeList.statements.get(cursorPos.line);
-            TokenContainer newline = new TokenContainer(line.tokens.subList(cursorPos.token, line.tokens.size()));
-            for (int n = line.tokens.size() - 1; n >= cursorPos.token; n--)
+            TokenContainer line = codeList.statements.get(cursorPos.getOffset(0));
+            TokenContainer newline = new TokenContainer(line.tokens.subList(cursorPos.getOffset(1), line.tokens.size()));
+            for (int n = line.tokens.size() - 1; n >= cursorPos.getOffset(1); n--)
                line.tokens.remove(n);
-            cursorPos.line++;
-            codeList.statements.add(cursorPos.line, newline);
-            cursorPos.token = 0;
+            cursorPos.setOffset(0, cursorPos.getOffset(0) + 1);
+            codeList.statements.add(cursorPos.getOffset(0), newline);
+            cursorPos.setOffset(1, 0);
             codeDiv.setInnerHTML("");
             renderTokens(codeDiv, codeList, cursorPos, null, null);
             showPredictedTokenInput(choicesDiv);
@@ -255,8 +255,8 @@ public class Entry implements EntryPoint
             }
             // Update the cursor position
             cursorPos = new CodePosition();
-            cursorPos.line = lineno;
-            cursorPos.token = tokenno;
+            cursorPos.setOffset(0, lineno);
+            cursorPos.setOffset(1, tokenno);
             codeDiv.setInnerHTML("");
             renderTokens(codeDiv, codeList, cursorPos, null, null);
             showPredictedTokenInput(choicesDiv);
