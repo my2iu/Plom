@@ -35,7 +35,7 @@ public class Entry implements EntryPoint
       codeDiv = (DivElement)mainDiv.querySelector("div.code");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
       
-      renderTokens(codeDiv, codeList, cursorPos, null, null);
+      renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
       hookCodeClick(codeDiv);
    }
@@ -63,63 +63,9 @@ public class Entry implements EntryPoint
    /**
     * Returns a mapping of divs for each line and their line numbers
     */
-   static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, Map<Element, Integer> lineDivs, RenderedHitBox renderedHitBoxes)
+   static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
    {
-      Document doc = Browser.getDocument();
-      class TokenRenderer implements Token.TokenVisitor<Element>
-      {
-         @Override
-         public Element visitSimpleToken(SimpleToken token)
-         {
-            DivElement div = doc.createDivElement();
-            div.setClassName("token");
-            div.setTextContent(token.contents);
-            return div;
-         }
-      }
-      
-      TokenRenderer renderer = new TokenRenderer();
-      int lineno = 0;
-      for (TokenContainer line: codeList.statements)
-      {
-         DivElement div = doc.createDivElement();
-         RenderedHitBox lineHitBox = null;
-         if (renderedHitBoxes != null)
-         {
-            lineHitBox = new RenderedHitBox(div);
-            lineHitBox.children = new ArrayList<>();
-            renderedHitBoxes.children.add(lineHitBox);
-         }
-         int tokenno = 0;
-         for (Token tok: line.tokens)
-         {
-            if (lineno == pos.getOffset(0) && tokenno == pos.getOffset(1))
-            {
-               DivElement toInsert = doc.createDivElement();
-               toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-               div.appendChild(toInsert.querySelector("div"));
-            }
-            Element el = tok.visit(renderer);
-            div.appendChild(el);
-            if (lineHitBox != null)
-            {
-               lineHitBox.children.add(new RenderedHitBox(el));
-            }
-            tokenno++;
-         }
-         if (lineno == pos.getOffset(0) && pos.getOffset(1) == line.tokens.size()) 
-         {
-            DivElement toInsert = doc.createDivElement();
-            toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-            div.appendChild(toInsert.querySelector("div"));
-         }
-         else if (line.tokens.isEmpty())
-            div.setTextContent("\u00A0");
-         codeDiv.appendChild(div);
-         if (lineDivs != null)
-            lineDivs.put(div, lineno);
-         lineno++;
-      }
+      new CodeRenderer().render(codeDiv, codeList, pos, renderedHitBoxes);
    }
    
    Element makeButton(String text, Runnable onclick)
@@ -144,7 +90,7 @@ public class Entry implements EntryPoint
       line.tokens.add(pos.getOffset(1), new SimpleToken(tokenText, tokenType));
       pos.setOffset(1, pos.getOffset(1) + 1);
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, null);
+      renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
    }
    
@@ -176,7 +122,7 @@ public class Entry implements EntryPoint
             codeList.statements.add(cursorPos.getOffset(0), newline);
             cursorPos.setOffset(1, 0);
             codeDiv.setInnerHTML("");
-            renderTokens(codeDiv, codeList, cursorPos, null, null);
+            renderTokens(codeDiv, codeList, cursorPos, null);
             showPredictedTokenInput(choicesDiv);
          }));
       }
@@ -217,7 +163,7 @@ public class Entry implements EntryPoint
          RenderedHitBox renderedHitBoxes = new RenderedHitBox(null);
          renderedHitBoxes.children = new ArrayList<>();
          codeDiv.setInnerHTML("");
-         renderTokens(codeDiv, codeList, cursorPos, null, renderedHitBoxes);
+         renderTokens(codeDiv, codeList, cursorPos, renderedHitBoxes);
          // Find which line matches the mouse position
          int bestMatchY = -1;
          int lineno = -1;
@@ -258,7 +204,7 @@ public class Entry implements EntryPoint
             cursorPos.setOffset(0, lineno);
             cursorPos.setOffset(1, tokenno);
             codeDiv.setInnerHTML("");
-            renderTokens(codeDiv, codeList, cursorPos, null, null);
+            renderTokens(codeDiv, codeList, cursorPos, null);
             showPredictedTokenInput(choicesDiv);
         }
       }, false);
