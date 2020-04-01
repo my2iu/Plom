@@ -21,8 +21,26 @@ public abstract class Token
       }
    }
    
+   public static class OneExpressionOneBlockToken extends Token
+   {
+      public String contents;
+      Symbol type;
+      TokenContainer expression;
+      StatementContainer block;
+      public OneExpressionOneBlockToken(String contents, Symbol type)
+      {
+         this.contents = contents;
+         this.type = type;
+      }
+      public <S> S visit(TokenVisitor<S> visitor)
+      {
+         return visitor.visitOneExpressionOneBlockToken(this);
+      }
+   }
+   
    public static interface TokenVisitor<S>
    {
       public S visitSimpleToken(SimpleToken token);
+      public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token);
    }
 }

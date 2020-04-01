@@ -1,20 +1,18 @@
-package org.programmingbasics.plom.core;
+package org.programmingbasics.plom.core.ast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.programmingbasics.plom.core.ast.Token;
-
 public class TokenContainer
 {
-   List<Token> tokens = new ArrayList<>();
+   public List<Token> tokens = new ArrayList<>();
    
    TokenContainer()
    {
       
    }
    
-   TokenContainer(List<Token> contents)
+   public TokenContainer(List<Token> contents)
    {
       this.tokens.addAll(contents);
    }

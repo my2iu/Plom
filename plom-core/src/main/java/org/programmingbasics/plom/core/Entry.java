@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.gen.Parser;
@@ -87,7 +89,15 @@ public class Entry implements EntryPoint
    void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
    {
       TokenContainer line = codeList.statements.get(pos.getOffset(0));
-      line.tokens.add(pos.getOffset(1), new SimpleToken(tokenText, tokenType));
+      switch(tokenType)
+      {
+      case COMPOUND_IF:
+         line.tokens.add(pos.getOffset(1), new Token.OneExpressionOneBlockToken(tokenText, tokenType));
+         break;
+      default:
+         line.tokens.add(pos.getOffset(1), new SimpleToken(tokenText, tokenType));
+         break;
+      }
       pos.setOffset(1, pos.getOffset(1) + 1);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
