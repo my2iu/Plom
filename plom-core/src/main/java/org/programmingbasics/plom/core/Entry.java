@@ -174,59 +174,21 @@ public class Entry implements EntryPoint
    
    void hookCodeClick(DivElement div)
    {
-      div.addEventListener(Event.CLICK, (evt)-> {
-         MouseEvent mevt = (MouseEvent)evt;
-         int x = mevt.getClientX() + div.getScrollLeft();
-         int y = mevt.getClientY() + div.getScrollTop();
-//         Map<Element, Integer> lineDivs = new HashMap<>();
-         RenderedHitBox renderedHitBoxes = new RenderedHitBox(null);
-         renderedHitBoxes.children = new ArrayList<>();
+     div.addEventListener(Event.CLICK, (evt)-> {
+       MouseEvent mevt = (MouseEvent)evt;
+       int x = mevt.getClientX() + div.getScrollLeft();
+       int y = mevt.getClientY() + div.getScrollTop();
+
+       CodePosition newPos = new CodeRenderer().renderAndHitDetect(x, y, codeDiv, codeList, cursorPos);
+
+       if (cursorPos != null)
+       {
+         cursorPos = newPos;
          codeDiv.setInnerHTML("");
-         renderTokens(codeDiv, codeList, cursorPos, renderedHitBoxes);
-         // Find which line matches the mouse position
-         int bestMatchY = -1;
-         int lineno = -1;
-         for (int n = 0; n < renderedHitBoxes.children.size(); n++)
-         {
-            Element el = renderedHitBoxes.children.get(n).el;
-            if (el.getOffsetTop() < y && el.getOffsetTop() > bestMatchY)
-            {
-               bestMatchY = el.getOffsetTop();
-               lineno = n;
-            }
-         }
-         if (lineno >= 0)
-         {
-            // Find which token that mouse position is over
-            int bestMatchX = -1;
-            int tokenno = 0;
-            for (int n = 0; n < renderedHitBoxes.children.get(lineno).children.size(); n++)
-            {
-               Element el = renderedHitBoxes.children.get(lineno).children.get(n).el;
-               if (el.getOffsetLeft() < x && el.getOffsetLeft() > bestMatchX)
-               {
-                  bestMatchX = el.getOffsetLeft();
-                  tokenno = n;
-               }
-            }
-            // Check if mouse is past the end of the last token
-            if (tokenno == renderedHitBoxes.children.get(lineno).children.size() - 1)
-            {
-               Element el = renderedHitBoxes.children.get(lineno).children.get(tokenno).el;
-               if (el.getOffsetLeft() + el.getOffsetWidth() < x)
-               {
-                  tokenno++;
-               }
-            }
-            // Update the cursor position
-            cursorPos = new CodePosition();
-            cursorPos.setOffset(0, lineno);
-            cursorPos.setOffset(1, tokenno);
-            codeDiv.setInnerHTML("");
-            renderTokens(codeDiv, codeList, cursorPos, null);
-            showPredictedTokenInput(choicesDiv);
-        }
-      }, false);
+         renderTokens(codeDiv, codeList, cursorPos, null);
+         showPredictedTokenInput(choicesDiv);
+       }
+     }, false);
    }
-   
+
 }
