@@ -8,6 +8,8 @@ public abstract class Token
    public abstract <S, T> S visit(TokenVisitor1<S, T> visitor, T param1);
    public abstract <S, T, U> S visit(TokenVisitor2<S, T, U> visitor, T param1, U param2);
    public abstract <S, T, U, V> S visit(TokenVisitor3<S, T, U, V> visitor, T param1, U param2, V param3);
+   public abstract <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4);
+   public abstract <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5);
    
    public static class SimpleToken extends Token
    {
@@ -33,6 +35,14 @@ public abstract class Token
       public <S, T, U, V> S visit(TokenVisitor3<S, T, U, V> visitor, T param1, U param2, V param3)
       {
          return visitor.visitSimpleToken(this, param1, param2, param3);
+      }
+      public <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4)
+      {
+         return visitor.visitSimpleToken(this, param1, param2, param3, param4);
+      }
+      public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
+      {
+         return visitor.visitSimpleToken(this, param1, param2, param3, param4, param5);
       }
    }
    
@@ -63,6 +73,14 @@ public abstract class Token
       {
          return visitor.visitOneExpressionOneBlockToken(this, param1, param2, param3);
       }
+      public <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4)
+      {
+         return visitor.visitOneExpressionOneBlockToken(this, param1, param2, param3, param4);
+      }
+      public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
+      {
+         return visitor.visitOneExpressionOneBlockToken(this, param1, param2, param3, param4, param5);
+      }
    }
    
    public static interface TokenVisitor<S>
@@ -86,6 +104,16 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3);
+   }
+   public static interface TokenVisitor4<S, T, U, V, W>
+   {
+      public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3, W param4);
+      public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4);
+   }
+   public static interface TokenVisitor5<S, T, U, V, W, X>
+   {
+      public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3, W param4, X param5);
+      public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4, X param5);
    }
 
 }

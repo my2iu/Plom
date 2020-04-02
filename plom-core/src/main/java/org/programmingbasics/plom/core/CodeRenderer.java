@@ -47,15 +47,20 @@ public class CodeRenderer
       DivElement div = doc.createDivElement();
       div.setClassName("blocktoken");
 
+      RenderedHitBox startTokenHitBox = null;
       RenderedHitBox exprHitBox = null;
       RenderedHitBox blockHitBox = null;
+      RenderedHitBox endHitBox = null;
       if (hitBox != null)
       {
+        startTokenHitBox = new RenderedHitBox();
         exprHitBox = new RenderedHitBox();
         exprHitBox.children = new ArrayList<>();
         blockHitBox = new RenderedHitBox();
         blockHitBox.children = new ArrayList<>();
+        endHitBox = new RenderedHitBox();
         hitBox.children = new ArrayList<>();
+        hitBox.children.add(startTokenHitBox);
         hitBox.children.add(exprHitBox);
         hitBox.children.add(blockHitBox);
       }
@@ -64,7 +69,7 @@ public class CodeRenderer
       SpanElement start = doc.createSpanElement();
       start.setTextContent(token.contents + " (");
       SpanElement expression = doc.createSpanElement();
-      renderLine(token.expression, pos != null && pos.getOffset(level) == 0 ? pos : null, level + 1, expression, this, exprHitBox);
+      renderLine(token.expression, pos != null && pos.getOffset(level) == 1 ? pos : null, level + 1, expression, this, exprHitBox);
       if (token.expression.tokens.isEmpty())
         expression.setTextContent("\u00A0");
       SpanElement middle = doc.createSpanElement();
@@ -75,10 +80,18 @@ public class CodeRenderer
 
       DivElement block = doc.createDivElement();
       block.getStyle().setPaddingLeft(1, Unit.EM);
-      renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == 1 ? pos : null, level + 1, blockHitBox);
+      renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == 2 ? pos : null, level + 1, blockHitBox);
 
       DivElement endLine = doc.createDivElement();
       endLine.setTextContent("}");
+      if (hitBox != null)
+      {
+        startTokenHitBox.el = start;
+        exprHitBox.el = expression;
+        blockHitBox.el = block;
+        endHitBox.el = endLine;
+        hitBox.children.add(endHitBox);
+      }
 
       div.appendChild(startLine);
       div.appendChild(block);
@@ -153,7 +166,7 @@ public class CodeRenderer
     return hitDetectStatementContainer(x, y, codeList, renderedHitBoxes, pos, 0);
   }
 
-  private CodePosition hitDetectStatementContainer(int x, int y,
+  private static CodePosition hitDetectStatementContainer(int x, int y,
       StatementContainer statements,
       RenderedHitBox renderedHitBoxes,
       CodePosition newPos, 
@@ -179,34 +192,104 @@ public class CodeRenderer
     return null;
   }
 
-  private CodePosition hitDetectTokens(int x, int y, 
+  private static CodePosition hitDetectTokens(int x, int y, 
       TokenContainer tokens, RenderedHitBox renderedLineHitBoxes,
       CodePosition newPos, int level)
   {
     // Find which token that mouse position is over
-    int bestMatchX = -1;
     int tokenno = 0;
+    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
     for (int n = 0; n < renderedLineHitBoxes.children.size(); n++)
     {
-      Element el = renderedLineHitBoxes.children.get(n).el;
-      if (el.getOffsetLeft() < x && el.getOffsetLeft() > bestMatchX)
-      {
-        bestMatchX = el.getOffsetLeft();
+      Token token = tokens.tokens.get(n);
+      TokenHitLocation loc = token.visit(isClickedOnTokenOrLater, x, y, renderedLineHitBoxes.children.get(n));
+      if (loc == TokenHitLocation.AFTER)
+        tokenno = n + 1;
+      if (loc == TokenHitLocation.ON)
         tokenno = n;
-      }
     }
-    // Check if mouse is past the end of the last token
-    if (tokenno == renderedLineHitBoxes.children.size() - 1)
-    {
-      Element el = renderedLineHitBoxes.children.get(tokenno).el;
-      if (el.getOffsetLeft() + el.getOffsetWidth() < x)
-      {
-        tokenno++;
-      }
-    }
+//    // Check if mouse is past the end of the last token
+//    if (tokenno == renderedLineHitBoxes.children.size() - 1)
+//    {
+//      Element el = renderedLineHitBoxes.children.get(tokenno).el;
+//      if (el.getOffsetLeft() + el.getOffsetWidth() < x)
+//      {
+//        tokenno++;
+//      }
+//    }
     // Update the cursor position
     newPos.setOffset(level, tokenno);
+    
+    // For compound tokens, check if we're clicking on some element inside the token
+    if (tokenno < tokens.tokens.size())
+    {
+      tokens.tokens.get(tokenno).visit(new TokenInternalHitDetection(), x, y, renderedLineHitBoxes.children.get(tokenno), newPos, level + 1);
+    }
+    
     return newPos;
   }
+
+  static enum TokenHitLocation
+  {
+    NONE, ON, AFTER;
+  }
+  static class TokenHitDetection implements Token.TokenVisitor3<TokenHitLocation, Integer, Integer, RenderedHitBox>
+  {
+    @Override
+    public TokenHitLocation visitSimpleToken(SimpleToken token, Integer x,
+        Integer y, RenderedHitBox hitBox)
+    {
+      Element el = hitBox.el;
+      if (el.getOffsetLeft() + el.getOffsetWidth() < x) return TokenHitLocation.AFTER;
+      if (el.getOffsetLeft() < x) return TokenHitLocation.ON;
+      return TokenHitLocation.NONE;
+    }
+
+    @Override
+    public TokenHitLocation visitOneExpressionOneBlockToken(
+        OneExpressionOneBlockToken token, Integer x,
+        Integer y, RenderedHitBox hitBox)
+    {
+      Element el = hitBox.el;
+      if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (hitBox.children.size() > 3 && hitBox.children.get(3).el.getOffsetTop() < y) return TokenHitLocation.AFTER;
+      if (el.getOffsetTop() < y) return TokenHitLocation.ON;
+      return TokenHitLocation.NONE;
+    }
+    
+  }
   
+  // Does hit detection for compound tokens (tokens that contain expressions
+  // and statements inside them)
+  static class TokenInternalHitDetection implements Token.TokenVisitor5<Void, Integer, Integer, RenderedHitBox, CodePosition, Integer>
+  {
+    @Override
+    public Void visitSimpleToken(SimpleToken token, Integer x,
+        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
+    {
+      return null;
+    }
+
+    @Override
+    public Void visitOneExpressionOneBlockToken(
+        OneExpressionOneBlockToken token, Integer x,
+        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
+    {
+      // Check inside the statement block
+      if (y > hitBox.children.get(2).el.getOffsetTop())
+      {
+        pos.setOffset(level, 2);
+        hitDetectStatementContainer(x, y, token.block, hitBox.children.get(2), pos, level + 1);
+      }
+      else if (x > hitBox.children.get(1).el.getOffsetLeft() 
+          || y > hitBox.children.get(0).el.getOffsetTop() + hitBox.children.get(0).el.getOffsetHeight())
+      {
+        pos.setOffset(level, 1);
+        hitDetectTokens(x, y, token.expression, hitBox.children.get(1), pos, level + 1);
+      }
+      return null;
+    }
+    
+  }
+
 }
