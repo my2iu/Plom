@@ -1,11 +1,13 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 
@@ -18,6 +20,10 @@ import elemental.html.SpanElement;
 
 public class CodeRenderer
 {
+  private static final int EXPRBLOCK_POS_START = 0;
+  private static final int EXPRBLOCK_POS_EXPR = 1;
+  private static final int EXPRBLOCK_POS_BLOCK = 2;
+  
   void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
   {
     renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes);
@@ -69,7 +75,7 @@ public class CodeRenderer
       SpanElement start = doc.createSpanElement();
       start.setTextContent(token.contents + " (");
       SpanElement expression = doc.createSpanElement();
-      renderLine(token.expression, pos != null && pos.getOffset(level) == 1 ? pos : null, level + 1, expression, this, exprHitBox);
+      renderLine(token.expression, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox);
       if (token.expression.tokens.isEmpty())
         expression.setTextContent("\u00A0");
       SpanElement middle = doc.createSpanElement();
@@ -80,7 +86,7 @@ public class CodeRenderer
 
       DivElement block = doc.createDivElement();
       block.getStyle().setPaddingLeft(1, Unit.EM);
-      renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == 2 ? pos : null, level + 1, blockHitBox);
+      renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox);
 
       DivElement endLine = doc.createDivElement();
       endLine.setTextContent("}");
@@ -276,20 +282,78 @@ public class CodeRenderer
         Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
     {
       // Check inside the statement block
-      if (y > hitBox.children.get(2).el.getOffsetTop())
+      if (y > hitBox.children.get(EXPRBLOCK_POS_BLOCK).el.getOffsetTop())
       {
-        pos.setOffset(level, 2);
-        hitDetectStatementContainer(x, y, token.block, hitBox.children.get(2), pos, level + 1);
+        pos.setOffset(level, EXPRBLOCK_POS_BLOCK);
+        hitDetectStatementContainer(x, y, token.block, hitBox.children.get(EXPRBLOCK_POS_BLOCK), pos, level + 1);
       }
-      else if (x > hitBox.children.get(1).el.getOffsetLeft() 
-          || y > hitBox.children.get(0).el.getOffsetTop() + hitBox.children.get(0).el.getOffsetHeight())
+      else if (x > hitBox.children.get(EXPRBLOCK_POS_EXPR).el.getOffsetLeft() 
+          || y > hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetTop() + hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetHeight())
       {
-        pos.setOffset(level, 1);
-        hitDetectTokens(x, y, token.expression, hitBox.children.get(1), pos, level + 1);
+        pos.setOffset(level, EXPRBLOCK_POS_EXPR);
+        hitDetectTokens(x, y, token.expression, hitBox.children.get(EXPRBLOCK_POS_EXPR), pos, level + 1);
       }
       return null;
     }
     
   }
 
+  
+  // For figuring out which tokens should be used for predicting what
+  // the next token should be at the cursor position 
+  static class ParseContextForCursor
+  {
+    Symbol baseContext;
+    List<Token> tokens = new ArrayList<>();
+  }
+  
+  static ParseContextForCursor findPredictiveParseContextForStatements(StatementContainer statements, CodePosition pos, int level)
+  {
+    if (pos.getOffset(level) < statements.statements.size())
+    {
+      TokenContainer line = statements.statements.get(pos.getOffset(level));
+      return findPredictiveParseContextForLine(line, Symbol.Statement, pos, level + 1);
+    }
+    ParseContextForCursor toReturn = new ParseContextForCursor();
+    toReturn.baseContext = Symbol.Statement;
+    return toReturn;
+  }
+  
+  static ParseContextForCursor findPredictiveParseContextForLine(TokenContainer line, Symbol baseContext, CodePosition pos, int level)
+  {
+    if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
+    {
+      return line.tokens.get(pos.getOffset(level)).visit(new TokenPredictiveParseContext(), pos, level + 1);
+    }
+    ParseContextForCursor toReturn = new ParseContextForCursor();
+    toReturn.baseContext = baseContext;
+    toReturn.tokens.addAll(line.tokens.subList(0, pos.getOffset(level)));
+    return toReturn;
+  }
+  
+  static class TokenPredictiveParseContext implements Token.TokenVisitor2<ParseContextForCursor, CodePosition, Integer>
+  {
+    @Override
+    public ParseContextForCursor visitSimpleToken(SimpleToken token,
+        CodePosition pos, Integer level)
+    {
+      throw new IllegalArgumentException();
+    }
+
+    @Override
+    public ParseContextForCursor visitOneExpressionOneBlockToken(
+        OneExpressionOneBlockToken token, CodePosition pos, Integer level)
+    {
+      if (pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
+      {
+        return findPredictiveParseContextForLine(token.expression, Symbol.Expression, pos, level + 1);
+      }
+      else if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+      {
+        return findPredictiveParseContextForStatements(token.block, pos, level + 1);
+      }
+      throw new IllegalArgumentException();
+    }
+    
+  }
 }

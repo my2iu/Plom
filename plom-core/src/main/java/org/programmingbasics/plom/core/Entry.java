@@ -118,12 +118,11 @@ public class Entry implements EntryPoint
       choicesDiv.setInnerHTML("");
       
       // Parse the current statement up to the cursor position
-      TokenContainer curLine = codeList.statements.get(cursorPos.getOffset(0));
+      CodeRenderer.ParseContextForCursor parseContext = CodeRenderer.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
       LL1Parser stmtParser = new LL1Parser();
-      stmtParser.stack.add(Symbol.Statement);
-      for (int n = 0; n < cursorPos.getOffset(1); n++)
+      stmtParser.stack.add(parseContext.baseContext);
+      for (Token tok: parseContext.tokens)
       {
-         Token tok = curLine.tokens.get(n);
          tok.visit(stmtParser);
       }
       Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();

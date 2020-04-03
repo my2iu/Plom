@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class CodePosition
 {
-   List<Integer> offsets = new ArrayList<>();
+   private List<Integer> offsets = new ArrayList<>();
    public int getOffset(int level)
    {
       if (level >= offsets.size()) return 0;
