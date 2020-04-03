@@ -97,22 +97,22 @@ public class Entry implements EntryPoint
    
    void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
    {
-      TokenContainer line = codeList.statements.get(pos.getOffset(0));
+      Token newToken;
       switch(tokenType)
       {
       case COMPOUND_IF:
-         line.tokens.add(pos.getOffset(1), new Token.OneExpressionOneBlockToken(tokenText, tokenType));
+         newToken = new Token.OneExpressionOneBlockToken(tokenText, tokenType);
          break;
       default:
-         line.tokens.add(pos.getOffset(1), new SimpleToken(tokenText, tokenType));
+         newToken = new SimpleToken(tokenText, tokenType);
          break;
       }
-      pos.setOffset(1, pos.getOffset(1) + 1);
+      CodeRenderer.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
    }
-   
+
    void showPredictedTokenInput(DivElement choicesDiv)
    {
       choicesDiv.setInnerHTML("");
@@ -126,22 +126,19 @@ public class Entry implements EntryPoint
          tok.visit(stmtParser);
       }
       Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();
+      if (parseContext.baseContext == Symbol.ExpressionOnly)
+        allowedSymbols.remove(Symbol.EndStatement);
       
       // Buttons for next and enter
       choicesDiv.appendChild(makeButton("\u27a0", () -> {}));
       if (allowedSymbols.contains(Symbol.EndStatement))
       {
          choicesDiv.appendChild(makeButton("\u21b5", () -> {
-            TokenContainer line = codeList.statements.get(cursorPos.getOffset(0));
-            TokenContainer newline = new TokenContainer(line.tokens.subList(cursorPos.getOffset(1), line.tokens.size()));
-            for (int n = line.tokens.size() - 1; n >= cursorPos.getOffset(1); n--)
-               line.tokens.remove(n);
-            cursorPos.setOffset(0, cursorPos.getOffset(0) + 1);
-            codeList.statements.add(cursorPos.getOffset(0), newline);
-            cursorPos.setOffset(1, 0);
-            codeDiv.setInnerHTML("");
-            renderTokens(codeDiv, codeList, cursorPos, null);
-            showPredictedTokenInput(choicesDiv);
+           CodeRenderer.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
+
+           codeDiv.setInnerHTML("");
+           renderTokens(codeDiv, codeList, cursorPos, null);
+           showPredictedTokenInput(choicesDiv);
          }));
       }
       

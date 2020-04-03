@@ -30,6 +30,7 @@ public class PlomAstGen
       rule(Statement, Expression, EndStatement),
       rule(Statement, DUMMY_COMMENT, EndStatement),
       rule(Statement, EndStatement),
+      rule(ExpressionOnly, Expression, EndStatement),
       rule(Expression, AdditiveExpression),
       rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
       rule(AdditiveExpressionMore, Plus, AdditiveExpression),

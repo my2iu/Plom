@@ -10,6 +10,9 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
+import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
+import org.programmingbasics.plom.core.ast.Token.TokenVisitor2;
+import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Unit;
@@ -137,7 +140,7 @@ public class CodeRenderer
     int tokenno = 0;
     for (Token tok: line.tokens)
     {
-      if (pos != null && tokenno == pos.getOffset(level))
+      if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
       {
         DivElement toInsert = doc.createDivElement();
         toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
@@ -152,7 +155,7 @@ public class CodeRenderer
         lineHitBox.children.add(hitBox);
       tokenno++;
     }
-    if (pos != null && pos.getOffset(level) == line.tokens.size()) 
+    if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 
     {
       DivElement toInsert = doc.createDivElement();
       toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
@@ -346,7 +349,7 @@ public class CodeRenderer
     {
       if (pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
       {
-        return findPredictiveParseContextForLine(token.expression, Symbol.Expression, pos, level + 1);
+        return findPredictiveParseContextForLine(token.expression, Symbol.ExpressionOnly, pos, level + 1);
       }
       else if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
       {
@@ -356,4 +359,87 @@ public class CodeRenderer
     }
     
   }
+  
+  static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level)
+  {
+    TokenContainer line = stmtContainer.statements.get(pos.getOffset(level));
+    insertTokenIntoLine(line, newToken, pos, level + 1);
+  }
+  
+  static void insertTokenIntoLine(TokenContainer line, Token newToken, CodePosition pos, int level)
+  {
+    if (pos.hasOffset(level + 1))
+    {
+      Token token = line.tokens.get(pos.getOffset(level));
+      token.visit(new TokenVisitor3<Void, Token, CodePosition, Integer>() {
+        @Override
+        public Void visitSimpleToken(SimpleToken token, Token newToken,
+            CodePosition pos, Integer level)
+        {
+          throw new IllegalArgumentException();
+        }
+
+        @Override
+        public Void visitOneExpressionOneBlockToken(
+            OneExpressionOneBlockToken token, Token newToken,
+            CodePosition pos, Integer level)
+        {
+          if (pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
+          {
+            insertTokenIntoLine(token.expression, newToken, pos, level + 1);
+          }
+          else if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+          {
+            insertTokenIntoStatementContainer(token.block, newToken, pos, level + 1);
+          }
+          return null;
+        }
+        
+      }, newToken, pos, level + 1);
+      return;
+    }
+    line.tokens.add(pos.getOffset(level), newToken);
+    pos.setOffset(level, pos.getOffset(level) + 1);
+  }
+
+  public static void insertNewlineIntoStatementContainer(
+      StatementContainer codeList, CodePosition pos, int level)
+  {
+    TokenContainer line = codeList.statements.get(pos.getOffset(level));
+    if (pos.hasOffset(level + 2))
+    {
+      Token token = line.tokens.get(pos.getOffset(level + 1));
+      token.visit(new TokenVisitor2<Void, CodePosition, Integer>() {
+        @Override
+        public Void visitSimpleToken(SimpleToken token, CodePosition pos,
+            Integer level)
+        {
+          throw new IllegalArgumentException();
+        }
+
+        @Override
+        public Void visitOneExpressionOneBlockToken(
+            OneExpressionOneBlockToken token, CodePosition pos,
+            Integer level)
+        {
+          if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+          {
+            insertNewlineIntoStatementContainer(token.block, pos, level + 1);
+          }
+          return null;
+        }
+        
+      }, pos, level + 2);
+      return;
+    }
+    
+    TokenContainer newline = new TokenContainer(line.tokens.subList(pos.getOffset(level + 1), line.tokens.size()));
+    for (int n = line.tokens.size() - 1; n >= pos.getOffset(level + 1); n--)
+       line.tokens.remove(n);
+    pos.setOffset(level, pos.getOffset(level) + 1);
+    codeList.statements.add(pos.getOffset(level), newline);
+    pos.setOffset(level + 1, 0);
+  }
+  
+
 }

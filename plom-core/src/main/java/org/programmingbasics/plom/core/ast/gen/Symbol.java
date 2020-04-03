@@ -5,6 +5,7 @@ public enum Symbol
 	EMPTY,
 	Statement,
 	IfMore,
+	ExpressionOnly,
 	Expression,
 	AdditiveExpression,
 	AdditiveExpressionMore,

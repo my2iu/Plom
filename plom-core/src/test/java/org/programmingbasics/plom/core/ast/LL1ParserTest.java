@@ -43,4 +43,17 @@ public class LL1ParserTest extends TestCase
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));
    }
 
+   @Test
+   public void testAllowedSymbolExpression()
+   {
+     LL1Parser parser = new LL1Parser();
+     parser.stack.add(Symbol.EndStatement);
+     parser.stack.add(Symbol.Expression);
+     
+     new SimpleToken("", Symbol.Number).visit(parser);
+     Assert.assertEquals(false, parser.isError);
+     Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));
+     Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Plus));
+     Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Divide));
+   }
 }

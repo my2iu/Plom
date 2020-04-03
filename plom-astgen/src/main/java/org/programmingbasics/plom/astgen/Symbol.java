@@ -5,6 +5,7 @@ enum Symbol
   EMPTY(true),
   Statement(false),
   IfMore(false),
+  ExpressionOnly(false),
   Expression(false),
   AdditiveExpression(false),
   AdditiveExpressionMore(false),
