@@ -67,6 +67,10 @@ public class LL1Parser implements TokenVisitor<Void>
       return true;
    }
    
+   /** Returns a set of symbols that could be allowed in this context, but
+    * doesn't actually try to parse the symbols to see if it's valid for
+    * this particular context.
+    */
    public Set<Symbol> allowedNextSymbols()
    {
       Set<Symbol> allowed = new HashSet<>();
@@ -77,13 +81,19 @@ public class LL1Parser implements TokenVisitor<Void>
       if (parser.parsingTable.get(topOfStack) == null) return allowed;
       // Go through each possible token and run through a sample parse to
       // see if it resolves to something useful.
-      for (Symbol sym: parser.parsingTable.get(topOfStack).keySet())
-      {
-         List<Symbol> stackCopy = new ArrayList<>(stack);
-         if (matchSymbol(stackCopy, parser, sym))
-            allowed.add(sym);
-      }
-      return allowed;
+      return parser.parsingTable.get(topOfStack).keySet();
+   }
+   
+   /**
+    * Peeks ahead by trying to parse the given symbol and returning true
+    * if it parses correctly.
+    */
+   public boolean peekParseSymbol(Symbol sym)
+   {
+     List<Symbol> stackCopy = new ArrayList<>(stack);
+     if (matchSymbol(stackCopy, parser, sym))
+        return true;
+     return false;
    }
 
 }

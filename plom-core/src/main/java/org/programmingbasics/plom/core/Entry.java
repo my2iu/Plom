@@ -79,20 +79,30 @@ public class Entry implements EntryPoint
       new CodeRenderer().render(codeDiv, codeList, pos, renderedHitBoxes);
    }
    
-   Element makeButton(String text, Runnable onclick)
+   Element makeButton(String text, boolean enabled, Runnable onclick)
    {
       Document doc = Browser.getDocument();
       DivElement div = doc.createDivElement();
-      div.setClassName("tokenchoice");
+      if (enabled)
+        div.setClassName("tokenchoice");
+      else
+        div.setClassName("tokenchoicedisabled");
       div.setTextContent(text);
-      AnchorElement a = (AnchorElement)doc.createElement("a");
-      a.setHref("#");
-      a.appendChild(div);
-      a.addEventListener(Event.CLICK, (evt)-> {
-         evt.preventDefault();
-         onclick.run();
-      }, false);
-      return a;
+      if (enabled)
+      {
+        AnchorElement a = (AnchorElement)doc.createElement("a");
+        a.setHref("#");
+        a.appendChild(div);
+        a.addEventListener(Event.CLICK, (evt)-> {
+           evt.preventDefault();
+           onclick.run();
+        }, false);
+        return a;
+      }
+      else
+      {
+        return div;
+      }
    }
    
    void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
@@ -130,10 +140,10 @@ public class Entry implements EntryPoint
         allowedSymbols.remove(Symbol.EndStatement);
       
       // Buttons for next and enter
-      choicesDiv.appendChild(makeButton("\u27a0", () -> {}));
+      choicesDiv.appendChild(makeButton("\u27a0", true, () -> {}));
       if (allowedSymbols.contains(Symbol.EndStatement))
       {
-         choicesDiv.appendChild(makeButton("\u21b5", () -> {
+         choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
            CodeRenderer.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
 
            codeDiv.setInnerHTML("");
@@ -146,6 +156,7 @@ public class Entry implements EntryPoint
       for (Symbol sym: allowedSymbols)
       {
          if (sym == Symbol.EndStatement) continue;
+         boolean isValidSymbol = stmtParser.peekParseSymbol(sym);
          String text = "Unknown";
          switch(sym)
          {
@@ -164,7 +175,14 @@ public class Entry implements EntryPoint
          default:
          }
          String tokenText = text;
-         choicesDiv.appendChild(makeButton(tokenText, () -> { insertToken(cursorPos, tokenText, sym); }));
+         // Here we distinguish between allowed symbols and valid symbols because we
+         // don't want the UI to keep changing all the time with the changes in context.
+         // Instead we show all normally allowed symbols, but disable the ones that
+         // aren't valid for this particular context
+         if (isValidSymbol)
+           choicesDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
+         else
+           choicesDiv.appendChild(makeButton(tokenText, false, () -> {  }));
       }
    }
    
