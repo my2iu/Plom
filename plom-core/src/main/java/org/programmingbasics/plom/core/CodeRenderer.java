@@ -32,7 +32,18 @@ public class CodeRenderer
     renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes);
   }
 
-  static class TokenRenderer implements Token.TokenVisitor3<Element, CodePosition, Integer, RenderedHitBox>
+  /** Holds data to be returned about how a token is rendered */
+  static class TokenRendererReturn
+  {
+    /** Element which holds the token */
+    public Element el;
+    /** Before cursor points--when inserting a cursor before this token, cursor should be inserted before this element */
+    public Element beforeInsertionPoint;
+    /** After cursor points--when inserting a cursor after this token, cursor should be inserted after this element */
+    public Element afterInsertionPoint;
+  }
+  
+  static class TokenRenderer implements Token.TokenVisitor4<Void, TokenRendererReturn, CodePosition, Integer, RenderedHitBox>
   {
     Document doc;
     TokenRenderer(Document doc)
@@ -40,18 +51,21 @@ public class CodeRenderer
       this.doc = doc;
     }
     @Override
-    public Element visitSimpleToken(SimpleToken token, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
       DivElement div = doc.createDivElement();
       div.setClassName("token");
       div.setTextContent(token.contents);
       if (hitBox != null)
         hitBox.el = div;
-      return div;
+      toReturn.el = div;
+      toReturn.beforeInsertionPoint = div;
+      toReturn.afterInsertionPoint = div;
+      return null;
     }
     @Override
-    public Element visitOneExpressionOneBlockToken(
-        OneExpressionOneBlockToken token, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    public Void visitOneExpressionOneBlockToken(
+        OneExpressionOneBlockToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
       DivElement div = doc.createDivElement();
       div.setClassName("blocktoken");
@@ -92,7 +106,9 @@ public class CodeRenderer
       renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox);
 
       DivElement endLine = doc.createDivElement();
-      endLine.setTextContent("}");
+      SpanElement end = doc.createSpanElement();
+      end.setTextContent("}");
+      endLine.appendChild(end);
       if (hitBox != null)
       {
         startTokenHitBox.el = start;
@@ -107,7 +123,10 @@ public class CodeRenderer
       div.appendChild(endLine);
       if (hitBox != null)
         hitBox.el = div;
-      return div;
+      toReturn.el = div;
+      toReturn.beforeInsertionPoint = start;
+      toReturn.afterInsertionPoint = end;
+      return null;
     }
   }
 
@@ -138,19 +157,22 @@ public class CodeRenderer
   {
     Document doc = div.getOwnerDocument();
     int tokenno = 0;
+    TokenRendererReturn returnedRenderedToken = new TokenRendererReturn(); 
     for (Token tok: line.tokens)
     {
+      RenderedHitBox hitBox = null;
+      if (lineHitBox != null)
+        hitBox = new RenderedHitBox();
+      tok.visit(renderer, returnedRenderedToken, pos != null && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
+      Element el = returnedRenderedToken.el;
+      div.appendChild(el);
       if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
       {
         DivElement toInsert = doc.createDivElement();
         toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-        div.appendChild(toInsert.querySelector("div"));
+        Element beforePoint = returnedRenderedToken.beforeInsertionPoint;
+        beforePoint.getParentElement().insertBefore(toInsert.querySelector("div"), beforePoint);
       }
-      RenderedHitBox hitBox = null;
-      if (lineHitBox != null)
-        hitBox = new RenderedHitBox();
-      Element el = tok.visit(renderer, pos != null && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
-      div.appendChild(el);
       if (lineHitBox != null)
         lineHitBox.children.add(hitBox);
       tokenno++;
@@ -159,7 +181,13 @@ public class CodeRenderer
     {
       DivElement toInsert = doc.createDivElement();
       toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-      div.appendChild(toInsert.querySelector("div"));
+      if (!line.tokens.isEmpty())
+      {
+        Element afterPoint = returnedRenderedToken.afterInsertionPoint;
+        afterPoint.getParentElement().insertBefore(toInsert.querySelector("div"), afterPoint.getNextSibling());
+      }
+      else
+        div.appendChild(toInsert.querySelector("div"));
     }
     else if (line.tokens.isEmpty())
       div.setTextContent("\u00A0");
