@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -93,8 +94,6 @@ public class CodeRenderer
       start.setTextContent(token.contents + " (");
       SpanElement expression = doc.createSpanElement();
       renderLine(token.expression, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox);
-      if (token.expression.tokens.isEmpty())
-        expression.setTextContent("\u00A0");
       SpanElement middle = doc.createSpanElement();
       middle.setTextContent(") {");
       startLine.appendChild(start);
@@ -151,6 +150,19 @@ public class CodeRenderer
       codeDiv.appendChild(div);
       lineno++;
     }
+    if (codeList.statements.isEmpty()) 
+    {
+      DivElement div = doc.createDivElement();
+      if (pos != null)
+      {
+        DivElement toInsert = doc.createDivElement();
+        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+        div.appendChild(toInsert.querySelector("div"));
+      }
+      else
+        div.setTextContent("\u00A0");
+      codeDiv.appendChild(div);
+    }
   }
 
   static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox)
@@ -190,7 +202,7 @@ public class CodeRenderer
         div.appendChild(toInsert.querySelector("div"));
     }
     else if (line.tokens.isEmpty())
-      div.setTextContent("\u00A0");
+        div.setTextContent("\u00A0");
   }
 
   CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos)
@@ -390,6 +402,10 @@ public class CodeRenderer
   
   static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level)
   {
+    if (stmtContainer.statements.isEmpty()) 
+    {
+      stmtContainer.statements.add(new TokenContainer(Collections.emptyList()));
+    }
     TokenContainer line = stmtContainer.statements.get(pos.getOffset(level));
     insertTokenIntoLine(line, newToken, pos, level + 1);
   }
