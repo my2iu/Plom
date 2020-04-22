@@ -4,6 +4,8 @@ public enum Symbol
 {
 	EMPTY,
 	Statement,
+	StatementNoComment,
+	OptionalComment,
 	IfMore,
 	ExpressionOnly,
 	Expression,
@@ -47,6 +49,18 @@ public enum Symbol
 		case COMPOUND_ELSEIF:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
+			return true;
+		default:
+			return false;
+		}
+	}
+	public boolean isWide()
+	{
+		switch(this) {
+		case DUMMY_COMMENT:
+		case COMPOUND_IF:
+		case COMPOUND_ELSE:
+		case COMPOUND_ELSEIF:
 			return true;
 		default:
 			return false;

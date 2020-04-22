@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public class PlomAstGen
 {
@@ -27,9 +28,10 @@ public class PlomAstGen
   //   Map<String, Set<String>> noAcceptTokenException = new HashMap<String, Set<String>>();
 
   Production[] grammar = new Production[] {
-      rule(Statement, Expression, EndStatement),
-      rule(Statement, DUMMY_COMMENT, EndStatement),
-      rule(Statement, EndStatement),
+      rule(Statement, DUMMY_COMMENT, StatementNoComment, EndStatement),
+      rule(Statement, StatementNoComment, EndStatement),
+      rule(StatementNoComment, Expression),
+      rule(StatementNoComment),
       rule(ExpressionOnly, Expression, EndStatement),
       rule(Expression, AdditiveExpression),
       rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
@@ -44,10 +46,12 @@ public class PlomAstGen
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
       rule(ValueExpression, String),
-      rule(Statement, COMPOUND_IF, IfMore, EndStatement),
+      rule(StatementNoComment, COMPOUND_IF, OptionalComment, IfMore, StatementNoComment, EndStatement),
       rule(IfMore),
-      rule(IfMore, COMPOUND_ELSEIF, IfMore),
+      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, IfMore),
       rule(IfMore, COMPOUND_ELSE),
+      rule(OptionalComment),
+      rule(OptionalComment, DUMMY_COMMENT, OptionalComment)
   };
 
   static Production rule(Symbol from, Symbol ... to)
@@ -288,19 +292,8 @@ public class PlomAstGen
         out.print("\t" + sym.name());
       }
       out.println(";");
-      out.println("\tpublic boolean isTerminal()");
-      out.println("\t{");
-      out.println("\t\tswitch(this) {");
-      for (Symbol sym: Symbol.values())
-      {
-        if (sym.isTerminal)
-          out.println("\t\tcase " + sym.name() + ":");
-      }
-      out.println("\t\t\treturn true;");
-      out.println("\t\tdefault:");
-      out.println("\t\t\treturn false;");
-      out.println("\t\t}");
-      out.println("\t}");
+      generateSymbolBooleanTest(out, "isTerminal", sym -> sym.isTerminal);
+      generateSymbolBooleanTest(out, "isWide", sym -> sym.isWide());
       out.println("}");
     }
     
@@ -333,6 +326,23 @@ public class PlomAstGen
       out.println("}");
     }
 
+  }
+  
+  private void generateSymbolBooleanTest(PrintWriter out, String fnName, Function<Symbol, Boolean> test)
+  {
+    out.println("\tpublic boolean " + fnName + "()");
+    out.println("\t{");
+    out.println("\t\tswitch(this) {");
+    for (Symbol sym: Symbol.values())
+    {
+      if (test.apply(sym))
+        out.println("\t\tcase " + sym.name() + ":");
+    }
+    out.println("\t\t\treturn true;");
+    out.println("\t\tdefault:");
+    out.println("\t\t\treturn false;");
+    out.println("\t\t}");
+    out.println("\t}");
   }
 
   public void go(File dir) throws IOException

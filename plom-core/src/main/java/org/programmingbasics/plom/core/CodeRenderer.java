@@ -14,6 +14,7 @@ import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor2;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
+import org.programmingbasics.plom.core.ast.Token.WideToken;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Unit;
@@ -56,6 +57,19 @@ public class CodeRenderer
     {
       DivElement div = doc.createDivElement();
       div.setClassName("token");
+      div.setTextContent(token.contents);
+      if (hitBox != null)
+        hitBox.el = div;
+      toReturn.el = div;
+      toReturn.beforeInsertionPoint = div;
+      toReturn.afterInsertionPoint = div;
+      return null;
+    }
+    @Override
+    public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    {
+      DivElement div = doc.createDivElement();
+      div.setClassName("blocktoken");
       div.setTextContent(token.contents);
       if (hitBox != null)
         hitBox.el = div;
@@ -293,7 +307,15 @@ public class CodeRenderer
       if (el.getOffsetLeft() < x) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
-
+    @Override
+    public TokenHitLocation visitWideToken(WideToken token, Integer x,
+        Integer y, RenderedHitBox hitBox)
+    {
+      Element el = hitBox.el;
+      if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (el.getOffsetTop() < y) return TokenHitLocation.ON;
+      return TokenHitLocation.NONE;
+    }
     @Override
     public TokenHitLocation visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, Integer x,
@@ -318,7 +340,12 @@ public class CodeRenderer
     {
       return null;
     }
-
+    @Override
+    public Void visitWideToken(WideToken token, Integer x,
+        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
+    {
+      return null;
+    }
     @Override
     public Void visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, Integer x,
@@ -382,7 +409,12 @@ public class CodeRenderer
     {
       throw new IllegalArgumentException();
     }
-
+    @Override
+    public ParseContextForCursor visitWideToken(WideToken token,
+        CodePosition pos, Integer level)
+    {
+      throw new IllegalArgumentException();
+    }
     @Override
     public ParseContextForCursor visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, CodePosition pos, Integer level)
@@ -422,7 +454,12 @@ public class CodeRenderer
         {
           throw new IllegalArgumentException();
         }
-
+        @Override
+        public Void visitWideToken(WideToken token, Token newToken,
+            CodePosition pos, Integer level)
+        {
+          throw new IllegalArgumentException();
+        }
         @Override
         public Void visitOneExpressionOneBlockToken(
             OneExpressionOneBlockToken token, Token newToken,
@@ -460,7 +497,12 @@ public class CodeRenderer
         {
           throw new IllegalArgumentException();
         }
-
+        @Override
+        public Void visitWideToken(WideToken token, CodePosition pos,
+            Integer level)
+        {
+          throw new IllegalArgumentException();
+        }
         @Override
         public Void visitOneExpressionOneBlockToken(
             OneExpressionOneBlockToken token, CodePosition pos,

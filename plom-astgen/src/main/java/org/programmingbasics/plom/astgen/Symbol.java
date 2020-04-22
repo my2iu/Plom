@@ -4,6 +4,8 @@ enum Symbol
 {
   EMPTY(true),
   Statement(false),
+  StatementNoComment(false),
+  OptionalComment(false),
   IfMore(false),
   ExpressionOnly(false),
   Expression(false),
@@ -37,5 +39,9 @@ enum Symbol
   boolean isDummy()
   {
     return name().startsWith("DUMMY_") || name().startsWith("COMPOUND_");
+  }
+  boolean isWide()
+  {
+    return this == DUMMY_COMMENT || name().startsWith("COMPOUND_");
   }
 }
