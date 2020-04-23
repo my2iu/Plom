@@ -318,7 +318,10 @@ public class CodeRenderer
       if (loc == TokenHitLocation.AFTER)
         tokenno = n + 1;
       if (loc == TokenHitLocation.ON)
+      {
         tokenno = n;
+        break;
+      }
     }
 //    // Check if mouse is past the end of the last token
 //    if (tokenno == renderedLineHitBoxes.children.size() - 1)
