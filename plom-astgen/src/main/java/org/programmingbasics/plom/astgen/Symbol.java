@@ -6,6 +6,7 @@ enum Symbol
   Statement(false),
   StatementNoComment(false),
   OptionalComment(false),
+  AfterIf(false),
   IfMore(false),
   ExpressionOnly(false),
   Expression(false),

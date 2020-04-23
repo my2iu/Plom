@@ -28,7 +28,7 @@ public class PlomAstGen
   //   Map<String, Set<String>> noAcceptTokenException = new HashMap<String, Set<String>>();
 
   Production[] grammar = new Production[] {
-      rule(Statement, DUMMY_COMMENT, StatementNoComment, EndStatement),
+      rule(Statement, DUMMY_COMMENT, Statement),
       rule(Statement, StatementNoComment, EndStatement),
       rule(StatementNoComment, Expression),
       rule(StatementNoComment),
@@ -46,9 +46,10 @@ public class PlomAstGen
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
       rule(ValueExpression, String),
-      rule(StatementNoComment, COMPOUND_IF, OptionalComment, IfMore, StatementNoComment, EndStatement),
-      rule(IfMore),
-      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, IfMore),
+      rule(StatementNoComment, COMPOUND_IF, OptionalComment, AfterIf),
+      rule(AfterIf, IfMore, Statement, EndStatement),
+      rule(AfterIf, StatementNoComment, EndStatement),
+      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, AfterIf),
       rule(IfMore, COMPOUND_ELSE),
       rule(OptionalComment),
       rule(OptionalComment, DUMMY_COMMENT, OptionalComment)

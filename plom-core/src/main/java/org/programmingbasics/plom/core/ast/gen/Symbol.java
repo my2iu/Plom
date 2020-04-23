@@ -6,6 +6,7 @@ public enum Symbol
 	Statement,
 	StatementNoComment,
 	OptionalComment,
+	AfterIf,
 	IfMore,
 	ExpressionOnly,
 	Expression,

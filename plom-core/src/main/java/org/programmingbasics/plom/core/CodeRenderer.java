@@ -70,12 +70,14 @@ public class CodeRenderer
     {
       DivElement div = doc.createDivElement();
       div.setClassName("blocktoken");
-      div.setTextContent(token.contents);
+      SpanElement contentsSpan = doc.createSpanElement();
+      contentsSpan.setTextContent(token.contents);
+      div.appendChild(contentsSpan);
       if (hitBox != null)
         hitBox.el = div;
       toReturn.el = div;
-      toReturn.beforeInsertionPoint = div;
-      toReturn.afterInsertionPoint = div;
+      toReturn.beforeInsertionPoint = contentsSpan;
+      toReturn.afterInsertionPoint = contentsSpan;
       return null;
     }
     @Override
@@ -181,6 +183,19 @@ public class CodeRenderer
 
   static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox)
   {
+    // Check if the line contains some wide tokens
+    boolean hasWideTokens = false;
+    for (Token tok: line.tokens) 
+    {
+      if (tok.isWide())
+      {
+        hasWideTokens = true;
+        break;
+      }
+    }
+    
+    // Actually render the line
+    DivElement subdiv = null;
     Document doc = div.getOwnerDocument();
     int tokenno = 0;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn(); 
@@ -191,7 +206,21 @@ public class CodeRenderer
         hitBox = new RenderedHitBox();
       tok.visit(renderer, returnedRenderedToken, pos != null && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
       Element el = returnedRenderedToken.el;
-      div.appendChild(el);
+      // Put non-wide tokens in a div line
+      if (hasWideTokens && !tok.isWide())
+      {
+        if (subdiv == null)
+        {
+          subdiv = doc.createDivElement();
+          div.appendChild(subdiv);
+        }
+        subdiv.appendChild(el);
+      }
+      else
+      {
+        div.appendChild(el);
+        subdiv = null;
+      }
       if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
       {
         DivElement toInsert = doc.createDivElement();
@@ -203,20 +232,40 @@ public class CodeRenderer
         lineHitBox.children.add(hitBox);
       tokenno++;
     }
+    // If the last token is a wide token, there should be an empty line afterwards
+    // where additional content can go
+    boolean needEmptyLineAtEnd = false;
+    if (!line.tokens.isEmpty() && line.tokens.get(line.tokens.size() - 1).isWide())
+      needEmptyLineAtEnd = true;
+    if (needEmptyLineAtEnd)
+    {
+      subdiv = doc.createDivElement();
+      div.appendChild(subdiv);
+    }
+    // Special handling for cursor at the end, or if line is empty with no cursor, put some blank content there
     if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 
     {
       DivElement toInsert = doc.createDivElement();
       toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
       if (!line.tokens.isEmpty())
       {
-        Element afterPoint = returnedRenderedToken.afterInsertionPoint;
-        afterPoint.getParentElement().insertBefore(toInsert.querySelector("div"), afterPoint.getNextSibling());
+        if (!needEmptyLineAtEnd)
+        {
+          Element afterPoint = returnedRenderedToken.afterInsertionPoint;
+          afterPoint.getParentElement().insertBefore(toInsert.querySelector("div"), afterPoint.getNextSibling());
+        }
+        else
+        {
+          subdiv.appendChild(toInsert.querySelector("div"));
+        }
       }
       else
         div.appendChild(toInsert.querySelector("div"));
     }
     else if (line.tokens.isEmpty())
         div.setTextContent("\u00A0");
+    else if (needEmptyLineAtEnd)
+      subdiv.setTextContent("\u00a0");
   }
 
   CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos)
