@@ -28,6 +28,7 @@ public class CodeRenderer
   private static final int EXPRBLOCK_POS_START = 0;
   private static final int EXPRBLOCK_POS_EXPR = 1;
   private static final int EXPRBLOCK_POS_BLOCK = 2;
+//  private static final int EXPRBLOCK_POS_END = 3;
   
   void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
   {
@@ -86,7 +87,7 @@ public class CodeRenderer
       RenderedHitBox startTokenHitBox = null;
       RenderedHitBox exprHitBox = null;
       RenderedHitBox blockHitBox = null;
-      RenderedHitBox endHitBox = null;
+//      RenderedHitBox endHitBox = null;
       if (hitBox != null)
       {
         startTokenHitBox = new RenderedHitBox();
@@ -94,7 +95,7 @@ public class CodeRenderer
         exprHitBox.children = new ArrayList<>();
         blockHitBox = new RenderedHitBox();
         blockHitBox.children = new ArrayList<>();
-        endHitBox = new RenderedHitBox();
+//        endHitBox = new RenderedHitBox();
         hitBox.children = new ArrayList<>();
         hitBox.children.add(startTokenHitBox);
         hitBox.children.add(exprHitBox);
@@ -125,8 +126,8 @@ public class CodeRenderer
         startTokenHitBox.el = start;
         exprHitBox.el = expression;
         blockHitBox.el = block;
-        endHitBox.el = endLine;
-        hitBox.children.add(endHitBox);
+//        endHitBox.el = endLine;
+//        hitBox.children.add(endHitBox);
       }
 
       div.appendChild(startLine);
@@ -370,7 +371,7 @@ public class CodeRenderer
     {
       Element el = hitBox.el;
       if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
-      if (hitBox.children.size() > 3 && hitBox.children.get(3).el.getOffsetTop() < y) return TokenHitLocation.AFTER;
+//      if (hitBox.children.size() > 3 && hitBox.children.get(EXPRBLOCK_POS_END).el.getOffsetTop() < y) return TokenHitLocation.AFTER;
       if (el.getOffsetTop() < y) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
@@ -404,6 +405,7 @@ public class CodeRenderer
         pos.setOffset(level, EXPRBLOCK_POS_BLOCK);
         hitDetectStatementContainer(x, y, token.block, hitBox.children.get(EXPRBLOCK_POS_BLOCK), pos, level + 1);
       }
+      // Check if we're inside the expression
       else if (x > hitBox.children.get(EXPRBLOCK_POS_EXPR).el.getOffsetLeft() 
           || y > hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetTop() + hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetHeight())
       {
