@@ -41,8 +41,6 @@ public class CodeRenderer
     public Element el;
     /** Before cursor points--when inserting a cursor before this token, cursor should be inserted before this element */
     public Element beforeInsertionPoint;
-    /** After cursor points--when inserting a cursor after this token, cursor should be inserted after this element */
-    public Element afterInsertionPoint;
   }
   
   static class TokenRenderer implements Token.TokenVisitor4<Void, TokenRendererReturn, CodePosition, Integer, RenderedHitBox>
@@ -62,7 +60,6 @@ public class CodeRenderer
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = div;
-      toReturn.afterInsertionPoint = div;
       return null;
     }
     @Override
@@ -77,7 +74,6 @@ public class CodeRenderer
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = contentsSpan;
-      toReturn.afterInsertionPoint = contentsSpan;
       return null;
     }
     @Override
@@ -140,7 +136,6 @@ public class CodeRenderer
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = start;
-      toReturn.afterInsertionPoint = end;
       return null;
     }
   }
@@ -251,13 +246,13 @@ public class CodeRenderer
       {
         if (!needEmptyLineAtEnd)
         {
-          Element afterPoint = returnedRenderedToken.afterInsertionPoint;
-          afterPoint.getParentElement().insertBefore(toInsert.querySelector("div"), afterPoint.getNextSibling());
+          if (subdiv == null)
+            div.appendChild(toInsert.querySelector("div"));
+          else
+            subdiv.appendChild(toInsert.querySelector("div"));
         }
         else
-        {
           subdiv.appendChild(toInsert.querySelector("div"));
-        }
       }
       else
         div.appendChild(toInsert.querySelector("div"));
