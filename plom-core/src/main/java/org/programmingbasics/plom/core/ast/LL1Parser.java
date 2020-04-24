@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
@@ -35,7 +36,13 @@ public class LL1Parser implements TokenVisitor<Void>
       isError = true;
     return null;
   }
-  
+
+  @Override
+  public Void visitOneBlockToken(OneBlockToken token)
+  {
+    return visitWideToken(token);
+  }
+
   @Override
   public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token)
   {

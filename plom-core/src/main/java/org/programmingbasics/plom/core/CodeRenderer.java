@@ -3,20 +3,18 @@ package org.programmingbasics.plom.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor2;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 
-import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -66,78 +64,111 @@ public class CodeRenderer
     @Override
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
-      DivElement div = doc.createDivElement();
-      div.setClassName("blocktoken");
-      SpanElement contentsSpan = doc.createSpanElement();
-      contentsSpan.setTextContent(token.contents);
-      div.appendChild(contentsSpan);
-      if (hitBox != null)
-        hitBox.el = div;
-      toReturn.el = div;
-      toReturn.beforeInsertionPoint = contentsSpan;
+      createWideToken(token.contents, null, null, toReturn, pos, level, hitBox);
+//      DivElement div = doc.createDivElement();
+//      div.setClassName("blocktoken");
+//      SpanElement contentsSpan = doc.createSpanElement();
+//      contentsSpan.setTextContent(token.contents);
+//      div.appendChild(contentsSpan);
+//      if (hitBox != null)
+//        hitBox.el = div;
+//      toReturn.el = div;
+//      toReturn.beforeInsertionPoint = contentsSpan;
+      return null;
+    }
+    @Override
+    public Void visitOneBlockToken(OneBlockToken token,
+        TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    {
+      createWideToken(token.contents, null, token.block, toReturn, pos, level, hitBox);
       return null;
     }
     @Override
     public Void visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
+      createWideToken(token.contents, token.expression, token.block, toReturn, pos, level, hitBox);
+      return null;
+    }
+    private void createWideToken(String tokenText, TokenContainer exprContainer,
+        StatementContainer blockContainer,
+        TokenRendererReturn toReturn, CodePosition pos, int level,
+        RenderedHitBox hitBox)
+    {
       DivElement div = doc.createDivElement();
       div.setClassName("blocktoken");
 
       RenderedHitBox startTokenHitBox = null;
-      RenderedHitBox exprHitBox = null;
-      RenderedHitBox blockHitBox = null;
-//      RenderedHitBox endHitBox = null;
       if (hitBox != null)
       {
-        startTokenHitBox = new RenderedHitBox();
-        exprHitBox = new RenderedHitBox();
-        exprHitBox.children = new ArrayList<>();
-        blockHitBox = new RenderedHitBox();
-        blockHitBox.children = new ArrayList<>();
-//        endHitBox = new RenderedHitBox();
         hitBox.children = new ArrayList<>();
-        hitBox.children.add(startTokenHitBox);
-        hitBox.children.add(exprHitBox);
-        hitBox.children.add(blockHitBox);
+        hitBox.children.add(null);
+        hitBox.children.add(null);
+        hitBox.children.add(null);
+        startTokenHitBox = new RenderedHitBox();
+        hitBox.children.set(EXPRBLOCK_POS_START, startTokenHitBox);
       }
 
+      // First line with optional expression
       DivElement startLine = doc.createDivElement();
       SpanElement start = doc.createSpanElement();
-      start.setTextContent(token.contents + " (");
-      SpanElement expression = doc.createSpanElement();
-      renderLine(token.expression, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox);
-      SpanElement middle = doc.createSpanElement();
-      middle.setTextContent(") {");
       startLine.appendChild(start);
-      startLine.appendChild(expression);
-      startLine.appendChild(middle);
-
-      DivElement block = doc.createDivElement();
-      block.getStyle().setPaddingLeft(1, Unit.EM);
-      renderStatementContainer(block, token.block, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox);
-
-      DivElement endLine = doc.createDivElement();
-      SpanElement end = doc.createSpanElement();
-      end.setTextContent("}");
-      endLine.appendChild(end);
       if (hitBox != null)
-      {
         startTokenHitBox.el = start;
-        exprHitBox.el = expression;
-        blockHitBox.el = block;
-//        endHitBox.el = endLine;
-//        hitBox.children.add(endHitBox);
+      if (exprContainer != null)
+      {
+        start.setTextContent(tokenText + " (");
+        SpanElement expression = doc.createSpanElement();
+        RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
+        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox);
+        SpanElement middle = doc.createSpanElement();
+        if (blockContainer == null)
+          middle.setTextContent(")");
+        else
+          middle.setTextContent(") {");
+        startLine.appendChild(expression);
+        startLine.appendChild(middle);
+        if (hitBox != null)
+        {
+          exprHitBox.el = expression;
+          hitBox.children.set(EXPRBLOCK_POS_EXPR, exprHitBox);
+        }
+      }
+      else
+      {
+        if (blockContainer != null)
+          start.setTextContent(tokenText + " {");
+        else
+          start.setTextContent(tokenText);
+      }
+      div.appendChild(startLine);
+
+      // Block part
+      if (blockContainer != null)
+      {
+        DivElement block = doc.createDivElement();
+        block.getStyle().setPaddingLeft(1, Unit.EM);
+        RenderedHitBox blockHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
+        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox);
+        if (hitBox != null)
+        {
+          blockHitBox.el = block;
+          hitBox.children.set(EXPRBLOCK_POS_BLOCK, blockHitBox);
+        }
+        div.appendChild(block);
+        
+        // With ending "}"
+        DivElement endLine = doc.createDivElement();
+        SpanElement end = doc.createSpanElement();
+        end.setTextContent("}");
+        endLine.appendChild(end);
+        div.appendChild(endLine);
       }
 
-      div.appendChild(startLine);
-      div.appendChild(block);
-      div.appendChild(endLine);
       if (hitBox != null)
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = start;
-      return null;
     }
   }
 
@@ -200,7 +231,7 @@ public class CodeRenderer
       RenderedHitBox hitBox = null;
       if (lineHitBox != null)
         hitBox = new RenderedHitBox();
-      tok.visit(renderer, returnedRenderedToken, pos != null && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
+      tok.visit(renderer, returnedRenderedToken, pos != null && pos.getOffset(level) == tokenno && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
       Element el = returnedRenderedToken.el;
       // Put non-wide tokens in a div line
       if (hasWideTokens && !tok.isWide())
@@ -355,9 +386,7 @@ public class CodeRenderer
       if (el.getOffsetLeft() < x) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
-    @Override
-    public TokenHitLocation visitWideToken(WideToken token, Integer x,
-        Integer y, RenderedHitBox hitBox)
+    TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
     {
       Element el = hitBox.el;
       if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
@@ -365,15 +394,23 @@ public class CodeRenderer
       return TokenHitLocation.NONE;
     }
     @Override
+    public TokenHitLocation visitWideToken(WideToken token, Integer x,
+        Integer y, RenderedHitBox hitBox)
+    {
+      return hitDetectWideToken(x, y, hitBox);
+    }
+    @Override
+    public TokenHitLocation visitOneBlockToken(OneBlockToken token,
+        Integer x, Integer y, RenderedHitBox hitBox)
+    {
+      return hitDetectWideToken(x, y, hitBox);
+    }
+    @Override
     public TokenHitLocation visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, Integer x,
         Integer y, RenderedHitBox hitBox)
     {
-      Element el = hitBox.el;
-      if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
-//      if (hitBox.children.size() > 3 && hitBox.children.get(EXPRBLOCK_POS_END).el.getOffsetTop() < y) return TokenHitLocation.AFTER;
-      if (el.getOffsetTop() < y) return TokenHitLocation.ON;
-      return TokenHitLocation.NONE;
+      return hitDetectWideToken(x, y, hitBox);
     }
     
   }
@@ -388,6 +425,26 @@ public class CodeRenderer
     {
       return null;
     }
+    void hitDetectWideToken(int x, int y, RenderedHitBox hitBox,
+        TokenContainer exprContainer, StatementContainer blockContainer,
+        CodePosition pos, int level)
+    {
+      // Check inside the statement block
+      if (hitBox.children.get(EXPRBLOCK_POS_BLOCK) != null
+        && y > hitBox.children.get(EXPRBLOCK_POS_BLOCK).el.getOffsetTop())
+      {
+        pos.setOffset(level, EXPRBLOCK_POS_BLOCK);
+        hitDetectStatementContainer(x, y, blockContainer, hitBox.children.get(EXPRBLOCK_POS_BLOCK), pos, level + 1);
+      }
+      // Check if we're inside the expression
+      else if (hitBox.children.get(EXPRBLOCK_POS_EXPR) != null
+          && (x > hitBox.children.get(EXPRBLOCK_POS_EXPR).el.getOffsetLeft() 
+              || y > hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetTop() + hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetHeight()))
+      {
+        pos.setOffset(level, EXPRBLOCK_POS_EXPR);
+        hitDetectTokens(x, y, exprContainer, hitBox.children.get(EXPRBLOCK_POS_EXPR), pos, level + 1);
+      }
+    }
     @Override
     public Void visitWideToken(WideToken token, Integer x,
         Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
@@ -395,23 +452,18 @@ public class CodeRenderer
       return null;
     }
     @Override
+    public Void visitOneBlockToken(OneBlockToken token, Integer x,
+        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
+    {
+      hitDetectWideToken(x, y, hitBox, null, token.block, pos, level);
+      return null;
+    }
+    @Override
     public Void visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, Integer x,
         Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
     {
-      // Check inside the statement block
-      if (y > hitBox.children.get(EXPRBLOCK_POS_BLOCK).el.getOffsetTop())
-      {
-        pos.setOffset(level, EXPRBLOCK_POS_BLOCK);
-        hitDetectStatementContainer(x, y, token.block, hitBox.children.get(EXPRBLOCK_POS_BLOCK), pos, level + 1);
-      }
-      // Check if we're inside the expression
-      else if (x > hitBox.children.get(EXPRBLOCK_POS_EXPR).el.getOffsetLeft() 
-          || y > hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetTop() + hitBox.children.get(EXPRBLOCK_POS_START).el.getOffsetHeight())
-      {
-        pos.setOffset(level, EXPRBLOCK_POS_EXPR);
-        hitDetectTokens(x, y, token.expression, hitBox.children.get(EXPRBLOCK_POS_EXPR), pos, level + 1);
-      }
+      hitDetectWideToken(x, y, hitBox, token.expression, token.block, pos, level);
       return null;
     }
     
@@ -458,25 +510,38 @@ public class CodeRenderer
     {
       throw new IllegalArgumentException();
     }
+    ParseContextForCursor handleWideToken(
+        TokenContainer exprContainer, StatementContainer blockContainer,
+        CodePosition pos, int level)
+    {
+      if (exprContainer != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
+      {
+        return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level + 1);
+      }
+      else if (blockContainer != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+      {
+        return findPredictiveParseContextForStatements(blockContainer, pos, level + 1);
+      }
+      throw new IllegalArgumentException();
+      
+    }
     @Override
     public ParseContextForCursor visitWideToken(WideToken token,
         CodePosition pos, Integer level)
     {
-      throw new IllegalArgumentException();
+      return handleWideToken(null, null, pos, level);
+    }
+    @Override
+    public ParseContextForCursor visitOneBlockToken(OneBlockToken token,
+        CodePosition pos, Integer level)
+    {
+      return handleWideToken(null, token.block, pos, level);
     }
     @Override
     public ParseContextForCursor visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, CodePosition pos, Integer level)
     {
-      if (pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
-      {
-        return findPredictiveParseContextForLine(token.expression, Symbol.ExpressionOnly, pos, level + 1);
-      }
-      else if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
-      {
-        return findPredictiveParseContextForStatements(token.block, pos, level + 1);
-      }
-      throw new IllegalArgumentException();
+      return handleWideToken(token.expression, token.block, pos, level);
     }
     
   }
@@ -503,26 +568,39 @@ public class CodeRenderer
         {
           throw new IllegalArgumentException();
         }
+        Void handleWideToken(TokenContainer exprContainer, StatementContainer blockContainer,
+            Token newToken, CodePosition pos, int level)
+        {
+          if (exprContainer != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
+          {
+            insertTokenIntoLine(exprContainer, newToken, pos, level + 1);
+            return null;
+          }
+          else if (blockContainer != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+          {
+            insertTokenIntoStatementContainer(blockContainer, newToken, pos, level + 1);
+            return null;
+          }
+          throw new IllegalArgumentException();
+        }
         @Override
         public Void visitWideToken(WideToken token, Token newToken,
             CodePosition pos, Integer level)
         {
-          throw new IllegalArgumentException();
+          return handleWideToken(null, null, newToken, pos, level);
+        }
+        @Override
+        public Void visitOneBlockToken(OneBlockToken token, Token newToken,
+            CodePosition pos, Integer level)
+        {
+          return handleWideToken(null, token.block, newToken, pos, level);
         }
         @Override
         public Void visitOneExpressionOneBlockToken(
             OneExpressionOneBlockToken token, Token newToken,
             CodePosition pos, Integer level)
         {
-          if (pos.getOffset(level) == EXPRBLOCK_POS_EXPR)
-          {
-            insertTokenIntoLine(token.expression, newToken, pos, level + 1);
-          }
-          else if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
-          {
-            insertTokenIntoStatementContainer(token.block, newToken, pos, level + 1);
-          }
-          return null;
+          return handleWideToken(token.expression, token.block, newToken, pos, level);
         }
         
       }, newToken, pos, level + 1);
@@ -546,6 +624,14 @@ public class CodeRenderer
         {
           throw new IllegalArgumentException();
         }
+        void handleWideToken(StatementContainer blockContainer, CodePosition pos,
+            int level)
+        {
+          if (blockContainer != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
+          {
+            insertNewlineIntoStatementContainer(blockContainer, pos, level + 1);
+          }
+        }
         @Override
         public Void visitWideToken(WideToken token, CodePosition pos,
             Integer level)
@@ -553,14 +639,18 @@ public class CodeRenderer
           throw new IllegalArgumentException();
         }
         @Override
+        public Void visitOneBlockToken(OneBlockToken token, CodePosition pos,
+            Integer level)
+        {
+          handleWideToken(token.block, pos, level);
+          return null;
+        }
+        @Override
         public Void visitOneExpressionOneBlockToken(
             OneExpressionOneBlockToken token, CodePosition pos,
             Integer level)
         {
-          if (pos.getOffset(level) == EXPRBLOCK_POS_BLOCK)
-          {
-            insertNewlineIntoStatementContainer(token.block, pos, level + 1);
-          }
+          handleWideToken(token.block, pos, level);
           return null;
         }
         

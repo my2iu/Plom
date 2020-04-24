@@ -120,7 +120,11 @@ public class Entry implements EntryPoint
     switch(tokenType)
     {
     case COMPOUND_IF:
+    case COMPOUND_ELSEIF:
       newToken = new Token.OneExpressionOneBlockToken(tokenText, tokenType);
+      break;
+    case COMPOUND_ELSE:
+      newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     default:
       if (tokenType.isWide())
