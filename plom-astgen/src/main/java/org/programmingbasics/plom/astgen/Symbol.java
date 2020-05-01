@@ -3,8 +3,12 @@ package org.programmingbasics.plom.astgen;
 enum Symbol
 {
   EMPTY(true),
+  FullStatement(false),
   Statement(false),
+  StatementOrEmpty(false),
   StatementNoComment(false),
+  StatementNoCommentOrEmpty(false),
+  WideStatement(false),
   OptionalComment(false),
   AfterIf(false),
   IfMore(false),

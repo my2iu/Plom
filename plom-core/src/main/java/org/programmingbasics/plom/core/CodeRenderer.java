@@ -483,10 +483,10 @@ public class CodeRenderer
     if (pos.getOffset(level) < statements.statements.size())
     {
       TokenContainer line = statements.statements.get(pos.getOffset(level));
-      return findPredictiveParseContextForLine(line, Symbol.Statement, pos, level + 1);
+      return findPredictiveParseContextForLine(line, Symbol.FullStatement, pos, level + 1);
     }
     ParseContextForCursor toReturn = new ParseContextForCursor();
-    toReturn.baseContext = Symbol.Statement;
+    toReturn.baseContext = Symbol.FullStatement;
     return toReturn;
   }
   

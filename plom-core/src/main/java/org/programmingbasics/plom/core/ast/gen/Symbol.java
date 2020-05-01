@@ -3,8 +3,12 @@ package org.programmingbasics.plom.core.ast.gen;
 public enum Symbol
 {
 	EMPTY,
+	FullStatement,
 	Statement,
+	StatementOrEmpty,
 	StatementNoComment,
+	StatementNoCommentOrEmpty,
+	WideStatement,
 	OptionalComment,
 	AfterIf,
 	IfMore,

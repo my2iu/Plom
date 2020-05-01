@@ -28,11 +28,14 @@ public class PlomAstGen
   //   Map<String, Set<String>> noAcceptTokenException = new HashMap<String, Set<String>>();
 
   Production[] grammar = new Production[] {
-      rule(Statement, DUMMY_COMMENT, Statement),
-      rule(Statement, StatementNoComment, EndStatement),
-      rule(StatementNoComment, Expression),
-      rule(StatementNoComment),
-      rule(ExpressionOnly, Expression, EndStatement),
+      rule(FullStatement, StatementOrEmpty, EndStatement),
+      rule(StatementOrEmpty, Statement),
+      rule(StatementOrEmpty),
+      rule(Statement, Expression),
+      rule(Statement, WideStatement, StatementOrEmpty),
+      rule(WideStatement, COMPOUND_IF, AfterIf),
+      rule(WideStatement, DUMMY_COMMENT),
+      rule(ExpressionOnly, Expression),
       rule(Expression, AdditiveExpression),
       rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
       rule(AdditiveExpressionMore, Plus, AdditiveExpression),
@@ -46,13 +49,13 @@ public class PlomAstGen
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
       rule(ValueExpression, String),
-      rule(StatementNoComment, COMPOUND_IF, OptionalComment, AfterIf),
-      rule(AfterIf, IfMore, Statement, EndStatement),
-      rule(AfterIf, StatementNoComment, EndStatement),
-      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, AfterIf),
-      rule(IfMore, COMPOUND_ELSE),
-      rule(OptionalComment),
-      rule(OptionalComment, DUMMY_COMMENT, OptionalComment)
+      rule(AfterIf, COMPOUND_ELSEIF, AfterIf),
+      rule(AfterIf, COMPOUND_ELSE),
+      rule(AfterIf),
+//      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, AfterIf),
+//      rule(IfMore, COMPOUND_ELSE),
+//      rule(OptionalComment),
+//      rule(OptionalComment, DUMMY_COMMENT, OptionalComment)
   };
 
   static Production rule(Symbol from, Symbol ... to)
@@ -155,6 +158,8 @@ public class PlomAstGen
         {
           if (p.to.get(n).isTerminal) continue;
           Set<Symbol> follows = followsTerminals.get(p.to.get(n));
+          if (p.to.get(n) == Symbol.IfMore)
+            System.out.println("Statement");
           for (int i = n+1; i < p.to.size(); i++)
           {
             Symbol next = p.to.get(i);
@@ -200,6 +205,8 @@ public class PlomAstGen
         if (!p.to.isEmpty() && !p.to.get(p.to.size()-1).isTerminal) 
         {
           Set<Symbol> follows = followsTerminals.get(p.to.get(p.to.size()-1));
+          if (p.to.get(p.to.size()-1) == Symbol.IfMore)
+            System.out.println("Statement");
           if (!follows.containsAll(followsTerminals.get(p.from)))
           {
             isChanged = true;
@@ -255,6 +262,9 @@ public class PlomAstGen
 
   private void addParsingRule(Symbol from, Symbol token, Production p)
   {
+    if (parsingTable.get(from).get(token) == p)
+      return;
+    
     if (parsingTable.get(from).containsKey(token))
     {
       // We have a conflict. See if we have a preferred rule.
@@ -350,8 +360,17 @@ public class PlomAstGen
   {
     calculateFirsts();
     calculateFollows();
+//    printBigMap(followsTerminals);
     createLLParsingTable();
     generateFiles(dir);
+  }
+
+  private void printBigMap(Map<Symbol, Set<Symbol>> map)
+  {
+    System.out.println("{");
+    for (Map.Entry<Symbol, Set<Symbol>> entry: map.entrySet())
+      System.out.println("  " + entry.getKey() + " : " + entry.getValue());
+    System.out.println("}");
   }
 
   public static void main(String [] args) throws IOException
