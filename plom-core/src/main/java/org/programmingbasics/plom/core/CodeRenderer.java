@@ -553,7 +553,25 @@ public class CodeRenderer
       stmtContainer.statements.add(new TokenContainer(Collections.emptyList()));
     }
     TokenContainer line = stmtContainer.statements.get(pos.getOffset(level));
-    insertTokenIntoLine(line, newToken, pos, level + 1);
+    if (!pos.hasOffset(level + 2) && !newToken.isWide() 
+        && line.tokens.size() > pos.getOffset(level + 1)
+        && line.tokens.get(pos.getOffset(level + 1)).isWide())
+    {
+      // Normal tokens cannot have a wide token following them on a line.
+      // (It is ok if normal tokens have wide tokens in front of them though.)
+      // So if we're inserting a normal token into a line with a wide token,
+      // we'll also insert a new line to hold the normal tokens
+      // (I've tried changing the grammar to allow wide tokens after
+      // normal tokens, but it's too flexible in that it keeps asking
+      // you if you want to add if statements in the middle of expressions)
+      TokenContainer newline = new TokenContainer(line.tokens.subList(pos.getOffset(level + 1), line.tokens.size()));
+      for (int n = line.tokens.size() - 1; n >= pos.getOffset(level + 1); n--)
+         line.tokens.remove(n);
+      insertTokenIntoLine(line, newToken, pos, level + 1);
+      stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
+    }
+    else
+      insertTokenIntoLine(line, newToken, pos, level + 1);
   }
   
   static void insertTokenIntoLine(TokenContainer line, Token newToken, CodePosition pos, int level)

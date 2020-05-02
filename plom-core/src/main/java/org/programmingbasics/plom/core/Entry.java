@@ -2,9 +2,6 @@ package org.programmingbasics.plom.core;
 
 /*
 TODO:
-- Don't allow simple tokens to be inserted in front of a wide token
-- should a statement of simple tokens also have a blank line after it to be consistent with wide tokens?
-- Do I even need statement containers to track and hold statements separately or can it all be handled by the grammar?
  */
 
 

@@ -35,11 +35,12 @@ public class LL1ParserTest extends TestCase
    public void testStatementComment()
    {
       LL1Parser parser = new LL1Parser();
-      parser.stack.add(Symbol.Statement);
+      parser.stack.add(Symbol.FullStatement);
       
       new SimpleToken("", Symbol.DUMMY_COMMENT).visit(parser);
       Assert.assertEquals(false, parser.isError);
-      Assert.assertEquals(Symbol.EndStatement, parser.stack.get(parser.stack.size() - 1));
+      Assert.assertEquals(Symbol.StatementOrEmpty, parser.stack.get(parser.stack.size() - 1));
+      Assert.assertEquals(Symbol.EndStatement, parser.stack.get(parser.stack.size() - 2));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));
    }
 
