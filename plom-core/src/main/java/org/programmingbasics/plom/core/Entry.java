@@ -23,6 +23,10 @@ import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
+import org.programmingbasics.plom.core.view.HitDetect;
+import org.programmingbasics.plom.core.view.InsertNewLine;
+import org.programmingbasics.plom.core.view.InsertToken;
+import org.programmingbasics.plom.core.view.ParseContext;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -133,7 +137,7 @@ public class Entry implements EntryPoint
         newToken = new SimpleToken(tokenText, tokenType);
       break;
     }
-    CodeRenderer.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
     codeDiv.setInnerHTML("");
     renderTokens(codeDiv, codeList, cursorPos, null);
     showPredictedTokenInput(choicesDiv);
@@ -144,7 +148,7 @@ public class Entry implements EntryPoint
     choicesDiv.setInnerHTML("");
 
     // Parse the current statement up to the cursor position
-    CodeRenderer.ParseContextForCursor parseContext = CodeRenderer.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
     LL1Parser stmtParser = new LL1Parser();
     stmtParser.stack.add(parseContext.baseContext);
     for (Token tok: parseContext.tokens)
@@ -160,7 +164,7 @@ public class Entry implements EntryPoint
     if (allowedSymbols.contains(Symbol.EndStatement))
     {
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
-        CodeRenderer.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
+        InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
 
         codeDiv.setInnerHTML("");
         renderTokens(codeDiv, codeList, cursorPos, null);
@@ -209,7 +213,7 @@ public class Entry implements EntryPoint
       int x = mevt.getClientX() + div.getScrollLeft();
       int y = mevt.getClientY() + div.getScrollTop();
 
-      CodePosition newPos = new CodeRenderer().renderAndHitDetect(x, y, codeDiv, codeList, cursorPos);
+      CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos);
 
       if (cursorPos != null)
       {
