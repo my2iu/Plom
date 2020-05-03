@@ -9,6 +9,15 @@ import java.util.List;
  */
 public class CodePosition
 {
+  public static CodePosition fromOffsets(int...vals)
+  {
+    CodePosition toReturn = new CodePosition();
+    for (int n = 0; n < vals.length; n++)
+    {
+      toReturn.setOffset(n, vals[n]);
+    }
+    return toReturn;
+  }
    private List<Integer> offsets = new ArrayList<>();
    public int getOffset(int level)
    {

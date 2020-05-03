@@ -45,6 +45,31 @@ public abstract class Token
       {
          return visitor.visitSimpleToken(this, param1, param2, param3, param4, param5);
       }
+      @Override
+      public int hashCode()
+      {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+            + ((contents == null) ? 0 : contents.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        SimpleToken other = (SimpleToken) obj;
+        if (contents == null)
+        {
+          if (other.contents != null) return false;
+        }
+        else if (!contents.equals(other.contents)) return false;
+        if (type != other.type) return false;
+        return true;
+      }
    }
 
    /** A token that is rendered to take up the full-width of the display */
@@ -82,6 +107,31 @@ public abstract class Token
       {
          return visitor.visitWideToken(this, param1, param2, param3, param4, param5);
       }
+      @Override
+      public int hashCode()
+      {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+            + ((contents == null) ? 0 : contents.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        WideToken other = (WideToken) obj;
+        if (contents == null)
+        {
+          if (other.contents != null) return false;
+        }
+        else if (!contents.equals(other.contents)) return false;
+        if (type != other.type) return false;
+        return true;
+      }
    }
    
    public static class OneBlockToken extends WideToken
@@ -90,6 +140,11 @@ public abstract class Token
      public OneBlockToken(String contents, Symbol type)
      {
        super(contents, type);
+     }
+     public OneBlockToken(String contents, Symbol type, StatementContainer block)
+     {
+       super(contents, type);
+       this.block = block;
      }
      public <S> S visit(TokenVisitor<S> visitor)
      {
@@ -115,6 +170,28 @@ public abstract class Token
      {
         return visitor.visitOneBlockToken(this, param1, param2, param3, param4, param5);
      }
+    @Override
+    public int hashCode()
+    {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((block == null) ? 0 : block.hashCode());
+      return result;
+    }
+    @Override
+    public boolean equals(Object obj)
+    {
+      if (this == obj) return true;
+      if (!super.equals(obj)) return false;
+      if (getClass() != obj.getClass()) return false;
+      OneBlockToken other = (OneBlockToken) obj;
+      if (block == null)
+      {
+        if (other.block != null) return false;
+      }
+      else if (!block.equals(other.block)) return false;
+      return true;
+    }
    }
 
    public static class OneExpressionOneBlockToken extends OneBlockToken
@@ -123,6 +200,11 @@ public abstract class Token
       public OneExpressionOneBlockToken(String contents, Symbol type)
       {
         super(contents, type);
+      }
+      public OneExpressionOneBlockToken(String contents, Symbol type, TokenContainer expression, StatementContainer block)
+      {
+        super(contents, type, block);
+        this.expression = expression;
       }
       public <S> S visit(TokenVisitor<S> visitor)
       {
@@ -147,6 +229,29 @@ public abstract class Token
       public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
       {
          return visitor.visitOneExpressionOneBlockToken(this, param1, param2, param3, param4, param5);
+      }
+      @Override
+      public int hashCode()
+      {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result
+            + ((expression == null) ? 0 : expression.hashCode());
+        return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        OneExpressionOneBlockToken other = (OneExpressionOneBlockToken) obj;
+        if (expression == null)
+        {
+          if (other.expression != null) return false;
+        }
+        else if (!expression.equals(other.expression)) return false;
+        return true;
       }
    }
    
