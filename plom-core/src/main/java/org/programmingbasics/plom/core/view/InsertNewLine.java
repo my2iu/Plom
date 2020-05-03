@@ -5,11 +5,6 @@ import java.util.Collections;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.TokenVisitor2;
-import org.programmingbasics.plom.core.ast.Token.WideToken;
 
 public class InsertNewLine
 {
@@ -25,44 +20,21 @@ public class InsertNewLine
     if (pos.hasOffset(level + 2))
     {
       Token token = line.tokens.get(pos.getOffset(level + 1));
-      token.visit(new TokenVisitor2<Void, CodePosition, Integer>() {
+      token.visit(new RecurseIntoCompoundToken<Void, Void>() {
         @Override
-        public Void visitSimpleToken(SimpleToken token, CodePosition pos,
-            Integer level)
-        {
-          throw new IllegalArgumentException();
-        }
-        void handleWideToken(StatementContainer blockContainer, CodePosition pos,
-            int level)
-        {
-          if (blockContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
-          {
-            insertNewlineIntoStatementContainer(blockContainer, pos, level + 1);
-          }
-        }
-        @Override
-        public Void visitWideToken(WideToken token, CodePosition pos,
-            Integer level)
+        Void handleExpression(TokenContainer exprContainer, CodePosition pos,
+            int level, Void param)
         {
           throw new IllegalArgumentException();
         }
         @Override
-        public Void visitOneBlockToken(OneBlockToken token, CodePosition pos,
-            Integer level)
+        Void handleStatementContainer(StatementContainer blockContainer,
+            CodePosition pos, int level, Void param)
         {
-          handleWideToken(token.block, pos, level);
+          insertNewlineIntoStatementContainer(blockContainer, pos, level);
           return null;
         }
-        @Override
-        public Void visitOneExpressionOneBlockToken(
-            OneExpressionOneBlockToken token, CodePosition pos,
-            Integer level)
-        {
-          handleWideToken(token.block, pos, level);
-          return null;
-        }
-        
-      }, pos, level + 2);
+      }, pos, level + 2, null);
       return;
     }
     

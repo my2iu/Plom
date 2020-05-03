@@ -35,7 +35,7 @@ public class PlomAstGen
       rule(Statement, WideStatement, StatementOrEmpty),
       rule(WideStatement, COMPOUND_IF, AfterIf),
       rule(WideStatement, DUMMY_COMMENT),
-      rule(ExpressionOnly, Expression),
+      rule(ExpressionOnly, Expression, EndStatement),
       rule(Expression, AdditiveExpression),
       rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
       rule(AdditiveExpressionMore, Plus, AdditiveExpression),

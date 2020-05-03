@@ -85,7 +85,7 @@ public class HitDetect
     // For compound tokens, check if we're clicking on some element inside the token
     if (tokenno < tokens.tokens.size())
     {
-      tokens.tokens.get(tokenno).visit(new TokenInternalHitDetection(), x, y, renderedLineHitBoxes.children.get(tokenno), newPos, level + 1);
+      tokens.tokens.get(tokenno).visit(new TokenInternalHitDetection(), newPos, level + 1, new HitDetectParam(renderedLineHitBoxes.children.get(tokenno), x, y));
     }
     
     return newPos;
@@ -135,20 +135,36 @@ public class HitDetect
     
   }
   
+  static class HitDetectParam
+  {
+    public HitDetectParam(RenderedHitBox hitBox, int x, int y)
+    {
+      this.hitBox = hitBox;
+      this.x = x;
+      this.y = y;
+    }
+    RenderedHitBox hitBox;
+    int x, y;
+  }
+  
   // Does hit detection for compound tokens (tokens that contain expressions
   // and statements inside them)
-  static class TokenInternalHitDetection implements Token.TokenVisitor5<Void, Integer, Integer, RenderedHitBox, CodePosition, Integer>
+  static class TokenInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam>
   {
     @Override
-    public Void visitSimpleToken(SimpleToken token, Integer x,
-        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
+    public Void visitSimpleToken(SimpleToken token, CodePosition pos,
+        Integer level, HitDetectParam param)
     {
       return null;
     }
-    void hitDetectWideToken(int x, int y, RenderedHitBox hitBox,
-        TokenContainer exprContainer, StatementContainer blockContainer,
-        CodePosition pos, int level)
+    @Override
+    Void handleWideToken(TokenContainer exprContainer,
+        StatementContainer blockContainer, CodePosition pos, int level,
+        HitDetectParam param)
     {
+      RenderedHitBox hitBox = param.hitBox;
+      int x = param.x;
+      int y = param.y;
       // Check inside the statement block
       if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK) != null
         && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).el.getOffsetTop())
@@ -164,30 +180,8 @@ public class HitDetect
         pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
         hitDetectTokens(x, y, exprContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR), pos, level + 1);
       }
-    }
-    @Override
-    public Void visitWideToken(WideToken token, Integer x,
-        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
-    {
       return null;
     }
-    @Override
-    public Void visitOneBlockToken(OneBlockToken token, Integer x,
-        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
-    {
-      hitDetectWideToken(x, y, hitBox, null, token.block, pos, level);
-      return null;
-    }
-    @Override
-    public Void visitOneExpressionOneBlockToken(
-        OneExpressionOneBlockToken token, Integer x,
-        Integer y, RenderedHitBox hitBox, CodePosition pos, Integer level)
-    {
-      hitDetectWideToken(x, y, hitBox, token.expression, token.block, pos, level);
-      return null;
-    }
-    
   }
-
 
 }

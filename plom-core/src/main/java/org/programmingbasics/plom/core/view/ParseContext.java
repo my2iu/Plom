@@ -39,7 +39,7 @@ public class ParseContext
   {
     if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
     {
-      return line.tokens.get(pos.getOffset(level)).visit(new TokenPredictiveParseContext(), pos, level + 1);
+      return line.tokens.get(pos.getOffset(level)).visit(new TokenPredictiveParseContext(), pos, level + 1, null);
     }
     ParseContextForCursor toReturn = new ParseContextForCursor();
     toReturn.baseContext = baseContext;
@@ -47,47 +47,19 @@ public class ParseContext
     return toReturn;
   }
   
-  static class TokenPredictiveParseContext implements Token.TokenVisitor2<ParseContextForCursor, CodePosition, Integer>
+  static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void>
   {
     @Override
-    public ParseContextForCursor visitSimpleToken(SimpleToken token,
-        CodePosition pos, Integer level)
+    ParseContextForCursor handleExpression(TokenContainer exprContainer, CodePosition pos,
+        int level, Void param)
     {
-      throw new IllegalArgumentException();
-    }
-    ParseContextForCursor handleWideToken(
-        TokenContainer exprContainer, StatementContainer blockContainer,
-        CodePosition pos, int level)
-    {
-      if (exprContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
-      {
-        return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level + 1);
-      }
-      else if (blockContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
-      {
-        return findPredictiveParseContextForStatements(blockContainer, pos, level + 1);
-      }
-      throw new IllegalArgumentException();
-      
+      return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    public ParseContextForCursor visitWideToken(WideToken token,
-        CodePosition pos, Integer level)
+    ParseContextForCursor handleStatementContainer(StatementContainer blockContainer,
+        CodePosition pos, int level, Void param)
     {
-      return handleWideToken(null, null, pos, level);
-    }
-    @Override
-    public ParseContextForCursor visitOneBlockToken(OneBlockToken token,
-        CodePosition pos, Integer level)
-    {
-      return handleWideToken(null, token.block, pos, level);
-    }
-    @Override
-    public ParseContextForCursor visitOneExpressionOneBlockToken(
-        OneExpressionOneBlockToken token, CodePosition pos, Integer level)
-    {
-      return handleWideToken(token.expression, token.block, pos, level);
+      return findPredictiveParseContextForStatements(blockContainer, pos, level);
     }
   }
-
 }

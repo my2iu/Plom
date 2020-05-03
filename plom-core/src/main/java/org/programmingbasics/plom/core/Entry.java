@@ -2,6 +2,21 @@ package org.programmingbasics.plom.core;
 
 /*
 TODO:
+- allow newlines anywhere in expressions
+- backspace
+- interpreter
+- functions
+- for loop
+- number constants
+- string constants
+- variable names
+- valign to middle
+- nesting of blocks for functions
+- next button
+- keyboard movement
+- predict variables
+- keyboard entry
+- better sorting of predicted symbols
  */
 
 
@@ -161,6 +176,9 @@ public class Entry implements EntryPoint
 
     // Buttons for next and enter
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {}));
+    choicesDiv.appendChild(makeButton("\u232B", true, () -> {
+      // Backspace
+    })); 
     if (allowedSymbols.contains(Symbol.EndStatement))
     {
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
