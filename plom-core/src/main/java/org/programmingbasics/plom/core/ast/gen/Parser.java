@@ -16,9 +16,9 @@ public class Parser
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.String, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.Number, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.put(Symbol.ExpressionOnly, new HashMap<>());
-		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.Expression, });
-		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.String, new Symbol[] {Symbol.Expression, });
-		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.Number, new Symbol[] {Symbol.Expression, });
+		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.String, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.Number, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.put(Symbol.AfterIf, new HashMap<>());
 		parsingTable.get(Symbol.AfterIf).put(Symbol.COMPOUND_IF, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.OpenParenthesis, new Symbol[] {});
