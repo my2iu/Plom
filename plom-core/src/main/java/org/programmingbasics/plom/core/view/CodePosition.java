@@ -1,4 +1,4 @@
-package org.programmingbasics.plom.core;
+package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
 import java.util.List;

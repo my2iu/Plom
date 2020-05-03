@@ -21,6 +21,9 @@ import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.view.CodePosition;
+import org.programmingbasics.plom.core.view.CodeRenderer;
+import org.programmingbasics.plom.core.view.RenderedHitBox;
 
 import com.google.gwt.core.client.EntryPoint;
 

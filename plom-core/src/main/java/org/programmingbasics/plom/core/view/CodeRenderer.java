@@ -1,9 +1,10 @@
-package org.programmingbasics.plom.core;
+package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
@@ -28,7 +29,7 @@ public class CodeRenderer
   private static final int EXPRBLOCK_POS_BLOCK = 2;
 //  private static final int EXPRBLOCK_POS_END = 3;
   
-  void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
+  public void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
   {
     renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes);
   }
@@ -295,7 +296,7 @@ public class CodeRenderer
       subdiv.setTextContent("\u00a0");
   }
 
-  CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos)
+  public CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos)
   {
     RenderedHitBox renderedHitBoxes = new RenderedHitBox(null);
     renderedHitBoxes.children = new ArrayList<>();
@@ -472,13 +473,13 @@ public class CodeRenderer
   
   // For figuring out which tokens should be used for predicting what
   // the next token should be at the cursor position 
-  static class ParseContextForCursor
+  public static class ParseContextForCursor
   {
-    Symbol baseContext;
-    List<Token> tokens = new ArrayList<>();
+    public Symbol baseContext;
+    public List<Token> tokens = new ArrayList<>();
   }
   
-  static ParseContextForCursor findPredictiveParseContextForStatements(StatementContainer statements, CodePosition pos, int level)
+  public static ParseContextForCursor findPredictiveParseContextForStatements(StatementContainer statements, CodePosition pos, int level)
   {
     if (pos.getOffset(level) < statements.statements.size())
     {
@@ -546,7 +547,7 @@ public class CodeRenderer
     
   }
   
-  static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level)
+  public static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level)
   {
     if (stmtContainer.statements.isEmpty()) 
     {
