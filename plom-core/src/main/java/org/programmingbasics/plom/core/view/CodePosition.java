@@ -43,4 +43,22 @@ public class CodePosition
    }
 //   int line;
 //   int token;
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    CodePosition other = (CodePosition) obj;
+    if (offsets == null)
+    {
+      if (other.offsets != null) return false;
+    }
+    for (int n = 0; n < Math.max(offsets.size(), other.offsets.size()); n++)
+    {
+      if (hasOffset(n) != other.hasOffset(n)) return false;
+      if (getOffset(n) != other.getOffset(n)) return false;
+    }
+    return true;
+  }
 }

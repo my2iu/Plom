@@ -23,14 +23,14 @@ public class InsertNewLineTest extends TestCase
           new TokenContainer(), 
           new TokenContainer()), 
         container);
+    Assert.assertEquals(CodePosition.fromOffsets(1, 0), pos);
   }
   
   @Test
   public void testInsertLastEmptyLine()
   {
     StatementContainer container = new StatementContainer(new TokenContainer(), new TokenContainer());
-    CodePosition pos = new CodePosition();
-    pos.setOffset(0, 1);
+    CodePosition pos = CodePosition.fromOffsets(1);
     InsertNewLine.insertNewlineIntoStatementContainer(container, pos, 0);
     Assert.assertEquals(
         new StatementContainer(
@@ -38,6 +38,7 @@ public class InsertNewLineTest extends TestCase
           new TokenContainer(), 
           new TokenContainer()), 
         container);
+    Assert.assertEquals(CodePosition.fromOffsets(2, 0), pos);
   }
 
   @Test
@@ -47,9 +48,7 @@ public class InsertNewLineTest extends TestCase
         new StatementContainer(
             new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number))
         );
-    CodePosition pos = new CodePosition();
-    pos.setOffset(0, 0);
-    pos.setOffset(1, 2);
+    CodePosition pos = CodePosition.fromOffsets(0, 2);
     InsertNewLine.insertNewlineIntoStatementContainer(container, pos, 0);
     Assert.assertEquals(
         new StatementContainer(
@@ -57,6 +56,7 @@ public class InsertNewLineTest extends TestCase
             new TokenContainer(new Token.SimpleToken("3", Symbol.Number))
         ), 
         container);
+    Assert.assertEquals(CodePosition.fromOffsets(1, 0), pos);
   }
 
   @Test
@@ -86,6 +86,7 @@ public class InsertNewLineTest extends TestCase
             )
         ),
         container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), pos);
   }
 
 }

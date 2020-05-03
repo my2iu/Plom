@@ -38,6 +38,7 @@ import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
+import org.programmingbasics.plom.core.view.EraseLeft;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.InsertNewLine;
 import org.programmingbasics.plom.core.view.InsertToken;
@@ -178,6 +179,7 @@ public class Entry implements EntryPoint
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {}));
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
       // Backspace
+      EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
     })); 
     if (allowedSymbols.contains(Symbol.EndStatement))
     {
