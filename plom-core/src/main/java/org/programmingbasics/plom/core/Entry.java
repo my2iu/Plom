@@ -2,8 +2,6 @@ package org.programmingbasics.plom.core;
 
 /*
 TODO:
-- allow newlines anywhere in expressions
-- backspace
 - interpreter
 - functions
 - for loop
@@ -172,8 +170,6 @@ public class Entry implements EntryPoint
       tok.visit(stmtParser);
     }
     Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();
-    if (parseContext.baseContext == Symbol.ExpressionOnly)
-      allowedSymbols.remove(Symbol.EndStatement);
 
     // Buttons for next and enter
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {}));
@@ -184,7 +180,7 @@ public class Entry implements EntryPoint
       renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
     })); 
-    if (allowedSymbols.contains(Symbol.EndStatement))
+    if (parseContext.baseContext != Symbol.ExpressionOnly)
     {
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
