@@ -180,6 +180,9 @@ public class Entry implements EntryPoint
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
       // Backspace
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
+      codeDiv.setInnerHTML("");
+      renderTokens(codeDiv, codeList, cursorPos, null);
+      showPredictedTokenInput(choicesDiv);
     })); 
     if (allowedSymbols.contains(Symbol.EndStatement))
     {

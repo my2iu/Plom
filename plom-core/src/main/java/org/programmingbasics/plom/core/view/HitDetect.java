@@ -158,7 +158,7 @@ public class HitDetect
       return null;
     }
     @Override
-    Void handleWideToken(TokenContainer exprContainer,
+    Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
         StatementContainer blockContainer, CodePosition pos, int level,
         HitDetectParam param)
     {

@@ -22,6 +22,7 @@ public class CodePosition
    public int getOffset(int level)
    {
       if (level >= offsets.size()) return 0;
+      if (offsets.get(level) < 0) return 0;
       return offsets.get(level);
    }
    public void setOffset(int level, int val)
@@ -38,7 +39,7 @@ public class CodePosition
    }
    void setMaxOffset(int level)
    {
-      for (int n = level; level < offsets.size(); level++)
+      for (int n = level; n < offsets.size(); n++)
          offsets.set(n, -1);
    }
 //   int line;

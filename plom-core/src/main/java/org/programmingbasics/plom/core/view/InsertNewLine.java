@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 
 public class InsertNewLine
@@ -22,14 +23,14 @@ public class InsertNewLine
       Token token = line.tokens.get(pos.getOffset(level + 1));
       token.visit(new RecurseIntoCompoundToken<Void, Void>() {
         @Override
-        Void handleExpression(TokenContainer exprContainer, CodePosition pos,
-            int level, Void param)
+        Void handleExpression(WideToken originalToken, TokenContainer exprContainer,
+            CodePosition pos, int level, Void param)
         {
           throw new IllegalArgumentException();
         }
         @Override
-        Void handleStatementContainer(StatementContainer blockContainer,
-            CodePosition pos, int level, Void param)
+        Void handleStatementContainer(WideToken originalToken,
+            StatementContainer blockContainer, CodePosition pos, int level, Void param)
         {
           insertNewlineIntoStatementContainer(blockContainer, pos, level);
           return null;

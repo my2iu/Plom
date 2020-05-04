@@ -22,43 +22,43 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
   public T visitWideToken(WideToken token, CodePosition pos, Integer level,
       U param)
   {
-    return handleWideToken(null, null, pos, level, param);
+    return handleWideToken(token, null, null, pos, level, param);
   }
 
   @Override
   public T visitOneBlockToken(OneBlockToken token, CodePosition pos,
       Integer level, U param)
   {
-    return handleWideToken(null, token.block, pos, level, param);
+    return handleWideToken(token, null, token.block, pos, level, param);
   }
 
   @Override
   public T visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token,
       CodePosition pos, Integer level, U param)
   {
-    return handleWideToken(token.expression, token.block, pos, level, param);
+    return handleWideToken(token, token.expression, token.block, pos, level, param);
   }
 
-  T handleWideToken(TokenContainer exprContainer, StatementContainer blockContainer,
-      CodePosition pos, int level, U param)
+  T handleWideToken(WideToken originalToken, TokenContainer exprContainer,
+      StatementContainer blockContainer, CodePosition pos, int level, U param)
   {
     if (exprContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
     {
-      return handleExpression(exprContainer, pos, level + 1, param);
+      return handleExpression(originalToken, exprContainer, pos, level + 1, param);
     }
     else if (blockContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
     {
-      return handleStatementContainer(blockContainer, pos, level + 1, param);
+      return handleStatementContainer(originalToken, blockContainer, pos, level + 1, param);
     }
     throw new IllegalArgumentException();
   }
   
-  T handleExpression(TokenContainer exprContainer, CodePosition pos, int level, U param)
+  T handleExpression(WideToken originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param)
   {
     return null;
   }
   
-  T handleStatementContainer(StatementContainer blockContainer, CodePosition pos, int level, U param)
+  T handleStatementContainer(WideToken originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param)
   {
     return null;
   }

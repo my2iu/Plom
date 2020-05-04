@@ -50,14 +50,14 @@ public class ParseContext
   static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void>
   {
     @Override
-    ParseContextForCursor handleExpression(TokenContainer exprContainer, CodePosition pos,
-        int level, Void param)
+    ParseContextForCursor handleExpression(WideToken originalToken, TokenContainer exprContainer,
+        CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    ParseContextForCursor handleStatementContainer(StatementContainer blockContainer,
-        CodePosition pos, int level, Void param)
+    ParseContextForCursor handleStatementContainer(WideToken originalToken,
+        StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForStatements(blockContainer, pos, level);
     }
