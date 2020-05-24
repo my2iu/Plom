@@ -13,6 +13,8 @@ public enum Symbol
 	AfterIf,
 	IfMore,
 	ExpressionOnly,
+	AssignmentExpression,
+	AssignmentExpressionMore,
 	Expression,
 	AdditiveExpression,
 	AdditiveExpressionMore,
@@ -22,6 +24,7 @@ public enum Symbol
 	ValueExpression,
 	EndStatement,
 	Number,
+	Assignment,
 	Plus,
 	Minus,
 	Multiply,
@@ -41,6 +44,7 @@ public enum Symbol
 		case EMPTY:
 		case EndStatement:
 		case Number:
+		case Assignment:
 		case Plus:
 		case Minus:
 		case Multiply:

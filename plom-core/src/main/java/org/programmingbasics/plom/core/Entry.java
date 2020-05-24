@@ -199,6 +199,7 @@ public class Entry implements EntryPoint
       String text = "Unknown";
       switch(sym)
       {
+      case Assignment: text = ":="; break;
       case Plus: text = "+"; break;
       case Minus: text = "-"; break;
       case Multiply: text = "*"; break;
