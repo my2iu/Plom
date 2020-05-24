@@ -24,6 +24,7 @@ enum Symbol
   ValueExpression(false),
   EndStatement(true),
   Number(true),
+  DotVariable(true),
   Assignment(true),
   Plus(true),
   Minus(true),

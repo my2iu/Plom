@@ -207,6 +207,7 @@ public class Entry implements EntryPoint
       case OpenParenthesis: text = "("; break;
       case ClosedParenthesis: text = ")"; break;
       case DUMMY_COMMENT: text = "//"; break;
+      case DotVariable: text = "."; break;
       case Number: text = "123"; break;
       case String: text = "\"...\""; break;
       case COMPOUND_IF: text = "if"; break;

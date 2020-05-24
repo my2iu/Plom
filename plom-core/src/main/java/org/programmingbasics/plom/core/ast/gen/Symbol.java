@@ -24,6 +24,7 @@ public enum Symbol
 	ValueExpression,
 	EndStatement,
 	Number,
+	DotVariable,
 	Assignment,
 	Plus,
 	Minus,
@@ -44,6 +45,7 @@ public enum Symbol
 		case EMPTY:
 		case EndStatement:
 		case Number:
+		case DotVariable:
 		case Assignment:
 		case Plus:
 		case Minus:

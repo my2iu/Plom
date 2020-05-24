@@ -51,6 +51,7 @@ public class PlomAstGen
       rule(ParenthesisExpression, OpenParenthesis, Expression, ClosedParenthesis),
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, Number),
+      rule(ValueExpression, DotVariable),
       rule(ValueExpression, String),
       rule(AfterIf, COMPOUND_ELSEIF, AfterIf),
       rule(AfterIf, COMPOUND_ELSE),
