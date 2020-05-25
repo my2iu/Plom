@@ -16,7 +16,9 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import elemental.css.CSSStyleDeclaration.FontStyle;
 import elemental.css.CSSStyleDeclaration.Unit;
+import elemental.css.CSSStyleDeclaration.WhiteSpace;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -66,6 +68,12 @@ public class CodeRenderer
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
       createWideToken(token.contents, null, null, toReturn, pos, level, hitBox);
+      if (token.type == Symbol.DUMMY_COMMENT)
+      {
+        toReturn.el.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+        toReturn.el.getStyle().setFontStyle(FontStyle.ITALIC);
+      }
+        
 //      DivElement div = doc.createDivElement();
 //      div.setClassName("blocktoken");
 //      SpanElement contentsSpan = doc.createSpanElement();

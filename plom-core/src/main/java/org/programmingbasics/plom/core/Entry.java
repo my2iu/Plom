@@ -177,6 +177,10 @@ public class Entry implements EntryPoint
       choicesDiv.getStyle().setDisplay(Display.NONE);
       simpleEntry.showFor("\"", "\"", "", "", newToken, this::simpleEntryInput);
       break;
+    case DUMMY_COMMENT:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      simpleEntry.showMultilineFor("//", "", "", "", newToken, this::simpleEntryInput);
+      break;
     default:
       showPredictedTokenInput(choicesDiv);
     }
@@ -185,6 +189,8 @@ public class Entry implements EntryPoint
   void showPredictedTokenInput(DivElement choicesDiv)
   {
     choicesDiv.setInnerHTML("");
+    choicesDiv.getStyle().setDisplay(Display.BLOCK);
+    simpleEntry.setVisible(false);
 
     // Parse the current statement up to the cursor position
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
@@ -273,7 +279,8 @@ public class Entry implements EntryPoint
 
   <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token)
   {
-    if (token != null && token instanceof Token.SimpleToken)
+    if (token == null) return;
+    if (token instanceof Token.SimpleToken)
     {
       ((Token.SimpleToken)token).contents = val;
       codeDiv.setInnerHTML("");
@@ -285,6 +292,20 @@ public class Entry implements EntryPoint
         simpleEntry.setVisible(false);
         showPredictedTokenInput(choicesDiv);
       }
+    }
+    else if (token instanceof Token.WideToken && ((Token.WideToken)token).type == Symbol.DUMMY_COMMENT)
+    {
+      ((Token.WideToken)token).contents = val;
+      codeDiv.setInnerHTML("");
+      renderTokens(codeDiv, codeList, cursorPos, null);
+      
+      if (isFinal)
+      {
+        choicesDiv.getStyle().setDisplay(Display.BLOCK);
+        simpleEntry.setVisible(false);
+        showPredictedTokenInput(choicesDiv);
+      }
+      
     }
 
   }

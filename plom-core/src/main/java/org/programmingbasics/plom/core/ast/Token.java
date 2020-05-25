@@ -15,7 +15,7 @@ public abstract class Token
    public static class SimpleToken extends Token
    {
       public String contents;
-      Symbol type;
+      public Symbol type;
       public SimpleToken(String contents, Symbol type)
       {
          this.contents = contents;
@@ -76,7 +76,7 @@ public abstract class Token
    public static class WideToken extends Token
    {
       public String contents;
-      Symbol type;
+      public Symbol type;
       public WideToken(String contents, Symbol type)
       {
          this.contents = contents;
