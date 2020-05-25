@@ -67,14 +67,13 @@ public class Entry implements EntryPoint
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    simpleEntryDiv = (DivElement)mainDiv.querySelector("div.simpleentry");
+    simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"));
 
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
-    simpleEntryDiv.getStyle().setDisplay(Display.NONE);
+    simpleEntry.setVisible(false);
     
     codeDiv.setInnerHTML("");
     renderTokens(codeDiv, codeList, cursorPos, null);
-    hookSimpleEntry(simpleEntryDiv);
     showPredictedTokenInput(choicesDiv);
     hookCodeClick(codeDiv);
   }
@@ -104,8 +103,7 @@ public class Entry implements EntryPoint
   }
   DivElement codeDiv;
   DivElement choicesDiv;
-  DivElement simpleEntryDiv;
-  Token.SimpleToken simpleEntryToken;  // token being edited by simple entry
+  SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
 
 
@@ -168,12 +166,7 @@ public class Entry implements EntryPoint
     if (tokenType == Symbol.DotVariable)
     {
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntryDiv.getStyle().setDisplay(Display.BLOCK);
-      simpleEntryDiv.querySelector("span.prefix").setTextContent(".");
-      InputElement inputEl = (InputElement)simpleEntryDiv.querySelector("input");
-      inputEl.focus();
-      inputEl.setValue("");
-      simpleEntryToken = (Token.SimpleToken)newToken;
+      simpleEntry.showFor(".", "", ".", newToken, this::simpleEntryInput);
     }
     else
       showPredictedTokenInput(choicesDiv);
@@ -268,41 +261,22 @@ public class Entry implements EntryPoint
     }, false);
   }
 
-  void simpleEntryInput(String val, boolean isFinal)
+  <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token)
   {
-    if (simpleEntryToken != null)
+    if (token != null && token instanceof Token.SimpleToken)
     {
-      simpleEntryToken.contents = "." + val;
+      ((Token.SimpleToken)token).contents = val;
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
+      
+      if (isFinal)
+      {
+        choicesDiv.getStyle().setDisplay(Display.BLOCK);
+        simpleEntry.setVisible(false);
+        showPredictedTokenInput(choicesDiv);
+      }
     }
 
-    if (isFinal)
-    {
-      choicesDiv.getStyle().setDisplay(Display.BLOCK);
-      simpleEntryDiv.getStyle().setDisplay(Display.NONE);
-      showPredictedTokenInput(choicesDiv);
-    }
   }
   
-  private void hookSimpleEntry(DivElement simpleEntryDiv)
-  {
-    InputElement inputEl = (InputElement)simpleEntryDiv.querySelector("input");
-    FormElement formEl = (FormElement)simpleEntryDiv.querySelector("form");
-    formEl.addEventListener(Event.SUBMIT, (e) -> {
-      e.preventDefault();
-      simpleEntryInput(inputEl.getValue(), true);
-    }, false);
-    inputEl.addEventListener(Event.INPUT, (e) -> {
-      simpleEntryInput(inputEl.getValue(), false);
-    }, false);
-    inputEl.addEventListener(Event.KEYDOWN, (e) -> {
-      KeyboardEvent keyEvt = (KeyboardEvent)e;
-      if (keyEvt.getWhich() == 9)  // Capture tab key presses
-      {
-        simpleEntryInput(inputEl.getValue(), true);
-        e.preventDefault();
-      }
-    }, false);
-  }
 }
