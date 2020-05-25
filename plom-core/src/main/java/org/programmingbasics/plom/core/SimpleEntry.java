@@ -58,7 +58,10 @@ public class SimpleEntry
     // handle the done button being pressed
     formEl.querySelector(".simpleentry_done").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      simpleEntryInput(inputEl.getValue(), true);
+      if (inputEl.getStyle().getDisplay() != Display.NONE)
+        simpleEntryInput(inputEl.getValue(), true);
+      else
+        simpleEntryInput(textAreaEl.getValue(), true);
     }, false);
     // handle text being typed into the input
     inputEl.addEventListener(Event.INPUT, (e) -> {
