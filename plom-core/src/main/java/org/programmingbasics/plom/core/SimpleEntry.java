@@ -90,21 +90,21 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialDisplayValue, U token, InputCallback<U> callback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialDisplayValue, token, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, callback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
-  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialDisplayValue, U token, InputCallback<U> callback)
+  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialDisplayValue, token, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, callback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialDisplayValue, U token, InputCallback<U> callback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
@@ -117,12 +117,15 @@ public class SimpleEntry
     toHide.getStyle().setDisplay(Display.NONE);
     forInput.getStyle().setDisplay(Display.INLINE);
     forInput.focus();
-    ((InputElement)forInput).setValue("");
+    if (initialValue != null)
+      ((InputElement)forInput).setValue(initialValue);
+    else
+      ((InputElement)forInput).setValue("");
     simpleEntryToken = token;
     this.tokenPrefix = prefix;
     this.tokenPostfix = postfix;
     this.callback = (InputCallback<Token>)callback;
-    simpleEntryInput(initialDisplayValue, false);
+    simpleEntryInput(initialValue, false);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>

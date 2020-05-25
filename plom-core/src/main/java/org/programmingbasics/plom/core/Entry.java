@@ -37,6 +37,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
+import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.InsertNewLine;
 import org.programmingbasics.plom.core.view.InsertToken;
@@ -166,26 +167,60 @@ public class Entry implements EntryPoint
     switch (tokenType)
     {
     case DotVariable:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor(".", "", null, "", newToken, this::simpleEntryInput);
-      break;
     case Number:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "0", newToken, this::simpleEntryInput);
-      break;
     case String:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("\"", "\"", "", "", newToken, this::simpleEntryInput);
-      break;
     case DUMMY_COMMENT:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showMultilineFor("// ", "", "", "", newToken, this::simpleEntryInput);
+      showSimpleEntryForToken(newToken, false);
       break;
     default:
       showPredictedTokenInput(choicesDiv);
     }
   }
 
+  void showSimpleEntryForToken(Token newToken, boolean isEdit)
+  {
+    if (newToken == null) return;
+    Symbol tokenType = null;
+    String initialValue = "";
+    if (newToken instanceof Token.SimpleToken)
+    {
+      tokenType = ((Token.SimpleToken)newToken).type;
+      initialValue = ((Token.SimpleToken)newToken).contents;
+    }
+    else if (newToken instanceof Token.WideToken)
+    {
+      tokenType = ((Token.WideToken)newToken).type;
+      initialValue = ((Token.WideToken)newToken).contents;
+    }
+    
+    switch (tokenType)
+    {
+    case DotVariable:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, this::simpleEntryInput);
+      break;
+    case Number:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      simpleEntry.showFor("", "", "number: ", "", newToken, this::simpleEntryInput);
+      break;
+    case String:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      if (isEdit)
+        initialValue = initialValue.substring(1, initialValue.length() - 1);
+      else
+        initialValue = "";
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, this::simpleEntryInput);
+      break;
+    case DUMMY_COMMENT:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      initialValue = initialValue.substring(3);
+      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, this::simpleEntryInput);
+      break;
+    default:
+      return;
+    }
+  }
+  
   void showPredictedTokenInput(DivElement choicesDiv)
   {
     choicesDiv.setInnerHTML("");
@@ -220,6 +255,33 @@ public class Entry implements EntryPoint
         renderTokens(codeDiv, codeList, cursorPos, null);
         showPredictedTokenInput(choicesDiv);
       }));
+    }
+    
+    // Edit button for certain tokens
+    Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
+    if (currentToken != null)
+    {
+      if (currentToken instanceof Token.SimpleToken)
+      {
+        Token.SimpleToken tok = (Token.SimpleToken)currentToken;
+        if (tok.type == Symbol.String)
+        {
+          choicesDiv.appendChild(makeButton("\u270e", true, () -> {
+            showSimpleEntryForToken(tok, true);
+          }));
+        }
+      }
+      else if (currentToken instanceof Token.WideToken)
+      {
+        Token.WideToken tok = (Token.WideToken)currentToken;
+        if (tok.type == Symbol.DUMMY_COMMENT)
+        {
+          choicesDiv.appendChild(makeButton("\u270e", true, () -> {
+            showSimpleEntryForToken(tok, true);
+          }));
+        }
+        
+      }
     }
 
     // Just some random tokens for initial prototyping
@@ -282,6 +344,10 @@ public class Entry implements EntryPoint
     if (token == null) return;
     if (token instanceof Token.SimpleToken)
     {
+      if (((Token.SimpleToken)token).type == Symbol.Number && val.isEmpty())
+      {
+        val = "0";
+      }
       ((Token.SimpleToken)token).contents = val;
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
