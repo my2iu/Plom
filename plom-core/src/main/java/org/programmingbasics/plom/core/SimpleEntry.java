@@ -19,6 +19,7 @@ public class SimpleEntry
   Token simpleEntryToken;  // token being edited by simple entry
   InputCallback<Token> callback;
   String tokenPrefix = "";
+  String tokenPostfix = "";
   
   SimpleEntry(DivElement el)
   {
@@ -38,7 +39,7 @@ public class SimpleEntry
   {
     if (callback != null)
     {
-      callback.input(tokenPrefix + val, isFinal, simpleEntryToken);
+      callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken);
     }
   }
 
@@ -63,16 +64,24 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String tokenValuePrefix, U token, InputCallback<U> callback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialDisplayValue, U token, InputCallback<U> callback)
   {
-    container.querySelector("span.prefix").setTextContent(prefix);
+    if (prompt == null || prompt.isEmpty())
+    {
+      container.querySelector("span.prefix").setTextContent(prefix);
+      container.querySelector("span.postfix").setTextContent(postfix);
+    }
+    else
+      container.querySelector("span.prefix").setTextContent(prompt);
     setVisible(true);
     InputElement inputEl = (InputElement)container.querySelector("input");
     inputEl.focus();
     inputEl.setValue("");
     simpleEntryToken = token;
-    this.tokenPrefix = tokenValuePrefix;
+    this.tokenPrefix = prefix;
+    this.tokenPostfix = postfix;
     this.callback = (InputCallback<Token>)callback;
+    simpleEntryInput(initialDisplayValue, false);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>

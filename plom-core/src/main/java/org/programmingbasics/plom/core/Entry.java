@@ -163,13 +163,23 @@ public class Entry implements EntryPoint
     InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
     codeDiv.setInnerHTML("");
     renderTokens(codeDiv, codeList, cursorPos, null);
-    if (tokenType == Symbol.DotVariable)
+    switch (tokenType)
     {
+    case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor(".", "", ".", newToken, this::simpleEntryInput);
-    }
-    else
+      simpleEntry.showFor(".", "", null, "", newToken, this::simpleEntryInput);
+      break;
+    case Number:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      simpleEntry.showFor("", "", "number: ", "0", newToken, this::simpleEntryInput);
+      break;
+    case String:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      simpleEntry.showFor("\"", "\"", "", "", newToken, this::simpleEntryInput);
+      break;
+    default:
       showPredictedTokenInput(choicesDiv);
+    }
   }
 
   void showPredictedTokenInput(DivElement choicesDiv)
