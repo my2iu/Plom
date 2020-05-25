@@ -179,7 +179,7 @@ public class Entry implements EntryPoint
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showMultilineFor("//", "", "", "", newToken, this::simpleEntryInput);
+      simpleEntry.showMultilineFor("// ", "", "", "", newToken, this::simpleEntryInput);
       break;
     default:
       showPredictedTokenInput(choicesDiv);

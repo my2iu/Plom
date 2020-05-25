@@ -50,10 +50,17 @@ public class SimpleEntry
     InputElement inputEl = (InputElement)simpleEntryDiv.querySelector("input");
     TextAreaElement textAreaEl = (TextAreaElement)simpleEntryDiv.querySelector("textarea");
     FormElement formEl = (FormElement)simpleEntryDiv.querySelector("form");
+    // Catch the enter begin pressed
     formEl.addEventListener(Event.SUBMIT, (e) -> {
       e.preventDefault();
       simpleEntryInput(inputEl.getValue(), true);
     }, false);
+    // handle the done button being pressed
+    formEl.querySelector(".simpleentry_done").addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      simpleEntryInput(inputEl.getValue(), true);
+    }, false);
+    // handle text being typed into the input
     inputEl.addEventListener(Event.INPUT, (e) -> {
       simpleEntryInput(inputEl.getValue(), false);
     }, false);
