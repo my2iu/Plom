@@ -257,4 +257,9 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(CodePosition.fromOffsets(0, 0), pos);
   }
 
+  @Test
+  public void testParameterBlock()
+  {
+    Assert.assertTrue(false);
+  }
 }

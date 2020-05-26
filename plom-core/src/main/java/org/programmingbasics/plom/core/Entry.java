@@ -5,8 +5,8 @@ TODO:
 - interpreter
 - functions
 - for loop
-- number constants
-- string constants
+- number constants (change inputmode to numeric)
+- string constants (allow multi-line strings?)
 - variable names
 - valign to middle
 - nesting of blocks for functions
@@ -154,6 +154,8 @@ public class Entry implements EntryPoint
     case COMPOUND_ELSE:
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
+    case DotVariable:
+      newToken = new Token.ParameterToken(Arrays.asList(tokenText), "", tokenType);
     default:
       if (tokenType.isWide())
         newToken = new WideToken(tokenText, tokenType);
@@ -182,16 +184,10 @@ public class Entry implements EntryPoint
     if (newToken == null) return;
     Symbol tokenType = null;
     String initialValue = "";
-    if (newToken instanceof Token.SimpleToken)
-    {
-      tokenType = ((Token.SimpleToken)newToken).type;
-      initialValue = ((Token.SimpleToken)newToken).contents;
-    }
-    else if (newToken instanceof Token.WideToken)
-    {
-      tokenType = ((Token.WideToken)newToken).type;
-      initialValue = ((Token.WideToken)newToken).contents;
-    }
+    if (newToken instanceof Token.TokenWithSymbol)
+      tokenType = ((Token.TokenWithSymbol)newToken).getType();
+    if (newToken instanceof Token.TokenWithEditableTextContent)
+      initialValue = ((Token.TokenWithEditableTextContent)newToken).getTextContent();
     
     switch (tokenType)
     {
@@ -298,10 +294,8 @@ public class Entry implements EntryPoint
     if (currentToken != null)
     {
       Symbol tokenType = null;
-      if (currentToken instanceof Token.SimpleToken)
-        tokenType = ((Token.SimpleToken)currentToken).type;
-      else if (currentToken instanceof Token.WideToken)
-        tokenType = ((Token.WideToken)currentToken).type;
+      if (currentToken instanceof Token.TokenWithSymbol)
+        tokenType = ((Token.TokenWithSymbol)currentToken).getType();
       
       if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
       {
@@ -343,27 +337,24 @@ public class Entry implements EntryPoint
       ((Token.SimpleToken)token).contents = val;
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
-      
-      if (isFinal)
-      {
-        choicesDiv.getStyle().setDisplay(Display.BLOCK);
-        simpleEntry.setVisible(false);
-        showPredictedTokenInput(choicesDiv);
-      }
     }
     else if (token instanceof Token.WideToken && ((Token.WideToken)token).type == Symbol.DUMMY_COMMENT)
     {
       ((Token.WideToken)token).contents = val;
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
-      
-      if (isFinal)
-      {
-        choicesDiv.getStyle().setDisplay(Display.BLOCK);
-        simpleEntry.setVisible(false);
-        showPredictedTokenInput(choicesDiv);
-      }
-      
+    }
+    else if (token instanceof Token.ParameterToken && ((Token.WideToken)token).type == Symbol.DotVariable)
+    {
+      ((Token.ParameterToken)token).contents = Arrays.asList(val);
+      codeDiv.setInnerHTML("");
+      renderTokens(codeDiv, codeList, cursorPos, null);
+    }
+    if (isFinal)
+    {
+      choicesDiv.getStyle().setDisplay(Display.BLOCK);
+      simpleEntry.setVisible(false);
+      showPredictedTokenInput(choicesDiv);
     }
 
   }

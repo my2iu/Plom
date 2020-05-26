@@ -15,6 +15,26 @@ public class RenderedHitBox
       this.el = el;
    }
    
+   public int getOffsetLeft()
+   {
+     return el.getOffsetLeft();
+   }
+   
+   public int getOffsetTop()
+   {
+     return el.getOffsetTop();
+   }
+
+   public int getOffsetWidth()
+   {
+     return el.getOffsetWidth();
+   }
+
+   public int getOffsetHeight()
+   {
+     return el.getOffsetHeight();
+   }
+
    public static RenderedHitBox withChildren()
    {
      RenderedHitBox toReturn = new RenderedHitBox();

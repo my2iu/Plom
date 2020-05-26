@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor2;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
@@ -62,6 +63,18 @@ public class CodeRenderer
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = div;
+      return null;
+    }
+    @Override
+    public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    {
+      Element span = doc.createSpanElement();
+      span.setClassName("token");
+      span.setTextContent(String.join(" ",token.contents));
+      if (hitBox != null)
+        hitBox.el = span;
+      toReturn.el = span;
+      toReturn.beforeInsertionPoint = span;
       return null;
     }
     @Override

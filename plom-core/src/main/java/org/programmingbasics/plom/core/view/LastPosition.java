@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -47,6 +48,12 @@ public class LastPosition
         return false;
       }
 
+      @Override
+      public Boolean visitParameterToken(ParameterToken token)
+      {
+        return false;
+      }
+      
       @Override
       public Boolean visitWideToken(WideToken token)
       {

@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -18,6 +19,13 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
     throw new IllegalArgumentException();
   }
 
+  @Override
+  public T visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
+      U param)
+  {
+    throw new IllegalArgumentException();
+  }
+  
   @Override
   public T visitWideToken(WideToken token, CodePosition pos, Integer level,
       U param)

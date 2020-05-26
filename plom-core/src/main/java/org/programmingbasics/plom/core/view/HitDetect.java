@@ -7,6 +7,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 
@@ -36,10 +37,10 @@ public class HitDetect
     int lineno = -1;
     for (int n = 0; n < renderedHitBoxes.children.size(); n++)
     {
-      Element el = renderedHitBoxes.children.get(n).el;
-      if (el.getOffsetTop() < y && el.getOffsetTop() > bestMatchY)
+      RenderedHitBox child = renderedHitBoxes.children.get(n);
+      if (child.getOffsetTop() < y && child.getOffsetTop() > bestMatchY)
       {
-        bestMatchY = el.getOffsetTop();
+        bestMatchY = child.getOffsetTop();
         lineno = n;
       }
     }
@@ -101,16 +102,23 @@ public class HitDetect
     public TokenHitLocation visitSimpleToken(SimpleToken token, Integer x,
         Integer y, RenderedHitBox hitBox)
     {
-      Element el = hitBox.el;
-      if (el.getOffsetLeft() + el.getOffsetWidth() < x) return TokenHitLocation.AFTER;
-      if (el.getOffsetLeft() < x) return TokenHitLocation.ON;
+      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetLeft() < x) return TokenHitLocation.ON;
+      return TokenHitLocation.NONE;
+    }
+    @Override
+    public TokenHitLocation visitParameterToken(ParameterToken token,
+        Integer x,
+        Integer y, RenderedHitBox hitBox)
+    {
+      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetLeft() < x) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
     TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
     {
-      Element el = hitBox.el;
-      if (el.getOffsetTop() + el.getOffsetHeight() < y) return TokenHitLocation.AFTER;
-      if (el.getOffsetTop() < y) return TokenHitLocation.ON;
+      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetTop() < y) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
     @Override
@@ -158,6 +166,12 @@ public class HitDetect
       return null;
     }
     @Override
+    public Void visitParameterToken(ParameterToken token, CodePosition pos,
+        Integer level, HitDetectParam param)
+    {
+      return null;
+    }
+    @Override
     Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
         StatementContainer blockContainer, CodePosition pos, int level,
         HitDetectParam param)
@@ -167,15 +181,15 @@ public class HitDetect
       int y = param.y;
       // Check inside the statement block
       if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK) != null
-        && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).el.getOffsetTop())
+        && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop())
       {
         pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
         hitDetectStatementContainer(x, y, blockContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK), pos, level + 1);
       }
       // Check if we're inside the expression
       else if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR) != null
-          && (x > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).el.getOffsetLeft() 
-              || y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).el.getOffsetTop() + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).el.getOffsetHeight()))
+          && (x > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).getOffsetLeft() 
+              || y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetTop() + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetHeight()))
       {
         pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
         hitDetectTokens(x, y, exprContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR), pos, level + 1);

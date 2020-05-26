@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -20,34 +21,20 @@ public class LL1Parser implements TokenVisitor<Void>
   Parser parser = new Parser();
   {
   }
-  @Override public Void visitSimpleToken(SimpleToken token)
+
+  private Void visitSymbol(Symbol tokenType)
   {
     if (isError) return null;
-    if (!matchSymbol(stack, parser, token.type))
+    if (!matchSymbol(stack, parser, tokenType))
       isError = true;
     return null;
   }
 
-  @Override
-  public Void visitWideToken(WideToken token)
-  {
-    if (isError) return null;
-    if (!matchSymbol(stack, parser, token.type))
-      isError = true;
-    return null;
-  }
-
-  @Override
-  public Void visitOneBlockToken(OneBlockToken token)
-  {
-    return visitWideToken(token);
-  }
-
-  @Override
-  public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token)
-  {
-    return visitWideToken(token);
-  }
+  @Override public Void visitSimpleToken(SimpleToken token) { return visitSymbol(token.type); }
+  @Override public Void visitParameterToken(ParameterToken token) { return visitSymbol(token.type); }
+  @Override public Void visitWideToken(WideToken token) { return visitSymbol(token.type); }
+  @Override public Void visitOneBlockToken(OneBlockToken token) { return visitSymbol(token.type); }
+  @Override public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) { return visitSymbol(token.type); }
 
   /**
    * Tries to parse a single symbol using the stack given
