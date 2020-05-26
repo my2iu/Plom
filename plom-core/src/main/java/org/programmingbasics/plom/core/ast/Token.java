@@ -105,6 +105,18 @@ public abstract class Token
      }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents); }
+     public static List<String> splitVarAtColons(String val)
+     {
+       List<String> params = new ArrayList<>();
+       while (val.indexOf(':') >= 0)
+       {
+         params.add(val.substring(0, val.indexOf(':') + 1));
+         val = val.substring(val.indexOf(':') + 1);
+       }
+       if (!val.isEmpty())
+         params.add(val);
+       return params;
+     }
      public <S> S visit(TokenVisitor<S> visitor)
      {
         return visitor.visitParameterToken(this);

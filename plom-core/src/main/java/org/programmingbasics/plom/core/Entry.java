@@ -87,7 +87,7 @@ public class Entry implements EntryPoint
     ifToken.block.statements.add(
         new TokenContainer(Arrays.asList(
             new Token.SimpleToken("1", Symbol.Number),
-            new Token.SimpleToken("+", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
             new Token.SimpleToken("1", Symbol.Number)
             ))
         );
@@ -96,9 +96,9 @@ public class Entry implements EntryPoint
             ifToken)),
         new TokenContainer(Arrays.asList()),
         new TokenContainer(Arrays.asList(
-            new Token.SimpleToken("a", Symbol.Number),
-            new Token.SimpleToken("=", Symbol.Number),
-            new Token.SimpleToken("4", Symbol.Number)
+            new Token.ParameterToken(Arrays.asList(".a"), "", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("8", Symbol.Number)
             ))
         ));
   }
@@ -155,7 +155,8 @@ public class Entry implements EntryPoint
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     case DotVariable:
-      newToken = new Token.ParameterToken(Arrays.asList(tokenText), "", tokenType);
+      newToken = new Token.ParameterToken(Token.ParameterToken.splitVarAtColons(tokenText), "", tokenType);
+      break;
     default:
       if (tokenType.isWide())
         newToken = new WideToken(tokenText, tokenType);
@@ -344,9 +345,9 @@ public class Entry implements EntryPoint
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }
-    else if (token instanceof Token.ParameterToken && ((Token.WideToken)token).type == Symbol.DotVariable)
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
     {
-      ((Token.ParameterToken)token).contents = Arrays.asList(val);
+      ((Token.ParameterToken)token).contents = Token.ParameterToken.splitVarAtColons(val);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }
