@@ -197,6 +197,7 @@ public class Entry implements EntryPoint
     {
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
+      initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, this::simpleEntryInput);
       break;
     case Number:
@@ -257,33 +258,6 @@ public class Entry implements EntryPoint
       }));
     }
     
-    // Edit button for certain tokens
-    Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
-    if (currentToken != null)
-    {
-      if (currentToken instanceof Token.SimpleToken)
-      {
-        Token.SimpleToken tok = (Token.SimpleToken)currentToken;
-        if (tok.type == Symbol.String)
-        {
-          choicesDiv.appendChild(makeButton("\u270e", true, () -> {
-            showSimpleEntryForToken(tok, true);
-          }));
-        }
-      }
-      else if (currentToken instanceof Token.WideToken)
-      {
-        Token.WideToken tok = (Token.WideToken)currentToken;
-        if (tok.type == Symbol.DUMMY_COMMENT)
-        {
-          choicesDiv.appendChild(makeButton("\u270e", true, () -> {
-            showSimpleEntryForToken(tok, true);
-          }));
-        }
-        
-      }
-    }
-
     // Just some random tokens for initial prototyping
     for (Symbol sym: allowedSymbols)
     {
@@ -317,6 +291,24 @@ public class Entry implements EntryPoint
         choicesDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
         choicesDiv.appendChild(makeButton(tokenText, false, () -> {  }));
+    }
+    
+    // Edit button for certain tokens
+    Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
+    if (currentToken != null)
+    {
+      Symbol tokenType = null;
+      if (currentToken instanceof Token.SimpleToken)
+        tokenType = ((Token.SimpleToken)currentToken).type;
+      else if (currentToken instanceof Token.WideToken)
+        tokenType = ((Token.WideToken)currentToken).type;
+      
+      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
+      {
+        choicesDiv.appendChild(makeButton("\u270e", true, () -> {
+          showSimpleEntryForToken(currentToken, true);
+        }));
+      }
     }
   }
 
