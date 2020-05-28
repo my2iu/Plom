@@ -20,6 +20,8 @@ enum Symbol
   AdditiveExpressionMore(false),
   MultiplicativeExpression(false),
   MultiplicativeExpressionMore(false),
+  MemberExpression(false),
+  MemberExpressionMore(false),
   ParenthesisExpression(false),
   ValueExpression(false),
   EndStatement(true),
