@@ -91,9 +91,12 @@ public class Entry implements EntryPoint
             new Token.SimpleToken("1", Symbol.Number)
             ))
         );
+    Token.ParameterToken printToken = new Token.ParameterToken(Arrays.asList(".print:"), "", Symbol.DotVariable);
+    printToken.parameters.get(0).tokens.add(new Token.SimpleToken("\"Hello\"", Symbol.String));
     codeList.statements.addAll(Arrays.asList(
         new TokenContainer(Arrays.asList(
             ifToken)),
+        new TokenContainer(printToken),
         new TokenContainer(Arrays.asList()),
         new TokenContainer(Arrays.asList(
             new Token.ParameterToken(Arrays.asList(".a"), "", Symbol.DotVariable),
@@ -155,7 +158,10 @@ public class Entry implements EntryPoint
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     case DotVariable:
-      newToken = new Token.ParameterToken(Token.ParameterToken.splitVarAtColons(tokenText), "", tokenType);
+      newToken = new Token.ParameterToken(
+          Token.ParameterToken.splitVarAtColons(tokenText), 
+          Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
+          tokenType);
       break;
     default:
       if (tokenType.isWide())
@@ -347,7 +353,9 @@ public class Entry implements EntryPoint
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
     {
-      ((Token.ParameterToken)token).contents = Token.ParameterToken.splitVarAtColons(val);
+      ((Token.ParameterToken)token).setContents(
+          Token.ParameterToken.splitVarAtColons(val),
+          Token.ParameterToken.splitVarAtColonsForPostfix(val));
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }

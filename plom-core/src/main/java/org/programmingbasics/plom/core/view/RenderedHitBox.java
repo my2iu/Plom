@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import elemental.dom.Element;
+import elemental.html.ClientRect;
+import elemental.html.ClientRectList;
 
 public class RenderedHitBox
 {
@@ -35,6 +37,32 @@ public class RenderedHitBox
      return el.getOffsetHeight();
    }
 
+   public List<Rect> getClientRects() 
+   {
+     List<Rect> rects = new ArrayList<>();
+     ClientRectList list = el.getClientRects();
+     for (int n = 0; n < list.getLength(); n++)
+     {
+       ClientRect r = list.item(n);
+       rects.add(new Rect(r.getLeft(), r.getTop(), r.getWidth(), r.getHeight()));
+     }
+     return rects;
+   }
+   
+   public static class Rect
+   {
+     Rect(double x, double y, double w, double h) { this.x = x; this.y = y; this.w = w; this.h = h; }
+     double x, y, w, h;
+     double getX() { return x; }
+     double getY() { return y; }
+     double getWidth() { return w; }
+     double getHeight() { return h; }
+     double getLeft() { return x; }
+     double getRight() { return x + w; }  // Assumes w > 0
+     double getTop() { return y; }
+     double getBottom() { return y + h; }  // Assumes h > 0
+   }
+   
    public static RenderedHitBox withChildren()
    {
      RenderedHitBox toReturn = new RenderedHitBox();

@@ -20,6 +20,8 @@ public enum Symbol
 	AdditiveExpressionMore,
 	MultiplicativeExpression,
 	MultiplicativeExpressionMore,
+	MemberExpression,
+	MemberExpressionMore,
 	ParenthesisExpression,
 	ValueExpression,
 	EndStatement,

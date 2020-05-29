@@ -103,10 +103,19 @@ public abstract class Token
         this.postfix = postfix;
         this.type = type;
      }
+     public void setContents(List<String> contents, String postfix)
+     {
+       this.contents = contents;
+       this.postfix = postfix;
+       while (parameters.size() < contents.size())
+         parameters.add(new TokenContainer());
+     }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents); }
      public static List<String> splitVarAtColons(String val)
      {
+       if (!val.contains(":"))
+         return new ArrayList<>();
        List<String> params = new ArrayList<>();
        while (val.indexOf(':') >= 0)
        {
@@ -116,6 +125,12 @@ public abstract class Token
        if (!val.isEmpty())
          params.add(val);
        return params;
+     }
+     public static String splitVarAtColonsForPostfix(String val)
+     {
+       if (!val.contains(":"))
+         return val;
+       return "";
      }
      public <S> S visit(TokenVisitor<S> visitor)
      {

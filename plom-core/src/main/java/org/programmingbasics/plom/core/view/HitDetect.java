@@ -12,6 +12,7 @@ import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 
 import elemental.dom.Element;
+import elemental.html.ClientRectList;
 import elemental.html.DivElement;
 
 public class HitDetect
@@ -111,9 +112,22 @@ public class HitDetect
         Integer x,
         Integer y, RenderedHitBox hitBox)
     {
-      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x) return TokenHitLocation.AFTER;
-      if (hitBox.getOffsetLeft() < x) return TokenHitLocation.ON;
-      return TokenHitLocation.NONE;
+      // Early escape for if it definitely isn't on the token 
+      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (y < hitBox.getOffsetTop()) return TokenHitLocation.NONE;
+      
+      // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
+      RenderedHitBox.Rect topRect = null, bottomRect = null;
+      for (RenderedHitBox.Rect rect: hitBox.getClientRects())
+      {
+        if (topRect == null || rect.getTop() < topRect.getTop()) topRect = rect;
+        if (bottomRect == null || rect.getBottom() > bottomRect.getBottom()) bottomRect = rect;
+      }
+//      if (y > topRect.getBottom() && y < bottomRect.getTop()) return TokenHitLocation.ON;
+      if (y > bottomRect.getBottom() || (y > bottomRect.getTop() && x > bottomRect.getRight()))
+        return TokenHitLocation.AFTER;
+      if (y < topRect.getBottom() && x < topRect.getLeft()) return TokenHitLocation.NONE;
+      return TokenHitLocation.ON;
     }
     TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
     {

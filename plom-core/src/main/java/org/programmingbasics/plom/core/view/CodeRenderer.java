@@ -30,6 +30,10 @@ public class CodeRenderer
   static final int EXPRBLOCK_POS_START = 0;
   static final int EXPRBLOCK_POS_EXPR = 1;
   static final int EXPRBLOCK_POS_BLOCK = 2;
+  
+  static final int PARAMTOK_POS_TEXTS = 0;
+  static final int PARAMTOK_POS_EXPRS = 1;
+  
 //  private static final int EXPRBLOCK_POS_END = 3;
   
   public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
@@ -70,9 +74,45 @@ public class CodeRenderer
     {
       Element span = doc.createSpanElement();
       span.setClassName("token");
-      span.setTextContent(String.join(" ",token.contents));
+      RenderedHitBox textHitBoxes = null;
+      RenderedHitBox exprHitBoxes = null;
       if (hitBox != null)
+      {
+        hitBox.children = new ArrayList<>();
+        hitBox.children.add(null);
+        hitBox.children.add(null);
+        textHitBoxes = RenderedHitBox.withChildren();
+        exprHitBoxes = RenderedHitBox.withChildren();
+        hitBox.children.set(PARAMTOK_POS_TEXTS, textHitBoxes);
+        hitBox.children.set(PARAMTOK_POS_EXPRS, exprHitBoxes);
         hitBox.el = span;
+      }
+
+      // Render out each parameter
+      for (int n = 0; n < token.contents.size(); n++)
+      {
+        SpanElement textSpan = doc.createSpanElement();
+        textSpan.setTextContent(token.contents.get(n));
+        SpanElement exprSpan = doc.createSpanElement();
+        span.appendChild(textSpan);
+        span.appendChild(exprSpan);
+        RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
+        if (hitBox != null)
+          exprHitBoxes.children.add(exprHitBox);
+        boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
+        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, this, exprHitBox);
+      }
+      // Handle any postfix for the token
+      SpanElement endSpan = doc.createSpanElement();
+      if (token.postfix != null)
+        endSpan.setTextContent(token.postfix);
+      span.appendChild(endSpan);
+      if (hitBox != null)
+      {
+        RenderedHitBox endHitBox = new RenderedHitBox(endSpan);
+        textHitBoxes.children.add(endHitBox);
+      }
+
       toReturn.el = span;
       toReturn.beforeInsertionPoint = span;
       return null;
@@ -86,16 +126,6 @@ public class CodeRenderer
         toReturn.el.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
         toReturn.el.getStyle().setFontStyle(FontStyle.ITALIC);
       }
-        
-//      DivElement div = doc.createDivElement();
-//      div.setClassName("blocktoken");
-//      SpanElement contentsSpan = doc.createSpanElement();
-//      contentsSpan.setTextContent(token.contents);
-//      div.appendChild(contentsSpan);
-//      if (hitBox != null)
-//        hitBox.el = div;
-//      toReturn.el = div;
-//      toReturn.beforeInsertionPoint = contentsSpan;
       return null;
     }
     @Override
@@ -263,10 +293,12 @@ public class CodeRenderer
           subdiv = doc.createDivElement();
           div.appendChild(subdiv);
         }
+        subdiv.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
         subdiv.appendChild(el);
       }
       else
       {
+        div.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
         div.appendChild(el);
         subdiv = null;
       }
