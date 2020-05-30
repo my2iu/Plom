@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.view;
 import java.util.Collections;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -73,6 +74,29 @@ public class EraseLeft
     if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
     {
       AfterAction after = line.tokens.get(pos.getOffset(level)).visit(new RecurseIntoCompoundToken<AfterAction, Void>() {
+        @Override
+        public AfterAction visitParameterToken(ParameterToken token,
+            CodePosition pos, Integer level, Void param)
+        {
+          if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+          {
+            int paramNum = pos.getOffset(level + 1);
+            AfterAction action = eraseLeftFromLine(token.parameters.get(paramNum), pos, level + 2);
+            if (action == AfterAction.ERASE_BEGINNING)
+            {
+              if (paramNum > 0)
+              {
+                pos.setOffset(level + 1, paramNum - 1);
+                LastPosition.lastPositionOfLine(token.parameters.get(paramNum - 1), pos, level + 2);
+                return AfterAction.NONE;
+              }
+              return AfterAction.ERASE_BEGINNING;
+              
+            }
+            return AfterAction.NONE;
+          }
+          throw new IllegalArgumentException();
+        }
         @Override
         AfterAction handleWideToken(WideToken originalToken,
             TokenContainer exprContainer, StatementContainer blockContainer,

@@ -51,7 +51,12 @@ public class LastPosition
       @Override
       public Boolean visitParameterToken(ParameterToken token)
       {
-        return false;
+        if (token.parameters.isEmpty())
+          return false;
+        pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+        pos.setOffset(level + 1, token.parameters.size() - 1);
+        lastPositionOfLine(token.parameters.get(token.parameters.size() - 1), pos, level + 2);
+        return true;
       }
       
       @Override

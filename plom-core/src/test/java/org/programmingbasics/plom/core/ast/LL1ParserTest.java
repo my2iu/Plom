@@ -18,7 +18,7 @@ public class LL1ParserTest extends TestCase
       
       new SimpleToken("", Symbol.Number).visit(parser);
       Assert.assertEquals(false, parser.isError);
-      Assert.assertEquals(Symbol.MultiplicativeExpressionMore, parser.stack.get(parser.stack.size() - 1));
+      Assert.assertEquals(Symbol.MemberExpressionMore, parser.stack.get(parser.stack.size() - 1));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Plus));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Minus));
       Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.EndStatement));

@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.view;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -260,6 +263,91 @@ public class EraseLeftTest extends TestCase
   @Test
   public void testParameterBlock()
   {
-    Assert.assertTrue(false);
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                    new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
+                    new TokenContainer(new Token.SimpleToken("1", Symbol.Number))
+                    ))
+            )
+        );
+    CodePosition pos = CodePosition.fromOffsets(0, 2);
+    // First backspace should go to the last parameter
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                    new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
+                    new TokenContainer(new Token.SimpleToken("1", Symbol.Number))
+                    ))
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 1), pos);
+    // Second backspace deletes the token in the last parameter
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                    new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
+                    new TokenContainer()
+                    ))
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), pos);
+    // Third backspace moves to the first parameter
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                    new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
+                    new TokenContainer()
+                    ))
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), pos);
+    // Fourth backspace deletes the token in the first parameter
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                    new TokenContainer(),
+                    new TokenContainer()
+                    ))
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), pos);
+    // Backspace from the first parameter will delete the token
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList())
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1), pos);
+    // Backspace over parameter token with no parameters
+    Assert.assertEquals(EraseLeft.AfterAction.NONE, EraseLeft.eraseLeftFromStatementContainer(container, pos, 0));
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0), pos);
   }
 }
