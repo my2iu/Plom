@@ -60,6 +60,11 @@ public class HitDetect
     // Find which token that mouse position is over
     int tokenno = 0;
     TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+    if (renderedLineHitBoxes.children == null)
+    {
+      newPos.setOffset(level, 0);
+      return newPos;
+    }
     for (int n = 0; n < renderedLineHitBoxes.children.size(); n++)
     {
       Token token = tokens.tokens.get(n);

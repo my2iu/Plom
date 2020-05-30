@@ -1,6 +1,8 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +18,7 @@ public class HitDetectTest extends TestCase
   class MockHitBox extends RenderedHitBox
   {
     int left, top, width, height;
+    List<Rect> rects;
     public MockHitBox(int left, int top, int width, int height, RenderedHitBox...children)
     {
       this.left = left;
@@ -24,7 +27,19 @@ public class HitDetectTest extends TestCase
       this.height = height;
       if (children.length > 0)
         this.children = Arrays.asList(children);
+      rects = Collections.singletonList(new RenderedHitBox.Rect(left, top, width, height));
     }
+    public MockHitBox withRects(RenderedHitBox.Rect...rects)
+    {
+      this.rects = Arrays.asList(rects);
+      return this;
+    }
+    public MockHitBox withChildren(RenderedHitBox...children)
+    {
+      this.children = Arrays.asList(children);
+      return this;
+    }
+    @Override public List<Rect> getClientRects() { return rects; }
     @Override public int getOffsetLeft() { if (left < 0) throw new NullPointerException(); else return left; }
     @Override public int getOffsetTop() { if (top < 0) throw new NullPointerException(); else return top; }
     @Override public int getOffsetWidth() { if (width< 0) throw new NullPointerException(); else return width; }
@@ -159,12 +174,58 @@ public class HitDetectTest extends TestCase
     Assert.assertFalse(newPos.hasOffset(2));
     Assert.assertEquals(1, newPos.getOffset(0));
     Assert.assertEquals(2, newPos.getOffset(1));
-
   }
   
   @Test
-  public void testParameterToken()
+  public void testOneLineParameterToken()
   {
-    Assert.assertTrue(false);
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(Token.ParameterToken.fromContents(".print:at x:y:", Symbol.DotVariable, Arrays.asList(
+                new TokenContainer(new Token.SimpleToken("\"Hello\"", Symbol.String)),
+                new TokenContainer(),
+                new TokenContainer(new Token.SimpleToken("20", Symbol.Number))
+                )))
+        );
+    RenderedHitBox hitBoxes = new MockHitBox(-1, -1, -1, -1, 
+        new MockHitBox(0, 0, 495, 31, 
+            new MockHitBox(0, 4, 177, 26, 
+                new MockHitBox(-1, -1, -1, -1,  // PARAMTOK_POS_TEXTS 
+                    new MockHitBox(4, 8, 39, 17), 
+                    new MockHitBox(100, 8, 32, 17), 
+                    new MockHitBox(132, 8, 16, 17), 
+                    new MockHitBox(173, 8, 0, 17)), 
+                new MockHitBox(-1, -1, -1, -1,  // PARAMTOK_POS_EXPRS 
+                    new MockHitBox(43, 8, 57, 17, 
+                        new MockHitBox(43, 4, 57, 27)), 
+                    new MockHitBox(132, 8, 0, 17), 
+                    new MockHitBox(148, 8, 25, 17, 
+                        new MockHitBox(148, 4, 25, 27)))))); 
+    // Click on the beginning of parameter token
+    CodePosition newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(3, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0), newPos);
+    // Click on first token of first parameter
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(50, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), newPos);
+    // Click on after first parameter
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(103, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), newPos);
+    // Click on after second parameter that is empty
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(133, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), newPos);
+    // Click on postfix
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(175, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1), newPos);
+    // Click after end of token
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(205, 15, container, hitBoxes, newPos, 0);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1), newPos);
   }
+  
+  // TODO: Write hit detect test for multi-line parameter token
 }

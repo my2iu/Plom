@@ -77,6 +77,24 @@ public class RenderedHitBox
      return toReturn;
    }
 
+   public String getTestData()
+   {
+     String toReturn = "(";
+     if (el == null)
+       toReturn += "-1, -1, -1, -1";
+     else
+       toReturn += getOffsetLeft() + ", " + getOffsetTop() + ", " + getOffsetWidth() + ", " + getOffsetHeight();
+     if (children != null)
+     {
+       for (RenderedHitBox child: children)
+       {
+         toReturn += ", ";
+         toReturn += child.getTestData();
+       }
+     }
+     toReturn += ")";
+     return toReturn;
+   }
 //   int x;
 //   int y;
 //   int w;
