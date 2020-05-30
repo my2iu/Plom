@@ -92,13 +92,19 @@ public class CodeRenderer
       for (int n = 0; n < token.contents.size(); n++)
       {
         SpanElement textSpan = doc.createSpanElement();
-        textSpan.setTextContent(token.contents.get(n));
+        textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n));
         SpanElement exprSpan = doc.createSpanElement();
         span.appendChild(textSpan);
         span.appendChild(exprSpan);
-        RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
+        RenderedHitBox exprHitBox = null;
+        RenderedHitBox textHitBox = null; 
         if (hitBox != null)
+        {
+          exprHitBox = RenderedHitBox.withChildren(exprSpan); 
           exprHitBoxes.children.add(exprHitBox);
+          textHitBox = new RenderedHitBox(textSpan);
+          textHitBoxes.children.add(textHitBox);
+        }
         boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
         renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, this, exprHitBox);
       }

@@ -9,7 +9,6 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 public class ParseContext
@@ -50,13 +49,13 @@ public class ParseContext
   static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void>
   {
     @Override
-    ParseContextForCursor handleExpression(WideToken originalToken, TokenContainer exprContainer,
+    ParseContextForCursor handleExpression(Token originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    ParseContextForCursor handleStatementContainer(WideToken originalToken,
+    ParseContextForCursor handleStatementContainer(Token originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForStatements(blockContainer, pos, level);

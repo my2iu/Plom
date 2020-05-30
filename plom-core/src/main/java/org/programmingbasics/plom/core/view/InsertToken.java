@@ -4,7 +4,6 @@ import java.util.Collections;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 
 public class InsertToken
@@ -44,14 +43,14 @@ public class InsertToken
       Token token = line.tokens.get(pos.getOffset(level));
       token.visit(new RecurseIntoCompoundToken<Void, Token>() {
         @Override
-        Void handleExpression(WideToken originalToken, TokenContainer exprContainer,
+        Void handleExpression(Token originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, Token newToken)
         {
           insertTokenIntoLine(exprContainer, newToken, pos, level);
           return null;
         }
         @Override
-        Void handleStatementContainer(WideToken originalToken,
+        Void handleStatementContainer(Token originalToken,
             StatementContainer blockContainer, CodePosition pos, int level, Token newToken)
         {
           insertTokenIntoStatementContainer(blockContainer, newToken, pos, level);

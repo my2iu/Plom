@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
@@ -23,6 +24,10 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
   public T visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
       U param)
   {
+    if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+    {
+      return handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, param);
+    }
     throw new IllegalArgumentException();
   }
   
@@ -61,12 +66,12 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
     throw new IllegalArgumentException();
   }
   
-  T handleExpression(WideToken originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param)
+  T handleExpression(Token originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param)
   {
     return null;
   }
   
-  T handleStatementContainer(WideToken originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param)
+  T handleStatementContainer(Token originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param)
   {
     return null;
   }

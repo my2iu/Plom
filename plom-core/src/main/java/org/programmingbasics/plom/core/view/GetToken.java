@@ -9,7 +9,6 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 public class GetToken
@@ -46,13 +45,13 @@ public class GetToken
   static class TokenAtCursor extends RecurseIntoCompoundToken<Token, Void>
   {
     @Override
-    Token handleExpression(WideToken originalToken, TokenContainer exprContainer,
+    Token handleExpression(Token originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, Void param)
     {
       return inLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    Token handleStatementContainer(WideToken originalToken,
+    Token handleStatementContainer(Token originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return inStatements(blockContainer, pos, level);

@@ -69,6 +69,14 @@ public class RenderedHitBox
      toReturn.children = new ArrayList<>();
      return toReturn;
    }
+   
+   public static RenderedHitBox withChildren(Element el)
+   {
+     RenderedHitBox toReturn = RenderedHitBox.withChildren();
+     toReturn.el = el;
+     return toReturn;
+   }
+
 //   int x;
 //   int y;
 //   int w;

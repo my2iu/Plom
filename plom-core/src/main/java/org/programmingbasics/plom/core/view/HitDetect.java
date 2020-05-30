@@ -97,6 +97,23 @@ public class HitDetect
   {
     NONE, ON, AFTER;
   }
+  
+  private static TokenHitLocation checkHitMultilineSpan(int x, int y,
+      RenderedHitBox hitBox)
+  {
+    RenderedHitBox.Rect topRect = null, bottomRect = null;
+    for (RenderedHitBox.Rect rect: hitBox.getClientRects())
+    {
+      if (topRect == null || rect.getTop() < topRect.getTop()) topRect = rect;
+      if (bottomRect == null || rect.getBottom() > bottomRect.getBottom()) bottomRect = rect;
+    }
+//    if (y > topRect.getBottom() && y < bottomRect.getTop()) return TokenHitLocation.ON;
+    if (y > bottomRect.getBottom() || (y > bottomRect.getTop() && x > bottomRect.getRight()))
+      return TokenHitLocation.AFTER;
+    if (y < topRect.getBottom() && x < topRect.getLeft()) return TokenHitLocation.NONE;
+    return TokenHitLocation.ON;
+  }
+
   static class TokenHitDetection implements Token.TokenVisitor3<TokenHitLocation, Integer, Integer, RenderedHitBox>
   {
     @Override
@@ -117,17 +134,7 @@ public class HitDetect
       if (y < hitBox.getOffsetTop()) return TokenHitLocation.NONE;
       
       // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
-      RenderedHitBox.Rect topRect = null, bottomRect = null;
-      for (RenderedHitBox.Rect rect: hitBox.getClientRects())
-      {
-        if (topRect == null || rect.getTop() < topRect.getTop()) topRect = rect;
-        if (bottomRect == null || rect.getBottom() > bottomRect.getBottom()) bottomRect = rect;
-      }
-//      if (y > topRect.getBottom() && y < bottomRect.getTop()) return TokenHitLocation.ON;
-      if (y > bottomRect.getBottom() || (y > bottomRect.getTop() && x > bottomRect.getRight()))
-        return TokenHitLocation.AFTER;
-      if (y < topRect.getBottom() && x < topRect.getLeft()) return TokenHitLocation.NONE;
-      return TokenHitLocation.ON;
+      return checkHitMultilineSpan(x, y, hitBox);
     }
     TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
     {
@@ -183,6 +190,23 @@ public class HitDetect
     public Void visitParameterToken(ParameterToken token, CodePosition pos,
         Integer level, HitDetectParam param)
     {
+      RenderedHitBox hitBox = param.hitBox;
+      int x = param.x;
+      int y = param.y;
+      // Check each parameter to see if we're clicking in there
+      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+      if (paramHitBox == null)
+        return null;
+      for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
+      {
+        if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
+        {
+          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+          pos.setOffset(level + 1, n);
+          hitDetectTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
+          return null;
+        }
+      }
       return null;
     }
     @Override
