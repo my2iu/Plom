@@ -173,8 +173,6 @@ public class Entry implements EntryPoint
       break;
     }
     InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
-    codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null);
     switch (tokenType)
     {
     case DotVariable:
@@ -184,9 +182,12 @@ public class Entry implements EntryPoint
       showSimpleEntryForToken(newToken, false);
       break;
     default:
+      NextPosition.nextPositionOfStatements(codeList, pos, 0);
       showPredictedTokenInput(choicesDiv);
       break;
     }
+    codeDiv.setInnerHTML("");
+    renderTokens(codeDiv, codeList, cursorPos, null);
   }
 
   void showSimpleEntryForToken(Token newToken, boolean isEdit)
@@ -204,11 +205,11 @@ public class Entry implements EntryPoint
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, this::simpleEntryInput);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, this::simpleEntryInput);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "", newToken, this::simpleEntryInput);
+      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, this::simpleEntryInput);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -216,12 +217,12 @@ public class Entry implements EntryPoint
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, this::simpleEntryInput);
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, this::simpleEntryInput);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(3);
-      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, this::simpleEntryInput);
+      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput);
       break;
     default:
       return;
@@ -340,8 +341,9 @@ public class Entry implements EntryPoint
     }, false);
   }
 
-  <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token)
+  <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token, boolean isEdit)
   {
+    boolean advanceToNext = !isEdit;
     if (token == null) return;
     if (token instanceof Token.SimpleToken)
     {
@@ -350,12 +352,16 @@ public class Entry implements EntryPoint
         val = "0";
       }
       ((Token.SimpleToken)token).contents = val;
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }
     else if (token instanceof Token.WideToken && ((Token.WideToken)token).type == Symbol.DUMMY_COMMENT)
     {
       ((Token.WideToken)token).contents = val;
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }
@@ -364,6 +370,8 @@ public class Entry implements EntryPoint
       ((Token.ParameterToken)token).setContents(
           Token.ParameterToken.splitVarAtColons(val),
           Token.ParameterToken.splitVarAtColonsForPostfix(val));
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
     }

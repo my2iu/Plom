@@ -60,7 +60,6 @@ public class InsertToken
       return;
     }
     line.tokens.add(pos.getOffset(level), newToken);
-    pos.setOffset(level, pos.getOffset(level) + 1);
   }
 
 }

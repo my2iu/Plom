@@ -306,7 +306,8 @@ public class CodeRenderer
       }
       else
       {
-        div.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
+        // No zero-width space between wide tokens
+//        div.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
         div.appendChild(el);
         subdiv = null;
       }

@@ -22,6 +22,7 @@ public class SimpleEntry
   InputCallback<Token> callback;
   String tokenPrefix = "";
   String tokenPostfix = "";
+  boolean isEdit;
   
   SimpleEntry(DivElement el)
   {
@@ -41,7 +42,7 @@ public class SimpleEntry
   {
     if (callback != null)
     {
-      callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken);
+      callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken, isEdit);
     }
   }
 
@@ -90,21 +91,21 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, callback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
-  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback)
+  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, callback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, InputCallback<U> callback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
@@ -124,12 +125,13 @@ public class SimpleEntry
     simpleEntryToken = token;
     this.tokenPrefix = prefix;
     this.tokenPostfix = postfix;
+    this.isEdit = isEdit;
     this.callback = (InputCallback<Token>)callback;
     simpleEntryInput(initialValue, false);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>
   {
-    void input(String val, boolean isFinal, T token);
+    void input(String val, boolean isFinal, T token, boolean isEdit);
   }
 }
