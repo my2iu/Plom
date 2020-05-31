@@ -5,6 +5,7 @@ import org.programmingbasics.plom.core.view.EraseLeftTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;
 import org.programmingbasics.plom.core.view.InsertTokenTest;
+import org.programmingbasics.plom.core.view.NextPositionTest;
 import org.programmingbasics.plom.core.view.ParseContextTest;
 
 import junit.framework.Test;
@@ -22,6 +23,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(ParseContextTest.class);
       suite.addTestSuite(EraseLeftTest.class);
       suite.addTestSuite(HitDetectTest.class);
+      suite.addTestSuite(NextPositionTest.class);
       return suite;
    }
 

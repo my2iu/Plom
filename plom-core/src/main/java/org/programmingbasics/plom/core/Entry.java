@@ -20,6 +20,7 @@ TODO:
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.InsertNewLine;
 import org.programmingbasics.plom.core.view.InsertToken;
+import org.programmingbasics.plom.core.view.NextPosition;
 import org.programmingbasics.plom.core.view.ParseContext;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 
@@ -99,7 +101,7 @@ public class Entry implements EntryPoint
         new TokenContainer(printToken),
         new TokenContainer(Arrays.asList()),
         new TokenContainer(Arrays.asList(
-            new Token.ParameterToken(Arrays.asList(".a"), "", Symbol.DotVariable),
+            new Token.ParameterToken(Collections.emptyList(), ".a", Symbol.DotVariable),
             new Token.SimpleToken(":=", Symbol.Assignment),
             new Token.SimpleToken("8", Symbol.Number)
             ))
@@ -183,6 +185,7 @@ public class Entry implements EntryPoint
       break;
     default:
       showPredictedTokenInput(choicesDiv);
+      break;
     }
   }
 
@@ -241,8 +244,13 @@ public class Entry implements EntryPoint
     }
     Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();
 
-    // Buttons for next and enter
-    choicesDiv.appendChild(makeButton("\u27a0", true, () -> {}));
+    // Buttons for next, backspace, and enter
+    choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
+      NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      codeDiv.setInnerHTML("");
+      renderTokens(codeDiv, codeList, cursorPos, null);
+      showPredictedTokenInput(choicesDiv);
+    }));
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
       // Backspace
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);

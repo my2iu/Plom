@@ -92,7 +92,7 @@ public class CodeRenderer
       for (int n = 0; n < token.contents.size(); n++)
       {
         SpanElement textSpan = doc.createSpanElement();
-        textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n));
+        textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n) + "\u00a0");
         SpanElement exprSpan = doc.createSpanElement();
         span.appendChild(textSpan);
         span.appendChild(exprSpan);
@@ -110,8 +110,10 @@ public class CodeRenderer
       }
       // Handle any postfix for the token
       SpanElement endSpan = doc.createSpanElement();
-      if (token.postfix != null)
+      if (token.postfix != null && !token.postfix.isEmpty())
         endSpan.setTextContent(token.postfix);
+      else
+        endSpan.setTextContent("\u00a0\u00a0");
       span.appendChild(endSpan);
       if (hitBox != null)
       {

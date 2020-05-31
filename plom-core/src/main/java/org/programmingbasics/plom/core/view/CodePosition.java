@@ -62,4 +62,20 @@ public class CodePosition
     }
     return true;
   }
+  @Override
+  public String toString()
+  {
+    String toReturn = "[";
+    boolean isFirst = true;
+    for (int offset: offsets)
+    {
+      if (offset < 0) break;
+      if (!isFirst)
+        toReturn += ", ";
+      isFirst = false;
+      toReturn += offset;
+    }
+    toReturn += "]";
+    return toReturn;
+  }
 }
