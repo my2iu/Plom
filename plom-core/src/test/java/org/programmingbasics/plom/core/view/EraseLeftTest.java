@@ -1,8 +1,5 @@
 package org.programmingbasics.plom.core.view;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -266,11 +263,11 @@ public class EraseLeftTest extends TestCase
     StatementContainer container = 
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
-                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable,
                     new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
                     new TokenContainer(new Token.SimpleToken("1", Symbol.Number))
-                    ))
+                    )
             )
         );
     CodePosition pos = CodePosition.fromOffsets(0, 2);
@@ -279,11 +276,11 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
-                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, 
                     new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
                     new TokenContainer(new Token.SimpleToken("1", Symbol.Number))
-                    ))
+                    )
             )
         ),
         container);
@@ -293,11 +290,11 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
-                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, 
                     new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
                     new TokenContainer()
-                    ))
+                    )
             )
         ),
         container);
@@ -307,11 +304,11 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
-                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable,
                     new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
                     new TokenContainer()
-                    ))
+                    )
             )
         ),
         container);
@@ -321,11 +318,11 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList()),
-                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, Arrays.asList(
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable),
+                Token.ParameterToken.fromContents(".call param1:param2:", Symbol.DotVariable, 
                     new TokenContainer(),
                     new TokenContainer()
-                    ))
+                    )
             )
         ),
         container);
@@ -335,7 +332,7 @@ public class EraseLeftTest extends TestCase
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(
-                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable, Collections.emptyList())
+                Token.ParameterToken.fromContents(".variable", Symbol.DotVariable)
             )
         ),
         container);

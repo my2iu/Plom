@@ -103,13 +103,13 @@ public abstract class Token
         this.postfix = postfix;
         this.type = type;
      }
-     public static ParameterToken fromContents(String name, Symbol type, List<TokenContainer> params)
+     public static ParameterToken fromContents(String name, Symbol type, TokenContainer... params)
      {
        List<String> parts = splitVarAtColons(name);
        String postfix = splitVarAtColonsForPostfix(name);
        ParameterToken tok = new ParameterToken(parts, postfix, type);
-       for (int n = 0; n < params.size(); n++)
-         tok.parameters.set(n, params.get(n));
+       for (int n = 0; n < params.length; n++)
+         tok.parameters.set(n, params[n]);
        return tok;
      }
      public void setContents(List<String> contents, String postfix)

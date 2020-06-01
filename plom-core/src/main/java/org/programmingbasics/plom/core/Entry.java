@@ -35,6 +35,7 @@ import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
@@ -79,6 +80,10 @@ public class Entry implements EntryPoint
     renderTokens(codeDiv, codeList, cursorPos, null);
     showPredictedTokenInput(choicesDiv);
     hookCodeClick(codeDiv);
+    
+    // Need to have a basic way to run code initially in order to get a better
+    // feel for the design of the programming language
+    hookRun();
   }
 
   StatementContainer codeList = new StatementContainer();
@@ -383,5 +388,13 @@ public class Entry implements EntryPoint
     }
 
   }
-  
+ 
+  void hookRun()
+  {
+    Element runEl = Browser.getDocument().querySelector("a.runbutton");
+    runEl.addEventListener(Event.CLICK, (e) -> {
+      SimpleInterpreter terp = new SimpleInterpreter(codeList);
+      terp.run();
+    }, false);
+  }
 }

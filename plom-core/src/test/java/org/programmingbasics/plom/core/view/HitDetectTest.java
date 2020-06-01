@@ -181,11 +181,11 @@ public class HitDetectTest extends TestCase
   {
     StatementContainer container = 
         new StatementContainer(
-            new TokenContainer(Token.ParameterToken.fromContents(".print:at x:y:", Symbol.DotVariable, Arrays.asList(
+            new TokenContainer(Token.ParameterToken.fromContents(".print:at x:y:", Symbol.DotVariable, 
                 new TokenContainer(new Token.SimpleToken("\"Hello\"", Symbol.String)),
                 new TokenContainer(),
                 new TokenContainer(new Token.SimpleToken("20", Symbol.Number))
-                )))
+                ))
         );
     RenderedHitBox hitBoxes = new MockHitBox(-1, -1, -1, -1, 
         new MockHitBox(0, 0, 495, 31, 

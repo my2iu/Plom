@@ -1,8 +1,5 @@
 package org.programmingbasics.plom.core.view;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -53,12 +50,12 @@ public class NextPositionTest extends TestCase
                             new Token.SimpleToken("1", Symbol.Number), 
                             new Token.SimpleToken("2", Symbol.Number)),
                         new TokenContainer(
-                            Token.ParameterToken.fromContents(".a", Symbol.DotVariable, Collections.emptyList()),
-                            Token.ParameterToken.fromContents(".call:param1:param2:", Symbol.DotVariable, Arrays.asList(
+                            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents(".call:param1:param2:", Symbol.DotVariable, 
                                 new TokenContainer(new Token.SimpleToken("arg1", Symbol.Number)),
                                 new TokenContainer(),
                                 new TokenContainer(new Token.SimpleToken("arg3", Symbol.Number))))
-                            ))
+                            )
                 ),
                 new Token.WideToken("comment", Symbol.DUMMY_COMMENT)
             )
