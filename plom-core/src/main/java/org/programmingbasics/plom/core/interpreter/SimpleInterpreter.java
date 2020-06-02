@@ -39,7 +39,7 @@ public class SimpleInterpreter
                 (VisitorTriggers<Void, Void> triggers, AstNode node, Void param1, Void param2)->{
                   
                 }), 
-            parsed, null, null);
+            null, null);
         
         System.out.println(parsed);
       } 

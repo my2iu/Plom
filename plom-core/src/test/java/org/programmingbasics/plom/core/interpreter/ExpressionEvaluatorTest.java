@@ -21,7 +21,24 @@ public class ExpressionEvaluatorTest extends TestCase
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
     AstNode parsed = parser.parse(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed);
-    Assert.assertNotNull(val);
+    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(Double.valueOf(1), val.val);
   }
   
+  @Test
+  public void testNumberAdd() throws ParseException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("1", Symbol.Number),
+        new Token.SimpleToken("+", Symbol.Plus),
+        new Token.SimpleToken("2", Symbol.Number),
+        new Token.SimpleToken("-", Symbol.Minus),
+        new Token.SimpleToken("2.5", Symbol.Number));
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    AstNode parsed = parser.parse(Symbol.Expression);
+    Value val = ExpressionEvaluator.eval(parsed);
+    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(Double.valueOf(0.5), val.val);
+    
+  }
 }

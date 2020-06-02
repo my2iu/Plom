@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /**
@@ -35,6 +36,7 @@ public class AstNode
   {
     symbols.add(baseSymbol);
   }
+  
   public static AstNode fromToken(Token token)
   {
     if (!(token instanceof Token.TokenWithSymbol))
@@ -43,22 +45,27 @@ public class AstNode
     node.token = token;
     return node;
   }
+  
+  public boolean matchesRule(List<Symbol> rule)
+  {
+    return symbols.equals(rule);
+  }
 
-  public <U, V> void recursiveVisit(VisitorTriggers<U, V> triggers, AstNode node, U param1, V param2)
+  public <U, V> void recursiveVisit(VisitorTriggers<U, V> triggers, U param1, V param2)
   {
     // See if we have a visitor registered for this production rule of symbols
-    RecursiveWalkerVisitor<U, V> match = triggers.get(node.symbols);
+    RecursiveWalkerVisitor<U, V> match = triggers.get(symbols);
     if (match != null)
-      match.visit(triggers, node, param1, param2);
+      match.visit(triggers, this, param1, param2);
     else
       // Visit the children
-      recursiveVisitChildren(triggers, node, param1, param2);
+      recursiveVisitChildren(triggers, param1, param2);
   }
   
-  public <U, V> void recursiveVisitChildren(VisitorTriggers<U, V> triggers, AstNode node, U param1, V param2)
+  public <U, V> void recursiveVisitChildren(VisitorTriggers<U, V> triggers, U param1, V param2)
   {
-    for (AstNode child: node.children)
-      recursiveVisit(triggers, child, param1, param2);
+    for (AstNode child: children)
+      child.recursiveVisit(triggers, param1, param2);
   }
 
   public static class VisitorTriggers<U, V> extends HashMap<List<Symbol>, RecursiveWalkerVisitor<U, V>>
