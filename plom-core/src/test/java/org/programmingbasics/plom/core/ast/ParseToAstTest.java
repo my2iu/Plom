@@ -21,6 +21,6 @@ public class ParseToAstTest extends TestCase
             ));
     ParseToAst lineParser = new ParseToAst(container.statements.get(0).tokens, Symbol.EndStatement);
     AstNode node = lineParser.parse(Symbol.Statement);
-    Assert.assertNull(node);
+    Assert.assertNotNull(node);
   }
 }

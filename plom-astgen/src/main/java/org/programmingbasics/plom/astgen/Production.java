@@ -8,7 +8,7 @@ public class Production
 {
   public Symbol from;
   public List<Symbol> to;
-  public List<Symbol> toFull;
+//  public List<Symbol> toFull;
   public String name;
 
   public Production(String name, Symbol from, Symbol[] to)

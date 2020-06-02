@@ -344,6 +344,39 @@ public class PlomAstGen
       out.println("}");
     }
 
+    try (PrintWriter out = new PrintWriter(new File(dir, "Rule.java"), "UTF-8"))
+    {
+      out.println("package org.programmingbasics.plom.core.ast.gen;");
+      out.println("");
+      out.println("import java.util.Arrays;"); 
+      out.println("import java.util.List;"); 
+      out.println();
+      out.println("public class Rule");
+      out.println("{");
+      for (Production p: grammar)
+      {
+        out.print("\tpublic final static List<Symbol> ");
+        out.print(p.from.name());
+        for (Symbol s: p.to)
+          out.print("_" + s.name());
+        out.print(" = Arrays.asList(");
+        out.print("Symbol." + p.from.name());
+        for (Symbol s: p.to)
+          out.print(", Symbol." + s.name());
+        out.println(");");
+      }
+      for (Symbol s: Symbol.values())
+      {
+        if (!s.isTerminal) continue;
+        out.print("\tpublic final static List<Symbol> ");
+        out.print(s.name());
+        out.print(" = Arrays.asList(");
+        out.print("Symbol." + s.name());
+        out.println(");");
+      }
+      out.println("}");
+    }
+
   }
   
   private void generateSymbolBooleanTest(PrintWriter out, String fnName, Function<Symbol, Boolean> test)

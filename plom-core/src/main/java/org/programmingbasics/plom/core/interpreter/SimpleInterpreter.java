@@ -1,10 +1,14 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.Arrays;
+
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.AstNode.VisitorTriggers;
+import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /**
@@ -29,8 +33,15 @@ public class SimpleInterpreter
     {
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
       try {
-        AstNode node = parser.parse(Symbol.Statement);
-        System.out.println(node);
+        AstNode parsed = parser.parse(Symbol.Statement);
+        parsed.recursiveVisit(new AstNode.VisitorTriggers<Void, Void>()
+            .add(Rule.AssignmentExpression_Expression_AssignmentExpressionMore, 
+                (VisitorTriggers<Void, Void> triggers, AstNode node, Void param1, Void param2)->{
+                  
+                }), 
+            parsed, null, null);
+        
+        System.out.println(parsed);
       } 
       catch (ParseException e)
       {

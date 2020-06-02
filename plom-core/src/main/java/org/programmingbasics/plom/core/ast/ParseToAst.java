@@ -20,6 +20,7 @@ public class ParseToAst
 
   public static class ParseException extends Exception
   {
+    private static final long serialVersionUID = 1L;
   }
   
   public AstNode parse(Symbol base) throws ParseException
@@ -29,7 +30,7 @@ public class ParseToAst
     {
       if (sym != base)
         throw new ParseException();
-      AstNode node = new AstTokenNode(readNextToken());
+      AstNode node = AstNode.fromToken(readNextToken());
       return node;
     }
 
@@ -38,11 +39,11 @@ public class ParseToAst
     Symbol[] expansion = parser.parsingTable.get(base).get(sym);
     if (expansion == null)
       throw new ParseException();
-    AstProductionNode production = new AstProductionNode(base);
+    AstNode production = new AstNode(base);
     for (Symbol expanded: expansion)
-      production.prodRule.add(expanded);
-    for (Symbol expanded: production.prodRule)
-      production.expansion.add(parse(expanded));
+      production.symbols.add(expanded);
+    for (Symbol expanded: expansion)
+      production.children.add(parse(expanded));
     return production;
   }
   

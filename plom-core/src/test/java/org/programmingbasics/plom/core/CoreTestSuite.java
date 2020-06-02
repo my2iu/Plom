@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 import org.programmingbasics.plom.core.ast.LL1ParserTest;
 import org.programmingbasics.plom.core.ast.ParseToAstTest;
+import org.programmingbasics.plom.core.interpreter.ExpressionEvaluatorTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;
@@ -20,6 +21,7 @@ public class CoreTestSuite extends TestSuite
       TestSuite suite = new TestSuite();
       suite.addTestSuite(LL1ParserTest.class);
       suite.addTestSuite(ParseToAstTest.class);
+      suite.addTestSuite(ExpressionEvaluatorTest.class);
       suite.addTestSuite(InsertNewLineTest.class);
       suite.addTestSuite(InsertTokenTest.class);
       suite.addTestSuite(ParseContextTest.class);

@@ -395,6 +395,7 @@ public class Entry implements EntryPoint
     runEl.addEventListener(Event.CLICK, (e) -> {
       SimpleInterpreter terp = new SimpleInterpreter(codeList);
       terp.run();
+      e.preventDefault();
     }, false);
   }
 }
