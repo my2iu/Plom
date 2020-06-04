@@ -34,9 +34,9 @@ public class SimpleInterpreter
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
       try {
         AstNode parsed = parser.parse(Symbol.Statement);
-        parsed.recursiveVisit(new AstNode.VisitorTriggers<Void, Void>()
+        parsed.recursiveVisit(new AstNode.VisitorTriggers<Void, Void, RunException>()
             .add(Rule.AssignmentExpression_Expression_AssignmentExpressionMore, 
-                (VisitorTriggers<Void, Void> triggers, AstNode node, Void param1, Void param2)->{
+                (VisitorTriggers<Void, Void, RunException> triggers, AstNode node, Void param1, Void param2) -> {
                   
                 }), 
             null, null);
@@ -44,6 +44,10 @@ public class SimpleInterpreter
         System.out.println(parsed);
       } 
       catch (ParseException e)
+      {
+        
+      }
+      catch (RunException e)
       {
         
       }

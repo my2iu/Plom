@@ -8,4 +8,5 @@ public class Type
     this.name = name;
   }
   static Type NUMBER = new Type(".number");
+  static Type STRING = new Type(".string");
 }

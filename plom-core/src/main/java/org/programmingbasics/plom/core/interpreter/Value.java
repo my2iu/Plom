@@ -8,4 +8,8 @@ public class Value
   {
     return ((Double)val).doubleValue();
   }
+  public String getStringValue()
+  {
+    return (String)val;
+  }
 }

@@ -3,9 +3,7 @@ package org.programmingbasics.plom.core.ast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /**
@@ -51,10 +49,10 @@ public class AstNode
     return symbols.equals(rule);
   }
 
-  public <U, V> void recursiveVisit(VisitorTriggers<U, V> triggers, U param1, V param2)
+  public <U, V, E extends Throwable> void recursiveVisit(VisitorTriggers<U, V, E> triggers, U param1, V param2) throws E
   {
     // See if we have a visitor registered for this production rule of symbols
-    RecursiveWalkerVisitor<U, V> match = triggers.get(symbols);
+    RecursiveWalkerVisitor<U, V, E> match = triggers.get(symbols);
     if (match != null)
       match.visit(triggers, this, param1, param2);
     else
@@ -62,16 +60,16 @@ public class AstNode
       recursiveVisitChildren(triggers, param1, param2);
   }
   
-  public <U, V> void recursiveVisitChildren(VisitorTriggers<U, V> triggers, U param1, V param2)
+  public <U, V, E extends Throwable> void recursiveVisitChildren(VisitorTriggers<U, V, E> triggers, U param1, V param2) throws E
   {
     for (AstNode child: children)
       child.recursiveVisit(triggers, param1, param2);
   }
 
-  public static class VisitorTriggers<U, V> extends HashMap<List<Symbol>, RecursiveWalkerVisitor<U, V>>
+  public static class VisitorTriggers<U, V, E extends Throwable> extends HashMap<List<Symbol>, RecursiveWalkerVisitor<U, V, E>>
   {
     private static final long serialVersionUID = 1L;
-    public VisitorTriggers<U, V> add(List<Symbol> match, RecursiveWalkerVisitor<U, V> callback)
+    public VisitorTriggers<U, V, E> add(List<Symbol> match, RecursiveWalkerVisitor<U, V, E> callback)
     {
       put(match, callback);
       return this;
@@ -82,8 +80,8 @@ public class AstNode
    * Defines a lambda that is triggered when the recursive walker hits
    * a node of interest.
    */
-  @FunctionalInterface public static interface RecursiveWalkerVisitor<U, V>
+  @FunctionalInterface public static interface RecursiveWalkerVisitor<U, V, E extends Throwable>
   {
-    public void visit(VisitorTriggers<U, V> triggers, AstNode node, U param1, V param2);
+    public void visit(VisitorTriggers<U, V, E> triggers, AstNode node, U param1, V param2) throws E;
   }
 }
