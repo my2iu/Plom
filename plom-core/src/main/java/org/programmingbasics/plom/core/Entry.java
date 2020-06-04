@@ -57,6 +57,7 @@ import elemental.events.Event;
 import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
+import elemental.html.ClientRect;
 import elemental.html.DivElement;
 import elemental.html.FormElement;
 import elemental.html.InputElement;
@@ -292,6 +293,8 @@ public class Entry implements EntryPoint
       case ClosedParenthesis: text = ")"; break;
       case DUMMY_COMMENT: text = "//"; break;
       case DotVariable: text = "."; break;
+      case TrueLiteral: text = "true"; break;
+      case FalseLiteral: text = "false"; break;
       case Number: text = "012..."; break;
       case String: text = "\"...\""; break;
       case COMPOUND_IF: text = "if"; break;
@@ -331,8 +334,9 @@ public class Entry implements EntryPoint
   {
     div.addEventListener(Event.CLICK, (evt)-> {
       MouseEvent mevt = (MouseEvent)evt;
-      int x = mevt.getClientX() + div.getScrollLeft();
-      int y = mevt.getClientY() + div.getScrollTop();
+      ClientRect rect = div.getBoundingClientRect();
+      int x = (int)(mevt.getClientX() - rect.getLeft()) + div.getScrollLeft();
+      int y = (int)(mevt.getClientY() - rect.getTop()) + div.getScrollTop();
 
       CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos);
 

@@ -25,6 +25,8 @@ public enum Symbol
 	ParenthesisExpression,
 	ValueExpression,
 	EndStatement,
+	TrueLiteral,
+	FalseLiteral,
 	Number,
 	DotVariable,
 	Assignment,
@@ -46,6 +48,8 @@ public enum Symbol
 		switch(this) {
 		case EMPTY:
 		case EndStatement:
+		case TrueLiteral:
+		case FalseLiteral:
 		case Number:
 		case DotVariable:
 		case Assignment:

@@ -39,12 +39,15 @@ public class RenderedHitBox
 
    public List<Rect> getClientRects() 
    {
+     ClientRect base = el.getOffsetParent().getBoundingClientRect();
+     double scrollX = el.getOffsetParent().getScrollLeft();
+     double scrollY = el.getOffsetParent().getScrollTop();
      List<Rect> rects = new ArrayList<>();
      ClientRectList list = el.getClientRects();
      for (int n = 0; n < list.getLength(); n++)
      {
        ClientRect r = list.item(n);
-       rects.add(new Rect(r.getLeft(), r.getTop(), r.getWidth(), r.getHeight()));
+       rects.add(new Rect(r.getLeft() - base.getLeft() + scrollX, r.getTop() - base.getTop() + scrollY, r.getWidth(), r.getHeight()));
      }
      return rects;
    }

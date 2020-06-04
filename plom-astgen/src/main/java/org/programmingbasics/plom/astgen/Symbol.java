@@ -25,6 +25,8 @@ enum Symbol
   ParenthesisExpression(false),
   ValueExpression(false),
   EndStatement(true),
+  TrueLiteral(true),
+  FalseLiteral(true),
   Number(true),
   DotVariable(true),
   Assignment(true),
