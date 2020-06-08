@@ -121,6 +121,12 @@ public abstract class Token
        while (parameters.size() > contents.size())
          parameters.remove(parameters.size() - 1);
      }
+     public String getLookupName()
+     {
+       if (contents.isEmpty())
+         return postfix.substring(1);
+       return String.join("", contents) + postfix;
+     }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents); }
      public static List<String> splitVarAtColons(String val)

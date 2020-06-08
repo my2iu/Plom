@@ -20,7 +20,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("1", Symbol.Number));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
     AstNode parsed = parser.parse(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed);
+    Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(1), val.val);
   }
@@ -36,7 +36,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("2.5", Symbol.Number));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
     AstNode parsed = parser.parse(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed);
+    Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(0.5), val.val);
   }
@@ -58,7 +58,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken(")", Symbol.ClosedParenthesis));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
     AstNode parsed = parser.parse(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed);
+    Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(-5), val.val);
   }
@@ -72,9 +72,41 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("\"world\"", Symbol.String));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
     AstNode parsed = parser.parse(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed);
+    Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.STRING, val.type);
     Assert.assertEquals("hello world", val.val);
   }
 
+  @Test
+  public void testReadVariable() throws ParseException, RunException
+  {
+    VariableScope scope = new VariableScope();
+    Value aVal = new Value();
+    aVal.type = Type.NUMBER;
+    aVal.val = 32;
+    scope.addVariable("a", aVal);
+    TokenContainer line = new TokenContainer(
+        Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    AstNode parsed = parser.parse(Symbol.Expression);
+    Value val = ExpressionEvaluator.eval(parsed, scope);
+    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(32, val.val);
+  }
+  @Test
+  public void testReadUnknownVariable() throws ParseException, RunException
+  {
+    try {
+      TokenContainer line = new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      ExpressionEvaluator.eval(parsed, new VariableScope());
+      fail("Expecting a RunException");
+    } 
+    catch (RunException e)
+    {
+      
+    }
+  }
 }
