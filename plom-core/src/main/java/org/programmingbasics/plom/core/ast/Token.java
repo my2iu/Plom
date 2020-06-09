@@ -125,7 +125,7 @@ public abstract class Token
      {
        if (contents.isEmpty())
          return postfix.substring(1);
-       return String.join("", contents) + postfix;
+       return (String.join("", contents) + postfix).substring(1);
      }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents); }

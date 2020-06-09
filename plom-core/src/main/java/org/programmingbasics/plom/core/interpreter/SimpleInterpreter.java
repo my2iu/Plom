@@ -37,7 +37,7 @@ public class SimpleInterpreter
         parsed.recursiveVisit(new AstNode.VisitorTriggers<Void, Void, RunException>()
             .add(Rule.AssignmentExpression_Expression_AssignmentExpressionMore, 
                 (VisitorTriggers<Void, Void, RunException> triggers, AstNode node, Void param1, Void param2) -> {
-                  
+                  return false;
                 }), 
             null, null);
         

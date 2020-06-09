@@ -78,21 +78,49 @@ public class ExpressionEvaluatorTest extends TestCase
   }
 
   @Test
-  public void testReadVariable() throws ParseException, RunException
+  public void testVariable() throws ParseException, RunException
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
     aVal.type = Type.NUMBER;
     aVal.val = 32;
     scope.addVariable("a", aVal);
-    TokenContainer line = new TokenContainer(
-        Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed, scope);
-    Assert.assertEquals(Type.NUMBER, val.type);
-    Assert.assertEquals(32, val.val);
+    
+    // Read a variable
+    {
+      TokenContainer line = new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      Value val = ExpressionEvaluator.eval(parsed, scope);
+      Assert.assertEquals(Type.NUMBER, val.type);
+      Assert.assertEquals(32, val.val);
+    }
+    
+    // Overwrite the variable
+    {
+      TokenContainer line = new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+          new Token.SimpleToken(":=", Symbol.Assignment),
+          new Token.SimpleToken("5", Symbol.Number));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.AssignmentExpression);
+      Value val = ExpressionEvaluator.eval(parsed, scope);
+      Assert.assertEquals(5.0, scope.lookup("a").val);
+    }
+    
+    // Read back the variable to confirm the changes
+    {
+      TokenContainer line = new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      Value val = ExpressionEvaluator.eval(parsed, scope);
+      Assert.assertEquals(Type.NUMBER, val.type);
+      Assert.assertEquals(5.0, val.val);
+    }
   }
+  
   @Test
   public void testReadUnknownVariable() throws ParseException, RunException
   {

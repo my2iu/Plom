@@ -78,10 +78,10 @@ public class AstNode
   
   /** 
    * Defines a lambda that is triggered when the recursive walker hits
-   * a node of interest.
+   * a node of interest. Return true if something was handled.
    */
   @FunctionalInterface public static interface RecursiveWalkerVisitor<U, V, E extends Throwable>
   {
-    public void visit(VisitorTriggers<U, V, E> triggers, AstNode node, U param1, V param2) throws E;
+    public boolean visit(VisitorTriggers<U, V, E> triggers, AstNode node, U param1, V param2) throws E;
   }
 }
