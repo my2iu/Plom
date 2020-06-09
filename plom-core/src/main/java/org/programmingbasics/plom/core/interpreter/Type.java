@@ -9,4 +9,5 @@ public class Type
   }
   static Type NUMBER = new Type(".number");
   static Type STRING = new Type(".string");
+  static Type BOOLEAN = new Type(".boolean");
 }

@@ -136,6 +136,20 @@ public class ExpressionEvaluator
             returned.val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
             return true;
       })
+      .add(Rule.TrueLiteral, 
+          (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+            returned.val = new Value();
+            returned.val.type = Type.BOOLEAN;
+            returned.val.val = Boolean.TRUE;
+            return true;
+      })
+      .add(Rule.FalseLiteral, 
+          (triggers, node, returned, context) -> {
+            returned.val = new Value();
+            returned.val.type = Type.BOOLEAN;
+            returned.val.val = Boolean.FALSE;
+            return true;
+      })
       .add(Rule.DotVariable, 
           (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
             returned.val = context.scope.lookup(((Token.ParameterToken)node.token).getLookupName());

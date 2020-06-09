@@ -137,4 +137,28 @@ public class ExpressionEvaluatorTest extends TestCase
       
     }
   }
+  
+  @Test
+  public void testBoolean() throws ParseException, RunException
+  {
+    {
+      TokenContainer line = new TokenContainer(
+          new Token.SimpleToken("true", Symbol.TrueLiteral));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
+      Assert.assertEquals(Type.BOOLEAN, val.type);
+      Assert.assertEquals(true, val.val);
+    }
+    
+    {
+      TokenContainer line = new TokenContainer(
+          new Token.SimpleToken("false", Symbol.FalseLiteral));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
+      Assert.assertEquals(Type.BOOLEAN, val.type);
+      Assert.assertEquals(false, val.val);
+    }
+  }
 }
