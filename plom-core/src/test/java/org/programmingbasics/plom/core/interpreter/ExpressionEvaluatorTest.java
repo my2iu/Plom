@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.AstNode;
@@ -160,5 +162,32 @@ public class ExpressionEvaluatorTest extends TestCase
       Assert.assertEquals(Type.BOOLEAN, val.type);
       Assert.assertEquals(false, val.val);
     }
+  }
+  
+  @Test
+  public void testNoParamFunction() throws ParseException, RunException
+  {
+    VariableScope scope = new VariableScope();
+    Value aVal = new Value();
+    aVal.type = Type.makeFunctionType(Type.NUMBER);
+    aVal.val = new PrimitiveFunction() {
+      @Override public Value call(List<Value> args)
+      {
+        return Value.createNumberValue(32);
+      }
+    };
+    scope.addVariable("a", aVal);
+    
+    // Call a function
+    {
+      TokenContainer line = new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parse(Symbol.Expression);
+      Value val = ExpressionEvaluator.eval(parsed, scope);
+      Assert.assertEquals(Type.NUMBER, val.type);
+      Assert.assertEquals(32.0, val.val);
+    }
+    
   }
 }

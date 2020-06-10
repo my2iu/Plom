@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -153,6 +154,10 @@ public class ExpressionEvaluator
       .add(Rule.DotVariable, 
           (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
             returned.val = context.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
+            if (returned.val.type.isFunction())
+            {
+              returned.val = ((PrimitiveFunction)returned.val.val).call(Collections.emptyList());
+            }
             return true;
       });
 
