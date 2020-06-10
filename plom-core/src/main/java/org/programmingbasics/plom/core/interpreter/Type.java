@@ -7,7 +7,7 @@ public class Type
   {
     this.name = name;
   }
-  static Type makeFunctionType(Type returnType)
+  static Type makeFunctionType(Type returnType, Type...args)
   {
     Type t = new Type("Function");
     return t;

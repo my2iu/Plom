@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core.ast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.gen.Parser;
@@ -22,6 +23,16 @@ public class ParseToAst
   {
     private static final long serialVersionUID = 1L;
   }
+
+  public void parseParameterToken(AstNode node, Token.ParameterToken paramToken) throws ParseException
+  {
+    node.internalChildren = new ArrayList<>();
+    for (TokenContainer param: paramToken.parameters)
+    {
+      ParseToAst argParser = new ParseToAst(param.tokens, Symbol.EndStatement);
+      node.internalChildren.add(argParser.parse(Symbol.Expression));
+    }
+  }
   
   public AstNode parse(Symbol base) throws ParseException
   {
@@ -31,6 +42,8 @@ public class ParseToAst
       if (sym != base)
         throw new ParseException();
       AstNode node = AstNode.fromToken(readNextToken());
+      if (node.token instanceof Token.ParameterToken)
+        parseParameterToken(node, (Token.ParameterToken)node.token);
       return node;
     }
 

@@ -156,7 +156,14 @@ public class ExpressionEvaluator
             returned.val = context.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
             if (returned.val.type.isFunction())
             {
-              returned.val = ((PrimitiveFunction)returned.val.val).call(Collections.emptyList());
+              List<Value> args = new ArrayList<>();
+              for (AstNode argNode: node.internalChildren)
+              {
+                ReturnedValue argReturn = new ReturnedValue();
+                argNode.recursiveVisit(triggers, argReturn, context);
+                args.add(argReturn.val);
+              }
+              returned.val = ((PrimitiveFunction)returned.val.val).call(args);
             }
             return true;
       });

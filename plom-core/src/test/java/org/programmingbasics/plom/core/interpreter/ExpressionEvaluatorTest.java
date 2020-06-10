@@ -178,16 +178,46 @@ public class ExpressionEvaluatorTest extends TestCase
     };
     scope.addVariable("a", aVal);
     
-    // Call a function
-    {
-      TokenContainer line = new TokenContainer(
-          Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
-      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
-      Value val = ExpressionEvaluator.eval(parsed, scope);
-      Assert.assertEquals(Type.NUMBER, val.type);
-      Assert.assertEquals(32.0, val.val);
+    // Call the function
+    TokenContainer line = new TokenContainer(
+        Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    AstNode parsed = parser.parse(Symbol.Expression);
+    Value val = ExpressionEvaluator.eval(parsed, scope);
+    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(32.0, val.val);
+  }
+  
+  @Test
+  public void testOneArgFunction() throws ParseException, RunException
+  {
+    VariableScope scope = new VariableScope();
+    Value aVal = new Value();
+    aVal.type = Type.makeFunctionType(Type.NUMBER, Type.STRING);
+    class CaptureFunction implements PrimitiveFunction {
+      Value captured;
+      @Override public Value call(List<Value> args)
+      {
+        Assert.assertEquals(1, args.size());
+        captured = args.get(0);
+        return Value.createNumberValue(32);
+      }
     }
+    CaptureFunction fun = new CaptureFunction();
+    aVal.val = fun;
+    scope.addVariable("a:", aVal);
     
+    // Call the function
+    TokenContainer line = new TokenContainer(
+        Token.ParameterToken.fromContents(".a:", Symbol.DotVariable, 
+            new TokenContainer(new Token.SimpleToken("\"hello\"", Symbol.String))));
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    AstNode parsed = parser.parse(Symbol.Expression);
+    Value val = ExpressionEvaluator.eval(parsed, scope);
+    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(32.0, val.val);
+    
+    // Check if call args were passed in correctly
+    Assert.assertEquals("hello", fun.captured.val);
   }
 }

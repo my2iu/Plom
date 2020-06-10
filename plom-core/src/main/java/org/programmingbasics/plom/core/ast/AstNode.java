@@ -21,6 +21,10 @@ public class AstNode
    */
   public List<AstNode> children = new ArrayList<>();
   /**
+   * Some tokens have contents that should be separately parsed
+   */
+  public List<AstNode> internalChildren;
+  /**
    * Terminal symbols will have a token that matches the symbol
    */
   public Token token;
