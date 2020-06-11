@@ -1,39 +1,15 @@
 package org.programmingbasics.plom.core;
 
-/*
-TODO:
-- interpreter
-- functions
-- for loop
-- number constants (change inputmode to numeric)
-- string constants (allow multi-line strings?)
-- variable names
-- valign to middle
-- nesting of blocks for functions
-- next button
-- keyboard movement
-- predict variables
-- keyboard entry
-- better sorting of predicted symbols
- */
-
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
-import org.programmingbasics.plom.core.ast.gen.Parser;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.view.CodePosition;
@@ -54,13 +30,10 @@ import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
-import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
-import elemental.html.FormElement;
-import elemental.html.InputElement;
 
 public class Entry implements EntryPoint
 {
@@ -396,10 +369,16 @@ public class Entry implements EntryPoint
   void hookRun()
   {
     Element runEl = Browser.getDocument().querySelector("a.runbutton");
-    runEl.addEventListener(Event.CLICK, (e) -> {
+    runEl.addEventListener(Event.CLICK, (evt) -> {
       SimpleInterpreter terp = new SimpleInterpreter(codeList);
-      terp.run();
-      e.preventDefault();
+      try {
+        terp.run();
+      } 
+      catch (Exception err)
+      {
+        Browser.getWindow().getConsole().log(err);
+      }
+      evt.preventDefault();
     }, false);
   }
 }

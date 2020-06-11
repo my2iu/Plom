@@ -21,7 +21,7 @@ public class ExpressionEvaluatorTest extends TestCase
     TokenContainer line = new TokenContainer(
         new Token.SimpleToken("1", Symbol.Number));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(1), val.val);
@@ -37,7 +37,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("-", Symbol.Minus),
         new Token.SimpleToken("2.5", Symbol.Number));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(0.5), val.val);
@@ -59,7 +59,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("5", Symbol.Number),
         new Token.SimpleToken(")", Symbol.ClosedParenthesis));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(-5), val.val);
@@ -73,7 +73,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("+", Symbol.Plus),
         new Token.SimpleToken("\"world\"", Symbol.String));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
     Assert.assertEquals(Type.STRING, val.type);
     Assert.assertEquals("hello world", val.val);
@@ -93,7 +93,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
+      AstNode parsed = parser.parseToEnd(Symbol.Expression);
       Value val = ExpressionEvaluator.eval(parsed, scope);
       Assert.assertEquals(Type.NUMBER, val.type);
       Assert.assertEquals(32, val.val);
@@ -106,7 +106,7 @@ public class ExpressionEvaluatorTest extends TestCase
           new Token.SimpleToken(":=", Symbol.Assignment),
           new Token.SimpleToken("5", Symbol.Number));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.AssignmentExpression);
+      AstNode parsed = parser.parseToEnd(Symbol.AssignmentExpression);
       Value val = ExpressionEvaluator.eval(parsed, scope);
       Assert.assertEquals(5.0, scope.lookup("a").val);
     }
@@ -116,7 +116,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
+      AstNode parsed = parser.parseToEnd(Symbol.Expression);
       Value val = ExpressionEvaluator.eval(parsed, scope);
       Assert.assertEquals(Type.NUMBER, val.type);
       Assert.assertEquals(5.0, val.val);
@@ -130,7 +130,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
+      AstNode parsed = parser.parseToEnd(Symbol.Expression);
       ExpressionEvaluator.eval(parsed, new VariableScope());
       fail("Expecting a RunException");
     } 
@@ -147,7 +147,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           new Token.SimpleToken("true", Symbol.TrueLiteral));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
+      AstNode parsed = parser.parseToEnd(Symbol.Expression);
       Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
       Assert.assertEquals(Type.BOOLEAN, val.type);
       Assert.assertEquals(true, val.val);
@@ -157,7 +157,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           new Token.SimpleToken("false", Symbol.FalseLiteral));
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parse(Symbol.Expression);
+      AstNode parsed = parser.parseToEnd(Symbol.Expression);
       Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
       Assert.assertEquals(Type.BOOLEAN, val.type);
       Assert.assertEquals(false, val.val);
@@ -182,7 +182,7 @@ public class ExpressionEvaluatorTest extends TestCase
     TokenContainer line = new TokenContainer(
         Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, scope);
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(32.0, val.val);
@@ -212,7 +212,7 @@ public class ExpressionEvaluatorTest extends TestCase
         Token.ParameterToken.fromContents(".a:", Symbol.DotVariable, 
             new TokenContainer(new Token.SimpleToken("\"hello\"", Symbol.String))));
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parse(Symbol.Expression);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
     Value val = ExpressionEvaluator.eval(parsed, scope);
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(32.0, val.val);

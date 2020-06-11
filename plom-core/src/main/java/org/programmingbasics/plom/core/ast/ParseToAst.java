@@ -30,11 +30,11 @@ public class ParseToAst
     for (TokenContainer param: paramToken.parameters)
     {
       ParseToAst argParser = new ParseToAst(param.tokens, Symbol.EndStatement);
-      node.internalChildren.add(argParser.parse(Symbol.Expression));
+      node.internalChildren.add(argParser.parseToEnd(Symbol.Expression));
     }
   }
   
-  public AstNode parse(Symbol base) throws ParseException
+  private AstNode parse(Symbol base) throws ParseException
   {
     Symbol sym = peekNextTokenType();
     if (base.isTerminal())
@@ -59,7 +59,17 @@ public class ParseToAst
       production.children.add(parse(expanded));
     return production;
   }
-  
+
+  public AstNode parseToEnd(Symbol base) throws ParseException
+  {
+    AstNode production = parse(base);
+    
+    // Make sure that we fully consumed all the data
+    if (peekNextTokenType() != endSymbol)
+      throw new ParseException();
+    return production;
+  }
+
   Symbol peekNextTokenType()
   {
     if (idx < tokens.size())

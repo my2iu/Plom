@@ -1,9 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
