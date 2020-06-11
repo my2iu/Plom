@@ -27,6 +27,7 @@ public class SimpleInterpreter
   }
   
   StatementContainer code;
+  AstNode parsedCode;
   
   static class Context
   {
@@ -56,11 +57,14 @@ public class SimpleInterpreter
   
   public void runCode(Context ctx) throws ParseException, RunException
   {
-    for (TokenContainer line: code.statements)
+    if (parsedCode == null)
     {
-      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parseToEnd(Symbol.StatementOrEmpty);
-      parsed.recursiveVisit(triggers, null, ctx);
+      parsedCode = ParseToAst.parseStatementContainer(code);
+    }
+    
+    for (AstNode parsedLine: parsedCode.internalChildren)
+    {
+      parsedLine.recursiveVisit(triggers, null, ctx);
     }
   }
   

@@ -43,7 +43,9 @@ enum Symbol
   COMPOUND_ELSE(true),
   COMPOUND_ELSEIF(true),
   DUMMY_BEGIN(true),
-  DUMMY_END(true);
+  DUMMY_END(true),
+  
+  ASSEMBLED_STATEMENTS_BLOCK(true);  // Not a true symbol and not used by parsing, but used by the AST to repesent a bunch of statements put together in a block 
   Symbol(boolean isTerminal)
   {
     this.isTerminal = isTerminal;

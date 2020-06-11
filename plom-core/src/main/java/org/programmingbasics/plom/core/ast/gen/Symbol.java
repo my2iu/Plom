@@ -42,7 +42,8 @@ public enum Symbol
 	COMPOUND_ELSE,
 	COMPOUND_ELSEIF,
 	DUMMY_BEGIN,
-	DUMMY_END;
+	DUMMY_END,
+	ASSEMBLED_STATEMENTS_BLOCK;
 	public boolean isTerminal()
 	{
 		switch(this) {
@@ -66,6 +67,7 @@ public enum Symbol
 		case COMPOUND_ELSEIF:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
+		case ASSEMBLED_STATEMENTS_BLOCK:
 			return true;
 		default:
 			return false;

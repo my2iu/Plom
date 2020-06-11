@@ -58,4 +58,5 @@ public class Rule
 	public final static List<Symbol> COMPOUND_ELSEIF = Arrays.asList(Symbol.COMPOUND_ELSEIF);
 	public final static List<Symbol> DUMMY_BEGIN = Arrays.asList(Symbol.DUMMY_BEGIN);
 	public final static List<Symbol> DUMMY_END = Arrays.asList(Symbol.DUMMY_END);
+	public final static List<Symbol> ASSEMBLED_STATEMENTS_BLOCK = Arrays.asList(Symbol.ASSEMBLED_STATEMENTS_BLOCK);
 }

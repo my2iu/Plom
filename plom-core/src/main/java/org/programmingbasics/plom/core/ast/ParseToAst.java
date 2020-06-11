@@ -69,6 +69,20 @@ public class ParseToAst
       throw new ParseException();
     return production;
   }
+  
+  public static AstNode parseStatementContainer(StatementContainer code) throws ParseException
+  {
+    AstNode node = new AstNode(Symbol.ASSEMBLED_STATEMENTS_BLOCK);
+    node.internalChildren = new ArrayList<>();
+    for (TokenContainer line: code.statements)
+    {
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      AstNode parsed = parser.parseToEnd(Symbol.StatementOrEmpty);
+      node.internalChildren.add(parsed);
+    }
+
+    return node;
+  }
 
   Symbol peekNextTokenType()
   {
