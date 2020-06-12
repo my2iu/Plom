@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.Context;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -52,7 +51,7 @@ public class SimpleInterpreterTest extends TestCase
             )
         );
     SimpleInterpreter interpreter = new SimpleInterpreter(code);
-    Context ctx = new Context();
+    MachineContext ctx = new MachineContext();
     ctx.scope = scope;
     interpreter.runCode(ctx);
 

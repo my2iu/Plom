@@ -29,14 +29,10 @@ public class SimpleInterpreter
   StatementContainer code;
   AstNode parsedCode;
   
-  static class Context
-  {
-    VariableScope scope;
-  }
 
-  static AstNode.VisitorTriggers<Void, Context, RunException> triggers = new AstNode.VisitorTriggers<Void, Context, RunException>()
+  static AstNode.VisitorTriggers<Void, MachineContext, RunException> triggers = new AstNode.VisitorTriggers<Void, MachineContext, RunException>()
       .add(Rule.Statement_AssignmentExpression, (triggers, node, returned, context) -> {
-        ExpressionEvaluator.eval(node, context.scope);
+        ExpressionEvaluator.eval(node, context);
         return true;
       });
 
@@ -55,7 +51,7 @@ public class SimpleInterpreter
     scope.addVariable("print:", printFun);
   }
   
-  public void runCode(Context ctx) throws ParseException, RunException
+  public void runCode(MachineContext ctx) throws ParseException, RunException
   {
     if (parsedCode == null)
     {
@@ -72,7 +68,7 @@ public class SimpleInterpreter
   {
     VariableScope scope = new VariableScope();
     createGlobals(scope);
-    Context ctx = new Context();
+    MachineContext ctx = new MachineContext();
     ctx.scope = scope;
     runCode(ctx);
   }

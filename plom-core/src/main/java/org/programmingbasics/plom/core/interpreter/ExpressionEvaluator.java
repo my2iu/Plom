@@ -15,22 +15,22 @@ public class ExpressionEvaluator
   VariableScope scope;
 
   // Makes it easy to chain together different handlers
-  static class EvalHandlerChainer implements RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException> 
+  static class EvalHandlerChainer implements RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> 
   {
-    List<RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException>> chain = new ArrayList<>();
+    List<RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException>> chain = new ArrayList<>();
     @Override public boolean visit(
-        VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers,
-        AstNode node, ReturnedValue param1, ExpressionEvaluator param2)
+        VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers,
+        AstNode node, ReturnedValue param1, MachineContext param2)
         throws RunException
     {
-      for (RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException> handler: chain)
+      for (RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> handler: chain)
       {
         if (handler.visit(triggers, node, param1, param2))
           return true;
       }
       return false;
     }
-    EvalHandlerChainer chainTo(RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException> next)
+    EvalHandlerChainer chainTo(RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> next)
     {
       chain.add(next);
       return this;
@@ -44,10 +44,10 @@ public class ExpressionEvaluator
   
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for making handlers for the case where there is no more
-  static RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException> createBinaryOperatorTestEmptyMore(
+  static RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> createBinaryOperatorTestEmptyMore(
       List<Symbol> rightEmptyRule)
   {
-    return (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+    return (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
       if (node.children.get(1).matchesRule(rightEmptyRule))
       {
         node.recursiveVisitChildren(triggers, returned, context);
@@ -58,10 +58,10 @@ public class ExpressionEvaluator
   }
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for making handlers for the case where there is a binary operator to be handled
-  static RecursiveWalkerVisitor<ReturnedValue, ExpressionEvaluator, RunException> createBinaryOperatorTestMore(
+  static RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> createBinaryOperatorTestMore(
       List<Symbol> matchRule, BinaryOperatorHandler doOp)
   {
-    return (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+    return (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
       if (node.children.get(1).matchesRule(matchRule))
       {
         node.children.get(0).recursiveVisit(triggers, returned, context);
@@ -81,7 +81,7 @@ public class ExpressionEvaluator
   {
     Value val;
   }
-  static AstNode.VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers = new AstNode.VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException>()
+  static AstNode.VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers = new AstNode.VisitorTriggers<ReturnedValue, MachineContext, RunException>()
       .add(Rule.AdditiveExpression_MultiplicativeExpression_AdditiveExpressionMore, new EvalHandlerChainer()
           .chainTo(createBinaryOperatorTestEmptyMore(Rule.AdditiveExpressionMore))
           .chainTo(createBinaryOperatorTestMore(Rule.AdditiveExpressionMore_Plus_AdditiveExpression, (Value left, Value right) -> {
@@ -121,7 +121,7 @@ public class ExpressionEvaluator
             return null;
           })))
       .add(Rule.String, 
-          (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+          (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
             returned.val = new Value();
             returned.val.type = Type.STRING;
             String rawStr = ((Token.SimpleToken)node.token).contents;
@@ -129,14 +129,14 @@ public class ExpressionEvaluator
             return true;
       })
       .add(Rule.Number, 
-          (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+          (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
             returned.val = new Value();
             returned.val.type = Type.NUMBER;
             returned.val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
             return true;
       })
       .add(Rule.TrueLiteral, 
-          (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+          (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
             returned.val = new Value();
             returned.val.type = Type.BOOLEAN;
             returned.val.val = Boolean.TRUE;
@@ -150,7 +150,7 @@ public class ExpressionEvaluator
             return true;
       })
       .add(Rule.DotVariable, 
-          (VisitorTriggers<ReturnedValue, ExpressionEvaluator, RunException> triggers, AstNode node, ReturnedValue returned, ExpressionEvaluator context) -> {
+          (VisitorTriggers<ReturnedValue, MachineContext, RunException> triggers, AstNode node, ReturnedValue returned, MachineContext context) -> {
             returned.val = context.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
             if (returned.val.type.isFunction())
             {
@@ -166,14 +166,18 @@ public class ExpressionEvaluator
             return true;
       });
 
-  
-  
   public static Value eval(AstNode parsed, VariableScope scope) throws RunException
   {
-    ExpressionEvaluator context = new ExpressionEvaluator();
+    MachineContext context = new MachineContext();
     context.scope = scope;
+    return eval(parsed, context);
+  }
+  
+  public static Value eval(AstNode parsed, MachineContext context) throws RunException
+  {
     ReturnedValue toReturn = new ReturnedValue();
     parsed.recursiveVisit(triggers, toReturn, context);
     return toReturn.val;
   }
+
 }

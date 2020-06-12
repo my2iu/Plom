@@ -268,7 +268,7 @@ public class Entry implements EntryPoint
       case DotVariable: text = "."; break;
       case TrueLiteral: text = "true"; break;
       case FalseLiteral: text = "false"; break;
-      case Number: text = "012..."; break;
+      case Number: text = "123..."; break;
       case String: text = "\"...\""; break;
       case COMPOUND_IF: text = "if"; break;
       case COMPOUND_ELSE: text = "else"; break;
