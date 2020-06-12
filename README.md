@@ -1,5 +1,9 @@
-# Plom
-Predictive Language for Outreach on Mobiles
+# Plom: Predictive Language for Outreach on Mobiles
+
+As smartphones become cheaper, people in poorer households are often able to afford a smartphone but not a computer. Although owning a smartphone does provide good access to technology, that access is also limited. To take full advantage of the computer capabilities of a smartphone, you need to be able to program it, you need to be able to write new software. If you aren't able to program your own software, you will always be reliant on others to make the software you need. But it's very difficult to program on a smartphone. The small screen and limited input capabilities of smartphones make it impractical to do any programming with them.
+
+Plom is a project to create a programming language specifically for mobile phones. 
+
 
 
 ## Build Instructions
