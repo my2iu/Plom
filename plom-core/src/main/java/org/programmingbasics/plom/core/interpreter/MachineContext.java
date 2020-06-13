@@ -38,9 +38,13 @@ public class MachineContext
   {
     valueStack.add(v);
   }
-  public Value popValue(Value v)
+  public Value popValue()
   {
     return valueStack.remove(valueStack.size() - 1);
+  }
+  public int valueStackSize()
+  {
+    return valueStack.size();
   }
   
   /**
@@ -55,7 +59,7 @@ public class MachineContext
     NodeHandlers instructionHandlers;
   }
   List<InstructionPointerEntry> ip = new ArrayList<>();
-  int ipHead = 0;
+  int ipHead = -1;
   public void ipAdvanceIdx()
   {
     ip.get(ipHead).idx++;
@@ -94,7 +98,7 @@ public class MachineContext
     MachineNodeVisitor match = triggers.get(node.symbols);
     if (match != null)
     {
-      match.handleNode(machine, idx);
+      match.handleNode(machine, node, idx);
     }
     else
     {
@@ -116,7 +120,7 @@ public class MachineContext
    */
   @FunctionalInterface public static interface MachineNodeVisitor
   {
-    public void handleNode(MachineContext machine, int idx);
+    public void handleNode(MachineContext machine, AstNode node, int idx);
   }
   /**
    * Groups a bunch of callbacks for different types of AstNodes together
@@ -136,7 +140,11 @@ public class MachineContext
    */
   public void setStart(AstNode node, NodeHandlers instructionHandlers)
   {
-    ipPushAndAdvanceIdx(node, instructionHandlers);
+    ip.add(new InstructionPointerEntry());
+    ipHead++;
+    ip.get(ipHead).node = node;
+    ip.get(ipHead).instructionHandlers = instructionHandlers;
+    ip.get(ipHead).idx = 0;
   }
   
   /**

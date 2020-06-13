@@ -56,6 +56,7 @@ public class ExpressionEvaluator
       return false;
     };
   }
+  
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for making handlers for the case where there is a binary operator to be handled
   static RecursiveWalkerVisitor<ReturnedValue, MachineContext, RunException> createBinaryOperatorTestMore(
@@ -76,6 +77,42 @@ public class ExpressionEvaluator
     };
   }
   
+  static MachineContext.NodeHandlers expressionHandlers = new MachineContext.NodeHandlers()
+      .add(Rule.String, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            Value val = new Value();
+            val.type = Type.STRING;
+            String rawStr = ((Token.SimpleToken)node.token).contents;
+            val.val = rawStr.substring(1, rawStr.length() - 1);
+            machine.pushValue(val);
+            machine.ipPop();
+      })
+      .add(Rule.Number, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            Value val = new Value();
+            val.type = Type.NUMBER;
+            val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
+            machine.pushValue(val);
+            machine.ipPop();
+      })
+      .add(Rule.TrueLiteral, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            Value val = new Value();
+            val.type = Type.BOOLEAN;
+            val.val = Boolean.TRUE;
+            machine.pushValue(val);
+            machine.ipPop();
+      })
+      .add(Rule.FalseLiteral, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            Value val = new Value();
+            val.type = Type.BOOLEAN;
+            val.val = Boolean.FALSE;
+            machine.pushValue(val);
+            machine.ipPop();
+      });
+      
+
   
   public static class ReturnedValue
   {

@@ -15,14 +15,29 @@ import junit.framework.TestCase;
 
 public class ExpressionEvaluatorTest extends TestCase
 {
+  Value evalTest(TokenContainer line, VariableScope scope) throws ParseException, RunException
+  {
+    // Parse the code
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    AstNode parsed = parser.parseToEnd(Symbol.Expression);
+    // Set up the machine to hold the execution state
+    MachineContext machine = new MachineContext();
+    machine.scope = scope;
+    // Start running the code
+    machine.setStart(parsed, ExpressionEvaluator.expressionHandlers);
+    machine.runToCompletion();
+    // Result of the expression should be on the top of the stack
+    Value val = machine.popValue();
+    Assert.assertEquals(0, machine.valueStackSize());
+    return val;
+  }
+  
   @Test
   public void testNumber() throws ParseException, RunException
   {
     TokenContainer line = new TokenContainer(
         new Token.SimpleToken("1", Symbol.Number));
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-    AstNode parsed = parser.parseToEnd(Symbol.Expression);
-    Value val = ExpressionEvaluator.eval(parsed, new VariableScope());
+    Value val = evalTest(line, new VariableScope());
     Assert.assertEquals(Type.NUMBER, val.type);
     Assert.assertEquals(Double.valueOf(1), val.val);
   }
