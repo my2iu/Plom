@@ -145,7 +145,7 @@ public class ExpressionEvaluatorTest extends TestCase
     try {
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
-      Value val = evalTest(line, new VariableScope());
+      evalAssignTest(line, new VariableScope());
       fail("Expecting a RunException");
     } 
     catch (RunException e)

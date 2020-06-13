@@ -27,13 +27,24 @@ public class SimpleInterpreter
   StatementContainer code;
   AstNode parsedCode;
   
-
-  static AstNode.VisitorTriggers<Void, MachineContext, RunException> triggers = new AstNode.VisitorTriggers<Void, MachineContext, RunException>()
-      .add(Rule.Statement_AssignmentExpression, (triggers, node, returned, context) -> {
-        ExpressionEvaluator.eval(node, context);
-        return true;
-      });
-
+  static MachineContext.NodeHandlers statementHandlers = new MachineContext.NodeHandlers();
+  static {
+    statementHandlers
+      .add(Rule.ASSEMBLED_STATEMENTS_BLOCK, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx < node.internalChildren.size())
+              machine.ipPushAndAdvanceIdx(node.internalChildren.get(idx), statementHandlers);
+            else
+              machine.ipPop();
+      })
+      .add(Rule.Statement_AssignmentExpression,
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 0)
+              machine.ipPushAndAdvanceIdx(node.children.get(0), ExpressionEvaluator.assignmentLValueHandlers);
+            else
+              machine.ipPop();
+          });
+  }
   
   void createGlobals(VariableScope scope)
   {
@@ -56,10 +67,8 @@ public class SimpleInterpreter
       parsedCode = ParseToAst.parseStatementContainer(code);
     }
     
-    for (AstNode parsedLine: parsedCode.internalChildren)
-    {
-      parsedLine.recursiveVisit(triggers, null, ctx);
-    }
+    ctx.setStart(parsedCode, statementHandlers);
+    ctx.runToCompletion();
   }
   
   public void run() throws ParseException, RunException

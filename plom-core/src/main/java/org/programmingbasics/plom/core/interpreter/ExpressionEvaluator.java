@@ -229,10 +229,4 @@ public class ExpressionEvaluator
       });
   }
 
-  public static void eval(AstNode parsed, MachineContext context) throws RunException
-  {
-    context.setStart(parsed, assignmentLValueHandlers);
-    context.runToCompletion();
-  }
-
 }
