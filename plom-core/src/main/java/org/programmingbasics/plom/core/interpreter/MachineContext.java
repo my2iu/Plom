@@ -3,11 +3,8 @@ package org.programmingbasics.plom.core.interpreter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.AstNode;
-import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
-import org.programmingbasics.plom.core.ast.AstNode.VisitorTriggers;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /**
@@ -42,6 +39,15 @@ public class MachineContext
   {
     return valueStack.remove(valueStack.size() - 1);
   }
+  public void popValues(int count)
+  {
+    for (int n = 0; n < count; n++)
+      valueStack.remove(valueStack.size() - 1);
+  }
+  public Value readValue(int offset)
+  {
+    return valueStack.get(valueStack.size() - 1 - offset);
+  }
   public int valueStackSize()
   {
     return valueStack.size();
@@ -71,10 +77,12 @@ public class MachineContext
   public void ipPushAndAdvanceIdx(AstNode newNode, NodeHandlers instructionHandlers)
   {
     ip.get(ipHead).idx++;
+    ipPush(newNode, instructionHandlers);
+  }
+  private void ipPush(AstNode newNode, NodeHandlers instructionHandlers)
+  {
     if (ipHead + 1 >= ip.size())
-    {
       ip.add(new InstructionPointerEntry());
-    }
     ipHead++;
     ip.get(ipHead).node = newNode;
     ip.get(ipHead).instructionHandlers = instructionHandlers;
@@ -92,7 +100,7 @@ public class MachineContext
   /**
    * Visits a node with a bunch of triggers for handling certain special cases
    */
-  private static void visitNodeRecursively(AstNode node, int idx, MachineContext machine, NodeHandlers triggers)
+  private static void visitNodeRecursively(AstNode node, int idx, MachineContext machine, NodeHandlers triggers) throws RunException
   {
     // See if we have a visitor registered for this production rule of symbols
     MachineNodeVisitor match = triggers.get(node.symbols);
@@ -120,7 +128,7 @@ public class MachineContext
    */
   @FunctionalInterface public static interface MachineNodeVisitor
   {
-    public void handleNode(MachineContext machine, AstNode node, int idx);
+    public void handleNode(MachineContext machine, AstNode node, int idx) throws RunException;
   }
   /**
    * Groups a bunch of callbacks for different types of AstNodes together
@@ -140,17 +148,13 @@ public class MachineContext
    */
   public void setStart(AstNode node, NodeHandlers instructionHandlers)
   {
-    ip.add(new InstructionPointerEntry());
-    ipHead++;
-    ip.get(ipHead).node = node;
-    ip.get(ipHead).instructionHandlers = instructionHandlers;
-    ip.get(ipHead).idx = 0;
+    ipPush(node, instructionHandlers);
   }
   
   /**
    * Runs the next instruction or part of an instruction
    */
-  public void runNextStep()
+  public void runNextStep() throws RunException
   {
     InstructionPointerEntry nextInstruction = ipPeekHead();
     visitNodeRecursively(nextInstruction.node, nextInstruction.idx, this, nextInstruction.instructionHandlers);
@@ -159,7 +163,7 @@ public class MachineContext
   /**
    * Keeps running instructions until there are no more instructions to run
    */
-  public void runToCompletion()
+  public void runToCompletion() throws RunException
   {
     while (ipHead >= 0)
       runNextStep();

@@ -41,6 +41,30 @@ public class ExpressionEvaluator
   {
     public Value apply(Value left, Value right) throws RunException;
   }
+
+  // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
+  // so we have a function for easily making handlers for that situation 
+  static MachineContext.MachineNodeVisitor createBinaryOperatorHandlerMore(BinaryOperatorHandler doOp)
+  {
+    return (machine, node, idx) -> {
+      switch(idx)
+      {
+      case 0:
+        machine.ipPushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+        break;
+      case 1:
+        {
+          Value right = machine.popValue();
+          Value left = machine.popValue();
+          Value toReturn = doOp.apply(left, right);
+          machine.pushValue(toReturn);
+          machine.ipPop();
+          break;
+        }
+      }
+    };
+  }
+
   
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for making handlers for the case where there is no more
@@ -77,7 +101,43 @@ public class ExpressionEvaluator
     };
   }
   
-  static MachineContext.NodeHandlers expressionHandlers = new MachineContext.NodeHandlers()
+  static MachineContext.NodeHandlers expressionHandlers = new MachineContext.NodeHandlers();
+  static {
+    expressionHandlers
+      .add(Rule.AdditiveExpressionMore_Plus_AdditiveExpression,
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
+            else if (left.type == Type.STRING && right.type == Type.STRING)
+              return Value.createStringValue(left.getStringValue() + right.getStringValue());
+            else
+              throw new RunException();
+          })
+      )
+      .add(Rule.AdditiveExpressionMore_Minus_AdditiveExpression,
+          createBinaryOperatorHandlerMore((left, right) -> {
+              if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+                return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
+              else
+                throw new RunException();
+          })
+      )
+      .add(Rule.MultiplicativeExpressionMore_Multiply_MultiplicativeExpression,
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
+            else
+              throw new RunException();
+          })
+      )
+      .add(Rule.MultiplicativeExpressionMore_Divide_MultiplicativeExpression,
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
+            else
+              throw new RunException();
+          })
+      )
       .add(Rule.String, 
           (MachineContext machine, AstNode node, int idx) -> {
             Value val = new Value();
@@ -110,8 +170,29 @@ public class ExpressionEvaluator
             val.val = Boolean.FALSE;
             machine.pushValue(val);
             machine.ipPop();
+      })
+      .add(Rule.DotVariable, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx < node.internalChildren.size())
+            {
+              machine.ipPushAndAdvanceIdx(node.internalChildren.get(idx), expressionHandlers);
+              return;
+            }
+            Value toReturn = machine.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
+            if (toReturn.type.isFunction())
+            {
+              List<Value> args = new ArrayList<>();
+              for (int n = 0; n < node.internalChildren.size(); n++)
+              {
+                args.add(machine.readValue(node.internalChildren.size() - n - 1));
+              }
+              machine.popValues(node.internalChildren.size());
+              toReturn = ((PrimitiveFunction)toReturn.val).call(args);
+            }
+            machine.pushValue(toReturn);
+            machine.ipPop();
       });
-      
+  }
 
   
   public static class ReturnedValue
