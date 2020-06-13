@@ -53,8 +53,7 @@ public class MachineContextTest extends TestCase
       }
       void unblock()
       {
-        blockWait.isBlocked = false;
-        blockWait.returnValue = Value.createNumberValue(32);
+        blockWait.unblockAndReturn(Value.createNumberValue(32));
       }
     }
     CaptureFunction fun = new CaptureFunction();

@@ -149,6 +149,19 @@ public class MachineContext
     Runnable checkDone = null;
     /** Function needs to set the returnValue to whatever the function should return */
     Value returnValue;
+    
+    public void unblockAndReturn(Value returnValue)
+    {
+      this.returnValue = returnValue;
+      isBlocked = false;
+    }
+    // I'm not sure if it's a good idea to let the blocked function restart the interpreter through here
+    // or whether it's better to have that all be external to the blocking framework. 
+//    MachineContext machine;
+//    void restartMachine()
+//    {
+//      machine.runToCompletion();
+//    }
   }
   PrimitiveBlockingFunctionReturn blocked;
   void waitOnBlockingFunction(PrimitiveBlockingFunctionReturn blockWait)
