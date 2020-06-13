@@ -20,7 +20,7 @@ public class SimpleInterpreterTest extends TestCase
     // Set-up some variables and functions
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makeFunctionType(Type.NUMBER, Type.STRING);
+    aVal.type = Type.makePrimitiveFunctionType(Type.NUMBER, Type.STRING);
     class CaptureFunction implements PrimitiveFunction {
       Value captured;
       @Override public Value call(List<Value> args)

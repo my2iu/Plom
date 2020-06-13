@@ -33,23 +33,23 @@ public class SimpleInterpreter
       .add(Rule.ASSEMBLED_STATEMENTS_BLOCK, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx < node.internalChildren.size())
-              machine.ipPushAndAdvanceIdx(node.internalChildren.get(idx), statementHandlers);
+              machine.ip.pushAndAdvanceIdx(node.internalChildren.get(idx), statementHandlers);
             else
-              machine.ipPop();
+              machine.ip.pop();
       })
       .add(Rule.Statement_AssignmentExpression,
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 0)
-              machine.ipPushAndAdvanceIdx(node.children.get(0), ExpressionEvaluator.assignmentLValueHandlers);
+              machine.ip.pushAndAdvanceIdx(node.children.get(0), ExpressionEvaluator.assignmentLValueHandlers);
             else
-              machine.ipPop();
+              machine.ip.pop();
           });
   }
   
   void createGlobals(VariableScope scope)
   {
     Value printFun = new Value();
-    printFun.type = Type.makeFunctionType(Type.NUMBER, Type.STRING);
+    printFun.type = Type.makePrimitiveFunctionType(Type.NUMBER, Type.STRING);
     printFun.val = new PrimitiveFunction() {
       @Override public Value call(List<Value> args)
       {

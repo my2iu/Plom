@@ -179,7 +179,7 @@ public class ExpressionEvaluatorTest extends TestCase
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makeFunctionType(Type.NUMBER);
+    aVal.type = Type.makePrimitiveFunctionType(Type.NUMBER);
     aVal.val = new PrimitiveFunction() {
       @Override public Value call(List<Value> args)
       {
@@ -201,7 +201,7 @@ public class ExpressionEvaluatorTest extends TestCase
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makeFunctionType(Type.NUMBER, Type.STRING);
+    aVal.type = Type.makePrimitiveFunctionType(Type.NUMBER, Type.STRING);
     class CaptureFunction implements PrimitiveFunction {
       Value captured;
       @Override public Value call(List<Value> args)

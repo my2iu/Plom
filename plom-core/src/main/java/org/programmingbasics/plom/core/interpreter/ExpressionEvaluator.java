@@ -6,6 +6,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ExpressionEvaluator
@@ -25,7 +26,7 @@ public class ExpressionEvaluator
       switch(idx)
       {
       case 0:
-        machine.ipPushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+        machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
         break;
       case 1:
         {
@@ -33,7 +34,7 @@ public class ExpressionEvaluator
           Value left = machine.popValue();
           Value toReturn = doOp.apply(left, right);
           machine.pushValue(toReturn);
-          machine.ipPop();
+          machine.ip.pop();
           break;
         }
       }
@@ -85,7 +86,7 @@ public class ExpressionEvaluator
             String rawStr = ((Token.SimpleToken)node.token).contents;
             val.val = rawStr.substring(1, rawStr.length() - 1);
             machine.pushValue(val);
-            machine.ipPop();
+            machine.ip.pop();
       })
       .add(Rule.Number, 
           (MachineContext machine, AstNode node, int idx) -> {
@@ -93,7 +94,7 @@ public class ExpressionEvaluator
             val.type = Type.NUMBER;
             val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
             machine.pushValue(val);
-            machine.ipPop();
+            machine.ip.pop();
       })
       .add(Rule.TrueLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
@@ -101,7 +102,7 @@ public class ExpressionEvaluator
             val.type = Type.BOOLEAN;
             val.val = Boolean.TRUE;
             machine.pushValue(val);
-            machine.ipPop();
+            machine.ip.pop();
       })
       .add(Rule.FalseLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
@@ -109,13 +110,13 @@ public class ExpressionEvaluator
             val.type = Type.BOOLEAN;
             val.val = Boolean.FALSE;
             machine.pushValue(val);
-            machine.ipPop();
+            machine.ip.pop();
       })
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx < node.internalChildren.size())
             {
-              machine.ipPushAndAdvanceIdx(node.internalChildren.get(idx), expressionHandlers);
+              machine.ip.pushAndAdvanceIdx(node.internalChildren.get(idx), expressionHandlers);
               return;
             }
             Value toReturn = machine.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
@@ -127,10 +128,26 @@ public class ExpressionEvaluator
                 args.add(machine.readValue(node.internalChildren.size() - n - 1));
               }
               machine.popValues(node.internalChildren.size());
-              toReturn = ((PrimitiveFunction)toReturn.val).call(args);
+              if (toReturn.type.isPrimitiveNonBlockingFunction())
+              {
+                toReturn = ((PrimitiveFunction)toReturn.val).call(args);
+                machine.pushValue(toReturn);
+                machine.ip.pop();
+                return;
+              }
+              else if (toReturn.type.isPrimitiveBlockingFunction())
+              {
+                MachineContext.PrimitiveBlockingFunctionReturn blockWait = new MachineContext.PrimitiveBlockingFunctionReturn(); 
+                ((PrimitiveBlockingFunction)toReturn.val).call(blockWait, args);
+                machine.waitOnBlockingFunction(blockWait);
+                machine.ip.pop();
+                return;
+              }
+              else 
+                throw new RunException();
             }
             machine.pushValue(toReturn);
-            machine.ipPop();
+            machine.ip.pop();
       });
   }
 
@@ -145,26 +162,26 @@ public class ExpressionEvaluator
               if (node.children.get(1).matchesRule(Rule.AssignmentExpressionMore))
               {
                 // This isn't an assignment, just an expression evaluation
-                machine.ipSetIdx(1);
+                machine.ip.setIdx(1);
               }
               else
               {
                 // This is an assignment, so handle that specially
-                machine.ipSetIdx(16);
+                machine.ip.setIdx(16);
               }
               break;
             case 1:
               // Not an assignment, just evaluate things as a normal expression
-              machine.ipPushAndAdvanceIdx(node.children.get(0), expressionHandlers);
+              machine.ip.pushAndAdvanceIdx(node.children.get(0), expressionHandlers);
               break;
             case 2:
               // Not an assignment, after evaluating the children as an expression
               machine.popValue();
-              machine.ipPop();
+              machine.ip.pop();
               break;
             case 16:
               // An assignment, figure out what we're assignment to
-              machine.ipPushAndAdvanceIdx(node.children.get(0), assignmentLValueHandlers);
+              machine.ip.pushAndAdvanceIdx(node.children.get(0), assignmentLValueHandlers);
               // Just for safety, make sure unexpected things aren't on the stack in later steps
               machine.setLValueAssertCheck(machine.valueStackSize());
               break;
@@ -173,7 +190,7 @@ public class ExpressionEvaluator
               if (machine.valueStackSize() != machine.getLValueAssertCheck())
                 throw new RunException();
               // Now figure out the value to be assigned
-              machine.ipPushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
               break;
             case 18:
               // An assignment, gathered all needed data, so perform the assignment
@@ -186,7 +203,7 @@ public class ExpressionEvaluator
               if (lval.sourceScope == null)
                 throw new RunException();
               lval.sourceScope.assignTo(lval.sourceBinding, val);
-              machine.ipPop();
+              machine.ip.pop();
               break;
             }
       })
@@ -214,12 +231,12 @@ public class ExpressionEvaluator
               LValue toReturn = machine.scope.lookupLValue(((Token.ParameterToken)node.token).getLookupName());
               if (toReturn.type.isFunction())
               {
-                machine.ipPushAndAdvanceIdx(node, expressionHandlers);
+                machine.ip.pushAndAdvanceIdx(node, expressionHandlers);
               }
               else
               {
                 machine.pushLValue(toReturn);
-                machine.ipPop();
+                machine.ip.pop();
               }
               break;
             case 1:

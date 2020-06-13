@@ -96,37 +96,73 @@ public class MachineContext
     int idx;
     NodeHandlers instructionHandlers;
   }
-  List<InstructionPointerEntry> ip = new ArrayList<>();
-  int ipHead = -1;
-  public void ipAdvanceIdx()
+  static class InstructionPointer
   {
-    ip.get(ipHead).idx++;
+    private List<InstructionPointerEntry> ip = new ArrayList<>();
+    private int ipHead = -1;
+    public void advanceIdx()
+    {
+      ip.get(ipHead).idx++;
+    }
+    public void setIdx(int newIdx)
+    {
+      ip.get(ipHead).idx = newIdx;
+    }
+    public void pushAndAdvanceIdx(AstNode newNode, NodeHandlers instructionHandlers)
+    {
+      ip.get(ipHead).idx++;
+      push(newNode, instructionHandlers);
+    }
+    private void push(AstNode newNode, NodeHandlers instructionHandlers)
+    {
+      if (ipHead + 1 >= ip.size())
+        ip.add(new InstructionPointerEntry());
+      ipHead++;
+      ip.get(ipHead).node = newNode;
+      ip.get(ipHead).instructionHandlers = instructionHandlers;
+      ip.get(ipHead).idx = 0;
+    }
+    public void pop()
+    {
+      ipHead--;
+    }
+    public InstructionPointerEntry peekHead()
+    {
+      return ip.get(ipHead);
+    }
+    public boolean hasNext()
+    {
+      return ipHead >= 0;
+    }
   }
-  public void ipSetIdx(int newIdx)
+  public InstructionPointer ip = new InstructionPointer();
+  
+  /**
+   * We occasionally need to call blocking functions, but since JavaScript 
+   * doesn't support that, we need to exit the interpreter loop and then
+   * repeatedly poll to see when we can restart the interpreter
+   */
+  public static class PrimitiveBlockingFunctionReturn
   {
-    ip.get(ipHead).idx = newIdx;
+    boolean isBlocked = true;
+    /** Called each time the interpreter is started up in case some code needs to run to check if blocking is finished. Can be null */
+    Runnable checkDone = null;
+    /** Function needs to set the returnValue to whatever the function should return */
+    Value returnValue;
   }
-  public void ipPushAndAdvanceIdx(AstNode newNode, NodeHandlers instructionHandlers)
+  PrimitiveBlockingFunctionReturn blocked;
+  void waitOnBlockingFunction(PrimitiveBlockingFunctionReturn blockWait)
   {
-    ip.get(ipHead).idx++;
-    ipPush(newNode, instructionHandlers);
+    blocked = blockWait;
   }
-  private void ipPush(AstNode newNode, NodeHandlers instructionHandlers)
+  void testBlockFinished()
   {
-    if (ipHead + 1 >= ip.size())
-      ip.add(new InstructionPointerEntry());
-    ipHead++;
-    ip.get(ipHead).node = newNode;
-    ip.get(ipHead).instructionHandlers = instructionHandlers;
-    ip.get(ipHead).idx = 0;
-  }
-  public void ipPop()
-  {
-    ipHead--;
-  }
-  public InstructionPointerEntry ipPeekHead()
-  {
-    return ip.get(ipHead);
+    // Check if the thing we're blocking on is still blocked
+    if (blocked.isBlocked)
+      return;
+    // If we're unblocked then save the return value on the stack and clear the blocking state
+    pushValue(blocked.returnValue);
+    blocked = null;
   }
   
   /**
@@ -147,11 +183,11 @@ public class MachineContext
       // be safe depending on whether we've encoded the traversals correctly)
       if (idx == node.children.size())
       {
-        machine.ipPop();
+        machine.ip.pop();
         return;
       }
       // Visit the next child
-      machine.ipPushAndAdvanceIdx(node.children.get(idx), triggers);
+      machine.ip.pushAndAdvanceIdx(node.children.get(idx), triggers);
     }
   }
   
@@ -180,7 +216,7 @@ public class MachineContext
    */
   public void setStart(AstNode node, NodeHandlers instructionHandlers)
   {
-    ipPush(node, instructionHandlers);
+    ip.push(node, instructionHandlers);
   }
   
   /**
@@ -188,16 +224,29 @@ public class MachineContext
    */
   public void runNextStep() throws RunException
   {
-    InstructionPointerEntry nextInstruction = ipPeekHead();
+    InstructionPointerEntry nextInstruction = ip.peekHead();
     visitNodeRecursively(nextInstruction.node, nextInstruction.idx, this, nextInstruction.instructionHandlers);
   }
 
   /**
-   * Keeps running instructions until there are no more instructions to run
+   * Keeps running instructions until there are no more instructions to run.
+   * Returns true iff execution has finished (may return false if execution
+   * is blocked and needs to be retried later)
    */
-  public void runToCompletion() throws RunException
+  public boolean runToCompletion() throws RunException
   {
-    while (ipHead >= 0)
+    while (ip.hasNext())
+    {
+      if (blocked != null)
+      {
+        if (blocked.checkDone != null)
+          blocked.checkDone.run();
+        if (blocked.isBlocked)
+          return false;
+        testBlockFinished();
+      }
       runNextStep();
+    }
+    return true;
   }
 }

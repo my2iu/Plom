@@ -5,4 +5,9 @@ import java.util.List;
 public interface PrimitiveFunction
 {
   public Value call(List<Value> args);
+  
+  public static interface PrimitiveBlockingFunction
+  {
+    public void call(MachineContext.PrimitiveBlockingFunctionReturn blockWait, List<Value> args);
+  }
 }
