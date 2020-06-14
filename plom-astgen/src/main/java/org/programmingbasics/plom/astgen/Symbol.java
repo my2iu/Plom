@@ -12,6 +12,9 @@ enum Symbol
   OptionalComment(false),
   AfterIf(false),
   IfMore(false),
+  VarStatement(false),
+  VarType(false),
+  VarAssignment(false),
   ExpressionOnly(false),
   AssignmentExpression(false),
   AssignmentExpressionMore(false),
@@ -29,6 +32,11 @@ enum Symbol
   FalseLiteral(true),
   Number(true),
   DotVariable(true),
+  // I was thinking of having a separate DotType symbol, but it might be better to have a 
+  // single symbol for all tokens that look the same so that programmers aren't 
+  // confused if they cut&paste a DotType like .number and try to use it elsewhere as a DotVariable
+  Var(true),
+  Colon(true),
   Assignment(true),
   Plus(true),
   Minus(true),
@@ -37,6 +45,9 @@ enum Symbol
   OpenParenthesis(true),
   ClosedParenthesis(true),
   String(true),
+  
+  DotDeclareIdentifier(false),  // Expands to DotVariable
+  DotType(false),               // Expands to DotVariable
   
   DUMMY_COMMENT(true),
   COMPOUND_IF(true),

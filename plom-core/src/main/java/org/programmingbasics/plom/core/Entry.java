@@ -217,7 +217,7 @@ public class Entry implements EntryPoint
     // Parse the current statement up to the cursor position
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
     LL1Parser stmtParser = new LL1Parser();
-    stmtParser.stack.add(parseContext.baseContext);
+    stmtParser.addToParse(parseContext.baseContext);
     for (Token tok: parseContext.tokens)
     {
       tok.visit(stmtParser);
@@ -270,6 +270,8 @@ public class Entry implements EntryPoint
       case FalseLiteral: text = "false"; break;
       case Number: text = "123..."; break;
       case String: text = "\"...\""; break;
+      case Var: text = "var"; break;
+      case Colon: text = ":"; break;
       case COMPOUND_IF: text = "if"; break;
       case COMPOUND_ELSE: text = "else"; break;
       case COMPOUND_ELSEIF: text = "elseif"; break;

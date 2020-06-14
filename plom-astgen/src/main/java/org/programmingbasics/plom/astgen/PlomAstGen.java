@@ -10,8 +10,11 @@ import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_ELSE;
 import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_ELSEIF;
 import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_IF;
 import static org.programmingbasics.plom.astgen.Symbol.ClosedParenthesis;
+import static org.programmingbasics.plom.astgen.Symbol.Colon;
 import static org.programmingbasics.plom.astgen.Symbol.DUMMY_COMMENT;
 import static org.programmingbasics.plom.astgen.Symbol.Divide;
+import static org.programmingbasics.plom.astgen.Symbol.DotType;
+import static org.programmingbasics.plom.astgen.Symbol.DotDeclareIdentifier;
 import static org.programmingbasics.plom.astgen.Symbol.DotVariable;
 import static org.programmingbasics.plom.astgen.Symbol.EMPTY;
 import static org.programmingbasics.plom.astgen.Symbol.EndStatement;
@@ -34,7 +37,11 @@ import static org.programmingbasics.plom.astgen.Symbol.StatementOrEmpty;
 import static org.programmingbasics.plom.astgen.Symbol.String;
 import static org.programmingbasics.plom.astgen.Symbol.TrueLiteral;
 import static org.programmingbasics.plom.astgen.Symbol.ValueExpression;
+import static org.programmingbasics.plom.astgen.Symbol.Var;
+import static org.programmingbasics.plom.astgen.Symbol.VarAssignment;
 import static org.programmingbasics.plom.astgen.Symbol.WideStatement;
+import static org.programmingbasics.plom.astgen.Symbol.VarStatement;
+import static org.programmingbasics.plom.astgen.Symbol.VarType;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +69,7 @@ public class PlomAstGen
       rule(StatementOrEmpty, Statement),
       rule(StatementOrEmpty),
       rule(Statement, AssignmentExpression),
+      rule(Statement, VarStatement),
       rule(Statement, WideStatement, StatementOrEmpty),
       rule(WideStatement, COMPOUND_IF, AfterIf),
       rule(WideStatement, DUMMY_COMMENT),
@@ -91,6 +99,13 @@ public class PlomAstGen
       rule(AfterIf, COMPOUND_ELSEIF, AfterIf),
       rule(AfterIf, COMPOUND_ELSE),
       rule(AfterIf),
+      rule(VarStatement, Var, DotDeclareIdentifier, VarType, VarAssignment),
+      rule(VarType, Colon, DotType), 
+      rule(VarType),
+      rule(DotDeclareIdentifier, DotVariable),
+      rule(DotType, DotVariable),
+      rule(VarAssignment, Assignment, Expression),
+      rule(VarAssignment),
 //      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),
 //      rule(OptionalComment),

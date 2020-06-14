@@ -12,6 +12,9 @@ public enum Symbol
 	OptionalComment,
 	AfterIf,
 	IfMore,
+	VarStatement,
+	VarType,
+	VarAssignment,
 	ExpressionOnly,
 	AssignmentExpression,
 	AssignmentExpressionMore,
@@ -29,6 +32,8 @@ public enum Symbol
 	FalseLiteral,
 	Number,
 	DotVariable,
+	Var,
+	Colon,
 	Assignment,
 	Plus,
 	Minus,
@@ -37,6 +42,8 @@ public enum Symbol
 	OpenParenthesis,
 	ClosedParenthesis,
 	String,
+	DotDeclareIdentifier,
+	DotType,
 	DUMMY_COMMENT,
 	COMPOUND_IF,
 	COMPOUND_ELSE,
@@ -53,6 +60,8 @@ public enum Symbol
 		case FalseLiteral:
 		case Number:
 		case DotVariable:
+		case Var:
+		case Colon:
 		case Assignment:
 		case Plus:
 		case Minus:
