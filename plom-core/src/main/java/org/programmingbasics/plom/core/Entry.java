@@ -273,6 +273,12 @@ public class Entry implements EntryPoint
       switch(sym)
       {
       case Assignment: text = ":="; break;
+      case Gt: text = ">"; break;
+      case Ge: text = ">="; break;
+      case Lt: text = "<"; break;
+      case Le: text = "<="; break;
+      case Eq: text = "="; break;
+      case Ne: text = "!="; break;
       case Plus: text = "+"; break;
       case Minus: text = "-"; break;
       case Multiply: text = "*"; break;

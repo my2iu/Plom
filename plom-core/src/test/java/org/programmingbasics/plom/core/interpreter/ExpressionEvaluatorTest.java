@@ -226,4 +226,40 @@ public class ExpressionEvaluatorTest extends TestCase
     // Check if call args were passed in correctly
     Assert.assertEquals("hello", fun.captured.val);
   }
+  
+  @Test
+  public void testBooleanOperators() throws ParseException, RunException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken("<", Symbol.Lt),
+        new Token.SimpleToken("5", Symbol.Number));
+    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+
+    line = new TokenContainer(
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken(">", Symbol.Gt),
+        new Token.SimpleToken("5", Symbol.Number));
+    Assert.assertEquals(Value.FALSE, evalTest(line, new VariableScope()));
+
+    line = new TokenContainer(
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken("==", Symbol.Eq),
+        new Token.SimpleToken("\"hi\"", Symbol.String));
+    Assert.assertEquals(Value.FALSE, evalTest(line, new VariableScope()));
+
+    line = new TokenContainer(
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken("!=", Symbol.Ne),
+        new Token.SimpleToken("\"hi\"", Symbol.String));
+    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+
+    line = new TokenContainer(
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken("<=", Symbol.Le),
+        new Token.SimpleToken("3", Symbol.Number),
+        new Token.SimpleToken("==", Symbol.Eq),
+        new Token.SimpleToken("true", Symbol.TrueLiteral));
+    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+  }
 }

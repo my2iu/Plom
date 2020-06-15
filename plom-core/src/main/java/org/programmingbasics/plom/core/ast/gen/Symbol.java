@@ -19,6 +19,8 @@ public enum Symbol
 	AssignmentExpression,
 	AssignmentExpressionMore,
 	Expression,
+	RelationalExpression,
+	RelationalExpressionMore,
 	AdditiveExpression,
 	AdditiveExpressionMore,
 	MultiplicativeExpression,
@@ -35,6 +37,12 @@ public enum Symbol
 	Var,
 	Colon,
 	Assignment,
+	Lt,
+	Gt,
+	Le,
+	Ge,
+	Eq,
+	Ne,
 	Plus,
 	Minus,
 	Multiply,
@@ -63,6 +71,12 @@ public enum Symbol
 		case Var:
 		case Colon:
 		case Assignment:
+		case Lt:
+		case Gt:
+		case Le:
+		case Ge:
+		case Eq:
+		case Ne:
 		case Plus:
 		case Minus:
 		case Multiply:

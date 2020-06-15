@@ -18,20 +18,28 @@ import static org.programmingbasics.plom.astgen.Symbol.DotDeclareIdentifier;
 import static org.programmingbasics.plom.astgen.Symbol.DotVariable;
 import static org.programmingbasics.plom.astgen.Symbol.EMPTY;
 import static org.programmingbasics.plom.astgen.Symbol.EndStatement;
+import static org.programmingbasics.plom.astgen.Symbol.Eq;
 import static org.programmingbasics.plom.astgen.Symbol.Expression;
 import static org.programmingbasics.plom.astgen.Symbol.ExpressionOnly;
 import static org.programmingbasics.plom.astgen.Symbol.FalseLiteral;
 import static org.programmingbasics.plom.astgen.Symbol.FullStatement;
+import static org.programmingbasics.plom.astgen.Symbol.Ge;
+import static org.programmingbasics.plom.astgen.Symbol.Gt;
+import static org.programmingbasics.plom.astgen.Symbol.Le;
+import static org.programmingbasics.plom.astgen.Symbol.Lt;
 import static org.programmingbasics.plom.astgen.Symbol.MemberExpression;
 import static org.programmingbasics.plom.astgen.Symbol.MemberExpressionMore;
 import static org.programmingbasics.plom.astgen.Symbol.Minus;
 import static org.programmingbasics.plom.astgen.Symbol.MultiplicativeExpression;
 import static org.programmingbasics.plom.astgen.Symbol.MultiplicativeExpressionMore;
 import static org.programmingbasics.plom.astgen.Symbol.Multiply;
+import static org.programmingbasics.plom.astgen.Symbol.Ne;
 import static org.programmingbasics.plom.astgen.Symbol.Number;
 import static org.programmingbasics.plom.astgen.Symbol.OpenParenthesis;
 import static org.programmingbasics.plom.astgen.Symbol.ParenthesisExpression;
 import static org.programmingbasics.plom.astgen.Symbol.Plus;
+import static org.programmingbasics.plom.astgen.Symbol.RelationalExpression;
+import static org.programmingbasics.plom.astgen.Symbol.RelationalExpressionMore;
 import static org.programmingbasics.plom.astgen.Symbol.Statement;
 import static org.programmingbasics.plom.astgen.Symbol.StatementOrEmpty;
 import static org.programmingbasics.plom.astgen.Symbol.String;
@@ -77,14 +85,22 @@ public class PlomAstGen
       rule(AssignmentExpression, Expression, AssignmentExpressionMore),
       rule(AssignmentExpressionMore, Assignment, Expression),
       rule(AssignmentExpressionMore),
-      rule(Expression, AdditiveExpression),
+      rule(Expression, RelationalExpression),
+      rule(RelationalExpression, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Gt, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Ge, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Lt, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Le, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Eq, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Ne, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore),
       rule(AdditiveExpression, MultiplicativeExpression, AdditiveExpressionMore),
-      rule(AdditiveExpressionMore, Plus, AdditiveExpression),
-      rule(AdditiveExpressionMore, Minus, AdditiveExpression),
+      rule(AdditiveExpressionMore, Plus, MultiplicativeExpression, AdditiveExpressionMore),
+      rule(AdditiveExpressionMore, Minus, MultiplicativeExpression, AdditiveExpressionMore),
       rule(AdditiveExpressionMore),
       rule(MultiplicativeExpression, MemberExpression, MultiplicativeExpressionMore),
-      rule(MultiplicativeExpressionMore, Multiply, MultiplicativeExpression),
-      rule(MultiplicativeExpressionMore, Divide, MultiplicativeExpression),
+      rule(MultiplicativeExpressionMore, Multiply, MemberExpression, MultiplicativeExpressionMore),
+      rule(MultiplicativeExpressionMore, Divide, MemberExpression, MultiplicativeExpressionMore),
       rule(MultiplicativeExpressionMore),
       rule(MemberExpression, ParenthesisExpression, MemberExpressionMore),
       rule(MemberExpressionMore, DotVariable, MemberExpressionMore),

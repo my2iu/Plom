@@ -6,6 +6,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
@@ -34,9 +35,14 @@ public class ExpressionEvaluator
           Value left = machine.popValue();
           Value toReturn = doOp.apply(left, right);
           machine.pushValue(toReturn);
-          machine.ip.pop();
+          machine.ip.advanceIdx();
           break;
         }
+      case 2:
+        machine.ip.pushAndAdvanceIdx(node.children.get(2), expressionHandlers);
+        break;
+      case 3:
+        machine.ip.pop();
       }
     };
   }
@@ -45,7 +51,7 @@ public class ExpressionEvaluator
   static MachineContext.NodeHandlers expressionHandlers = new MachineContext.NodeHandlers();
   static {
     expressionHandlers
-      .add(Rule.AdditiveExpressionMore_Plus_AdditiveExpression,
+      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
             if (left.type == Type.NUMBER && right.type == Type.NUMBER)
               return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
@@ -55,7 +61,7 @@ public class ExpressionEvaluator
               throw new RunException();
           })
       )
-      .add(Rule.AdditiveExpressionMore_Minus_AdditiveExpression,
+      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
               if (left.type == Type.NUMBER && right.type == Type.NUMBER)
                 return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
@@ -63,7 +69,7 @@ public class ExpressionEvaluator
                 throw new RunException();
           })
       )
-      .add(Rule.MultiplicativeExpressionMore_Multiply_MultiplicativeExpression,
+      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
             if (left.type == Type.NUMBER && right.type == Type.NUMBER)
               return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
@@ -71,12 +77,68 @@ public class ExpressionEvaluator
               throw new RunException();
           })
       )
-      .add(Rule.MultiplicativeExpressionMore_Divide_MultiplicativeExpression,
+      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
             if (left.type == Type.NUMBER && right.type == Type.NUMBER)
               return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
             else
               throw new RunException();
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() == right.getNumberValue());
+            else if (left.type == Type.STRING && right.type == Type.STRING)
+              return Value.createBooleanValue(left.getStringValue().equals(right.getStringValue()));
+            else if (left.type == Type.BOOLEAN && right.type == Type.BOOLEAN)
+              return Value.createBooleanValue(left.getBooleanValue() == right.getBooleanValue());
+            else if (left.type == Type.NULL && right.type == Type.NULL)
+              return Value.TRUE;
+            else
+              return Value.FALSE;
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() != right.getNumberValue());
+            else if (left.type == Type.STRING && right.type == Type.STRING)
+              return Value.createBooleanValue(!left.getStringValue().equals(right.getStringValue()));
+            else if (left.type == Type.BOOLEAN && right.type == Type.BOOLEAN)
+              return Value.createBooleanValue(left.getBooleanValue() != right.getBooleanValue());
+            else if (left.type == Type.NULL && right.type == Type.NULL)
+              return Value.FALSE;
+            else
+              return Value.TRUE;
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() > right.getNumberValue());
+            throw new RunException();
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() >= right.getNumberValue());
+            throw new RunException();
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() < right.getNumberValue());
+            throw new RunException();
+          })
+      )
+      .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryOperatorHandlerMore((left, right) -> {
+            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+              return Value.createBooleanValue(left.getNumberValue() <= right.getNumberValue());
+            throw new RunException();
           })
       )
       .add(Rule.String, 
@@ -98,18 +160,12 @@ public class ExpressionEvaluator
       })
       .add(Rule.TrueLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
-            Value val = new Value();
-            val.type = Type.BOOLEAN;
-            val.val = Boolean.TRUE;
-            machine.pushValue(val);
+            machine.pushValue(Value.TRUE);
             machine.ip.pop();
       })
       .add(Rule.FalseLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
-            Value val = new Value();
-            val.type = Type.BOOLEAN;
-            val.val = Boolean.FALSE;
-            machine.pushValue(val);
+            machine.pushValue(Value.FALSE);
             machine.ip.pop();
       })
       .add(Rule.DotVariable, 
@@ -151,6 +207,14 @@ public class ExpressionEvaluator
       });
   }
 
+  /** Just an easy way to throw an exception in lvalue code */
+  static MachineNodeVisitor lValueInvalid() { 
+    return (MachineContext machine, AstNode node, int idx) -> {
+      throw new RunException();
+    };
+  };
+
+  /** Handlers for reading the lValue of an assignment */
   static MachineContext.NodeHandlers assignmentLValueHandlers = new MachineContext.NodeHandlers();
   static {
     assignmentLValueHandlers
@@ -207,22 +271,16 @@ public class ExpressionEvaluator
               break;
             }
       })
-      .add(Rule.AdditiveExpressionMore_Plus_AdditiveExpression,
-          (MachineContext machine, AstNode node, int idx) -> {
-            throw new RunException();
-      })
-      .add(Rule.AdditiveExpressionMore_Minus_AdditiveExpression,
-          (MachineContext machine, AstNode node, int idx) -> {
-            throw new RunException();
-      })
-      .add(Rule.MultiplicativeExpressionMore_Multiply_MultiplicativeExpression,
-          (MachineContext machine, AstNode node, int idx) -> {
-            throw new RunException();
-      })
-      .add(Rule.MultiplicativeExpressionMore_Divide_MultiplicativeExpression,
-          (MachineContext machine, AstNode node, int idx) -> {
-            throw new RunException();
-      })
+      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore, lValueInvalid())
+      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore, lValueInvalid())
+      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
+      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             switch (idx)

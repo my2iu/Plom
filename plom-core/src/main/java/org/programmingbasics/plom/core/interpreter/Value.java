@@ -13,6 +13,10 @@ public class Value
   {
     return (String)val;
   }
+  public boolean getBooleanValue()
+  {
+    return ((Boolean)val).booleanValue();
+  }
   public static Value createNumberValue(double val)
   {
     Value newVal = new Value();
@@ -27,6 +31,10 @@ public class Value
     newVal.val = val;
     return newVal;
   }
+  public static Value createBooleanValue(boolean val)
+  {
+    return val ? TRUE : FALSE;
+  }
   public static Value readFromScope(VariableScope scope, String binding, Value val)
   {
     Value newVal = new Value();
@@ -36,9 +44,15 @@ public class Value
   }
   
   public final static Value NULL = new Value();
+  public final static Value TRUE = new Value();
+  public final static Value FALSE = new Value();
   static {
     NULL.type = Type.NULL;
     NULL.val = null;
+    TRUE.type = Type.BOOLEAN;
+    TRUE.val = true;
+    FALSE.type = Type.BOOLEAN;
+    FALSE.val = false;
   }
   
   
