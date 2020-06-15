@@ -61,32 +61,45 @@ public class Entry implements EntryPoint
     hookRun();
   }
 
-  StatementContainer codeList = new StatementContainer();
-  {
-    Token.OneExpressionOneBlockToken ifToken = new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF);
-    ifToken.expression.tokens.addAll(Arrays.asList(
-        new Token.SimpleToken("1", Symbol.Number)));
-    ifToken.block.statements.add(
-        new TokenContainer(Arrays.asList(
-            new Token.SimpleToken("1", Symbol.Number),
-            new Token.SimpleToken("+", Symbol.Plus),
-            new Token.SimpleToken("1", Symbol.Number)
-            ))
-        );
-    Token.ParameterToken printToken = new Token.ParameterToken(Arrays.asList(".print:"), "", Symbol.DotVariable);
-    printToken.parameters.get(0).tokens.add(new Token.SimpleToken("\"Hello\"", Symbol.String));
-    codeList.statements.addAll(Arrays.asList(
-        new TokenContainer(Arrays.asList(
-            ifToken)),
-        new TokenContainer(printToken),
-        new TokenContainer(Arrays.asList()),
-        new TokenContainer(Arrays.asList(
-            new Token.ParameterToken(Collections.emptyList(), ".a", Symbol.DotVariable),
-            new Token.SimpleToken(":=", Symbol.Assignment),
-            new Token.SimpleToken("8", Symbol.Number)
-            ))
-        ));
-  }
+  StatementContainer codeList = new StatementContainer(
+      new TokenContainer(
+          new Token.SimpleToken("var", Symbol.Var),
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+          new Token.SimpleToken(":", Symbol.Colon),
+          Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+          ),
+      new TokenContainer(
+          Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+          new Token.SimpleToken(":=", Symbol.Assignment),
+          Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
+              new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
+          ),
+      new TokenContainer(
+          new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+              new TokenContainer(
+                  Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                  new Token.SimpleToken("==", Symbol.Eq),
+                  new Token.SimpleToken("\"8\"", Symbol.String)
+                  ),
+              new StatementContainer(
+                  new TokenContainer(
+                      Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+                          new TokenContainer(
+                              new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
+                              ))
+                      ))
+              ),
+          new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
+              new StatementContainer(
+                  new TokenContainer(
+                      Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+                          new TokenContainer(
+                              new Token.SimpleToken("\"Incorrect\"", Symbol.String)
+                              ))
+                      ))
+              )
+          )
+      );
   DivElement codeDiv;
   DivElement choicesDiv;
   SimpleEntry simpleEntry;
