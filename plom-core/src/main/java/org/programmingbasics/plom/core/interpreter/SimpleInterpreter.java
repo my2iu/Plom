@@ -73,6 +73,8 @@ public class SimpleInterpreter
             Type type = typeInfo.type;
             if (type == null) type = Type.VOID;
             Value val = Value.NULL;
+            if (!node.children.get(3).matchesRule(Rule.VarAssignment))
+              throw new RunException("Not implemented yet");
             machine.scope.addVariable(name, type, val);
             machine.ip.pop();
           })
@@ -80,6 +82,68 @@ public class SimpleInterpreter
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 0)
               machine.ip.pushAndAdvanceIdx(node.children.get(0), ExpressionEvaluator.assignmentLValueHandlers);
+            else
+              machine.ip.pop();
+          })
+      .add(Rule.WideStatement_COMPOUND_IF_AfterIf,
+          (MachineContext machine, AstNode node, int idx) -> {
+            switch (idx)
+            {
+            case 0: // Evaluate expression
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), ExpressionEvaluator.expressionHandlers);
+              break;
+            case 1: // Decide whether to follow the if or not
+              Value val = machine.popValue();
+              if (val.type != Type.BOOLEAN)
+                throw new RunException();
+              if (val.getBooleanValue())
+                machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              else
+                machine.ip.setIdx(3);
+              break;
+            case 2: // if is taken
+              machine.ip.pop();
+              break;
+            case 3: // if is not taken
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), statementHandlers);
+              break;
+            case 4: // return from if not taken
+              machine.ip.pop();
+              break;
+            }
+          })
+      .add(Rule.AfterIf_COMPOUND_ELSEIF_AfterIf,
+          (MachineContext machine, AstNode node, int idx) -> {
+            switch (idx)
+            {
+            case 0: // Evaluate expression
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), ExpressionEvaluator.expressionHandlers);
+              break;
+            case 1: // Decide whether to follow the if or not
+              Value val = machine.popValue();
+              if (val.type != Type.BOOLEAN)
+                throw new RunException();
+              if (val.getBooleanValue())
+                machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              else
+                machine.ip.setIdx(3);
+              break;
+            case 2: // if is taken
+              machine.ip.pop();
+              break;
+            case 3: // if is not taken
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), statementHandlers);
+              break;
+            case 4: // return from if not taken
+              machine.ip.pop();
+              break;
+            }
+          })
+      .add(Rule.AfterIf_COMPOUND_ELSE,
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 0)
+              // Evaluate block
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), statementHandlers);
             else
               machine.ip.pop();
           });

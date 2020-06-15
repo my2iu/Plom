@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
@@ -33,7 +34,23 @@ public class ParseToAst
       node.internalChildren.add(argParser.parseToEnd(Symbol.Expression));
     }
   }
-  
+
+  private void parseOneExpressionOneBlockToken(AstNode node,
+      OneExpressionOneBlockToken token) throws ParseException
+  {
+    node.internalChildren = new ArrayList<>();
+    ParseToAst exprParser = new ParseToAst(token.expression.tokens, Symbol.EndStatement);
+    node.internalChildren.add(exprParser.parseToEnd(Symbol.Expression));
+    node.internalChildren.add(parseStatementContainer(token.block));
+  }
+
+  private void parseOneBlockToken(AstNode node, Token.OneBlockToken token) throws ParseException
+  {
+    node.internalChildren = new ArrayList<>();
+    node.internalChildren.add(parseStatementContainer(token.block));
+  }
+
+
   private AstNode parse(Symbol base) throws ParseException
   {
     Symbol sym = peekNextTokenType();
@@ -44,6 +61,10 @@ public class ParseToAst
       AstNode node = AstNode.fromToken(readNextToken());
       if (node.token instanceof Token.ParameterToken)
         parseParameterToken(node, (Token.ParameterToken)node.token);
+      else if (node.token instanceof Token.OneExpressionOneBlockToken)
+        parseOneExpressionOneBlockToken(node, (Token.OneExpressionOneBlockToken)node.token);
+      else if (node.token instanceof Token.OneBlockToken)
+        parseOneBlockToken(node, (Token.OneBlockToken)node.token);
       return node;
     }
 
