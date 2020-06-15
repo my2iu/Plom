@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -128,6 +129,20 @@ public class Entry implements EntryPoint
 
   void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
   {
+    // Figure out some context to see if it can be used to narrow possible
+    // options to show some more
+    
+    // Parse the current statement up to the cursor position
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    LL1Parser stmtParser = new LL1Parser();
+    stmtParser.addToParse(parseContext.baseContext);
+    for (Token tok: parseContext.tokens)
+    {
+      tok.visit(stmtParser);
+    }
+    List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(tokenType);
+    
+    // Create an appropriate token object
     Token newToken;
     switch(tokenType)
     {

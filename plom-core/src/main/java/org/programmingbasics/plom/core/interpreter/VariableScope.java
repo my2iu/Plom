@@ -10,7 +10,8 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
  */
 public class VariableScope
 {
-  public Map<String, Value> values = new HashMap<>();
+  private Map<String, Value> values = new HashMap<>();
+  private Map<String, Type> types = new HashMap<>();
   
   public Value lookup(String name) throws RunException
   {
@@ -33,9 +34,10 @@ public class VariableScope
     values.put(name, val);
   }
   // For testing
-  public VariableScope addVariable(String name, Value val)
+  public VariableScope addVariable(String name, Type type, Value val)
   {
     values.put(name, val);
+    types.put(name, type);
     return this;
   }
 }

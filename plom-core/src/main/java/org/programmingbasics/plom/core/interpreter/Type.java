@@ -37,4 +37,6 @@ public class Type
   static Type NUMBER = new Type(".number");
   static Type STRING = new Type(".string");
   static Type BOOLEAN = new Type(".boolean");
+  static Type VOID = new Type(".void");
+  static Type NULL = new Type(".null");
 }

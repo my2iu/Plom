@@ -5,9 +5,6 @@ public class Value
 {
   public Type type;
   public Object val;
-  // TODO: Remove sourceBinding and sourceScope stuff
-  public VariableScope sourceScope;
-  public String sourceBinding;
   public double getNumberValue()
   {
     return ((Double)val).doubleValue();
@@ -35,11 +32,14 @@ public class Value
     Value newVal = new Value();
     newVal.type = val.type;
     newVal.val = val.val;
-    newVal.sourceScope = scope;
-    newVal.sourceBinding = binding;
     return newVal;
   }
   
+  public final static Value NULL = new Value();
+  static {
+    NULL.type = Type.NULL;
+    NULL.val = null;
+  }
   
   
   /**

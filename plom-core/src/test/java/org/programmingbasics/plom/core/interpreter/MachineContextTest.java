@@ -58,9 +58,9 @@ public class MachineContextTest extends TestCase
     }
     CaptureFunction fun = new CaptureFunction();
     aVal.val = fun;
-    scope.addVariable("a:", aVal);
-    scope.addVariable("b", Value.createStringValue("hello "));
-    scope.addVariable("c", Value.createNumberValue(2));
+    scope.addVariable("a:", aVal.type, aVal);
+    scope.addVariable("b", Type.STRING, Value.createStringValue("hello "));
+    scope.addVariable("c", Type.NUMBER, Value.createNumberValue(2));
     
     // Run some code that uses those variables
     StatementContainer code = new StatementContainer(

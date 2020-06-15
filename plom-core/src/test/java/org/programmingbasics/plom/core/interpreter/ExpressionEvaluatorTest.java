@@ -108,7 +108,7 @@ public class ExpressionEvaluatorTest extends TestCase
     Value aVal = new Value();
     aVal.type = Type.NUMBER;
     aVal.val = 32;
-    scope.addVariable("a", aVal);
+    scope.addVariable("a", Type.NUMBER, aVal);
     
     // Read a variable
     {
@@ -186,7 +186,7 @@ public class ExpressionEvaluatorTest extends TestCase
         return Value.createNumberValue(32);
       }
     };
-    scope.addVariable("a", aVal);
+    scope.addVariable("a", aVal.type, aVal);
     
     // Call the function
     TokenContainer line = new TokenContainer(
@@ -213,7 +213,7 @@ public class ExpressionEvaluatorTest extends TestCase
     }
     CaptureFunction fun = new CaptureFunction();
     aVal.val = fun;
-    scope.addVariable("a:", aVal);
+    scope.addVariable("a:", aVal.type, aVal);
     
     // Call the function
     TokenContainer line = new TokenContainer(

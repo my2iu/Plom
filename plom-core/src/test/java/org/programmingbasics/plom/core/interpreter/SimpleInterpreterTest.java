@@ -32,8 +32,8 @@ public class SimpleInterpreterTest extends TestCase
     }
     CaptureFunction fun = new CaptureFunction();
     aVal.val = fun;
-    scope.addVariable("a:", aVal);
-    scope.addVariable("b", Value.createStringValue("hello "));
+    scope.addVariable("a:", aVal.type, aVal);
+    scope.addVariable("b", Type.STRING, Value.createStringValue("hello "));
     
     // Run some code that uses those variables
     StatementContainer code = new StatementContainer(
@@ -56,5 +56,45 @@ public class SimpleInterpreterTest extends TestCase
     interpreter.runCode(ctx);
 
     Assert.assertEquals("hello world", fun.captured.val);
-  } 
+  }
+  
+  @Test
+  public void testCreateNewVariables() throws ParseException, RunException
+  {
+    VariableScope scope = new VariableScope();
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken("var", Symbol.Colon),
+            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            )
+        );
+    {
+      SimpleInterpreter interpreter = new SimpleInterpreter(code);
+      MachineContext ctx = new MachineContext();
+      ctx.scope = scope;
+      interpreter.runCode(ctx);
+    }
+    
+    Assert.assertEquals(Type.NULL, scope.lookup("a").type);
+    
+    code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("1", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("2", Symbol.Number)
+            )
+        );
+    {
+      SimpleInterpreter interpreter = new SimpleInterpreter(code);
+      MachineContext ctx = new MachineContext();
+      ctx.scope = scope;
+      interpreter.runCode(ctx);
+    }
+    
+    Assert.assertEquals(3.0, scope.lookup("a").getNumberValue(), 0.0);
+  }
 }

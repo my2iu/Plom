@@ -6,6 +6,8 @@ import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.AstNode.VisitorTriggers;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.interpreter.MachineContext.PrimitiveBlockingFunctionReturn;
 
@@ -32,7 +34,25 @@ public class SimpleInterpreter
   StatementContainer code;
   AstNode parsedCode;
   MachineContext ctx;
-  
+
+  // When parsing type information, we need a structure for stashing
+  // that type info in order to return it
+  static class GatheredTypeInfo
+  {
+    Type type;
+  }
+  static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException>()
+      .add(Rule.DotType_DotVariable, (triggers, node, typesToReturn, machine) -> {
+        // Just pass through
+        node.recursiveVisitChildren(triggers, typesToReturn, machine);
+        return true;
+      })
+      .add(Rule.DotVariable, (triggers, node, typesToReturn, machine) -> {
+        Type t = new Type(((Token.ParameterToken)node.token).getLookupName());
+        typesToReturn.type = t;
+        return true;
+      });
+
   static MachineContext.NodeHandlers statementHandlers = new MachineContext.NodeHandlers();
   static {
     statementHandlers
@@ -43,6 +63,19 @@ public class SimpleInterpreter
             else
               machine.ip.pop();
       })
+      .add(Rule.VarStatement_Var_DotDeclareIdentifier_VarType_VarAssignment, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
+              throw new RunException();
+            String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
+            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+            node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, machine);
+            Type type = typeInfo.type;
+            if (type == null) type = Type.VOID;
+            Value val = Value.NULL;
+            machine.scope.addVariable(name, type, val);
+            machine.ip.pop();
+          })
       .add(Rule.Statement_AssignmentExpression,
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 0)
@@ -51,6 +84,7 @@ public class SimpleInterpreter
               machine.ip.pop();
           });
   }
+
   
   void createGlobals(VariableScope scope)
   {
@@ -75,7 +109,7 @@ public class SimpleInterpreter
         container.querySelector("a").focus();
       }
     };
-    scope.addVariable("print:", printFun);
+    scope.addVariable("print:", printFun.type, printFun);
     
     Value inputFun = new Value();
     inputFun.type = Type.makePrimitiveBlockingFunctionType(Type.STRING, Type.STRING);
@@ -104,7 +138,7 @@ public class SimpleInterpreter
         container.querySelector("input").focus();
       }
     };
-    scope.addVariable("input:", inputFun);
+    scope.addVariable("input:", inputFun.type, inputFun);
   }
   
   public void runCode(MachineContext ctx) throws ParseException, RunException
