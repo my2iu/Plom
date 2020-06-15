@@ -14,7 +14,7 @@ Plom is not intended to innovate in the area of language design. It will use a f
 
 Since Plom will target beginner programmers, its design will try to minimize the number of concepts and features used in it. Ideally, this would mean the language would use dynamic typing like Python or JavaScript so that programmers would not need a strong understanding of types in order to do any programming. But making good predictions for context-sensitive code completion requires good type information. Seeing as Plom needs good predictions for its cellphone interface, Plom will use static typing. To reduce the burden of this type system, Plom will likely use a lenient one, like the one used for Dart.
 
-
+This idea of reducing the amount of dynamism in the language to improve predictions and suggestions will appear in Plom in other ways too. The language and IDE will likely emphasize statically defining as many classes and other structures as possible. Lambdas, closures, anonymous classes, and reflection likely will not be supported or their use will be discouraged even if they are supported.    
 
 ## Interface
 
