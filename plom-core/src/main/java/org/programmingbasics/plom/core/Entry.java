@@ -1,6 +1,10 @@
 package org.programmingbasics.plom.core;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -44,7 +48,6 @@ TODO:
 - keyboard movement
 - predict variables
 - keyboard entry
-- better sorting of predicted symbols
 - variable declaration with assignment 
  */
 
@@ -117,7 +120,41 @@ public class Entry implements EntryPoint
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
 
-
+  // To ensure that predicted buttons end up in a consistent order and
+  // with the most important ones showing first, we have a map with priorities
+  // for each button
+  static Map<Symbol, Integer> buttonOrderPriority = new HashMap<>();
+  static {
+    Symbol[] symbolOrder = new Symbol[] {
+        Symbol.DotVariable,
+        Symbol.Number,
+        Symbol.String,
+        Symbol.TrueLiteral,
+        Symbol.FalseLiteral,
+        Symbol.Assignment,
+        Symbol.Plus,
+        Symbol.Minus,
+        Symbol.Multiply,
+        Symbol.Divide,
+        Symbol.Eq,
+        Symbol.Ne,
+        Symbol.Lt,
+        Symbol.Le,
+        Symbol.Ge,
+        Symbol.Gt,
+        Symbol.OpenParenthesis,
+        Symbol.ClosedParenthesis,
+        Symbol.DUMMY_COMMENT,
+        Symbol.Var,
+        Symbol.COMPOUND_WHILE,
+        Symbol.COMPOUND_IF,
+        Symbol.COMPOUND_ELSEIF,
+        Symbol.COMPOUND_ELSE,
+    };
+    for (int n = 0; n < symbolOrder.length; n++)
+      buttonOrderPriority.put(symbolOrder[n], n);
+  }
+  
   /**
    * Returns a mapping of divs for each line and their line numbers
    */
@@ -266,19 +303,41 @@ public class Entry implements EntryPoint
     Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();
 
     // Buttons for next, backspace, and enter
+    // Next button
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
     }));
+    // Backspace button
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
-      // Backspace
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
       renderTokens(codeDiv, codeList, cursorPos, null);
       showPredictedTokenInput(choicesDiv);
     })); 
+    // Edit button for certain tokens
+    Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
+    boolean showEditButton = false;
+    if (currentToken != null)
+    {
+      Symbol tokenType = null;
+      if (currentToken instanceof Token.TokenWithSymbol)
+        tokenType = ((Token.TokenWithSymbol)currentToken).getType();
+      
+      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
+        showEditButton = true;
+    }
+    if (showEditButton)
+    {
+      choicesDiv.appendChild(makeButton("\u270e", true, () -> {
+        showSimpleEntryForToken(currentToken, true);
+      }));
+    }
+    else
+      choicesDiv.appendChild(makeButton("\u270e", false, () -> {  }));
+    // newline button
     if (parseContext.baseContext != Symbol.ExpressionOnly)
     {
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
@@ -289,9 +348,12 @@ public class Entry implements EntryPoint
         showPredictedTokenInput(choicesDiv);
       }));
     }
+
     
     // Just some random tokens for initial prototyping
-    for (Symbol sym: allowedSymbols)
+    List<Symbol> sortedAllowedSymbols = new ArrayList<>(allowedSymbols);
+    sortedAllowedSymbols.sort(Comparator.comparing(s -> buttonOrderPriority.containsKey(s) ? buttonOrderPriority.get(s) : buttonOrderPriority.size()));
+    for (Symbol sym: sortedAllowedSymbols)
     {
       if (sym == Symbol.EndStatement) continue;
       boolean isValidSymbol = stmtParser.peekParseSymbol(sym);
@@ -334,22 +396,6 @@ public class Entry implements EntryPoint
         choicesDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
         choicesDiv.appendChild(makeButton(tokenText, false, () -> {  }));
-    }
-    
-    // Edit button for certain tokens
-    Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
-    if (currentToken != null)
-    {
-      Symbol tokenType = null;
-      if (currentToken instanceof Token.TokenWithSymbol)
-        tokenType = ((Token.TokenWithSymbol)currentToken).getType();
-      
-      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
-      {
-        choicesDiv.appendChild(makeButton("\u270e", true, () -> {
-          showSimpleEntryForToken(currentToken, true);
-        }));
-      }
     }
   }
 
