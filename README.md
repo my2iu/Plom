@@ -30,7 +30,7 @@ The bottom half is a special virtual "keyboard" with buttons for entering entire
 
 ![Mockup of Plom user interface](docs/imgs/uiSuggestions.svg)
 
-The normal cellphone soft keyboard is used for entering variable names or other identifiers. When entering identifiers, Plom will show suggestions for context-appropriate code completions along the right side of the display. 
+The normal cellphone soft keyboard is used for entering variable names or other identifiers as shown in the mock-up above. When entering identifiers, Plom will show suggestions for context-appropriate code completions along the right side of the display. 
 
 ## More Design Details
 
