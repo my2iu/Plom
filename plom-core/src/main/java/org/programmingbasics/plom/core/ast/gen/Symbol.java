@@ -56,6 +56,7 @@ public enum Symbol
 	COMPOUND_IF,
 	COMPOUND_ELSE,
 	COMPOUND_ELSEIF,
+	COMPOUND_WHILE,
 	DUMMY_BEGIN,
 	DUMMY_END,
 	ASSEMBLED_STATEMENTS_BLOCK;
@@ -88,6 +89,7 @@ public enum Symbol
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:
 		case COMPOUND_ELSEIF:
+		case COMPOUND_WHILE:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
 		case ASSEMBLED_STATEMENTS_BLOCK:
@@ -103,6 +105,7 @@ public enum Symbol
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:
 		case COMPOUND_ELSEIF:
+		case COMPOUND_WHILE:
 			return true;
 		default:
 			return false;

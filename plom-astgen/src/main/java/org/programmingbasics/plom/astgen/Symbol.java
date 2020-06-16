@@ -61,6 +61,7 @@ enum Symbol
   COMPOUND_IF(true),
   COMPOUND_ELSE(true),
   COMPOUND_ELSEIF(true),
+  COMPOUND_WHILE(true),
   DUMMY_BEGIN(true),
   DUMMY_END(true),
   

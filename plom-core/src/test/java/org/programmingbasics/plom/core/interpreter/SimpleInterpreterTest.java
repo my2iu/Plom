@@ -204,6 +204,51 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(3.0, scope.lookup("b").getNumberValue(), 0.0);
-}
+  }
+
+  @Test
+  public void testWhile() throws ParseException, RunException
+  {
+    VariableScope scope = new VariableScope();
+    scope.addVariable("a", Type.NUMBER, Value.createNumberValue(0));
+    scope.addVariable("b", Type.NUMBER, Value.createNumberValue(1));
+    MachineContext ctx = new MachineContext();
+    ctx.scope = scope;
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("<", Symbol.Lt),
+                    new Token.SimpleToken("8", Symbol.Number)
+                    ), 
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("*", Symbol.Multiply),
+                        new Token.SimpleToken("2", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("1", Symbol.Number)
+                        )
+                    )),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken("-", Symbol.Minus),
+            new Token.SimpleToken("1", Symbol.Number)
+            )
+        );
+    new SimpleInterpreter(code).runCode(ctx);
+    Assert.assertEquals(8.0, scope.lookup("a").getNumberValue(), 0.0);
+    Assert.assertEquals(255.0, scope.lookup("b").getNumberValue(), 0.0);
+  }
 
 }

@@ -146,6 +146,27 @@ public class SimpleInterpreter
               machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), statementHandlers);
             else
               machine.ip.pop();
+          })
+      .add(Rule.WideStatement_COMPOUND_WHILE, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            switch (idx)
+            {
+            case 0: // Evaluate expression
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), ExpressionEvaluator.expressionHandlers);
+              break;
+            case 1: // Decide whether to follow the if or not
+              Value val = machine.popValue();
+              if (val.type != Type.BOOLEAN)
+                throw new RunException();
+              if (val.getBooleanValue())
+                machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              else
+                machine.ip.pop();
+              break;
+            case 2: // go back to reevaluate the expression
+              machine.ip.setIdx(0);
+              break;
+            }
           });
   }
 

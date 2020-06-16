@@ -9,6 +9,7 @@ import static org.programmingbasics.plom.astgen.Symbol.AssignmentExpressionMore;
 import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_ELSE;
 import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_ELSEIF;
 import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_IF;
+import static org.programmingbasics.plom.astgen.Symbol.COMPOUND_WHILE;
 import static org.programmingbasics.plom.astgen.Symbol.ClosedParenthesis;
 import static org.programmingbasics.plom.astgen.Symbol.Colon;
 import static org.programmingbasics.plom.astgen.Symbol.DUMMY_COMMENT;
@@ -80,6 +81,7 @@ public class PlomAstGen
       rule(Statement, VarStatement),
       rule(Statement, WideStatement, StatementOrEmpty),
       rule(WideStatement, COMPOUND_IF, AfterIf),
+      rule(WideStatement, COMPOUND_WHILE),
       rule(WideStatement, DUMMY_COMMENT),
       rule(ExpressionOnly, Expression, EndStatement),
       rule(AssignmentExpression, Expression, AssignmentExpressionMore),

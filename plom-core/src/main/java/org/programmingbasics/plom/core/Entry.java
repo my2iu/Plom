@@ -1,7 +1,5 @@
 package org.programmingbasics.plom.core;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +33,20 @@ import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
+
+/*
+TODO:
+- functions
+- number constants (change inputmode to numeric)
+- string constants (allow multi-line strings?)
+- valign to middle
+- nesting of blocks for functions
+- keyboard movement
+- predict variables
+- keyboard entry
+- better sorting of predicted symbols
+- variable declaration with assignment 
+ */
 
 public class Entry implements EntryPoint
 {
@@ -161,6 +173,7 @@ public class Entry implements EntryPoint
     {
     case COMPOUND_IF:
     case COMPOUND_ELSEIF:
+    case COMPOUND_WHILE:
       newToken = new Token.OneExpressionOneBlockToken(tokenText, tokenType);
       break;
     case COMPOUND_ELSE:
@@ -309,6 +322,7 @@ public class Entry implements EntryPoint
       case COMPOUND_IF: text = "if"; break;
       case COMPOUND_ELSE: text = "else"; break;
       case COMPOUND_ELSEIF: text = "elseif"; break;
+      case COMPOUND_WHILE: text = "while"; break;
       default:
       }
       String tokenText = text;
