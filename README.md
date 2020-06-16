@@ -28,6 +28,8 @@ The top half displays the code listing for the program. The thick vertical line 
 
 The bottom half is a special virtual "keyboard" with buttons for entering entire keywords or code structures with a single button press. The buttons in the keyboard area are context-sensitive--only buttons for keywords that are relevant to the current code position being edited are shown. 
 
+![Mockup of Plom user interface](docs/imgs/uiSuggestions.svg)
+
 The normal cellphone soft keyboard is used for entering variable names or other identifiers. When entering identifiers, Plom will show suggestions for context-appropriate code completions along the right side of the display. 
 
 ## More Design Details
