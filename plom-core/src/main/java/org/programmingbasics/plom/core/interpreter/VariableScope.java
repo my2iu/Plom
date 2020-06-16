@@ -12,17 +12,36 @@ public class VariableScope
 {
   private Map<String, Value> values = new HashMap<>();
   private Map<String, Type> types = new HashMap<>();
+  private VariableScope parent;
   
+  public void setParent(VariableScope parentScope)
+  {
+    parent = parentScope;
+  }
+  public VariableScope getParent()
+  {
+    return parent;
+  }
   public Value lookup(String name) throws RunException
   {
     Value val = values.get(name);
-    if (val == null) throw new RunException();
+    if (val == null)
+    {
+      if (parent != null)
+        return parent.lookup(name);
+      throw new RunException();
+    }
     return val;
   }
   public LValue lookupLValue(String name) throws RunException
   {
     Value val = values.get(name);
-    if (val == null) throw new RunException();
+    if (val == null) 
+    {
+      if (parent != null)
+        return parent.lookupLValue(name);
+      throw new RunException();
+    }
     return LValue.readFromScope(this, name, val);
   }
 
@@ -30,7 +49,12 @@ public class VariableScope
   public void assignTo(String name, Value val) throws RunException
   {
     if (!values.containsKey(name))
-      throw new RunException();
+    {
+      if (parent != null)
+        parent.assignTo(name, val);
+      else
+        throw new RunException();
+    }
     values.put(name, val);
   }
   // For testing

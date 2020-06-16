@@ -22,7 +22,7 @@ public class ExpressionEvaluatorTest extends TestCase
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
-    machine.scope = scope;
+    machine.pushScope(scope);
     // Start running the code
     machine.setStart(parsed, ExpressionEvaluator.expressionHandlers);
     machine.runToCompletion();
@@ -39,7 +39,7 @@ public class ExpressionEvaluatorTest extends TestCase
     AstNode parsed = parser.parseToEnd(Symbol.AssignmentExpression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
-    machine.scope = scope;
+    machine.pushScope(scope);
     // Start running the code
     machine.setStart(parsed, ExpressionEvaluator.assignmentLValueHandlers);
     machine.runToCompletion();

@@ -175,7 +175,7 @@ public class ExpressionEvaluator
               machine.ip.pushAndAdvanceIdx(node.internalChildren.get(idx), expressionHandlers);
               return;
             }
-            Value toReturn = machine.scope.lookup(((Token.ParameterToken)node.token).getLookupName());
+            Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
             if (toReturn.type.isFunction())
             {
               List<Value> args = new ArrayList<>();
@@ -286,7 +286,7 @@ public class ExpressionEvaluator
             switch (idx)
             {
             case 0:
-              LValue toReturn = machine.scope.lookupLValue(((Token.ParameterToken)node.token).getLookupName());
+              LValue toReturn = machine.currentScope().lookupLValue(((Token.ParameterToken)node.token).getLookupName());
               if (toReturn.type.isFunction())
               {
                 machine.ip.pushAndAdvanceIdx(node, expressionHandlers);

@@ -52,7 +52,7 @@ public class SimpleInterpreterTest extends TestCase
         );
     SimpleInterpreter interpreter = new SimpleInterpreter(code);
     MachineContext ctx = new MachineContext();
-    ctx.scope = scope;
+    ctx.pushScope(scope);
     interpreter.runCode(ctx);
 
     Assert.assertEquals("hello world", fun.captured.val);
@@ -73,7 +73,7 @@ public class SimpleInterpreterTest extends TestCase
     {
       SimpleInterpreter interpreter = new SimpleInterpreter(code);
       MachineContext ctx = new MachineContext();
-      ctx.scope = scope;
+      ctx.pushScope(scope);
       interpreter.runCode(ctx);
     }
     
@@ -91,7 +91,7 @@ public class SimpleInterpreterTest extends TestCase
     {
       SimpleInterpreter interpreter = new SimpleInterpreter(code);
       MachineContext ctx = new MachineContext();
-      ctx.scope = scope;
+      ctx.pushScope(scope);
       interpreter.runCode(ctx);
     }
     
@@ -105,7 +105,7 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("a", Type.NUMBER, Value.createNumberValue(5));
     scope.addVariable("b", Type.NUMBER, Value.createNumberValue(0));
     MachineContext ctx = new MachineContext();
-    ctx.scope = scope;
+    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -137,6 +137,7 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(2.0, scope.lookup("b").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
   }
   
   @Test
@@ -146,7 +147,7 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("a", Type.NUMBER, Value.createNumberValue(0));
     scope.addVariable("b", Type.NUMBER, Value.createNumberValue(0));
     MachineContext ctx = new MachineContext();
-    ctx.scope = scope;
+    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -194,16 +195,19 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(8.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(1.0, scope.lookup("b").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
     
     scope.assignTo("a", Value.createNumberValue(2));
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(16.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(2.0, scope.lookup("b").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
 
     scope.assignTo("a", Value.createNumberValue(6));
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(3.0, scope.lookup("b").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
   }
 
   @Test
@@ -213,7 +217,7 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("a", Type.NUMBER, Value.createNumberValue(0));
     scope.addVariable("b", Type.NUMBER, Value.createNumberValue(1));
     MachineContext ctx = new MachineContext();
-    ctx.scope = scope;
+    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -249,6 +253,71 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertEquals(8.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(255.0, scope.lookup("b").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
+  }
+
+  @Test
+  public void testIfScope() throws ParseException, RunException
+  {
+    MachineContext ctx = new MachineContext();
+    VariableScope globalScope = ctx.getGlobalScope();
+    globalScope.addVariable("a", Type.NUMBER, Value.createNumberValue(0));
+    globalScope.addVariable("b", Type.NUMBER, Value.createNumberValue(0));
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("<", Symbol.Lt),
+                    new Token.SimpleToken("2", Symbol.Number)
+                    ), 
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("var", Symbol.Var),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":", Symbol.Colon),
+                        Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("8", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                                new Token.SimpleToken(">", Symbol.Gt),
+                                new Token.SimpleToken("6", Symbol.Number)
+                                ), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                                    new Token.SimpleToken(":=", Symbol.Assignment),
+                                    new Token.SimpleToken("3", Symbol.Number)
+                                    )
+                                )))
+                    )),
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("<", Symbol.Lt),
+                        new Token.SimpleToken("5", Symbol.Number)
+                        ), 
+                    new StatementContainer(
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                            new Token.SimpleToken(":=", Symbol.Assignment),
+                            new Token.SimpleToken("36", Symbol.Number)
+                            )
+                        ))
+
+            )
+        );
+    new SimpleInterpreter(code).runCode(ctx);
+    Assert.assertEquals(36.0, globalScope.lookup("a").getNumberValue(), 0.0);
+    Assert.assertEquals(3.0, globalScope.lookup("b").getNumberValue(), 0.0);
   }
 
 }

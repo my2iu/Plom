@@ -75,7 +75,7 @@ public class SimpleInterpreter
             Value val = Value.NULL;
             if (!node.children.get(3).matchesRule(Rule.VarAssignment))
               throw new RunException("Not implemented yet");
-            machine.scope.addVariable(name, type, val);
+            machine.currentScope().addVariable(name, type, val);
             machine.ip.pop();
           })
       .add(Rule.Statement_AssignmentExpression,
@@ -97,11 +97,15 @@ public class SimpleInterpreter
               if (val.type != Type.BOOLEAN)
                 throw new RunException();
               if (val.getBooleanValue())
+              {
+                machine.pushNewScope();
                 machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              }
               else
                 machine.ip.setIdx(3);
               break;
             case 2: // if is taken
+              machine.popScope();
               machine.ip.pop();
               break;
             case 3: // if is not taken
@@ -124,11 +128,15 @@ public class SimpleInterpreter
               if (val.type != Type.BOOLEAN)
                 throw new RunException();
               if (val.getBooleanValue())
+              {
+                machine.pushNewScope();
                 machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              }
               else
                 machine.ip.setIdx(3);
               break;
             case 2: // if is taken
+              machine.popScope();
               machine.ip.pop();
               break;
             case 3: // if is not taken
@@ -142,10 +150,16 @@ public class SimpleInterpreter
       .add(Rule.AfterIf_COMPOUND_ELSE,
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 0)
+            {
               // Evaluate block
+              machine.pushNewScope();
               machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), statementHandlers);
+            }
             else
+            {
+              machine.popScope();
               machine.ip.pop();
+            }
           })
       .add(Rule.WideStatement_COMPOUND_WHILE, 
           (MachineContext machine, AstNode node, int idx) -> {
@@ -159,11 +173,15 @@ public class SimpleInterpreter
               if (val.type != Type.BOOLEAN)
                 throw new RunException();
               if (val.getBooleanValue())
+              {
+                machine.pushNewScope();
                 machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              }
               else
                 machine.ip.pop();
               break;
             case 2: // go back to reevaluate the expression
+              machine.popScope();
               machine.ip.setIdx(0);
               break;
             }
@@ -250,10 +268,10 @@ public class SimpleInterpreter
   
   public void run() throws ParseException, RunException
   {
-    VariableScope scope = new VariableScope();
-    createGlobals(scope);
     ctx = new MachineContext();
-    ctx.scope = scope;
+    createGlobals(ctx.getGlobalScope());
+    ctx.pushNewScope();
     runCode(ctx);
+    ctx.popScope();
   }
 }

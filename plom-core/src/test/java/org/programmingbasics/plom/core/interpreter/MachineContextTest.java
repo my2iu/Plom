@@ -73,7 +73,7 @@ public class MachineContextTest extends TestCase
         );
     AstNode parsed = ParseToAst.parseStatementContainer(code);
     MachineContext machine = new MachineContext();
-    machine.scope = scope;
+    machine.pushScope(scope);
     machine.setStart(parsed, SimpleInterpreter.statementHandlers);
     // Machine should block
     Assert.assertFalse(machine.runToCompletion());

@@ -22,9 +22,49 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
 public class MachineContext
 {
   /**
+   * Scope where bindings of global names and values are held
+   */
+  private VariableScope globalScope = new VariableScope();
+  
+  /**
    * Scope where bindings of names to values for variables can be looked up
    */
-  VariableScope scope;
+  private VariableScope topScope = globalScope;
+
+  /**
+   * Gets the global scope so that new global variables can be added
+   */
+  public VariableScope getGlobalScope()
+  {
+    return globalScope;
+  }
+  
+  /**
+   * Gets the current scope used for looking up variables and where
+   * new variables will be added.
+   */
+  public VariableScope currentScope()
+  {
+    return topScope;
+  }
+  
+  /**
+   * Pushes a new variable scope level (mainly used for testing)
+   */
+  public void pushScope(VariableScope scope)
+  {
+    scope.setParent(topScope);
+    topScope = scope;
+  }
+  public void pushNewScope()
+  {
+    VariableScope scope = new VariableScope();
+    pushScope(scope);
+  }
+  public void popScope()
+  {
+    topScope = topScope.getParent();
+  }
   
   /**
    * Stack of values where values can be stashed while expressions
