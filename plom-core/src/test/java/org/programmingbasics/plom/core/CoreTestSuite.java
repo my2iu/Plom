@@ -6,6 +6,7 @@ import org.programmingbasics.plom.core.interpreter.ExpressionEvaluatorTest;
 import org.programmingbasics.plom.core.interpreter.MachineContextTest;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
+import org.programmingbasics.plom.core.view.GatherCodeCompletionInfoTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;
 import org.programmingbasics.plom.core.view.InsertTokenTest;
@@ -32,6 +33,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(EraseLeftTest.class);
       suite.addTestSuite(HitDetectTest.class);
       suite.addTestSuite(NextPositionTest.class);
+      suite.addTestSuite(GatherCodeCompletionInfoTest.class);
       return suite;
    }
 

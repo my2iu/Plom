@@ -44,6 +44,17 @@ public class VariableScope
     }
     return LValue.readFromScope(this, name, val);
   }
+  public Type lookupType(String name)
+  {
+    Type type = types.get(name);
+    if (type == null)
+    {
+      if (parent != null)
+        return parent.lookupType(name);
+      return null;
+    }
+    return type;
+  }
 
   // Overwrites a variable in this scope
   public void assignTo(String name, Value val) throws RunException

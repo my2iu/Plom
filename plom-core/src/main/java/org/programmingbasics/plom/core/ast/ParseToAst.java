@@ -13,6 +13,7 @@ public class ParseToAst
   List<Token> tokens;
   Symbol endSymbol;
   int idx = 0;
+  boolean recurseIntoTokens = true;
   
   public ParseToAst(List<Token> tokens, Symbol endSymbol)
   {
@@ -20,6 +21,11 @@ public class ParseToAst
     this.endSymbol = endSymbol;
   }
 
+  public void setRecurseIntoTokens(boolean val)
+  {
+    recurseIntoTokens = val;
+  }
+  
   public static class ParseException extends Exception
   {
     private static final long serialVersionUID = 1L;
@@ -27,6 +33,7 @@ public class ParseToAst
 
   public void parseParameterToken(AstNode node, Token.ParameterToken paramToken) throws ParseException
   {
+    if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
     for (TokenContainer param: paramToken.parameters)
     {
@@ -38,6 +45,7 @@ public class ParseToAst
   private void parseOneExpressionOneBlockToken(AstNode node,
       OneExpressionOneBlockToken token) throws ParseException
   {
+    if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
     ParseToAst exprParser = new ParseToAst(token.expression.tokens, Symbol.EndStatement);
     node.internalChildren.add(exprParser.parseToEnd(Symbol.Expression));
@@ -46,6 +54,7 @@ public class ParseToAst
 
   private void parseOneBlockToken(AstNode node, Token.OneBlockToken token) throws ParseException
   {
+    if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
     node.internalChildren.add(parseStatementContainer(token.block));
   }
