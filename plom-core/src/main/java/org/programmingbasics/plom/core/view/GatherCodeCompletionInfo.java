@@ -127,12 +127,24 @@ public class GatherCodeCompletionInfo
   };
   static interface BinaryTypeHandler
   {
-    public Type handle(Type left, Type right);
+    public Type apply(Type left, Type right);
   }
 //  static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> createBinaryTypeHandler(BinaryTypeHandler handler) {
 //    return (triggers, node, context, param) -> {
-//      Type left = context.popType();
+//      if (node.children.get(0) == null)
+//        return true;
 //      context.clearLastTypeUsed();
+//      if (node.children.get(1) == null)
+//        return true;
+//      node.children.get(1).recursiveVisit(triggers, context, param);
+//      Type left = context.popType();
+//      Type right = context.popType();
+//      if (right == null)
+//        context.pushType(null);
+//      context.pushType(handler.apply(left, right));
+//      context.setLastTypeUsed(right);
+//      if (node.children.get(2) != null)
+//        node.children.get(2).recursiveVisit(triggers, context, param);
 //      return true;
 //    }; 
 //  }
@@ -141,15 +153,19 @@ public class GatherCodeCompletionInfo
   static {
     lastTypeHandlers
       .add(Rule.DotVariable, (triggers, node, context, param) -> {
-        context.pushType(context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName()));
+        Type t = context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName());
+        context.pushType(t);
+        context.setLastTypeUsed(t);
         return true;
       })
       .add(Rule.Number, (triggers, node, context, param) -> {
         context.pushType(Type.NUMBER);
+        context.setLastTypeUsed(Type.NUMBER);
         return true;
       })
       .add(Rule.String, (triggers, node, context, param) -> {
         context.pushType(Type.STRING);
+        context.setLastTypeUsed(Type.STRING);
         return true;
       })
       .add(Rule.Assignment, clearLastUsedType)
@@ -157,38 +173,43 @@ public class GatherCodeCompletionInfo
       .add(Rule.Minus, clearLastUsedType)
       .add(Rule.Multiply, clearLastUsedType)
       .add(Rule.Divide, clearLastUsedType)
+//      .add(Rule.AssignmentExpressionMore_Assignment_Expression, 
+//          createBinaryTypeHandler((left, right) -> {
+//            return right;
+//          })
+//      )
 //      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
-//          createBinaryOperatorHandlerMore((left, right) -> {
-//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
-//              return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
-//            else if (left.type == Type.STRING && right.type == Type.STRING)
-//              return Value.createStringValue(left.getStringValue() + right.getStringValue());
+//          createBinaryTypeHandler((left, right) -> {
+//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
+//              return Type.NUMBER;
+//            else if (Type.STRING.equals(left) && Type.STRING.equals(right))
+//              return Type.STRING;
 //            else
-//              throw new RunException();
+//              return Type.VOID;
 //          })
 //      )
 //      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
-//          createBinaryOperatorHandlerMore((left, right) -> {
-//              if (left.type == Type.NUMBER && right.type == Type.NUMBER)
-//                return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
-//              else
-//                throw new RunException();
+//          createBinaryTypeHandler((left, right) -> {
+//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
+//              return Type.NUMBER;
+//            else
+//              return Type.VOID;
 //          })
 //      )
 //      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
-//          createBinaryOperatorHandlerMore((left, right) -> {
-//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
-//              return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
+//          createBinaryTypeHandler((left, right) -> {
+//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
+//              return Type.NUMBER;
 //            else
-//              throw new RunException();
+//              return Type.VOID;
 //          })
 //      )
 //      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
-//          createBinaryOperatorHandlerMore((left, right) -> {
-//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
-//              return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
+//          createBinaryTypeHandler((left, right) -> {
+//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
+//              return Type.NUMBER;
 //            else
-//              throw new RunException();
+//              return Type.VOID;
 //          })
 //      )
 

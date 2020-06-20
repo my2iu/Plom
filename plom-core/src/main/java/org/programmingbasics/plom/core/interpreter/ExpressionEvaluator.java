@@ -53,9 +53,9 @@ public class ExpressionEvaluator
     expressionHandlers
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
-            else if (left.type == Type.STRING && right.type == Type.STRING)
+            else if (Type.STRING.equals(left.type) && Type.STRING.equals(right.type))
               return Value.createStringValue(left.getStringValue() + right.getStringValue());
             else
               throw new RunException();
@@ -63,7 +63,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
-              if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
                 return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
               else
                 throw new RunException();
@@ -71,7 +71,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
             else
               throw new RunException();
@@ -79,7 +79,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
             else
               throw new RunException();
@@ -87,13 +87,13 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() == right.getNumberValue());
-            else if (left.type == Type.STRING && right.type == Type.STRING)
+            else if (Type.STRING.equals(left.type) && Type.STRING.equals(right.type))
               return Value.createBooleanValue(left.getStringValue().equals(right.getStringValue()));
-            else if (left.type == Type.BOOLEAN && right.type == Type.BOOLEAN)
+            else if (Type.BOOLEAN.equals(left.type) && Type.BOOLEAN.equals(right.type))
               return Value.createBooleanValue(left.getBooleanValue() == right.getBooleanValue());
-            else if (left.type == Type.NULL && right.type == Type.NULL)
+            else if (Type.NULL.equals(left.type) && Type.NULL.equals(right.type))
               return Value.TRUE;
             else
               return Value.FALSE;
@@ -101,7 +101,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() != right.getNumberValue());
             else if (left.type == Type.STRING && right.type == Type.STRING)
               return Value.createBooleanValue(!left.getStringValue().equals(right.getStringValue()));
@@ -115,28 +115,28 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() > right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() >= right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() < right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((left, right) -> {
-            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
               return Value.createBooleanValue(left.getNumberValue() <= right.getNumberValue());
             throw new RunException();
           })

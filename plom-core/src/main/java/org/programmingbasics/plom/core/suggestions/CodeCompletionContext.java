@@ -22,18 +22,27 @@ public class CodeCompletionContext
   {
     return lastTypeUsed;
   }
+  public void clearLastTypeUsed()
+  {
+    lastTypeUsed = null;
+  }
+  public void setLastTypeUsed(Type val)
+  {
+    lastTypeUsed = val;
+  }
+  // Eventually, I'll need to recreate expression evaluation in the code completer, but
+  // this would mainly be for handling types for brackets. We mainly need the type for
+  // doing predictions of the . (member) operator. Handling predictions of other symbols
+  // is done through the grammar. The . (member) operator only needs to know the type of
+  // an expression if it appears in a bracket because otherwise operator precedence means
+  // that the . (member) operator will only apply to the most immediately preceding item.
   public void pushType(Type type)
   {
     typeStack.add(type);
-    lastTypeUsed = type;
   }
   public Type popType()
   {
     return typeStack.remove(typeStack.size() - 1);
-  }
-  public void clearLastTypeUsed()
-  {
-    lastTypeUsed = null;
   }
   public void pushNewScope()
   {
