@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
@@ -124,6 +125,18 @@ public class GatherCodeCompletionInfo
     context.clearLastTypeUsed();
     return true;
   };
+  static interface BinaryTypeHandler
+  {
+    public Type handle(Type left, Type right);
+  }
+//  static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> createBinaryTypeHandler(BinaryTypeHandler handler) {
+//    return (triggers, node, context, param) -> {
+//      Type left = context.popType();
+//      context.clearLastTypeUsed();
+//      return true;
+//    }; 
+//  }
+  
   static AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException> lastTypeHandlers = new AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException>();
   static {
     lastTypeHandlers
@@ -144,6 +157,41 @@ public class GatherCodeCompletionInfo
       .add(Rule.Minus, clearLastUsedType)
       .add(Rule.Multiply, clearLastUsedType)
       .add(Rule.Divide, clearLastUsedType)
+//      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
+//          createBinaryOperatorHandlerMore((left, right) -> {
+//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+//              return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
+//            else if (left.type == Type.STRING && right.type == Type.STRING)
+//              return Value.createStringValue(left.getStringValue() + right.getStringValue());
+//            else
+//              throw new RunException();
+//          })
+//      )
+//      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
+//          createBinaryOperatorHandlerMore((left, right) -> {
+//              if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+//                return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
+//              else
+//                throw new RunException();
+//          })
+//      )
+//      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
+//          createBinaryOperatorHandlerMore((left, right) -> {
+//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+//              return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
+//            else
+//              throw new RunException();
+//          })
+//      )
+//      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
+//          createBinaryOperatorHandlerMore((left, right) -> {
+//            if (left.type == Type.NUMBER && right.type == Type.NUMBER)
+//              return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
+//            else
+//              throw new RunException();
+//          })
+//      )
+
       ;
   }
 
