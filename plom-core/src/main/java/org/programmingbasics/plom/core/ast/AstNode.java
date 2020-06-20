@@ -67,7 +67,10 @@ public class AstNode
   public <U, V, E extends Throwable> void recursiveVisitChildren(VisitorTriggers<U, V, E> triggers, U param1, V param2) throws E
   {
     for (AstNode child: children)
-      child.recursiveVisit(triggers, param1, param2);
+    {
+      if (child != null)
+        child.recursiveVisit(triggers, param1, param2);
+    }
   }
 
   public static class VisitorTriggers<U, V, E extends Throwable> extends HashMap<List<Symbol>, RecursiveWalkerVisitor<U, V, E>>

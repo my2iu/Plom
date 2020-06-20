@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core.suggestions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.interpreter.Type;
@@ -15,6 +16,25 @@ public class CodeCompletionContext
   List<Type> knownTypes;
   VariableScope globalScope = new VariableScope();
   VariableScope topScope = globalScope;
+  List<Type> typeStack = new ArrayList<>();
+  Type lastTypeUsed;
+  public Type getLastTypeUsed()
+  {
+    return lastTypeUsed;
+  }
+  public void pushType(Type type)
+  {
+    typeStack.add(type);
+    lastTypeUsed = type;
+  }
+  public Type popType()
+  {
+    return typeStack.remove(typeStack.size() - 1);
+  }
+  public void clearLastTypeUsed()
+  {
+    lastTypeUsed = null;
+  }
   public void pushNewScope()
   {
     VariableScope scope = new VariableScope();

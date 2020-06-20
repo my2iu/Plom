@@ -6,6 +6,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Type;
@@ -26,9 +27,9 @@ public class GatherCodeCompletionInfo
       // do not recurse into sub-blocks
       parseWholeLine(line, Symbol.StatementOrEmpty, context);
     }
-    if (end < statements.statements.size() && pos.hasOffset(level + 1));
+    if (end < statements.statements.size() && pos.hasOffset(level + 1))
     {
-      TokenContainer line = statements.statements.get(end - 1);
+      TokenContainer line = statements.statements.get(end);
       fromLine(line, Symbol.StatementOrEmpty, context, pos, level + 1);
     }
     return;
@@ -51,6 +52,24 @@ public class GatherCodeCompletionInfo
   
   public static void fromLine(TokenContainer line, Symbol baseContext, CodeCompletionContext context, CodePosition pos, int level)
   {
+    if (!pos.hasOffset(level + 1))
+    {
+      // We're at the last level--for expressions and stuff, so we can
+      // dig deeper to get the last type used in the expression
+      ParseToAst parser = new ParseToAst(line.tokens.subList(0, pos.getOffset(level)), Symbol.EndStatement);
+      parser.setErrorOnPrematureEnd(false);
+      parser.setRecurseIntoTokens(false);
+      try {
+        AstNode parsed = parser.parseToEnd(baseContext);
+        parsed.recursiveVisit(lastTypeHandlers, context, null);
+      } 
+      catch (ParseException e)
+      {
+        // Ignore errors
+        e.printStackTrace();
+      }
+      
+    }
 //    if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
 //    {
 //      return line.tokens.get(pos.getOffset(level)).visit(new TokenAtCursor(), pos, level + 1, null);
@@ -100,4 +119,32 @@ public class GatherCodeCompletionInfo
         return true;
       });
   }
+  
+  static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> clearLastUsedType = (triggers, node, context, param) -> {
+    context.clearLastTypeUsed();
+    return true;
+  };
+  static AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException> lastTypeHandlers = new AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException>();
+  static {
+    lastTypeHandlers
+      .add(Rule.DotVariable, (triggers, node, context, param) -> {
+        context.pushType(context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName()));
+        return true;
+      })
+      .add(Rule.Number, (triggers, node, context, param) -> {
+        context.pushType(Type.NUMBER);
+        return true;
+      })
+      .add(Rule.String, (triggers, node, context, param) -> {
+        context.pushType(Type.STRING);
+        return true;
+      })
+      .add(Rule.Assignment, clearLastUsedType)
+      .add(Rule.Plus, clearLastUsedType)
+      .add(Rule.Minus, clearLastUsedType)
+      .add(Rule.Multiply, clearLastUsedType)
+      .add(Rule.Divide, clearLastUsedType)
+      ;
+  }
+
 }

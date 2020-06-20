@@ -14,6 +14,7 @@ public class ParseToAst
   Symbol endSymbol;
   int idx = 0;
   boolean recurseIntoTokens = true;
+  boolean errorOnPrematureEnd = true;
   
   public ParseToAst(List<Token> tokens, Symbol endSymbol)
   {
@@ -25,7 +26,16 @@ public class ParseToAst
   {
     recurseIntoTokens = val;
   }
-  
+
+  /**
+   * Set to false to let the parse continue even if the line ends prematurely (parse
+   * tree may end up containing nulls)
+   */
+  public void setErrorOnPrematureEnd(boolean val)
+  {
+    errorOnPrematureEnd = val;
+  }
+
   public static class ParseException extends Exception
   {
     private static final long serialVersionUID = 1L;
@@ -81,7 +91,11 @@ public class ParseToAst
       throw new ParseException();
     Symbol[] expansion = parser.parsingTable.get(base).get(sym);
     if (expansion == null)
+    {
+      if (!errorOnPrematureEnd && sym == endSymbol)
+        return null;
       throw new ParseException();
+    }
     AstNode production = new AstNode(base);
     for (Symbol expanded: expansion)
       production.symbols.add(expanded);
