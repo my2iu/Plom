@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.programmingbasics.plom.core.SimpleEntry.Suggester;
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -16,9 +15,13 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.Suggester;
+import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
+import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.InsertNewLine;
@@ -247,9 +250,19 @@ public class Entry implements EntryPoint
         };
         showSimpleEntryForToken(newToken, false, suggester);
       }
-      else
+      else if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
+      {
         showSimpleEntryForToken(newToken, false, null);
+      }
+      else
+      {
+        CodeCompletionContext suggestionContext = new CodeCompletionContext();
+        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
+        VariableSuggester suggester = new VariableSuggester(suggestionContext);
+        showSimpleEntryForToken(newToken, false, suggester);
+      }
       break;
+
     case Number:
     case String:
     case DUMMY_COMMENT:

@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.suggestions.Suggester;
 
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
@@ -165,8 +166,4 @@ public class SimpleEntry
     void input(String val, boolean isFinal, T token, boolean isEdit);
   }
   
-  @FunctionalInterface public static interface Suggester
-  {
-    public List<String> gatherSuggestions(String val); 
-  }
 }

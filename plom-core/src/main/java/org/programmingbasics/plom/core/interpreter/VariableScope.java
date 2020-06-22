@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
@@ -54,6 +55,13 @@ public class VariableScope
       return null;
     }
     return type;
+  }
+  public void lookupSuggestions(String val, List<String> suggestions)
+  {
+    for (String name: values.keySet())
+    {
+      suggestions.add(name);
+    }
   }
 
   // Overwrites a variable in this scope
