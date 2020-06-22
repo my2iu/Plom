@@ -1,11 +1,15 @@
 package org.programmingbasics.plom.core;
 
+import java.util.List;
+
 import org.programmingbasics.plom.core.ast.Token;
 
 import elemental.css.CSSStyleDeclaration.Display;
+import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.KeyboardEvent;
+import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.FormElement;
 import elemental.html.InputElement;
@@ -18,15 +22,18 @@ import elemental.html.TextAreaElement;
 public class SimpleEntry
 {
   DivElement container;
+  DivElement suggestionsContainer;
   Token simpleEntryToken;  // token being edited by simple entry
   InputCallback<Token> callback;
   String tokenPrefix = "";
   String tokenPostfix = "";
+  Suggester suggester;
   boolean isEdit;
   
-  SimpleEntry(DivElement el)
+  SimpleEntry(DivElement el, DivElement suggestionsEl)
   {
     container = el;
+    suggestionsContainer = suggestionsEl;
     hookSimpleEntry(el);
   }
   
@@ -46,6 +53,27 @@ public class SimpleEntry
     }
   }
 
+  void refillSuggestions()
+  {
+    suggestionsContainer.setInnerHTML("");
+    if (suggester == null) return;
+    List<String> suggestions = suggester.gatherSuggestions("");
+    Document doc = suggestionsContainer.getOwnerDocument();
+    for (int n = 0; n < Math.min(20, suggestions.size()); n++)
+    {
+      final String suggestionText = suggestions.get(n); 
+      AnchorElement el = (AnchorElement)doc.createElement("a");
+      el.setHref("#");
+      el.setTextContent(suggestionText);
+      suggestionsContainer.appendChild(el);
+      el.addEventListener(Event.CLICK, (e) -> {
+        e.preventDefault();
+        simpleEntryInput(suggestionText, true);
+      }, false);
+      suggestionsContainer.appendChild(doc.createBRElement());
+    }
+  }
+  
   private void hookSimpleEntry(DivElement simpleEntryDiv)
   {
     InputElement inputEl = (InputElement)simpleEntryDiv.querySelector("input");
@@ -91,21 +119,21 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
   <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, callback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
@@ -126,12 +154,19 @@ public class SimpleEntry
     this.tokenPrefix = prefix;
     this.tokenPostfix = postfix;
     this.isEdit = isEdit;
+    this.suggester = suggester;
     this.callback = (InputCallback<Token>)callback;
+    refillSuggestions();
     simpleEntryInput(initialValue, false);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>
   {
     void input(String val, boolean isFinal, T token, boolean isEdit);
+  }
+  
+  @FunctionalInterface public static interface Suggester
+  {
+    public List<String> gatherSuggestions(String val); 
   }
 }

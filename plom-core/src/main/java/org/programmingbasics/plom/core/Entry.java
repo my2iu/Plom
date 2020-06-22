@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.programmingbasics.plom.core.SimpleEntry.Suggester;
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -61,7 +62,8 @@ public class Entry implements EntryPoint
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"));
+    simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
+        (DivElement)mainDiv.querySelector("div.sidechoices"));
 
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
@@ -233,10 +235,25 @@ public class Entry implements EntryPoint
     switch (tokenType)
     {
     case DotVariable:
+      if (parentSymbols.contains(Symbol.DotType))
+      {
+        Suggester suggester = (prefix) -> {
+          List<String> toReturn = new ArrayList<>();
+          toReturn.add("string");
+          toReturn.add("number");
+          toReturn.add("object");
+          toReturn.add("boolean");
+          return toReturn;
+        };
+        showSimpleEntryForToken(newToken, false, suggester);
+      }
+      else
+        showSimpleEntryForToken(newToken, false, null);
+      break;
     case Number:
     case String:
     case DUMMY_COMMENT:
-      showSimpleEntryForToken(newToken, false);
+      showSimpleEntryForToken(newToken, false, null);
       break;
     default:
       NextPosition.nextPositionOfStatements(codeList, pos, 0);
@@ -247,7 +264,7 @@ public class Entry implements EntryPoint
     renderTokens(codeDiv, codeList, cursorPos, null);
   }
 
-  void showSimpleEntryForToken(Token newToken, boolean isEdit)
+  void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester)
   {
     if (newToken == null) return;
     Symbol tokenType = null;
@@ -262,11 +279,11 @@ public class Entry implements EntryPoint
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, this::simpleEntryInput);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, this::simpleEntryInput);
+      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -274,7 +291,7 @@ public class Entry implements EntryPoint
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, this::simpleEntryInput);
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -332,7 +349,7 @@ public class Entry implements EntryPoint
     if (showEditButton)
     {
       choicesDiv.appendChild(makeButton("\u270e", true, () -> {
-        showSimpleEntryForToken(currentToken, true);
+        showSimpleEntryForToken(currentToken, true, null);
       }));
     }
     else
