@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 
 import junit.framework.TestCase;
 
@@ -149,4 +150,57 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
   }
 
+  @Test
+  public void testVariablesInBlocks()
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("var", Symbol.Var),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":", Symbol.Colon),
+                        Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable))
+                    )), 
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+            )
+        );
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
+    Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
+    Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
+    Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 1));
+    Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
+    Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+  }
 }

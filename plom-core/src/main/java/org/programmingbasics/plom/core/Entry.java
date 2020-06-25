@@ -54,6 +54,7 @@ TODO:
 - predict variables
 - keyboard entry
 - variable declaration with assignment 
+- adding a newline in the middle of a function call
  */
 
 public class Entry implements EntryPoint

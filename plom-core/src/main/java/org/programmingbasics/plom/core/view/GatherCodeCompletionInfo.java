@@ -62,15 +62,37 @@ public class GatherCodeCompletionInfo
       parser.setRecurseIntoTokens(false);
       try {
         AstNode parsed = parser.parseToEnd(baseContext);
-        parsed.recursiveVisit(lastTypeHandlers, context, null);
+        if (parsed != null)
+          parsed.recursiveVisit(lastTypeHandlers, context, null);
       } 
       catch (ParseException e)
       {
         // Ignore errors
         e.printStackTrace();
       }
-      
     }
+    else
+    {
+      // We're inside another token that might contain statements, so we'll
+      // need to recurse into there.
+      Token token = line.tokens.get(pos.getOffset(level));
+      token.visit(new RecurseIntoCompoundToken<Void, CodeCompletionContext>() {
+        @Override Void handleExpression(Token originalToken, TokenContainer exprContainer,
+            CodePosition pos, int level, CodeCompletionContext context)
+        {
+          fromLine(exprContainer, Symbol.Expression, context, pos, level);
+          return null;
+        }
+        @Override Void handleStatementContainer(Token originalToken,
+            StatementContainer blockContainer, CodePosition pos, int level,
+            CodeCompletionContext context)
+        {
+          fromStatements(blockContainer, context, pos, level);
+          return null;
+        }
+      }, pos, level + 1, context);
+    }
+    
 //    if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
 //    {
 //      return line.tokens.get(pos.getOffset(level)).visit(new TokenAtCursor(), pos, level + 1, null);
