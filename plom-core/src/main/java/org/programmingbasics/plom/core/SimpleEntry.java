@@ -78,13 +78,14 @@ public class SimpleEntry
       final String suggestionText = suggestions.get(n); 
       AnchorElement el = (AnchorElement)doc.createElement("a");
       el.setHref("#");
-      el.setTextContent(suggestionText);
+      DivElement div = doc.createDivElement();
+      el.appendChild(div);
+      div.setTextContent(suggestionText);
       suggestionsContainer.appendChild(el);
       el.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         simpleEntryInput(suggestionText, true);
       }, false);
-      suggestionsContainer.appendChild(doc.createBRElement());
     }
   }
   
