@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
@@ -257,6 +258,7 @@ public class Entry implements EntryPoint
       else
       {
         CodeCompletionContext suggestionContext = new CodeCompletionContext();
+        StandardLibrary.createGlobals(null, suggestionContext.currentScope());
         GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
         VariableSuggester suggester = new VariableSuggester(suggestionContext);
         showSimpleEntryForToken(newToken, false, suggester);
@@ -498,7 +500,7 @@ public class Entry implements EntryPoint
     runEl.addEventListener(Event.CLICK, (evt) -> {
       SimpleInterpreter terp = new SimpleInterpreter(codeList);
       try {
-        terp.run();
+        terp.runNoReturn();
       } 
       catch (Exception err)
       {

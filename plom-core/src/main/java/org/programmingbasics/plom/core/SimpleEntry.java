@@ -41,9 +41,14 @@ public class SimpleEntry
   void setVisible(boolean isVisible)
   {
     if (isVisible)
+    {
       container.getStyle().setDisplay(Display.BLOCK);
+    }
     else
+    {
+      suggestionsContainer.getStyle().setDisplay(Display.NONE);
       container.getStyle().setDisplay(Display.NONE);
+    }
   }
   
   void simpleEntryInput(String val, boolean isFinal)
@@ -57,7 +62,15 @@ public class SimpleEntry
   void refillSuggestions()
   {
     suggestionsContainer.setInnerHTML("");
-    if (suggester == null) return;
+    if (suggester == null) 
+    {
+      suggestionsContainer.getStyle().setDisplay(Display.NONE);
+      return;
+    }
+    else
+    {
+      suggestionsContainer.getStyle().setDisplay(Display.BLOCK);
+    }
     List<String> suggestions = suggester.gatherSuggestions("");
     Document doc = suggestionsContainer.getOwnerDocument();
     for (int n = 0; n < Math.min(20, suggestions.size()); n++)
