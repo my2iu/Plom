@@ -38,13 +38,25 @@ All variables and other identifiers in Plom will begin with a period. This is ne
 
 Spaces will be allowed in variable names and other identifiers. The auto-correction on cellphone software keyboards works best with complete words, and Plom chooses to work with this feature instead of against it. By allowing complete words separated by spaces in identifiers, Plom allows programmers to take advantage auto-correction to improve their typing accuracy of identifiers. Forcing programmers to combine words together with camel-case or underscores would likely trigger auto-correction to repeatedly apply itself because it wouldn't be able to recognize what's being input. Disabling auto-correction would slow text entry because programmers would have to be more careful when entering text to avoid all errors.
 
-Here are some other unique aspects of Plom:
+Below are some other unique aspects of Plom. More information about these aspects will be filled in later as more documentation is written:
 
 - Wide tokens for automatically structuring code
 - Next button for moving between text entry areas
 - LL1 grammar for predicting which tokens are valid
 - LL1 grammar also forces the grammar to have a distinct keyword to start any special code structure. There is no ambiguity about whether ( is the start of a function call or a parenthesis in an expression or start of a lambda. The LL1 grammar does not allow for such ambiguity, which makes it easier for beginner programmers to type in code since they just have to look for a key on the keyboard that matches the start of the next part of the code listing that they want to type. Programmers don't need to be able to recognize the difference between a ( used for a parenthesis or lambda.
 - The grammar is defined for individual statements, not for a complete program
+
+
+### Other Beginner Programming Languages
+
+Plom is a programming language geared towards beginner programmers, and there are many other beginner programming languages that already exist.
+
+Visual block-based programming languages such as Scratch, Blockly, and MakeCode are very popular. Unfortunately, block-based languages are not very compact, requiring lots of space for moving and rearranging blocks. Block-based languages are also often based on a procedural model, meaning that an interface needs to be provided for programmers to scroll through lots of procedure blocks to find the functionality that they want.
+
+Google's Grasshopper app allows beginner programmers to program solutions to small JavaScript exercises on a cellphone. To reduce the amount of typing and entry of difficult symbols, Grasshopper presents suggestions about control structures, variables, or method calls along the bottom of the screen, similar to Plom. Although Grasshopper works well for constrained exercises, it does not scale well to arbitrary programming. The app is not able to provide good suggestions about variables or operators, so it has to present long lists to the programmer of possible objects, method calls, or operators that they must choose from.
+
+
+
 
 ## Build Instructions
 
