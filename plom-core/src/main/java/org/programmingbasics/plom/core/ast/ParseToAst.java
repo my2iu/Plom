@@ -39,6 +39,22 @@ public class ParseToAst
   public static class ParseException extends Exception
   {
     private static final long serialVersionUID = 1L;
+    public Token token;
+    public boolean afterToken;
+    public static ParseException forToken(Token token)
+    {
+      ParseException e = new ParseException();
+      e.token = token;
+      e.afterToken = false;
+      return e;
+    }
+    public static ParseException forEnd(Token lastToken)
+    {
+      ParseException e = new ParseException();
+      e.token = lastToken;
+      e.afterToken = true;
+      return e;
+    }
   }
 
   public void parseParameterToken(AstNode node, Token.ParameterToken paramToken) throws ParseException
@@ -76,7 +92,7 @@ public class ParseToAst
     if (base.isTerminal())
     {
       if (sym != base)
-        throw new ParseException();
+        throw exceptionForNextToken();
       AstNode node = AstNode.fromToken(readNextToken());
       if (node.token instanceof Token.ParameterToken)
         parseParameterToken(node, (Token.ParameterToken)node.token);
@@ -88,13 +104,13 @@ public class ParseToAst
     }
 
     if (parser.parsingTable.get(base) == null)
-      throw new ParseException();
+      throw exceptionForNextToken();
     Symbol[] expansion = parser.parsingTable.get(base).get(sym);
     if (expansion == null)
     {
       if (!errorOnPrematureEnd && sym == endSymbol)
         return null;
-      throw new ParseException();
+      throw exceptionForNextToken();
     }
     AstNode production = new AstNode(base);
     for (Symbol expanded: expansion)
@@ -110,7 +126,7 @@ public class ParseToAst
     
     // Make sure that we fully consumed all the data
     if (peekNextTokenType() != endSymbol)
-      throw new ParseException();
+      throw exceptionForNextToken();
     return production;
   }
   
@@ -128,6 +144,15 @@ public class ParseToAst
     return node;
   }
 
+  ParseException exceptionForNextToken()
+  {
+    if (idx < tokens.size())
+      return ParseException.forToken((Token)tokens.get(idx));
+    if (!tokens.isEmpty())
+      return ParseException.forEnd(tokens.get(tokens.size() - 1)); 
+    return ParseException.forEnd(null); 
+  }
+  
   Symbol peekNextTokenType()
   {
     if (idx < tokens.size())
