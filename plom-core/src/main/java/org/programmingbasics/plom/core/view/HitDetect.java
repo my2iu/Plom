@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -17,12 +18,12 @@ import elemental.html.DivElement;
 
 public class HitDetect
 {
-  public static CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos)
+  public static CodePosition renderAndHitDetect(int x, int y, DivElement codeDiv, StatementContainer codeList, CodePosition oldPos, ErrorList codeErrors)
   {
     RenderedHitBox renderedHitBoxes = new RenderedHitBox(null);
     renderedHitBoxes.children = new ArrayList<>();
     codeDiv.setInnerHTML("");
-    CodeRenderer.render(codeDiv, codeList, oldPos, renderedHitBoxes);
+    CodeRenderer.render(codeDiv, codeList, oldPos, renderedHitBoxes, codeErrors);
     CodePosition pos = new CodePosition();
     return hitDetectStatementContainer(x, y, codeList, renderedHitBoxes, pos, 0);
   }

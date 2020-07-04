@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.LL1Parser;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
@@ -22,6 +23,7 @@ import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
+import org.programmingbasics.plom.core.view.ErrorList;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
@@ -73,8 +75,9 @@ public class Entry implements EntryPoint
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
     
+    updateErrorList();
     codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null);
+    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
     showPredictedTokenInput(choicesDiv);
     hookCodeClick(codeDiv);
     
@@ -126,6 +129,11 @@ public class Entry implements EntryPoint
   DivElement choicesDiv;
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
+  ErrorList codeErrors = new ErrorList();
+  {
+    codeErrors.add(ParseToAst.ParseException.forToken(codeList.statements.get(0).tokens.get(1)));
+    codeErrors.add(ParseToAst.ParseException.forEnd(codeList.statements.get(1).tokens.get(2)));
+  }
 
   // To ensure that predicted buttons end up in a consistent order and
   // with the most important ones showing first, we have a map with priorities
@@ -165,9 +173,9 @@ public class Entry implements EntryPoint
   /**
    * Returns a mapping of divs for each line and their line numbers
    */
-  static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes)
+  static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
   {
-    new CodeRenderer().render(codeDiv, codeList, pos, renderedHitBoxes);
+    new CodeRenderer().render(codeDiv, codeList, pos, renderedHitBoxes, codeErrors);
   }
 
   Element makeButton(String text, boolean enabled, Runnable onclick)
@@ -276,8 +284,9 @@ public class Entry implements EntryPoint
       showPredictedTokenInput(choicesDiv);
       break;
     }
+    updateErrorList();
     codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null);
+    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
   }
 
   void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester)
@@ -340,14 +349,15 @@ public class Entry implements EntryPoint
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null);
+      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
       showPredictedTokenInput(choicesDiv);
     }));
     // Backspace button
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
+      updateErrorList();
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null);
+      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
       showPredictedTokenInput(choicesDiv);
     })); 
     // Edit button for certain tokens
@@ -376,8 +386,9 @@ public class Entry implements EntryPoint
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
 
+        updateErrorList();
         codeDiv.setInnerHTML("");
-        renderTokens(codeDiv, codeList, cursorPos, null);
+        renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
         showPredictedTokenInput(choicesDiv);
       }));
     }
@@ -440,13 +451,13 @@ public class Entry implements EntryPoint
       int x = (int)(mevt.getClientX() - rect.getLeft()) + div.getScrollLeft();
       int y = (int)(mevt.getClientY() - rect.getTop()) + div.getScrollTop();
 
-      CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos);
+      CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos, codeErrors);
 
       if (cursorPos != null)
       {
         cursorPos = newPos;
         codeDiv.setInnerHTML("");
-        renderTokens(codeDiv, codeList, cursorPos, null);
+        renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
         showPredictedTokenInput(choicesDiv);
       }
     }, false);
@@ -465,8 +476,9 @@ public class Entry implements EntryPoint
       ((Token.SimpleToken)token).contents = val;
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      updateErrorList();
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null);
+      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
     }
     else if (token instanceof Token.WideToken && ((Token.WideToken)token).type == Symbol.DUMMY_COMMENT)
     {
@@ -474,7 +486,7 @@ public class Entry implements EntryPoint
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null);
+      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
     {
@@ -483,8 +495,9 @@ public class Entry implements EntryPoint
           Token.ParameterToken.splitVarAtColonsForPostfix(val));
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      updateErrorList();
       codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null);
+      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
     }
     if (isFinal)
     {
@@ -493,6 +506,11 @@ public class Entry implements EntryPoint
       showPredictedTokenInput(choicesDiv);
     }
 
+  }
+  
+  void updateErrorList()
+  {
+    
   }
  
   void hookRun()
