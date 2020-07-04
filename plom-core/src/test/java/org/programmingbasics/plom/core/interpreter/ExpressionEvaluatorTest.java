@@ -18,7 +18,7 @@ public class ExpressionEvaluatorTest extends TestCase
   Value evalTest(TokenContainer line, VariableScope scope) throws ParseException, RunException
   {
     // Parse the code
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
@@ -35,7 +35,7 @@ public class ExpressionEvaluatorTest extends TestCase
   void evalAssignTest(TokenContainer line, VariableScope scope) throws ParseException, RunException
   {
     // Parse the code
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode parsed = parser.parseToEnd(Symbol.AssignmentExpression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();

@@ -6,6 +6,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.view.ErrorList;
 
 public class ParseToAst 
 {
@@ -15,11 +16,13 @@ public class ParseToAst
   int idx = 0;
   boolean recurseIntoTokens = true;
   boolean errorOnPrematureEnd = true;
+  ErrorList errorGatherer;
   
-  public ParseToAst(List<Token> tokens, Symbol endSymbol)
+  public ParseToAst(List<Token> tokens, Symbol endSymbol, ErrorList errorGatherer)
   {
     this.tokens = tokens;
     this.endSymbol = endSymbol;
+    this.errorGatherer = errorGatherer;
   }
 
   public void setRecurseIntoTokens(boolean val)
@@ -63,8 +66,7 @@ public class ParseToAst
     node.internalChildren = new ArrayList<>();
     for (TokenContainer param: paramToken.parameters)
     {
-      ParseToAst argParser = new ParseToAst(param.tokens, Symbol.EndStatement);
-      node.internalChildren.add(argParser.parseToEnd(Symbol.Expression));
+      node.internalChildren.add(parseExpression(param.tokens, errorGatherer));
     }
   }
 
@@ -73,16 +75,21 @@ public class ParseToAst
   {
     if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
-    ParseToAst exprParser = new ParseToAst(token.expression.tokens, Symbol.EndStatement);
-    node.internalChildren.add(exprParser.parseToEnd(Symbol.Expression));
-    node.internalChildren.add(parseStatementContainer(token.block));
+    node.internalChildren.add(parseExpression(token.expression.tokens, errorGatherer));
+    if (errorGatherer != null)
+      node.internalChildren.add(parseStatementContainer(token.block, errorGatherer));
+    else
+      node.internalChildren.add(parseStatementContainer(token.block, null));
   }
 
   private void parseOneBlockToken(AstNode node, Token.OneBlockToken token) throws ParseException
   {
     if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
-    node.internalChildren.add(parseStatementContainer(token.block));
+    if (errorGatherer != null)
+      node.internalChildren.add(parseStatementContainer(token.block, errorGatherer));
+    else
+      node.internalChildren.add(parseStatementContainer(token.block, null));
   }
 
 
@@ -92,7 +99,7 @@ public class ParseToAst
     if (base.isTerminal())
     {
       if (sym != base)
-        throw exceptionForNextToken();
+        throwExceptionForNextToken();
       AstNode node = AstNode.fromToken(readNextToken());
       if (node.token instanceof Token.ParameterToken)
         parseParameterToken(node, (Token.ParameterToken)node.token);
@@ -104,13 +111,13 @@ public class ParseToAst
     }
 
     if (parser.parsingTable.get(base) == null)
-      throw exceptionForNextToken();
+      throwExceptionForNextToken();
     Symbol[] expansion = parser.parsingTable.get(base).get(sym);
     if (expansion == null)
     {
       if (!errorOnPrematureEnd && sym == endSymbol)
         return null;
-      throw exceptionForNextToken();
+      throwExceptionForNextToken();
     }
     AstNode production = new AstNode(base);
     for (Symbol expanded: expansion)
@@ -126,31 +133,72 @@ public class ParseToAst
     
     // Make sure that we fully consumed all the data
     if (peekNextTokenType() != endSymbol)
-      throw exceptionForNextToken();
+      throwExceptionForNextToken();
     return production;
   }
   
+  public static AstNode parseExpression(List<Token> tokens, ErrorList errorGatherer) throws ParseException
+  {
+    try {
+      ParseToAst exprParser = new ParseToAst(tokens, Symbol.EndStatement, errorGatherer);
+      return exprParser.parseToEnd(Symbol.Expression);
+    }
+    catch (ParseException e)
+    {
+      if (errorGatherer != null)
+        errorGatherer.add(e);
+      else
+        throw e;
+    }
+    return null;
+  }
+  
   public static AstNode parseStatementContainer(StatementContainer code) throws ParseException
+  {
+    return parseStatementContainer(code, null);
+  }
+
+  public static AstNode parseStatementContainer(StatementContainer code, ErrorList errorGatherer) throws ParseException 
   {
     AstNode node = new AstNode(Symbol.ASSEMBLED_STATEMENTS_BLOCK);
     node.internalChildren = new ArrayList<>();
     for (TokenContainer line: code.statements)
     {
-      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
-      AstNode parsed = parser.parseToEnd(Symbol.StatementOrEmpty);
-      node.internalChildren.add(parsed);
+      ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, errorGatherer);
+      try {
+        AstNode parsed = parser.parseToEnd(Symbol.StatementOrEmpty);
+        node.internalChildren.add(parsed);
+      }
+      catch (ParseException e)
+      {
+        if (errorGatherer != null)
+          errorGatherer.add(e);
+        else
+          throw e;
+      }
     }
 
     return node;
   }
 
-  ParseException exceptionForNextToken()
+  void throwExceptionForNextToken() throws ParseException
   {
+    ParseException e;
     if (idx < tokens.size())
-      return ParseException.forToken((Token)tokens.get(idx));
+    {
+      e = ParseException.forToken((Token)tokens.get(idx));
+      if (errorGatherer != null) errorGatherer.add(e);
+      throw e;
+    }
     if (!tokens.isEmpty())
-      return ParseException.forEnd(tokens.get(tokens.size() - 1)); 
-    return ParseException.forEnd(null); 
+    {
+      e = ParseException.forEnd(tokens.get(tokens.size() - 1)); 
+      if (errorGatherer != null) errorGatherer.add(e);
+      throw e;
+    }
+    e = ParseException.forEnd(null);
+    if (errorGatherer != null) errorGatherer.add(e);
+    throw e;
   }
   
   Symbol peekNextTokenType()

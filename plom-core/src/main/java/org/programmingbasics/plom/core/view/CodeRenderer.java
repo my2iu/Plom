@@ -183,13 +183,13 @@ public class CodeRenderer
       DivElement startLine = doc.createDivElement();
       SpanElement start = doc.createSpanElement();
       startLine.appendChild(start);
+      if (codeErrors.containsToken(token))
+        start.getClassList().add("tokenError");
       if (hitBox != null)
         startTokenHitBox.el = start;
       if (exprContainer != null)
       {
         start.setTextContent(tokenText + " (");
-        if (codeErrors.containsToken(token))
-          start.getClassList().add("tokenError");
         SpanElement expression = doc.createSpanElement();
         RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
         renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox, codeErrors);

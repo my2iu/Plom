@@ -38,7 +38,7 @@ public class GatherCodeCompletionInfo
   
   static void parseWholeLine(TokenContainer line, Symbol baseContext, CodeCompletionContext context)
   {
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     parser.setRecurseIntoTokens(false);
     try {
       AstNode parsed = parser.parseToEnd(baseContext);
@@ -57,7 +57,7 @@ public class GatherCodeCompletionInfo
     {
       // We're at the last level--for expressions and stuff, so we can
       // dig deeper to get the last type used in the expression
-      ParseToAst parser = new ParseToAst(line.tokens.subList(0, pos.getOffset(level)), Symbol.EndStatement);
+      ParseToAst parser = new ParseToAst(line.tokens.subList(0, pos.getOffset(level)), Symbol.EndStatement, null);
       parser.setErrorOnPrematureEnd(false);
       parser.setRecurseIntoTokens(false);
       try {

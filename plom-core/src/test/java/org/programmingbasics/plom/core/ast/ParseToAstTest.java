@@ -20,7 +20,7 @@ public class ParseToAstTest extends TestCase
             new Token.SimpleToken("+", Symbol.Plus),
             new Token.SimpleToken("1", Symbol.Number)
             ));
-    ParseToAst lineParser = new ParseToAst(container.statements.get(0).tokens, Symbol.EndStatement);
+    ParseToAst lineParser = new ParseToAst(container.statements.get(0).tokens, Symbol.EndStatement, null);
     AstNode node = lineParser.parseToEnd(Symbol.Statement);
     Assert.assertNotNull(node);
   }
@@ -37,7 +37,7 @@ public class ParseToAstTest extends TestCase
         new Token.SimpleToken("1", Symbol.Number)
         );
     try {
-      ParseToAst lineParser = new ParseToAst(line.tokens, Symbol.EndStatement);
+      ParseToAst lineParser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
       AstNode node = lineParser.parseToEnd(Symbol.Expression);
       fail();
     }

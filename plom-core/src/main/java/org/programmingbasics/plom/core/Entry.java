@@ -512,13 +512,12 @@ public class Entry implements EntryPoint
   {
     codeErrors.clear();
     try {
-      ParseToAst.parseStatementContainer(codeList);
-    } 
-    catch (ParseToAst.ParseException e)
-    {
-      codeErrors.add(e);
+      ParseToAst.parseStatementContainer(codeList, codeErrors);
     }
-
+    catch (Exception e)
+    {
+      // No errors should be thrown
+    }
   }
  
   void hookRun()

@@ -26,7 +26,7 @@ public class MachineContextTest extends TestCase
         new Token.SimpleToken("2", Symbol.Number),
         new Token.SimpleToken("-", Symbol.Minus),
         new Token.SimpleToken("2.5", Symbol.Number));
-    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement);
+    ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     MachineContext machine = new MachineContext();
     machine.setStart(parsed, new MachineContext.NodeHandlers());
