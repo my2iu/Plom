@@ -25,4 +25,8 @@ public class ErrorList
     }
     return false;
   }
+  public void clear()
+  {
+    codeErrors.clear();
+  }
 }

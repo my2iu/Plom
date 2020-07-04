@@ -510,7 +510,15 @@ public class Entry implements EntryPoint
   
   void updateErrorList()
   {
-    
+    codeErrors.clear();
+    try {
+      ParseToAst.parseStatementContainer(codeList);
+    } 
+    catch (ParseToAst.ParseException e)
+    {
+      codeErrors.add(e);
+    }
+
   }
  
   void hookRun()
