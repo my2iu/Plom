@@ -151,6 +151,54 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
 
   @Test
+  public void testLastTypeInBooleanExpression()
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".boolean", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                    new Token.SimpleToken("and", Symbol.And),
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("=", Symbol.Gt),
+                    new Token.SimpleToken("5", Symbol.Number)
+                    ),
+                new StatementContainer())
+            )
+        );
+
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
+    Assert.assertEquals(Type.BOOLEAN, context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 3));
+    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 4));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 5));
+    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+  }
+
+  @Test
   public void testVariablesInBlocks()
   {
     StatementContainer code = new StatementContainer(

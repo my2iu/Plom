@@ -18,7 +18,13 @@ public class Rule
 	public final static List<Symbol> AssignmentExpression_Expression_AssignmentExpressionMore = Arrays.asList(Symbol.AssignmentExpression, Symbol.Expression, Symbol.AssignmentExpressionMore);
 	public final static List<Symbol> AssignmentExpressionMore_Assignment_Expression = Arrays.asList(Symbol.AssignmentExpressionMore, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> AssignmentExpressionMore = Arrays.asList(Symbol.AssignmentExpressionMore);
-	public final static List<Symbol> Expression_RelationalExpression = Arrays.asList(Symbol.Expression, Symbol.RelationalExpression);
+	public final static List<Symbol> Expression_OrExpression_OrExpressionMore = Arrays.asList(Symbol.Expression, Symbol.OrExpression, Symbol.OrExpressionMore);
+	public final static List<Symbol> OrExpressionMore_Or_AndExpression_OrExpressionMore = Arrays.asList(Symbol.OrExpressionMore, Symbol.Or, Symbol.AndExpression, Symbol.OrExpressionMore);
+	public final static List<Symbol> OrExpressionMore = Arrays.asList(Symbol.OrExpressionMore);
+	public final static List<Symbol> OrExpression_AndExpression_AndExpressionMore = Arrays.asList(Symbol.OrExpression, Symbol.AndExpression, Symbol.AndExpressionMore);
+	public final static List<Symbol> AndExpressionMore_And_RelationalExpression_AndExpressionMore = Arrays.asList(Symbol.AndExpressionMore, Symbol.And, Symbol.RelationalExpression, Symbol.AndExpressionMore);
+	public final static List<Symbol> AndExpressionMore = Arrays.asList(Symbol.AndExpressionMore);
+	public final static List<Symbol> AndExpression_RelationalExpression = Arrays.asList(Symbol.AndExpression, Symbol.RelationalExpression);
 	public final static List<Symbol> RelationalExpression_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpression, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Gt, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Ge, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
@@ -70,6 +76,8 @@ public class Rule
 	public final static List<Symbol> Ge = Arrays.asList(Symbol.Ge);
 	public final static List<Symbol> Eq = Arrays.asList(Symbol.Eq);
 	public final static List<Symbol> Ne = Arrays.asList(Symbol.Ne);
+	public final static List<Symbol> Or = Arrays.asList(Symbol.Or);
+	public final static List<Symbol> And = Arrays.asList(Symbol.And);
 	public final static List<Symbol> Plus = Arrays.asList(Symbol.Plus);
 	public final static List<Symbol> Minus = Arrays.asList(Symbol.Minus);
 	public final static List<Symbol> Multiply = Arrays.asList(Symbol.Multiply);

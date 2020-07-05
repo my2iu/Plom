@@ -141,6 +141,54 @@ public class ExpressionEvaluator
             throw new RunException();
           })
       )
+      .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, 
+          (machine, node, idx) -> {
+            switch(idx)
+            {
+            case 0:
+              Value left = machine.popValue();
+              if (!Type.BOOLEAN.equals(left.type)) throw new RunException();
+              if (left.getBooleanValue())
+              {
+                machine.pushValue(Value.createBooleanValue(true));
+                machine.ip.advanceIdx();
+              }
+              else
+                machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+              break;
+            case 1:
+              machine.ip.pushAndAdvanceIdx(node.children.get(2), expressionHandlers);
+              break;
+            case 2:
+              machine.ip.pop();
+              break;
+            }
+          }
+      )
+      .add(Rule.AndExpressionMore_And_RelationalExpression_AndExpressionMore, 
+          (machine, node, idx) -> {
+            switch(idx)
+            {
+            case 0:
+              Value left = machine.popValue();
+              if (!Type.BOOLEAN.equals(left.type)) throw new RunException();
+              if (!left.getBooleanValue())
+              {
+                machine.pushValue(Value.createBooleanValue(false));
+                machine.ip.advanceIdx();
+              }
+              else
+                machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+              break;
+            case 1:
+              machine.ip.pushAndAdvanceIdx(node.children.get(2), expressionHandlers);
+              break;
+            case 2:
+              machine.ip.pop();
+              break;
+            }
+          }
+      )
       .add(Rule.String, 
           (MachineContext machine, AstNode node, int idx) -> {
             Value val = new Value();
@@ -281,6 +329,8 @@ public class ExpressionEvaluator
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, lValueInvalid())
+      .add(Rule.AndExpressionMore_And_RelationalExpression_AndExpressionMore, lValueInvalid())
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             switch (idx)

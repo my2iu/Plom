@@ -19,6 +19,10 @@ public enum Symbol
 	AssignmentExpression,
 	AssignmentExpressionMore,
 	Expression,
+	OrExpression,
+	OrExpressionMore,
+	AndExpression,
+	AndExpressionMore,
 	RelationalExpression,
 	RelationalExpressionMore,
 	AdditiveExpression,
@@ -43,6 +47,8 @@ public enum Symbol
 	Ge,
 	Eq,
 	Ne,
+	Or,
+	And,
 	Plus,
 	Minus,
 	Multiply,
@@ -78,6 +84,8 @@ public enum Symbol
 		case Ge:
 		case Eq:
 		case Ne:
+		case Or:
+		case And:
 		case Plus:
 		case Minus:
 		case Multiply:

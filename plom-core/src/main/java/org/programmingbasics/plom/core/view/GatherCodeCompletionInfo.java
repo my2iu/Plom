@@ -195,6 +195,14 @@ public class GatherCodeCompletionInfo
       .add(Rule.Minus, clearLastUsedType)
       .add(Rule.Multiply, clearLastUsedType)
       .add(Rule.Divide, clearLastUsedType)
+      .add(Rule.Eq, clearLastUsedType)
+      .add(Rule.Ne, clearLastUsedType)
+      .add(Rule.Gt, clearLastUsedType)
+      .add(Rule.Ge, clearLastUsedType)
+      .add(Rule.Lt, clearLastUsedType)
+      .add(Rule.Le, clearLastUsedType)
+      .add(Rule.And, clearLastUsedType)
+      .add(Rule.Or, clearLastUsedType)
 //      .add(Rule.AssignmentExpressionMore_Assignment_Expression, 
 //          createBinaryTypeHandler((left, right) -> {
 //            return right;

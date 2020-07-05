@@ -103,7 +103,7 @@ public class Entry implements EntryPoint
           new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
               new TokenContainer(
                   Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                  new Token.SimpleToken("==", Symbol.Eq),
+                  new Token.SimpleToken("=", Symbol.Eq),
                   new Token.SimpleToken("\"8\"", Symbol.String)
                   ),
               new StatementContainer(
@@ -130,10 +130,6 @@ public class Entry implements EntryPoint
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
   ErrorList codeErrors = new ErrorList();
-  {
-    codeErrors.add(ParseToAst.ParseException.forToken(codeList.statements.get(0).tokens.get(1)));
-    codeErrors.add(ParseToAst.ParseException.forEnd(codeList.statements.get(1).tokens.get(2)));
-  }
 
   // To ensure that predicted buttons end up in a consistent order and
   // with the most important ones showing first, we have a map with priorities
@@ -157,6 +153,8 @@ public class Entry implements EntryPoint
         Symbol.Le,
         Symbol.Ge,
         Symbol.Gt,
+        Symbol.And,
+        Symbol.Or,
         Symbol.OpenParenthesis,
         Symbol.ClosedParenthesis,
         Symbol.DUMMY_COMMENT,
@@ -411,6 +409,8 @@ public class Entry implements EntryPoint
       case Le: text = "<="; break;
       case Eq: text = "="; break;
       case Ne: text = "!="; break;
+      case Or: text = "or"; break;
+      case And: text = "and"; break;
       case Plus: text = "+"; break;
       case Minus: text = "-"; break;
       case Multiply: text = "*"; break;
