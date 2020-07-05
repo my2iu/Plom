@@ -320,4 +320,25 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(3.0, globalScope.lookup("b").getNumberValue(), 0.0);
   }
 
+  @Test
+  public void testBooleanVariable() throws ParseException, RunException
+  {
+    MachineContext ctx = new MachineContext();
+    VariableScope globalScope = ctx.getGlobalScope();
+    globalScope.addVariable("a", Type.NUMBER, Value.createNumberValue(3));
+    globalScope.addVariable("b", Type.BOOLEAN, Value.createBooleanValue(false));
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken("=", Symbol.Eq),
+            new Token.SimpleToken("3", Symbol.Number),
+            new Token.SimpleToken("and", Symbol.And),
+            new Token.SimpleToken("true", Symbol.TrueLiteral)
+            ));
+    new SimpleInterpreter(code).runCode(ctx);
+    Assert.assertTrue(globalScope.lookup("b").getBooleanValue());
+  }
 }
