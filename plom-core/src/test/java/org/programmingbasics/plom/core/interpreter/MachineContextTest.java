@@ -17,6 +17,8 @@ import junit.framework.TestCase;
 
 public class MachineContextTest extends TestCase
 {
+  static CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+
   @Test
   public void testRunInstructionsRecursively() throws ParseException, RunException
   {
@@ -37,9 +39,10 @@ public class MachineContextTest extends TestCase
   public void testBlockingFunction() throws ParseException, RunException
   {
     // Set-up some variables and functions
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makePrimitiveBlockingFunctionType(Type.NUMBER, Type.STRING);
+    aVal.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
     class CaptureFunction implements PrimitiveBlockingFunction {
       Value captured;
       int checkedCount = 0;
@@ -53,14 +56,14 @@ public class MachineContextTest extends TestCase
       }
       void unblock()
       {
-        blockWait.unblockAndReturn(Value.createNumberValue(32));
+        blockWait.unblockAndReturn(Value.createNumberValue(coreTypes, 32));
       }
     }
     CaptureFunction fun = new CaptureFunction();
     aVal.val = fun;
     scope.addVariable("a:", aVal.type, aVal);
-    scope.addVariable("b", Type.STRING, Value.createStringValue("hello "));
-    scope.addVariable("c", Type.NUMBER, Value.createNumberValue(2));
+    scope.addVariable("b", coreTypes.getStringType(), Value.createStringValue(coreTypes, "hello "));
+    scope.addVariable("c", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 2));
     
     // Run some code that uses those variables
     StatementContainer code = new StatementContainer(
@@ -73,6 +76,7 @@ public class MachineContextTest extends TestCase
         );
     AstNode parsed = ParseToAst.parseStatementContainer(code);
     MachineContext machine = new MachineContext();
+    machine.coreTypes = coreTypes;
     machine.pushScope(scope);
     machine.setStart(parsed, SimpleInterpreter.statementHandlers);
     // Machine should block

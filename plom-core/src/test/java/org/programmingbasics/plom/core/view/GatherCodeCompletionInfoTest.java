@@ -6,6 +6,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
@@ -39,20 +40,22 @@ public class GatherCodeCompletionInfoTest extends TestCase
         );
     CodePosition pos = CodePosition.fromOffsets(1);
     CodeCompletionContext context = new CodeCompletionContext();
+    StandardLibrary.createCoreTypes(context.coreTypes()); 
     context.pushNewScope();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     Assert.assertNull(context.currentScope().lookupType("b"));
-    Assert.assertEquals(Type.NUMBER, context.currentScope().lookupType("a"));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
     
     pos = CodePosition.fromOffsets(3);
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
-    Assert.assertEquals(Type.NUMBER, context.currentScope().lookupType("a"));
-    Assert.assertEquals(Type.NUMBER, context.currentScope().lookupType("b"));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("b"));
   }
   
   private CodeCompletionContext codeCompletionForPosition(StatementContainer code, CodePosition pos)
   {
     CodeCompletionContext context = new CodeCompletionContext();
+    StandardLibrary.createCoreTypes(context.coreTypes());
     context.pushNewScope();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     return context;
@@ -105,49 +108,49 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 2));
-    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 3));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 4));
-    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 5));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 6));
-    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 0));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 1));
-    Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 2));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 3));
-    Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 0));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 1));
-    Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 2));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 3));
-    Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 4));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 5));
-    Assert.assertEquals(Type.STRING, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
   }
 
   @Test
@@ -183,19 +186,19 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
-    Assert.assertEquals(Type.BOOLEAN, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getBooleanType(), context.getLastTypeUsed());
     
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 3));
-    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
     
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 4));
     Assert.assertNull(context.getLastTypeUsed());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 5));
-    Assert.assertEquals(Type.NUMBER, context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
   }
 
   @Test

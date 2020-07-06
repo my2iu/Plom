@@ -71,8 +71,8 @@ public class SimpleInterpreter
             GatheredTypeInfo typeInfo = new GatheredTypeInfo();
             node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, machine);
             Type type = typeInfo.type;
-            if (type == null) type = Type.VOID;
-            Value val = Value.NULL;
+            if (type == null) type = machine.coreTypes().getVoidType();
+            Value val = machine.coreTypes.getNullValue();
             if (!node.children.get(3).matchesRule(Rule.VarAssignment))
               throw new RunException("Not implemented yet");
             machine.currentScope().addVariable(name, type, val);
@@ -94,7 +94,7 @@ public class SimpleInterpreter
               break;
             case 1: // Decide whether to follow the if or not
               Value val = machine.popValue();
-              if (val.type != Type.BOOLEAN)
+              if (!machine.coreTypes().getBooleanType().equals(val.type))
                 throw new RunException();
               if (val.getBooleanValue())
               {
@@ -125,7 +125,7 @@ public class SimpleInterpreter
               break;
             case 1: // Decide whether to follow the if or not
               Value val = machine.popValue();
-              if (val.type != Type.BOOLEAN)
+              if (!machine.coreTypes().getBooleanType().equals(val.type))
                 throw new RunException();
               if (val.getBooleanValue())
               {
@@ -170,7 +170,7 @@ public class SimpleInterpreter
               break;
             case 1: // Decide whether to follow the if or not
               Value val = machine.popValue();
-              if (val.type != Type.BOOLEAN)
+              if (!machine.coreTypes().getBooleanType().equals(val.type))
                 throw new RunException();
               if (val.getBooleanValue())
               {
@@ -215,7 +215,7 @@ public class SimpleInterpreter
   public void runNoReturn() throws ParseException, RunException
   {
     ctx = new MachineContext();
-    StandardLibrary.createGlobals(this, ctx.getGlobalScope());
+    StandardLibrary.createGlobals(this, ctx.getGlobalScope(), ctx.coreTypes());
     ctx.pushNewScope();
     runCode(ctx);
   }

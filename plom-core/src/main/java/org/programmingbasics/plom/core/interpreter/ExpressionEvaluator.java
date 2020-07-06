@@ -16,7 +16,7 @@ public class ExpressionEvaluator
 
   static interface BinaryOperatorHandler
   {
-    public Value apply(Value left, Value right) throws RunException;
+    public Value apply(MachineContext ctx, Value left, Value right) throws RunException;
   }
 
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
@@ -33,7 +33,7 @@ public class ExpressionEvaluator
         {
           Value right = machine.popValue();
           Value left = machine.popValue();
-          Value toReturn = doOp.apply(left, right);
+          Value toReturn = doOp.apply(machine, left, right);
           machine.pushValue(toReturn);
           machine.ip.advanceIdx();
           break;
@@ -52,92 +52,92 @@ public class ExpressionEvaluator
   static {
     expressionHandlers
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createNumberValue(left.getNumberValue() + right.getNumberValue());
-            else if (Type.STRING.equals(left.type) && Type.STRING.equals(right.type))
-              return Value.createStringValue(left.getStringValue() + right.getStringValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() + right.getNumberValue());
+            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
+              return Value.createStringValue(ctx.coreTypes(), left.getStringValue() + right.getStringValue());
             else
               throw new RunException();
           })
       )
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-                return Value.createNumberValue(left.getNumberValue() - right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+                return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() - right.getNumberValue());
               else
                 throw new RunException();
           })
       )
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createNumberValue(left.getNumberValue() * right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() * right.getNumberValue());
             else
               throw new RunException();
           })
       )
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createNumberValue(left.getNumberValue() / right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() / right.getNumberValue());
             else
               throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() == right.getNumberValue());
-            else if (Type.STRING.equals(left.type) && Type.STRING.equals(right.type))
-              return Value.createBooleanValue(left.getStringValue().equals(right.getStringValue()));
-            else if (Type.BOOLEAN.equals(left.type) && Type.BOOLEAN.equals(right.type))
-              return Value.createBooleanValue(left.getBooleanValue() == right.getBooleanValue());
-            else if (Type.NULL.equals(left.type) && Type.NULL.equals(right.type))
-              return Value.TRUE;
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() == right.getNumberValue());
+            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getStringValue().equals(right.getStringValue()));
+            else if (ctx.coreTypes().getBooleanType().equals(left.type) && ctx.coreTypes().getBooleanType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getBooleanValue() == right.getBooleanValue());
+            else if (ctx.coreTypes().getNullType().equals(left.type) && ctx.coreTypes().getNullType().equals(right.type))
+              return ctx.coreTypes().getTrueValue();
             else
-              return Value.FALSE;
+              return ctx.coreTypes().getFalseValue();
           })
       )
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() != right.getNumberValue());
-            else if (left.type == Type.STRING && right.type == Type.STRING)
-              return Value.createBooleanValue(!left.getStringValue().equals(right.getStringValue()));
-            else if (left.type == Type.BOOLEAN && right.type == Type.BOOLEAN)
-              return Value.createBooleanValue(left.getBooleanValue() != right.getBooleanValue());
-            else if (left.type == Type.NULL && right.type == Type.NULL)
-              return Value.FALSE;
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() != right.getNumberValue());
+            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), !left.getStringValue().equals(right.getStringValue()));
+            else if (ctx.coreTypes().getBooleanType().equals(left.type) && ctx.coreTypes().getBooleanType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getBooleanValue() != right.getBooleanValue());
+            else if (ctx.coreTypes().getNullType().equals(left.type) && ctx.coreTypes().getNullType().equals(right.type))
+              return ctx.coreTypes().getFalseValue();
             else
-              return Value.TRUE;
+              return ctx.coreTypes().getTrueValue();
           })
       )
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() > right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() > right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() >= right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() >= right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() < right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() < right.getNumberValue());
             throw new RunException();
           })
       )
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((left, right) -> {
-            if (Type.NUMBER.equals(left.type) && Type.NUMBER.equals(right.type))
-              return Value.createBooleanValue(left.getNumberValue() <= right.getNumberValue());
+          createBinaryOperatorHandlerMore((ctx, left, right) -> {
+            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
+              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() <= right.getNumberValue());
             throw new RunException();
           })
       )
@@ -147,10 +147,10 @@ public class ExpressionEvaluator
             {
             case 0:
               Value left = machine.popValue();
-              if (!Type.BOOLEAN.equals(left.type)) throw new RunException();
+              if (!machine.coreTypes().getBooleanType().equals(left.type)) throw new RunException();
               if (left.getBooleanValue())
               {
-                machine.pushValue(Value.createBooleanValue(true));
+                machine.pushValue(Value.createBooleanValue(machine.coreTypes(), true));
                 machine.ip.advanceIdx();
               }
               else
@@ -171,10 +171,10 @@ public class ExpressionEvaluator
             {
             case 0:
               Value left = machine.popValue();
-              if (!Type.BOOLEAN.equals(left.type)) throw new RunException();
+              if (!machine.coreTypes().getBooleanType().equals(left.type)) throw new RunException();
               if (!left.getBooleanValue())
               {
-                machine.pushValue(Value.createBooleanValue(false));
+                machine.pushValue(Value.createBooleanValue(machine.coreTypes(), false));
                 machine.ip.advanceIdx();
               }
               else
@@ -192,7 +192,7 @@ public class ExpressionEvaluator
       .add(Rule.String, 
           (MachineContext machine, AstNode node, int idx) -> {
             Value val = new Value();
-            val.type = Type.STRING;
+            val.type = machine.coreTypes().getStringType();
             String rawStr = ((Token.SimpleToken)node.token).contents;
             val.val = rawStr.substring(1, rawStr.length() - 1);
             machine.pushValue(val);
@@ -201,19 +201,19 @@ public class ExpressionEvaluator
       .add(Rule.Number, 
           (MachineContext machine, AstNode node, int idx) -> {
             Value val = new Value();
-            val.type = Type.NUMBER;
+            val.type = machine.coreTypes().getNumberType();
             val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
             machine.pushValue(val);
             machine.ip.pop();
       })
       .add(Rule.TrueLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
-            machine.pushValue(Value.TRUE);
+            machine.pushValue(machine.coreTypes().getTrueValue());
             machine.ip.pop();
       })
       .add(Rule.FalseLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
-            machine.pushValue(Value.FALSE);
+            machine.pushValue(machine.coreTypes().getFalseValue());
             machine.ip.pop();
       })
       .add(Rule.DotVariable, 

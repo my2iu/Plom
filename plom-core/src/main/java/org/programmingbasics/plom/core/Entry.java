@@ -265,7 +265,7 @@ public class Entry implements EntryPoint
       else
       {
         CodeCompletionContext suggestionContext = new CodeCompletionContext();
-        StandardLibrary.createGlobals(null, suggestionContext.currentScope());
+        StandardLibrary.createGlobals(null, suggestionContext.currentScope(), suggestionContext.coreTypes());
         GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
         VariableSuggester suggester = new VariableSuggester(suggestionContext);
         showSimpleEntryForToken(newToken, false, suggester);

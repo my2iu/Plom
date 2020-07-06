@@ -15,6 +15,8 @@ import junit.framework.TestCase;
 
 public class ExpressionEvaluatorTest extends TestCase
 {
+  static CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+  
   Value evalTest(TokenContainer line, VariableScope scope) throws ParseException, RunException
   {
     // Parse the code
@@ -22,6 +24,7 @@ public class ExpressionEvaluatorTest extends TestCase
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
+    machine.coreTypes = coreTypes;
     machine.pushScope(scope);
     // Start running the code
     machine.setStart(parsed, ExpressionEvaluator.expressionHandlers);
@@ -39,6 +42,7 @@ public class ExpressionEvaluatorTest extends TestCase
     AstNode parsed = parser.parseToEnd(Symbol.AssignmentExpression);
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
+    machine.coreTypes = coreTypes;
     machine.pushScope(scope);
     // Start running the code
     machine.setStart(parsed, ExpressionEvaluator.assignmentLValueHandlers);
@@ -51,7 +55,7 @@ public class ExpressionEvaluatorTest extends TestCase
     TokenContainer line = new TokenContainer(
         new Token.SimpleToken("1", Symbol.Number));
     Value val = evalTest(line, new VariableScope());
-    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(Double.valueOf(1), val.val);
   }
   
@@ -65,7 +69,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("-", Symbol.Minus),
         new Token.SimpleToken("2.5", Symbol.Number));
     Value val = evalTest(line, new VariableScope());
-    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(Double.valueOf(0.5), val.val);
   }
   
@@ -85,7 +89,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("5", Symbol.Number),
         new Token.SimpleToken(")", Symbol.ClosedParenthesis));
     Value val = evalTest(line, new VariableScope());
-    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(Double.valueOf(-5), val.val);
   }
 
@@ -97,7 +101,7 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("+", Symbol.Plus),
         new Token.SimpleToken("\"world\"", Symbol.String));
     Value val = evalTest(line, new VariableScope());
-    Assert.assertEquals(Type.STRING, val.type);
+    Assert.assertEquals(coreTypes.getStringType(), val.type);
     Assert.assertEquals("hello world", val.val);
   }
 
@@ -106,16 +110,16 @@ public class ExpressionEvaluatorTest extends TestCase
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.NUMBER;
+    aVal.type = coreTypes.getNumberType();
     aVal.val = 32;
-    scope.addVariable("a", Type.NUMBER, aVal);
+    scope.addVariable("a", coreTypes.getNumberType(), aVal);
     
     // Read a variable
     {
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       Value val = evalTest(line, scope);
-      Assert.assertEquals(Type.NUMBER, val.type);
+      Assert.assertEquals(coreTypes.getNumberType(), val.type);
       Assert.assertEquals(32, val.val);
     }
     
@@ -134,7 +138,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       Value val = evalTest(line, scope);
-      Assert.assertEquals(Type.NUMBER, val.type);
+      Assert.assertEquals(coreTypes.getNumberType(), val.type);
       Assert.assertEquals(5.0, val.val);
     }
   }
@@ -161,7 +165,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           new Token.SimpleToken("true", Symbol.TrueLiteral));
       Value val = evalTest(line, new VariableScope());
-      Assert.assertEquals(Type.BOOLEAN, val.type);
+      Assert.assertEquals(coreTypes.getBooleanType(), val.type);
       Assert.assertEquals(true, val.val);
     }
     
@@ -169,7 +173,7 @@ public class ExpressionEvaluatorTest extends TestCase
       TokenContainer line = new TokenContainer(
           new Token.SimpleToken("false", Symbol.FalseLiteral));
       Value val = evalTest(line, new VariableScope());
-      Assert.assertEquals(Type.BOOLEAN, val.type);
+      Assert.assertEquals(coreTypes.getBooleanType(), val.type);
       Assert.assertEquals(false, val.val);
     }
   }
@@ -179,11 +183,11 @@ public class ExpressionEvaluatorTest extends TestCase
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makePrimitiveFunctionType(Type.NUMBER);
+    aVal.type = Type.makePrimitiveFunctionType(coreTypes.getNumberType());
     aVal.val = new PrimitiveFunction() {
       @Override public Value call(List<Value> args)
       {
-        return Value.createNumberValue(32);
+        return Value.createNumberValue(coreTypes, 32);
       }
     };
     scope.addVariable("a", aVal.type, aVal);
@@ -192,7 +196,7 @@ public class ExpressionEvaluatorTest extends TestCase
     TokenContainer line = new TokenContainer(
         Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
     Value val = evalTest(line, scope);
-    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(32.0, val.val);
   }
   
@@ -201,14 +205,14 @@ public class ExpressionEvaluatorTest extends TestCase
   {
     VariableScope scope = new VariableScope();
     Value aVal = new Value();
-    aVal.type = Type.makePrimitiveFunctionType(Type.NUMBER, Type.STRING);
+    aVal.type = Type.makePrimitiveFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
     class CaptureFunction implements PrimitiveFunction {
       Value captured;
       @Override public Value call(List<Value> args)
       {
         Assert.assertEquals(1, args.size());
         captured = args.get(0);
-        return Value.createNumberValue(32);
+        return Value.createNumberValue(coreTypes, 32);
       }
     }
     CaptureFunction fun = new CaptureFunction();
@@ -220,7 +224,7 @@ public class ExpressionEvaluatorTest extends TestCase
         Token.ParameterToken.fromContents(".a:", Symbol.DotVariable, 
             new TokenContainer(new Token.SimpleToken("\"hello\"", Symbol.String))));
     Value val = evalTest(line, scope);
-    Assert.assertEquals(Type.NUMBER, val.type);
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(32.0, val.val);
     
     // Check if call args were passed in correctly
@@ -234,25 +238,25 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("3", Symbol.Number),
         new Token.SimpleToken("<", Symbol.Lt),
         new Token.SimpleToken("5", Symbol.Number));
-    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+    Assert.assertEquals(coreTypes.getTrueValue(), evalTest(line, new VariableScope()));
 
     line = new TokenContainer(
         new Token.SimpleToken("3", Symbol.Number),
         new Token.SimpleToken(">", Symbol.Gt),
         new Token.SimpleToken("5", Symbol.Number));
-    Assert.assertEquals(Value.FALSE, evalTest(line, new VariableScope()));
+    Assert.assertEquals(coreTypes.getFalseValue(), evalTest(line, new VariableScope()));
 
     line = new TokenContainer(
         new Token.SimpleToken("3", Symbol.Number),
         new Token.SimpleToken("==", Symbol.Eq),
         new Token.SimpleToken("\"hi\"", Symbol.String));
-    Assert.assertEquals(Value.FALSE, evalTest(line, new VariableScope()));
+    Assert.assertEquals(coreTypes.getFalseValue(), evalTest(line, new VariableScope()));
 
     line = new TokenContainer(
         new Token.SimpleToken("3", Symbol.Number),
         new Token.SimpleToken("!=", Symbol.Ne),
         new Token.SimpleToken("\"hi\"", Symbol.String));
-    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+    Assert.assertEquals(coreTypes.getTrueValue(), evalTest(line, new VariableScope()));
 
     line = new TokenContainer(
         new Token.SimpleToken("3", Symbol.Number),
@@ -260,6 +264,6 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("3", Symbol.Number),
         new Token.SimpleToken("==", Symbol.Eq),
         new Token.SimpleToken("true", Symbol.TrueLiteral));
-    Assert.assertEquals(Value.TRUE, evalTest(line, new VariableScope()));
+    Assert.assertEquals(coreTypes.getTrueValue(), evalTest(line, new VariableScope()));
   }
 }

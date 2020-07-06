@@ -22,6 +22,16 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
 public class MachineContext
 {
   /**
+   * Holds the core types
+   */
+  CoreTypeLibrary coreTypes = new CoreTypeLibrary();
+  
+  /**
+   * Provides easy access to the core types
+   */
+  CoreTypeLibrary coreTypes() { return coreTypes; }
+  
+  /**
    * Scope where bindings of global names and values are held
    */
   private VariableScope globalScope = new VariableScope();

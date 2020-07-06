@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.suggestions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
@@ -51,4 +52,7 @@ public class CodeCompletionContext
     topScope = scope;
   }
   public VariableScope currentScope() { return topScope; }
+  // Provides easy access to the core types
+  CoreTypeLibrary coreTypes = new CoreTypeLibrary();
+  public CoreTypeLibrary coreTypes() { return coreTypes; }
 }

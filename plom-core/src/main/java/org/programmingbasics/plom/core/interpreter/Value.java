@@ -17,23 +17,23 @@ public class Value
   {
     return ((Boolean)val).booleanValue();
   }
-  public static Value createNumberValue(double val)
+  public static Value createNumberValue(CoreTypeLibrary coreTypes, double val)
   {
     Value newVal = new Value();
-    newVal.type = Type.NUMBER;
+    newVal.type = coreTypes.getNumberType();
     newVal.val = val;
     return newVal;
   }
-  public static Value createStringValue(String val)
+  public static Value createStringValue(CoreTypeLibrary coreTypes, String val)
   {
     Value newVal = new Value();
-    newVal.type = Type.STRING;
+    newVal.type = coreTypes.getStringType();
     newVal.val = val;
     return newVal;
   }
-  public static Value createBooleanValue(boolean val)
+  public static Value createBooleanValue(CoreTypeLibrary coreTypes, boolean val)
   {
-    return val ? TRUE : FALSE;
+    return val ? coreTypes.getTrueValue() : coreTypes.getFalseValue();
   }
   public static Value readFromScope(VariableScope scope, String binding, Value val)
   {
@@ -43,17 +43,6 @@ public class Value
     return newVal;
   }
   
-  public final static Value NULL = new Value();
-  public final static Value TRUE = new Value();
-  public final static Value FALSE = new Value();
-  static {
-    NULL.type = Type.NULL;
-    NULL.val = null;
-    TRUE.type = Type.BOOLEAN;
-    TRUE.val = true;
-    FALSE.type = Type.BOOLEAN;
-    FALSE.val = false;
-  }
   
   
   /**

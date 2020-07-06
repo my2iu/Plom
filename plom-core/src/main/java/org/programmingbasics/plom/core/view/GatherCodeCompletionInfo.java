@@ -134,11 +134,11 @@ public class GatherCodeCompletionInfo
           return true;
         node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, context);
         Type type = typeInfo.type;
-        if (type == null) type = Type.VOID;
-        Value val = Value.NULL;
+        if (type == null) type = context.coreTypes().getVoidType();
+        Value val = context.coreTypes().getNullValue();
         if (node.children.get(3) == null || !node.children.get(3).matchesRule(Rule.VarAssignment))
           return true;
-        context.currentScope().addVariable(name, type, Value.NULL);
+        context.currentScope().addVariable(name, type, context.coreTypes().getNullValue());
         return true;
       });
   }
@@ -181,13 +181,13 @@ public class GatherCodeCompletionInfo
         return true;
       })
       .add(Rule.Number, (triggers, node, context, param) -> {
-        context.pushType(Type.NUMBER);
-        context.setLastTypeUsed(Type.NUMBER);
+        context.pushType(context.coreTypes().getNumberType());
+        context.setLastTypeUsed(context.coreTypes().getNumberType());
         return true;
       })
       .add(Rule.String, (triggers, node, context, param) -> {
-        context.pushType(Type.STRING);
-        context.setLastTypeUsed(Type.STRING);
+        context.pushType(context.coreTypes().getStringType());
+        context.setLastTypeUsed(context.coreTypes().getStringType());
         return true;
       })
       .add(Rule.Assignment, clearLastUsedType)

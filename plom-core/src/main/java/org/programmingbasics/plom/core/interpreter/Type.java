@@ -56,9 +56,4 @@ public class Type
   {
     return "PrimitiveBlockingFunction".equals(name);
   }
-  public static Type NUMBER = new Type("number");
-  public static Type STRING = new Type("string");
-  public static Type BOOLEAN = new Type("boolean");
-  public static Type VOID = new Type("void");
-  public static Type NULL = new Type("null");
 }

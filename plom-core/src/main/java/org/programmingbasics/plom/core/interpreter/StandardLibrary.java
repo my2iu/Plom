@@ -11,12 +11,36 @@ import elemental.html.InputElement;
 
 public class StandardLibrary
 {
-  public static void createGlobals(SimpleInterpreter interpreter, VariableScope scope)
+  public static void createCoreTypes(CoreTypeLibrary coreTypes)
   {
+    // Create the initial core types
+    coreTypes.booleanType = new Type("boolean");
+    coreTypes.nullType = new Type("null");
+    coreTypes.numberType = new Type("number");
+    coreTypes.stringType = new Type("string");
+    coreTypes.voidType = new Type("void");
+    
+    // Create some literals
+    coreTypes.nullVal = new Value();
+    coreTypes.trueVal = new Value();
+    coreTypes.falseVal = new Value();
+    coreTypes.nullVal.type = coreTypes.nullType;
+    coreTypes.nullVal.val = null;
+    coreTypes.trueVal.type = coreTypes.booleanType;
+    coreTypes.trueVal.val = true;
+    coreTypes.falseVal.type = coreTypes.booleanType;
+    coreTypes.falseVal.val = false;
+  }
+  
+  public static void createGlobals(SimpleInterpreter interpreter, VariableScope scope, CoreTypeLibrary coreTypes)
+  {
+    createCoreTypes(coreTypes);
+    
+    // Create the other global variables and stuff
     Value printFun = new Value();
     if (interpreter != null)
     {
-      printFun.type = Type.makePrimitiveBlockingFunctionType(Type.NUMBER, Type.STRING);
+      printFun.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
       printFun.val = new PrimitiveFunction.PrimitiveBlockingFunction() {
         @Override
         public void call(PrimitiveBlockingFunctionReturn blockWait, List<Value> args)
@@ -29,7 +53,7 @@ public class StandardLibrary
           container.querySelector("a").setOnclick((e) -> {
             e.preventDefault();
             doc.getBody().removeChild(container);
-            blockWait.unblockAndReturn(Value.createNumberValue(0));
+            blockWait.unblockAndReturn(Value.createNumberValue(coreTypes, 0));
             interpreter.continueRun();
           });
           doc.getBody().appendChild(container);
@@ -42,7 +66,7 @@ public class StandardLibrary
     Value inputFun = new Value();
     if (interpreter != null)
     {
-      inputFun.type = Type.makePrimitiveBlockingFunctionType(Type.STRING, Type.STRING);
+      inputFun.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getStringType(), coreTypes.getStringType());
       inputFun.val = new PrimitiveFunction.PrimitiveBlockingFunction() {
         @Override
         public void call(PrimitiveBlockingFunctionReturn blockWait, List<Value> args)
@@ -55,13 +79,13 @@ public class StandardLibrary
           container.querySelector("form").setOnsubmit((e) -> {
             e.preventDefault();
             doc.getBody().removeChild(container);
-            blockWait.unblockAndReturn(Value.createStringValue(((InputElement)container.querySelector("input")).getValue()));
+            blockWait.unblockAndReturn(Value.createStringValue(coreTypes, ((InputElement)container.querySelector("input")).getValue()));
             interpreter.continueRun();
           });
           container.querySelector("a").setOnclick((e) -> {
             e.preventDefault();
             doc.getBody().removeChild(container);
-            blockWait.unblockAndReturn(Value.createStringValue(((InputElement)container.querySelector("input")).getValue()));
+            blockWait.unblockAndReturn(Value.createStringValue(coreTypes, ((InputElement)container.querySelector("input")).getValue()));
             interpreter.continueRun();
           });
           doc.getBody().appendChild(container);
