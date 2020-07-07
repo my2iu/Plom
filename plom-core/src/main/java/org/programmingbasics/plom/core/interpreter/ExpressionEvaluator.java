@@ -252,6 +252,44 @@ public class ExpressionEvaluator
             }
             machine.pushValue(toReturn);
             machine.ip.pop();
+      })
+      .add(Rule.MemberExpressionMore_DotVariable_MemberExpressionMore, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            AstNode methodNode = node.children.get(0);
+            if (idx < methodNode.internalChildren.size())
+            {
+              machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
+              return;
+            }
+            else if (idx == methodNode.internalChildren.size())
+            {
+              Value self = machine.readValue(methodNode.internalChildren.size()); 
+              Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)methodNode.token).getLookupName());
+              if (toReturn.type.isMethod())
+              {
+                List<Value> args = new ArrayList<>();
+                for (int n = 0; n < methodNode.internalChildren.size(); n++)
+                {
+                  args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+                }
+                machine.popValues(methodNode.internalChildren.size() + 1);
+                if (toReturn.type.isPrimitiveMethod())
+                {
+                  toReturn = ((PrimitiveFunction.PrimitiveMethod)toReturn.val).call(self, args);
+                  machine.pushValue(toReturn);
+                  machine.ip.pop();
+                  return;
+                }
+                else 
+                  throw new RunException();
+              }
+              machine.pushValue(toReturn);
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+            }
+            else
+            {
+              machine.ip.pop();
+            }
       });
   }
 

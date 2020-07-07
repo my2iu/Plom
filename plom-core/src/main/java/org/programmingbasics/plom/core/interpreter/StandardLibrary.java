@@ -20,6 +20,11 @@ public class StandardLibrary
     coreTypes.stringType = new Type("string");
     coreTypes.voidType = new Type("void");
     
+    // Add some methods
+    coreTypes.getNumberType().addPrimitiveMethod("abs", (self, args) -> {
+      return Value.createNumberValue(coreTypes, Math.abs(self.getNumberValue()));
+    }, coreTypes.getNumberType());
+    
     // Create some literals
     coreTypes.nullVal = new Value();
     coreTypes.trueVal = new Value();

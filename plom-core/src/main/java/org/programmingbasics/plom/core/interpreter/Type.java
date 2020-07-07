@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Type
 {
   @Override
@@ -29,6 +32,15 @@ public class Type
   {
     this.name = name;
   }
+  
+  Map<String, PrimitiveFunction.PrimitiveMethod> methods = new HashMap<>();
+  Map<String, Type> methodTypeSigs = new HashMap<>();
+  public void addPrimitiveMethod(String name, PrimitiveFunction.PrimitiveMethod fn, Type returnType, Type...args)
+  {
+    methods.put(name, fn);
+    methodTypeSigs.put(name, makePrimitiveMethodType(returnType, args));
+  }
+  
   static Type makeFunctionType(Type returnType, Type...args)
   {
     Type t = new Type("Function");
@@ -44,6 +56,11 @@ public class Type
     Type t = new Type("PrimitiveBlockingFunction");
     return t;
   }
+  static Type makePrimitiveMethodType(Type returnType, Type...args)
+  {
+    Type t = new Type("PrimitiveMethod");
+    return t;
+  }
   public boolean isFunction()
   {
     return "Function".equals(name) || "PrimitiveFunction".equals(name) || "PrimitiveBlockingFunction".equals(name);
@@ -55,5 +72,13 @@ public class Type
   public boolean isPrimitiveBlockingFunction()
   {
     return "PrimitiveBlockingFunction".equals(name);
+  }
+  public boolean isMethod()
+  {
+    return "PrimitiveMethod".equals(name);
+  }
+  public boolean isPrimitiveMethod()
+  {
+    return "PrimitiveMethod".equals(name);
   }
 }

@@ -266,4 +266,15 @@ public class ExpressionEvaluatorTest extends TestCase
         new Token.SimpleToken("true", Symbol.TrueLiteral));
     Assert.assertEquals(coreTypes.getTrueValue(), evalTest(line, new VariableScope()));
   }
+  
+  @Test
+  public void testNoArgPrimitiveMethodCall() throws ParseException, RunException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("-5", Symbol.Number),
+        Token.ParameterToken.fromContents("abs", Symbol.DotVariable));
+    Value val = evalTest(line, new VariableScope());
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
+    Assert.assertEquals(5, val.getNumberValue(), 0);
+  }
 }

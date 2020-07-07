@@ -356,4 +356,25 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runCode(ctx);
     Assert.assertTrue(globalScope.lookup("b").getBooleanValue());
   }
+  
+  @Test
+  public void testNoArgPrimitiveMethod() throws ParseException, RunException
+  {
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = coreTypes;
+    VariableScope globalScope = ctx.getGlobalScope();
+    globalScope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, -3));
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".abs", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runCode(ctx);
+    Assert.assertEquals(coreTypes.getNumberType(), globalScope.lookup("a").type);
+    Assert.assertEquals(3, globalScope.lookup("a").getNumberValue(), 0);
+  }
 }

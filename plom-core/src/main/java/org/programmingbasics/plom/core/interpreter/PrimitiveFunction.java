@@ -10,4 +10,9 @@ public interface PrimitiveFunction
   {
     public void call(MachineContext.PrimitiveBlockingFunctionReturn blockWait, List<Value> args);
   }
+  
+  public static interface PrimitiveMethod
+  {
+    public Value call(Value self, List<Value> args);
+  }
 }
