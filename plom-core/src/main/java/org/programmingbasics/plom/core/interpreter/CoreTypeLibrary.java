@@ -5,11 +5,13 @@ package org.programmingbasics.plom.core.interpreter;
  */
 public class CoreTypeLibrary
 {
+  public Type getObjectType() { return objectType; }
   public Type getNumberType() { return numberType; }
   public Type getStringType() { return stringType; }
   public Type getBooleanType() { return booleanType; }
   public Type getVoidType() { return voidType; }
   public Type getNullType() { return nullType; }
+  protected Type objectType; 
   protected Type numberType; 
   protected Type stringType; 
   protected Type booleanType; 

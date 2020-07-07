@@ -14,13 +14,19 @@ public class StandardLibrary
   public static void createCoreTypes(CoreTypeLibrary coreTypes)
   {
     // Create the initial core types
+    coreTypes.objectType = new Type("object");
     coreTypes.booleanType = new Type("boolean");
     coreTypes.nullType = new Type("null");
     coreTypes.numberType = new Type("number");
     coreTypes.stringType = new Type("string");
     coreTypes.voidType = new Type("void");
     
-    // Add some methods
+    // Add some object methods
+    coreTypes.getObjectType().addPrimitiveMethod("to string", (self, args) -> {
+      return Value.createStringValue(coreTypes, self.type.name);
+    }, coreTypes.getStringType());
+    
+    // Add some number methods
     coreTypes.getNumberType().addPrimitiveMethod("abs", (self, args) -> {
       return Value.createNumberValue(coreTypes, Math.abs(self.getNumberValue()));
     }, coreTypes.getNumberType());
@@ -36,6 +42,14 @@ public class StandardLibrary
     coreTypes.getNumberType().addPrimitiveMethod("to string", (self, args) -> {
       return Value.createStringValue(coreTypes, Double.toString(self.getNumberValue()));
     }, coreTypes.getStringType());
+    
+    // Add some string methods
+    coreTypes.getStringType().addPrimitiveMethod("to string", (self, args) -> {
+      return Value.createStringValue(coreTypes, self.getStringValue());
+    }, coreTypes.getStringType());
+    coreTypes.getStringType().addPrimitiveMethod("substring from:to:", (self, args) -> {
+      return Value.createStringValue(coreTypes, self.getStringValue().substring((int)args.get(0).getNumberValue(), (int)args.get(1).getNumberValue()));
+    }, coreTypes.getStringType(), coreTypes.getNumberType(), coreTypes.getNumberType());
     
     // Create some literals
     coreTypes.nullVal = new Value();

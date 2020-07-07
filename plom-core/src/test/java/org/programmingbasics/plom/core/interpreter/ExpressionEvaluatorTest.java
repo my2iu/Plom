@@ -268,7 +268,7 @@ public class ExpressionEvaluatorTest extends TestCase
   }
   
   @Test
-  public void testNoArgPrimitiveMethodCall() throws ParseException, RunException
+  public void testPrimitiveMethodCallNoArgsChained() throws ParseException, RunException
   {
     TokenContainer line = new TokenContainer(
         new Token.SimpleToken("-5.5", Symbol.Number),
@@ -278,4 +278,18 @@ public class ExpressionEvaluatorTest extends TestCase
     Assert.assertEquals(coreTypes.getNumberType(), val.type);
     Assert.assertEquals(6, val.getNumberValue(), 0);
   }
+  
+  @Test
+  public void testPrimitiveMethodCallWithArgs() throws ParseException, RunException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("\"abcdefg\"", Symbol.String),
+        Token.ParameterToken.fromContents(".substring from:to:", Symbol.DotVariable,
+            new TokenContainer(new Token.SimpleToken("2", Symbol.Number)),
+            new TokenContainer(new Token.SimpleToken("5", Symbol.Number))));
+    Value val = evalTest(line, new VariableScope());
+    Assert.assertEquals(coreTypes.getStringType(), val.type);
+    Assert.assertEquals("cde", val.getStringValue());
+  }
+
 }
