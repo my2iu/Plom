@@ -33,6 +33,9 @@ public class StandardLibrary
     coreTypes.getNumberType().addPrimitiveMethod("round", (self, args) -> {
       return Value.createNumberValue(coreTypes, Math.round(self.getNumberValue()));
     }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("to string", (self, args) -> {
+      return Value.createStringValue(coreTypes, Double.toString(self.getNumberValue()));
+    }, coreTypes.getStringType());
     
     // Create some literals
     coreTypes.nullVal = new Value();
