@@ -42,6 +42,26 @@ public class StandardLibrary
     coreTypes.getNumberType().addPrimitiveMethod("to string", (self, args) -> {
       return Value.createStringValue(coreTypes, Double.toString(self.getNumberValue()));
     }, coreTypes.getStringType());
+    coreTypes.getNumberType().addPrimitiveMethod("+:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createNumberValue(coreTypes, self.getNumberValue() + args.get(0).getNumberValue());
+    }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("-:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createNumberValue(coreTypes, self.getNumberValue() - args.get(0).getNumberValue());
+    }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("*:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createNumberValue(coreTypes, self.getNumberValue() * args.get(0).getNumberValue());
+    }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("/:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createNumberValue(coreTypes, self.getNumberValue() / args.get(0).getNumberValue());
+    }, coreTypes.getNumberType());
     
     // Add some string methods
     coreTypes.getStringType().addPrimitiveMethod("to string", (self, args) -> {
@@ -50,6 +70,11 @@ public class StandardLibrary
     coreTypes.getStringType().addPrimitiveMethod("substring from:to:", (self, args) -> {
       return Value.createStringValue(coreTypes, self.getStringValue().substring((int)args.get(0).getNumberValue(), (int)args.get(1).getNumberValue()));
     }, coreTypes.getStringType(), coreTypes.getNumberType(), coreTypes.getNumberType());
+    coreTypes.getStringType().addPrimitiveMethod("+:", (self, args) -> {
+      if (!coreTypes.getStringType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createStringValue(coreTypes, self.getStringValue() + args.get(0).getStringValue());
+    }, coreTypes.getStringType());
     
     // Create some literals
     coreTypes.nullVal = new Value();

@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.AstNode;
@@ -53,36 +54,34 @@ public class ExpressionEvaluator
     expressionHandlers
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() + right.getNumberValue());
-            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
-              return Value.createStringValue(ctx.coreTypes(), left.getStringValue() + right.getStringValue());
-            else
+            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("+:");
+            if (primitiveMethod == null)
               throw new RunException();
+            return primitiveMethod.call(left, Collections.singletonList(right));
           })
       )
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-                return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() - right.getNumberValue());
-              else
-                throw new RunException();
+            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("-:");
+            if (primitiveMethod == null)
+              throw new RunException();
+            return primitiveMethod.call(left, Collections.singletonList(right));
           })
       )
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() * right.getNumberValue());
-            else
+            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("*:");
+            if (primitiveMethod == null)
               throw new RunException();
+            return primitiveMethod.call(left, Collections.singletonList(right));
           })
       )
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
           createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createNumberValue(ctx.coreTypes(), left.getNumberValue() / right.getNumberValue());
-            else
+            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("/:");
+            if (primitiveMethod == null)
               throw new RunException();
+            return primitiveMethod.call(left, Collections.singletonList(right));
           })
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 

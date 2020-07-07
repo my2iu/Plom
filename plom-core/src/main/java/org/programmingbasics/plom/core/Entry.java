@@ -57,6 +57,8 @@ TODO:
 - keyboard entry
 - variable declaration with assignment 
 - adding a newline in the middle of a function call
+- inheritance on types and method calls with an inherited method
+- move all operators to be methods
  */
 
 public class Entry implements EntryPoint

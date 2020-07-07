@@ -13,6 +13,6 @@ public interface PrimitiveFunction
   
   public static interface PrimitiveMethod
   {
-    public Value call(Value self, List<Value> args);
+    public Value call(Value self, List<Value> args) throws RunException;
   }
 }
