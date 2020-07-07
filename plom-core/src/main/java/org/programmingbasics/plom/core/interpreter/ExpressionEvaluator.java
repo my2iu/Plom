@@ -19,6 +19,16 @@ public class ExpressionEvaluator
   {
     public Value apply(MachineContext ctx, Value left, Value right) throws RunException;
   }
+  
+  private static BinaryOperatorHandler createBinaryOperatorToMethodCall(String methodName)
+  {
+    return (ctx, left, right) -> {
+      PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod(methodName);
+      if (primitiveMethod == null)
+        throw new RunException();
+      return primitiveMethod.call(left, Collections.singletonList(right));
+    };
+  }
 
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for easily making handlers for that situation 
@@ -53,36 +63,16 @@ public class ExpressionEvaluator
   static {
     expressionHandlers
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("+:");
-            if (primitiveMethod == null)
-              throw new RunException();
-            return primitiveMethod.call(left, Collections.singletonList(right));
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("+:"))
       )
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("-:");
-            if (primitiveMethod == null)
-              throw new RunException();
-            return primitiveMethod.call(left, Collections.singletonList(right));
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("-:"))
       )
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("*:");
-            if (primitiveMethod == null)
-              throw new RunException();
-            return primitiveMethod.call(left, Collections.singletonList(right));
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("*:"))
       )
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod("/:");
-            if (primitiveMethod == null)
-              throw new RunException();
-            return primitiveMethod.call(left, Collections.singletonList(right));
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("/:"))
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore((ctx, left, right) -> {
@@ -113,32 +103,16 @@ public class ExpressionEvaluator
           })
       )
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() > right.getNumberValue());
-            throw new RunException();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall(">:"))
       )
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() >= right.getNumberValue());
-            throw new RunException();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall(">=:"))
       )
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() < right.getNumberValue());
-            throw new RunException();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("<:"))
       )
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() <= right.getNumberValue());
-            throw new RunException();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("<=:"))
       )
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, 
           (machine, node, idx) -> {

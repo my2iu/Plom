@@ -46,22 +46,42 @@ public class StandardLibrary
       if (!coreTypes.getNumberType().equals(args.get(0).type))
         throw new RunException();
       return Value.createNumberValue(coreTypes, self.getNumberValue() + args.get(0).getNumberValue());
-    }, coreTypes.getNumberType());
+    }, coreTypes.getNumberType(), coreTypes.getNumberType());
     coreTypes.getNumberType().addPrimitiveMethod("-:", (self, args) -> {
       if (!coreTypes.getNumberType().equals(args.get(0).type))
         throw new RunException();
       return Value.createNumberValue(coreTypes, self.getNumberValue() - args.get(0).getNumberValue());
-    }, coreTypes.getNumberType());
+    }, coreTypes.getNumberType(), coreTypes.getNumberType());
     coreTypes.getNumberType().addPrimitiveMethod("*:", (self, args) -> {
       if (!coreTypes.getNumberType().equals(args.get(0).type))
         throw new RunException();
       return Value.createNumberValue(coreTypes, self.getNumberValue() * args.get(0).getNumberValue());
-    }, coreTypes.getNumberType());
+    }, coreTypes.getNumberType(), coreTypes.getNumberType());
     coreTypes.getNumberType().addPrimitiveMethod("/:", (self, args) -> {
       if (!coreTypes.getNumberType().equals(args.get(0).type))
         throw new RunException();
       return Value.createNumberValue(coreTypes, self.getNumberValue() / args.get(0).getNumberValue());
-    }, coreTypes.getNumberType());
+    }, coreTypes.getNumberType(), coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod(">:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createBooleanValue(coreTypes, self.getNumberValue() > args.get(0).getNumberValue());
+    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod(">=:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createBooleanValue(coreTypes, self.getNumberValue() >= args.get(0).getNumberValue());
+    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("<:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createBooleanValue(coreTypes, self.getNumberValue() < args.get(0).getNumberValue());
+    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("<=:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        throw new RunException();
+      return Value.createBooleanValue(coreTypes, self.getNumberValue() <= args.get(0).getNumberValue());
+    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
     
     // Add some string methods
     coreTypes.getStringType().addPrimitiveMethod("to string", (self, args) -> {
@@ -74,7 +94,7 @@ public class StandardLibrary
       if (!coreTypes.getStringType().equals(args.get(0).type))
         throw new RunException();
       return Value.createStringValue(coreTypes, self.getStringValue() + args.get(0).getStringValue());
-    }, coreTypes.getStringType());
+    }, coreTypes.getStringType(), coreTypes.getStringType());
     
     // Create some literals
     coreTypes.nullVal = new Value();
