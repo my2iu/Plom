@@ -15,16 +15,23 @@ public class StandardLibrary
   {
     // Create the initial core types
     coreTypes.objectType = new Type("object");
-    coreTypes.booleanType = new Type("boolean");
-    coreTypes.nullType = new Type("null");
-    coreTypes.numberType = new Type("number");
-    coreTypes.stringType = new Type("string");
+    coreTypes.booleanType = new Type("boolean", coreTypes.objectType);
+    coreTypes.nullType = new Type("null", coreTypes.objectType);
+    coreTypes.numberType = new Type("number", coreTypes.objectType);
+    coreTypes.stringType = new Type("string", coreTypes.objectType);
     coreTypes.voidType = new Type("void");
     
     // Add some object methods
     coreTypes.getObjectType().addPrimitiveMethod("to string", (self, args) -> {
       return Value.createStringValue(coreTypes, self.type.name);
     }, coreTypes.getStringType());
+    coreTypes.getObjectType().addPrimitiveMethod("=:", (self, args) -> {
+      return Value.createBooleanValue(coreTypes, self.val == args.get(0).val);
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
+    coreTypes.getObjectType().addPrimitiveMethod("!=:", (self, args) -> {
+      return Value.createBooleanValue(coreTypes,
+          !self.type.lookupPrimitiveMethod("=:").call(self, args).getBooleanValue());
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
     
     // Add some number methods
     coreTypes.getNumberType().addPrimitiveMethod("abs", (self, args) -> {
@@ -82,6 +89,11 @@ public class StandardLibrary
         throw new RunException();
       return Value.createBooleanValue(coreTypes, self.getNumberValue() <= args.get(0).getNumberValue());
     }, coreTypes.getBooleanType(), coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("=:", (self, args) -> {
+      if (!coreTypes.getNumberType().equals(args.get(0).type))
+        return Value.createBooleanValue(coreTypes, false);
+      return Value.createBooleanValue(coreTypes, self.getNumberValue() == args.get(0).getNumberValue());
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
     
     // Add some string methods
     coreTypes.getStringType().addPrimitiveMethod("to string", (self, args) -> {
@@ -95,7 +107,26 @@ public class StandardLibrary
         throw new RunException();
       return Value.createStringValue(coreTypes, self.getStringValue() + args.get(0).getStringValue());
     }, coreTypes.getStringType(), coreTypes.getStringType());
-    
+    coreTypes.getStringType().addPrimitiveMethod("=:", (self, args) -> {
+      if (!coreTypes.getStringType().equals(args.get(0).type))
+        return Value.createBooleanValue(coreTypes, false);
+      return Value.createBooleanValue(coreTypes, self.getStringValue().equals(args.get(0).getStringValue()));
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
+
+    // Add some boolean methods
+    coreTypes.getBooleanType().addPrimitiveMethod("=:", (self, args) -> {
+      if (!coreTypes.getBooleanType().equals(args.get(0).type))
+        return Value.createBooleanValue(coreTypes, false);
+      return Value.createBooleanValue(coreTypes, self.getBooleanValue() == args.get(0).getBooleanValue());
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
+
+    // Add some Null methods
+    coreTypes.getNullType().addPrimitiveMethod("=:", (self, args) -> {
+      if (!coreTypes.getNullType().equals(args.get(0).type))
+        return Value.createBooleanValue(coreTypes, false);
+      return Value.createBooleanValue(coreTypes, true);
+    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
+
     // Create some literals
     coreTypes.nullVal = new Value();
     coreTypes.trueVal = new Value();
@@ -116,7 +147,7 @@ public class StandardLibrary
     Value printFun = new Value();
     if (interpreter != null)
     {
-      printFun.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
+      printFun.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getObjectType());
       printFun.val = new PrimitiveFunction.PrimitiveBlockingFunction() {
         @Override
         public void call(PrimitiveBlockingFunctionReturn blockWait, List<Value> args)

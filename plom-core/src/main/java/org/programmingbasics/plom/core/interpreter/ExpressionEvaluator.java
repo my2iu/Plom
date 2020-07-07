@@ -75,32 +75,10 @@ public class ExpressionEvaluator
           createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("/:"))
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() == right.getNumberValue());
-            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getStringValue().equals(right.getStringValue()));
-            else if (ctx.coreTypes().getBooleanType().equals(left.type) && ctx.coreTypes().getBooleanType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getBooleanValue() == right.getBooleanValue());
-            else if (ctx.coreTypes().getNullType().equals(left.type) && ctx.coreTypes().getNullType().equals(right.type))
-              return ctx.coreTypes().getTrueValue();
-            else
-              return ctx.coreTypes().getFalseValue();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("=:"))
       )
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore((ctx, left, right) -> {
-            if (ctx.coreTypes().getNumberType().equals(left.type) && ctx.coreTypes().getNumberType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getNumberValue() != right.getNumberValue());
-            else if (ctx.coreTypes().getStringType().equals(left.type) && ctx.coreTypes().getStringType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), !left.getStringValue().equals(right.getStringValue()));
-            else if (ctx.coreTypes().getBooleanType().equals(left.type) && ctx.coreTypes().getBooleanType().equals(right.type))
-              return Value.createBooleanValue(ctx.coreTypes(), left.getBooleanValue() != right.getBooleanValue());
-            else if (ctx.coreTypes().getNullType().equals(left.type) && ctx.coreTypes().getNullType().equals(right.type))
-              return ctx.coreTypes().getFalseValue();
-            else
-              return ctx.coreTypes().getTrueValue();
-          })
+          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("!=:"))
       )
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall(">:"))

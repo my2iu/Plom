@@ -62,6 +62,8 @@ TODO:
 - code suggestions for method calls
 - type checking for errors
 - finish type predictions for parentheses
+- functions and methods returning void
+- null and Null type
  */
 
 public class Entry implements EntryPoint

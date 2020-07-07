@@ -32,9 +32,15 @@ public class Type
   {
     this.name = name;
   }
+  public Type(String name, Type parent)
+  {
+    this.name = name;
+    this.parent = parent;
+  }
+  public Type parent;
   
-  Map<String, PrimitiveFunction.PrimitiveMethod> methods = new HashMap<>();
-  Map<String, Type> methodTypeSigs = new HashMap<>();
+  private Map<String, PrimitiveFunction.PrimitiveMethod> methods = new HashMap<>();
+  private Map<String, Type> methodTypeSigs = new HashMap<>();
   public void addPrimitiveMethod(String name, PrimitiveFunction.PrimitiveMethod fn, Type returnType, Type...args)
   {
     methods.put(name, fn);
@@ -42,7 +48,10 @@ public class Type
   }
   public PrimitiveFunction.PrimitiveMethod lookupPrimitiveMethod(String name)
   {
-    return methods.get(name);
+    PrimitiveFunction.PrimitiveMethod m = null;
+    for (Type type = this; m == null && type != null; type = type.parent)
+      m = type.methods.get(name);
+    return m;
   }
   
   static Type makeFunctionType(Type returnType, Type...args)
