@@ -24,6 +24,15 @@ public class StandardLibrary
     coreTypes.getNumberType().addPrimitiveMethod("abs", (self, args) -> {
       return Value.createNumberValue(coreTypes, Math.abs(self.getNumberValue()));
     }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("floor", (self, args) -> {
+      return Value.createNumberValue(coreTypes, Math.floor(self.getNumberValue()));
+    }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("ceiling", (self, args) -> {
+      return Value.createNumberValue(coreTypes, Math.ceil(self.getNumberValue()));
+    }, coreTypes.getNumberType());
+    coreTypes.getNumberType().addPrimitiveMethod("round", (self, args) -> {
+      return Value.createNumberValue(coreTypes, Math.round(self.getNumberValue()));
+    }, coreTypes.getNumberType());
     
     // Create some literals
     coreTypes.nullVal = new Value();

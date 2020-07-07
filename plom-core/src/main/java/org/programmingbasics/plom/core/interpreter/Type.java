@@ -40,6 +40,10 @@ public class Type
     methods.put(name, fn);
     methodTypeSigs.put(name, makePrimitiveMethodType(returnType, args));
   }
+  public PrimitiveFunction.PrimitiveMethod lookupPrimitiveMethod(String name)
+  {
+    return methods.get(name);
+  }
   
   static Type makeFunctionType(Type returnType, Type...args)
   {

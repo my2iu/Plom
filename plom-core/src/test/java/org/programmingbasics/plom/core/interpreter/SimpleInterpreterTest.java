@@ -371,6 +371,7 @@ public class SimpleInterpreterTest extends TestCase
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":=", Symbol.Assignment),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".abs", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".abs", Symbol.DotVariable)
             ));
     new SimpleInterpreter(code).runCode(ctx);

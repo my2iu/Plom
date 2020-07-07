@@ -263,26 +263,17 @@ public class ExpressionEvaluator
             }
             else if (idx == methodNode.internalChildren.size())
             {
-              Value self = machine.readValue(methodNode.internalChildren.size()); 
-              Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)methodNode.token).getLookupName());
-              if (toReturn.type.isMethod())
+              Value self = machine.readValue(methodNode.internalChildren.size());
+              PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+              if (primitiveMethod == null)
+                throw new RunException();
+              List<Value> args = new ArrayList<>();
+              for (int n = 0; n < methodNode.internalChildren.size(); n++)
               {
-                List<Value> args = new ArrayList<>();
-                for (int n = 0; n < methodNode.internalChildren.size(); n++)
-                {
-                  args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
-                }
-                machine.popValues(methodNode.internalChildren.size() + 1);
-                if (toReturn.type.isPrimitiveMethod())
-                {
-                  toReturn = ((PrimitiveFunction.PrimitiveMethod)toReturn.val).call(self, args);
-                  machine.pushValue(toReturn);
-                  machine.ip.pop();
-                  return;
-                }
-                else 
-                  throw new RunException();
+                args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
               }
+              machine.popValues(methodNode.internalChildren.size() + 1);
+              Value toReturn = primitiveMethod.call(self, args);
               machine.pushValue(toReturn);
               machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
             }
