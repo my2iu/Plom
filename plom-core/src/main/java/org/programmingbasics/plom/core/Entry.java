@@ -18,6 +18,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
@@ -64,6 +65,7 @@ TODO:
 - finish type predictions for parentheses
 - functions and methods returning void
 - null and Null type
+- correctly trace types based on return types of methods
  */
 
 public class Entry implements EntryPoint
@@ -268,6 +270,14 @@ public class Entry implements EntryPoint
       else if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
       {
         showSimpleEntryForToken(newToken, false, null);
+      }
+      else if (parentSymbols.contains(Symbol.DotMember))
+      {
+        CodeCompletionContext suggestionContext = new CodeCompletionContext();
+        StandardLibrary.createGlobals(null, suggestionContext.currentScope(), suggestionContext.coreTypes());
+        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
+        MemberSuggester suggester = new MemberSuggester(suggestionContext);
+        showSimpleEntryForToken(newToken, false, suggester);
       }
       else
       {

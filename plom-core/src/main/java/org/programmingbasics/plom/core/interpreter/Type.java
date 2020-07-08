@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Type
@@ -52,6 +53,11 @@ public class Type
     for (Type type = this; m == null && type != null; type = type.parent)
       m = type.methods.get(name);
     return m;
+  }
+  public void lookupMemberSuggestions(String val, List<String> suggestions)
+  {
+    for (String memberName: methodTypeSigs.keySet())
+      suggestions.add(memberName);
   }
   
   static Type makeFunctionType(Type returnType, Type...args)

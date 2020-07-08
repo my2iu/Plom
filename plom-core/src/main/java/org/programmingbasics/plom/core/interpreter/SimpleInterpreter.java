@@ -1,21 +1,11 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.List;
-
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.AstNode.VisitorTriggers;
 import org.programmingbasics.plom.core.ast.gen.Rule;
-import org.programmingbasics.plom.core.interpreter.MachineContext.PrimitiveBlockingFunctionReturn;
-
-import elemental.client.Browser;
-import elemental.dom.Document;
-import elemental.dom.Element;
-import elemental.html.DivElement;
-import elemental.html.InputElement;
 
 /**
  * In order to work out how the language will work, I need a simple 

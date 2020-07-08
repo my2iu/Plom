@@ -204,7 +204,7 @@ public class ExpressionEvaluator
             machine.pushValue(toReturn);
             machine.ip.pop();
       })
-      .add(Rule.MemberExpressionMore_DotVariable_MemberExpressionMore, 
+      .add(Rule.DotMember_DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             AstNode methodNode = node.children.get(0);
             if (idx < methodNode.internalChildren.size())
@@ -212,7 +212,7 @@ public class ExpressionEvaluator
               machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
               return;
             }
-            else if (idx == methodNode.internalChildren.size())
+            else 
             {
               Value self = machine.readValue(methodNode.internalChildren.size());
               PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
@@ -226,10 +226,6 @@ public class ExpressionEvaluator
               machine.popValues(methodNode.internalChildren.size() + 1);
               Value toReturn = primitiveMethod.call(self, args);
               machine.pushValue(toReturn);
-              machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
-            }
-            else
-            {
               machine.ip.pop();
             }
       });

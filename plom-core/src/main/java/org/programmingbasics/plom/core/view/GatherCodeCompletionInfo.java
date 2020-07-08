@@ -115,7 +115,7 @@ public class GatherCodeCompletionInfo
         return true;
       })
       .add(Rule.DotVariable, (triggers, node, typesToReturn, context) -> {
-        Type t = new Type(((Token.ParameterToken)node.token).getLookupName());
+        Type t = context.lookupType(((Token.ParameterToken)node.token).getLookupName());
         typesToReturn.type = t;
         return true;
       });

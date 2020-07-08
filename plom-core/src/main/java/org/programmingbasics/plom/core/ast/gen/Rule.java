@@ -42,7 +42,7 @@ public class Rule
 	public final static List<Symbol> MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore, Symbol.Divide, Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MemberExpression_ParenthesisExpression_MemberExpressionMore = Arrays.asList(Symbol.MemberExpression, Symbol.ParenthesisExpression, Symbol.MemberExpressionMore);
-	public final static List<Symbol> MemberExpressionMore_DotVariable_MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore, Symbol.DotVariable, Symbol.MemberExpressionMore);
+	public final static List<Symbol> MemberExpressionMore_DotMember_MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore, Symbol.DotMember, Symbol.MemberExpressionMore);
 	public final static List<Symbol> MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore);
 	public final static List<Symbol> ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis = Arrays.asList(Symbol.ParenthesisExpression, Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis);
 	public final static List<Symbol> ParenthesisExpression_ValueExpression = Arrays.asList(Symbol.ParenthesisExpression, Symbol.ValueExpression);
@@ -59,6 +59,7 @@ public class Rule
 	public final static List<Symbol> VarType = Arrays.asList(Symbol.VarType);
 	public final static List<Symbol> DotDeclareIdentifier_DotVariable = Arrays.asList(Symbol.DotDeclareIdentifier, Symbol.DotVariable);
 	public final static List<Symbol> DotType_DotVariable = Arrays.asList(Symbol.DotType, Symbol.DotVariable);
+	public final static List<Symbol> DotMember_DotVariable = Arrays.asList(Symbol.DotMember, Symbol.DotVariable);
 	public final static List<Symbol> VarAssignment_Assignment_Expression = Arrays.asList(Symbol.VarAssignment, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> VarAssignment = Arrays.asList(Symbol.VarAssignment);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);

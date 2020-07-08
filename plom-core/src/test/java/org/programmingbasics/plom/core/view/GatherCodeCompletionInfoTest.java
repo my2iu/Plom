@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -9,6 +11,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 
 import junit.framework.TestCase;
@@ -253,5 +256,36 @@ public class GatherCodeCompletionInfoTest extends TestCase
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 1));
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
     Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
+  }
+  
+  @Test
+  public void testMemberSuggestions()
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".abs", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".to string", Symbol.DotVariable)
+            ));
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 1));
+    List<String> suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 2));
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("substring from:to:"));
+    Assert.assertTrue(suggestions.contains("to string"));
   }
 }

@@ -62,6 +62,7 @@ enum Symbol
   
   DotDeclareIdentifier(false),  // Expands to DotVariable
   DotType(false),               // Expands to DotVariable
+  DotMember(false),             // Expands to DotVariable
   
   DUMMY_COMMENT(true),
   COMPOUND_IF(true),

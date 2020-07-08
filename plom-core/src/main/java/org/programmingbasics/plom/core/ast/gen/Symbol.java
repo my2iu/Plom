@@ -58,6 +58,7 @@ public enum Symbol
 	String,
 	DotDeclareIdentifier,
 	DotType,
+	DotMember,
 	DUMMY_COMMENT,
 	COMPOUND_IF,
 	COMPOUND_ELSE,
