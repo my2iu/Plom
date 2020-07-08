@@ -283,7 +283,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(suggestions.contains("floor"));
     Assert.assertTrue(suggestions.contains("ceiling"));
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 2));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 3));
     suggestions = new MemberSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("substring from:to:"));
     Assert.assertTrue(suggestions.contains("to string"));

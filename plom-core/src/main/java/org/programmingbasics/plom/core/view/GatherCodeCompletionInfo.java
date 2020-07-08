@@ -180,6 +180,21 @@ public class GatherCodeCompletionInfo
         context.setLastTypeUsed(t);
         return true;
       })
+      .add(Rule.DotMember_DotVariable, (triggers, node, context, param) -> {
+        if (context.getLastTypeUsed() != null)
+        {
+          Type self = context.getLastTypeUsed();
+          Type.TypeSignature sig = self.lookupMethodSignature(((Token.ParameterToken)node.children.get(0).token).getLookupName());
+          context.setLastTypeUsed(sig.returnType);
+          context.popType();
+          context.pushType(sig.returnType);
+        }
+        else
+        {
+          context.setLastTypeUsed(null);
+        }
+        return true;
+      })
       .add(Rule.Number, (triggers, node, context, param) -> {
         context.pushType(context.coreTypes().getNumberType());
         context.setLastTypeUsed(context.coreTypes().getNumberType());

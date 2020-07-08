@@ -175,7 +175,7 @@ public class ExpressionEvaluator
               return;
             }
             Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
-            if (toReturn.type.isFunction())
+            if (toReturn.type.isCallable())
             {
               List<Value> args = new ArrayList<>();
               for (int n = 0; n < node.internalChildren.size(); n++)
@@ -313,7 +313,7 @@ public class ExpressionEvaluator
             {
             case 0:
               LValue toReturn = machine.currentScope().lookupLValue(((Token.ParameterToken)node.token).getLookupName());
-              if (toReturn.type.isFunction())
+              if (toReturn.type.isCallable())
               {
                 machine.ip.pushAndAdvanceIdx(node, expressionHandlers);
               }

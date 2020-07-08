@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class Type
   public Type parent;
   
   private Map<String, PrimitiveFunction.PrimitiveMethod> methods = new HashMap<>();
-  private Map<String, Type> methodTypeSigs = new HashMap<>();
+  private Map<String, TypeSignature> methodTypeSigs = new HashMap<>();
   public void addPrimitiveMethod(String name, PrimitiveFunction.PrimitiveMethod fn, Type returnType, Type...args)
   {
     methods.put(name, fn);
@@ -54,36 +55,43 @@ public class Type
       m = type.methods.get(name);
     return m;
   }
+  public TypeSignature lookupMethodSignature(String name)
+  {
+    TypeSignature sig = null;
+    for (Type type = this; sig == null && type != null; type = type.parent)
+      sig = type.methodTypeSigs.get(name);
+    return sig;
+  }
   public void lookupMemberSuggestions(String val, List<String> suggestions)
   {
     for (String memberName: methodTypeSigs.keySet())
-      suggestions.add(memberName);
+    {
+      if (!suggestions.contains(memberName))
+        suggestions.add(memberName);
+    }
   }
   
-  static Type makeFunctionType(Type returnType, Type...args)
+  static TypeSignature makeFunctionType(Type returnType, Type...args)
   {
-    Type t = new Type("Function");
+    TypeSignature t = new TypeSignature("Function", returnType, args);
     return t;
   }
-  static Type makePrimitiveFunctionType(Type returnType, Type...args)
+  static TypeSignature makePrimitiveFunctionType(Type returnType, Type...args)
   {
-    Type t = new Type("PrimitiveFunction");
+    TypeSignature t = new TypeSignature("PrimitiveFunction", returnType, args);
     return t;
   }
-  static Type makePrimitiveBlockingFunctionType(Type returnType, Type...args)
+  static TypeSignature makePrimitiveBlockingFunctionType(Type returnType, Type...args)
   {
-    Type t = new Type("PrimitiveBlockingFunction");
+    TypeSignature t = new TypeSignature("PrimitiveBlockingFunction", returnType, args);
     return t;
   }
-  static Type makePrimitiveMethodType(Type returnType, Type...args)
+  static TypeSignature makePrimitiveMethodType(Type returnType, Type...args)
   {
-    Type t = new Type("PrimitiveMethod");
+    TypeSignature t = new TypeSignature("PrimitiveMethod", returnType, args);
     return t;
   }
-  public boolean isFunction()
-  {
-    return "Function".equals(name) || "PrimitiveFunction".equals(name) || "PrimitiveBlockingFunction".equals(name);
-  }
+  public boolean isCallable() { return false; }
   public boolean isPrimitiveNonBlockingFunction()
   {
     return "PrimitiveFunction".equals(name);
@@ -99,5 +107,18 @@ public class Type
   public boolean isPrimitiveMethod()
   {
     return "PrimitiveMethod".equals(name);
+  }
+  
+  public static class TypeSignature extends Type
+  {
+    public Type returnType;
+    public List<Type> args;
+    public TypeSignature(String name, Type returnType, Type...args)
+    {
+      super(name);
+      this.returnType = returnType;
+      this.args = Arrays.asList(args);
+    }
+    public boolean isCallable() { return true; }
   }
 }
