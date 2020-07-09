@@ -378,4 +378,28 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(coreTypes.getNumberType(), globalScope.lookup("a").type);
     Assert.assertEquals(3, globalScope.lookup("a").getNumberValue(), 0);
   }
+
+  @Test
+  public void testVarDeclarationWithAssignment() throws ParseException, RunException
+  {
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = coreTypes;
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents(".number", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("1", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("2", Symbol.Number)
+            ));
+    new SimpleInterpreter(code).runCode(ctx);
+    Assert.assertEquals(coreTypes.getNumberType(), ctx.getGlobalScope().lookup("a").type);
+    Assert.assertEquals(3, ctx.getGlobalScope().lookup("a").getNumberValue(), 0);
+  }
+
 }

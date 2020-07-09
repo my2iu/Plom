@@ -99,7 +99,11 @@ public class ParseToAst
     if (base.isTerminal())
     {
       if (sym != base)
+      {
+        if (!errorOnPrematureEnd)
+          return null;
         throwExceptionForNextToken();
+      }
       AstNode node = AstNode.fromToken(readNextToken());
       if (node.token instanceof Token.ParameterToken)
         parseParameterToken(node, (Token.ParameterToken)node.token);

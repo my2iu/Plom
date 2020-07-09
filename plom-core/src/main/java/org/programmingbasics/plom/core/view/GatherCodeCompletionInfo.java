@@ -1,15 +1,14 @@
 package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;

@@ -203,6 +203,74 @@ public class GatherCodeCompletionInfoTest extends TestCase
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 5));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
   }
+  
+  @Test
+  public void testLastTypeInCall()
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("\"hello\"", Symbol.String),
+            Token.ParameterToken.fromContents(".substring from:to:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("2", Symbol.Number)),
+                new TokenContainer(
+                    new Token.SimpleToken("3", Symbol.Number)))));
+
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 1));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+  }
+  
+  @Test
+  public void testLastTypeWithParenthesis()
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("(", Symbol.OpenParenthesis),
+            new Token.SimpleToken("5", Symbol.Number),
+            new Token.SimpleToken("<", Symbol.Lt),
+            new Token.SimpleToken("5", Symbol.Number),
+            new Token.SimpleToken(")", Symbol.ClosedParenthesis),
+            Token.ParameterToken.fromContents(".to string", Symbol.DotVariable)));
+
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 3));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 4));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 5));
+    Assert.assertEquals(context.coreTypes().getBooleanType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 6));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+  }
 
   @Test
   public void testVariablesInBlocks()
