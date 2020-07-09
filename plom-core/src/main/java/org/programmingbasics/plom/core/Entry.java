@@ -55,10 +55,8 @@ TODO:
 - nesting of blocks for functions
 - keyboard movement
 - keyboard entry
-- variable declaration with assignment 
 - adding a newline in the middle of a function call
 - type checking for errors
-- finish type predictions for parentheses
 - functions and methods returning void
 - null and Null type
  */

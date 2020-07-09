@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
@@ -146,9 +147,26 @@ public class GatherCodeCompletionInfo
     context.clearLastTypeUsed();
     return true;
   };
-  static interface BinaryTypeHandler
-  {
-    public Type apply(Type left, Type right);
+//  static interface BinaryTypeHandler
+//  {
+//    public Type apply(Type left, Type right);
+//  }
+  static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> createBinaryTypeToMethodHandler(String methodName) {
+    return (triggers, node, context, param) -> {
+      if (node.children.get(0) == null)
+        return true;
+      node.children.get(0).recursiveVisit(triggers, context, param);
+      if (node.children.get(1) == null)
+        return true;
+      node.children.get(1).recursiveVisit(triggers, context, param);
+      Type left = context.popType();
+      Type right = context.popType();
+      Type.TypeSignature sig = left.lookupMethodSignature(methodName);
+      context.pushType(sig.returnType);
+      if (node.children.get(2) != null)
+        node.children.get(2).recursiveVisit(triggers, context, param);
+      return true;
+    }; 
   }
 //  static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> createBinaryTypeHandler(BinaryTypeHandler handler) {
 //    return (triggers, node, context, param) -> {
@@ -204,6 +222,16 @@ public class GatherCodeCompletionInfo
         context.setLastTypeUsed(context.coreTypes().getStringType());
         return true;
       })
+      .add(Rule.TrueLiteral, (triggers, node, context, param) -> {
+        context.pushType(context.coreTypes().getBooleanType());
+        context.setLastTypeUsed(context.coreTypes().getBooleanType());
+        return true;
+      })
+      .add(Rule.FalseLiteral, (triggers, node, context, param) -> {
+        context.pushType(context.coreTypes().getBooleanType());
+        context.setLastTypeUsed(context.coreTypes().getBooleanType());
+        return true;
+      })
       .add(Rule.Assignment, clearLastUsedType)
       .add(Rule.Plus, clearLastUsedType)
       .add(Rule.Minus, clearLastUsedType)
@@ -217,46 +245,105 @@ public class GatherCodeCompletionInfo
       .add(Rule.Le, clearLastUsedType)
       .add(Rule.And, clearLastUsedType)
       .add(Rule.Or, clearLastUsedType)
-//      .add(Rule.AssignmentExpressionMore_Assignment_Expression, 
-//          createBinaryTypeHandler((left, right) -> {
-//            return right;
-//          })
-//      )
-//      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
-//          createBinaryTypeHandler((left, right) -> {
-//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
-//              return Type.NUMBER;
-//            else if (Type.STRING.equals(left) && Type.STRING.equals(right))
-//              return Type.STRING;
-//            else
-//              return Type.VOID;
-//          })
-//      )
-//      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
-//          createBinaryTypeHandler((left, right) -> {
-//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
-//              return Type.NUMBER;
-//            else
-//              return Type.VOID;
-//          })
-//      )
-//      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
-//          createBinaryTypeHandler((left, right) -> {
-//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
-//              return Type.NUMBER;
-//            else
-//              return Type.VOID;
-//          })
-//      )
-//      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
-//          createBinaryTypeHandler((left, right) -> {
-//            if (Type.NUMBER.equals(left) && Type.NUMBER.equals(right))
-//              return Type.NUMBER;
-//            else
-//              return Type.VOID;
-//          })
-//      )
-
+      
+      .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
+          createBinaryTypeToMethodHandler("+:")
+      )
+      .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
+          createBinaryTypeToMethodHandler("-:")
+      )
+      .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
+          createBinaryTypeToMethodHandler("*:")
+      )
+      .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
+          createBinaryTypeToMethodHandler("/:")
+      )
+      .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler("=:")
+      )
+      .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler("!=:")
+      )
+      .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler(">:")
+      )
+      .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler(">=:")
+      )
+      .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler("<:")
+      )
+      .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
+          createBinaryTypeToMethodHandler("<=:")
+      )
+      .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore,
+          (triggers, node, context, param) -> {
+            if (node.children.get(0) != null)
+            {
+              node.children.get(0).recursiveVisit(triggers, context, param);
+              if (node.children.get(1) != null)
+              {
+                node.children.get(1).recursiveVisit(triggers, context, param);
+                Type left = context.popType();
+                Type right = context.popType();
+                if (context.coreTypes().getBooleanType().equals(left)
+                    && context.coreTypes().getBooleanType().equals(right))
+                  context.pushType(context.coreTypes().getBooleanType());
+                else
+                  context.pushType(context.coreTypes().getVoidType());
+                if (node.children.get(2) != null)
+                {
+                  node.children.get(2).recursiveVisit(triggers, context, param);
+                }              
+              }              
+            }
+            return true;
+          }
+      )
+      .add(Rule.AndExpressionMore_And_RelationalExpression_AndExpressionMore,
+          (triggers, node, context, param) -> {
+            if (node.children.get(0) != null)
+            {
+              node.children.get(0).recursiveVisit(triggers, context, param);
+              if (node.children.get(1) != null)
+              {
+                node.children.get(1).recursiveVisit(triggers, context, param);
+                Type left = context.popType();
+                Type right = context.popType();
+                if (context.coreTypes().getBooleanType().equals(left)
+                    && context.coreTypes().getBooleanType().equals(right))
+                  context.pushType(context.coreTypes().getBooleanType());
+                else
+                  context.pushType(context.coreTypes().getVoidType());
+                if (node.children.get(2) != null)
+                {
+                  node.children.get(2).recursiveVisit(triggers, context, param);
+                }              
+              }              
+            }
+            return true;
+          }
+      )
+      .add(Rule.ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis, 
+          (triggers, node, context, param) -> {
+            if (node.children.get(0) != null)
+            {
+              node.children.get(0).recursiveVisit(triggers, context, param);
+              if (node.children.get(1) != null)
+              {
+                node.children.get(1).recursiveVisit(triggers, context, param);
+                if (node.children.get(2) != null)
+                {
+                  node.children.get(2).recursiveVisit(triggers, context, param);
+                  Type t = context.popType();
+                  context.setLastTypeUsed(t);
+                  context.pushType(t);
+                }              
+              }              
+            }
+            return true;
+          }
+      )
       ;
   }
 

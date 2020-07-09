@@ -65,6 +65,7 @@ public class SimpleInterpreter
                 machine.ip.advanceIdx();
               break;
             case 1:
+              {
               // Now create the variable
               if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
                 throw new RunException();
@@ -81,6 +82,7 @@ public class SimpleInterpreter
               machine.currentScope().addVariable(name, type, val);
               machine.ip.pop();
               break;
+              }
             }
           })
       .add(Rule.Statement_AssignmentExpression,
