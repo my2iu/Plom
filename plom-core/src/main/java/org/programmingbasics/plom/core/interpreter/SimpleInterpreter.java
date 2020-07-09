@@ -55,18 +55,33 @@ public class SimpleInterpreter
       })
       .add(Rule.VarStatement_Var_DotDeclareIdentifier_VarType_VarAssignment, 
           (MachineContext machine, AstNode node, int idx) -> {
-            if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
-              throw new RunException();
-            String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, machine);
-            Type type = typeInfo.type;
-            if (type == null) type = machine.coreTypes().getVoidType();
-            Value val = machine.coreTypes.getNullValue();
-            if (!node.children.get(3).matchesRule(Rule.VarAssignment))
-              throw new RunException("Not implemented yet");
-            machine.currentScope().addVariable(name, type, val);
-            machine.ip.pop();
+            switch (idx)
+            {
+            case 0:
+              // If a value is assigned to the new var, then calculate the value
+              if (node.children.get(3).matchesRule(Rule.VarAssignment_Assignment_Expression))
+                machine.ip.pushAndAdvanceIdx(node.children.get(3), ExpressionEvaluator.expressionHandlers);
+              else
+                machine.ip.advanceIdx();
+              break;
+            case 1:
+              // Now create the variable
+              if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
+                throw new RunException();
+              String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
+              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+              node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, machine);
+              Type type = typeInfo.type;
+              if (type == null) type = machine.coreTypes().getVoidType();
+              Value val;
+              if (node.children.get(3).matchesRule(Rule.VarAssignment_Assignment_Expression))
+                val = machine.popValue();
+              else
+                val = machine.coreTypes.getNullValue();
+              machine.currentScope().addVariable(name, type, val);
+              machine.ip.pop();
+              break;
+            }
           })
       .add(Rule.Statement_AssignmentExpression,
           (MachineContext machine, AstNode node, int idx) -> {
