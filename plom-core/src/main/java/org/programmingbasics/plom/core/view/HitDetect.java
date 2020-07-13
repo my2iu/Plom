@@ -1,19 +1,16 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 
-import elemental.dom.Element;
-import elemental.html.ClientRectList;
 import elemental.html.DivElement;
 
 public class HitDetect

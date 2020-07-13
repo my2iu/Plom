@@ -31,10 +31,20 @@ public class CodeRenderer
   static final int PARAMTOK_POS_EXPRS = 1;
   
 //  private static final int EXPRBLOCK_POS_END = 3;
+
+  public static class RenderSupplementalInfo
+  {
+    public ErrorList codeErrors;
+    public CodeNestingCounter nesting;
+  }
   
   public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
   {
-    renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes, codeErrors);
+    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
+    supplement.codeErrors = codeErrors;
+    supplement.nesting = new CodeNestingCounter();
+    supplement.nesting.calculateNestingForStatements(codeList);
+    renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes, supplement);
   }
 
   /** Holds data to be returned about how a token is rendered */
@@ -49,23 +59,32 @@ public class CodeRenderer
   static class TokenRenderer implements Token.TokenVisitor4<Void, TokenRendererReturn, CodePosition, Integer, RenderedHitBox>
   {
     Document doc;
-    ErrorList codeErrors;
-    TokenRenderer(Document doc, ErrorList codeErrors)
+    RenderSupplementalInfo supplement;
+    TokenRenderer(Document doc, RenderSupplementalInfo supplement)
     {
       this.doc = doc;
-      this.codeErrors = codeErrors;
+      this.supplement = supplement;
+    }
+    private void adjustTokenHeightForDepth(Element el, Token token)
+    {
+      int nesting = supplement.nesting.tokenNesting.getOrDefault(token, 1) - 1;
+      if (nesting < 0) nesting = 0;
+      el.getStyle().setProperty("line-height", (1 + nesting * 0.5) + "em");
+      el.getStyle().setPaddingTop((nesting * 0.25) + "em");
+      el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
     }
     @Override
     public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
     {
       DivElement div = doc.createDivElement();
       div.setClassName("token");
+      adjustTokenHeightForDepth(div, token);
       div.setTextContent(token.contents);
       if (hitBox != null)
         hitBox.el = div;
       toReturn.el = div;
       toReturn.beforeInsertionPoint = div;
-      if (codeErrors.containsToken(token))
+      if (supplement.codeErrors.containsToken(token))
         div.getClassList().add("tokenError");
       return null;
     }
@@ -74,6 +93,7 @@ public class CodeRenderer
     {
       Element span = doc.createSpanElement();
       span.setClassName("token");
+      adjustTokenHeightForDepth(span, token);
       RenderedHitBox textHitBoxes = null;
       RenderedHitBox exprHitBoxes = null;
       if (hitBox != null)
@@ -93,7 +113,7 @@ public class CodeRenderer
       {
         SpanElement textSpan = doc.createSpanElement();
         textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n) + "\u00a0");
-        if (codeErrors.containsToken(token))
+        if (supplement.codeErrors.containsToken(token))
           textSpan.getClassList().add("tokenError");
         SpanElement exprSpan = doc.createSpanElement();
         span.appendChild(textSpan);
@@ -108,14 +128,14 @@ public class CodeRenderer
           textHitBoxes.children.add(textHitBox);
         }
         boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
-        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, this, exprHitBox, codeErrors);
+        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, this, exprHitBox, supplement);
       }
       // Handle any postfix for the token
       SpanElement endSpan = doc.createSpanElement();
       if (token.postfix != null && !token.postfix.isEmpty())
       {
         endSpan.setTextContent(token.postfix);
-        if (codeErrors.containsToken(token))
+        if (supplement.codeErrors.containsToken(token))
           endSpan.getClassList().add("tokenError");
       }
       else
@@ -179,7 +199,7 @@ public class CodeRenderer
       DivElement startLine = doc.createDivElement();
       SpanElement start = doc.createSpanElement();
       startLine.appendChild(start);
-      if (codeErrors.containsToken(token))
+      if (supplement.codeErrors.containsToken(token))
         start.getClassList().add("tokenError");
       if (hitBox != null)
         startTokenHitBox.el = start;
@@ -188,7 +208,7 @@ public class CodeRenderer
         start.setTextContent(tokenText + " (");
         SpanElement expression = doc.createSpanElement();
         RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox, codeErrors);
+        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox, supplement);
         SpanElement middle = doc.createSpanElement();
         if (blockContainer == null)
           middle.setTextContent(")");
@@ -217,7 +237,7 @@ public class CodeRenderer
         DivElement block = doc.createDivElement();
         block.getStyle().setPaddingLeft(1, Unit.EM);
         RenderedHitBox blockHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox, codeErrors);
+        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox, supplement);
         if (hitBox != null)
         {
           blockHitBox.el = block;
@@ -240,11 +260,11 @@ public class CodeRenderer
     }
   }
 
-  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, CodePosition pos, int level, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
+  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, CodePosition pos, int level, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
   {
     Document doc = codeDiv.getOwnerDocument();
 
-    TokenRenderer renderer = new TokenRenderer(doc, codeErrors);
+    TokenRenderer renderer = new TokenRenderer(doc, supplement);
     int lineno = 0;
     for (TokenContainer line: codeList.statements)
     {
@@ -256,7 +276,7 @@ public class CodeRenderer
         lineHitBox.children = new ArrayList<>();
         renderedHitBoxes.children.add(lineHitBox);
       }
-      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, renderer, lineHitBox, codeErrors);
+      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, renderer, lineHitBox, supplement);
 
       codeDiv.appendChild(div);
       lineno++;
@@ -276,7 +296,7 @@ public class CodeRenderer
     }
   }
 
-  static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox, ErrorList codeErrors)
+  static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
   {
     // Check if the line contains some wide tokens
     boolean hasWideTokens = false;

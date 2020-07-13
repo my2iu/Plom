@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.interpreter.Type;
-import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 public class MemberSuggester implements Suggester
 {

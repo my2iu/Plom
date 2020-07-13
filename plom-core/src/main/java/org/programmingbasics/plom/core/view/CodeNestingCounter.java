@@ -1,6 +1,6 @@
 package org.programmingbasics.plom.core.view;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -17,8 +17,8 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
  */
 public class CodeNestingCounter
 {
-  Map<Token, Integer> tokenNesting = new HashMap<>();
-  Map<TokenContainer, Integer> expressionNesting = new HashMap<>();
+  public Map<Token, Integer> tokenNesting = new IdentityHashMap<>();
+  public Map<TokenContainer, Integer> expressionNesting = new IdentityHashMap<>();
   
   void calculateNestingForStatements(StatementContainer code)
   {

@@ -13,7 +13,7 @@ public class CodeNestingCounterTest extends TestCase
 {
   private Token getToken(StatementContainer code, int...pos)
   {
-    return GetToken.inStatements(code, CodePosition.fromOffsets(1, 1), 0);
+    return GetToken.inStatements(code, CodePosition.fromOffsets(pos), 0);
   }
 
   private int getNesting(CodeNestingCounter nestingCounter, StatementContainer code, int ...pos)
@@ -81,6 +81,19 @@ public class CodeNestingCounterTest extends TestCase
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".abs", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".to string", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number),
+            Token.ParameterToken.fromContents(".+:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("2", Symbol.Number),
+                    Token.ParameterToken.fromContents(".+:", Symbol.DotVariable,
+                        new TokenContainer(
+                            new Token.SimpleToken("3", Symbol.Number)
+                            )
+                        )
+                    )
+                )
             ));
 
     CodeNestingCounter nestingCounter = new CodeNestingCounter(); 
@@ -89,7 +102,10 @@ public class CodeNestingCounterTest extends TestCase
     Assert.assertEquals(1, getNesting(nestingCounter, code, 2, 0));
     Assert.assertEquals(1, getNesting(nestingCounter, code, 2, 1));
     Assert.assertEquals(1, getNesting(nestingCounter, code, 2, 2));
-    Assert.assertEquals(1, getNesting(nestingCounter, code, 1, 0));
-    Assert.assertEquals(1, getNesting(nestingCounter, code, 1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
+    Assert.assertEquals(2, getNesting(nestingCounter, code, 0, 1));
+    Assert.assertEquals(1, getNesting(nestingCounter, code, 0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
+    Assert.assertEquals(1, getNesting(nestingCounter, code, 3, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
+    Assert.assertEquals(2, getNesting(nestingCounter, code, 3, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    Assert.assertEquals(3, getNesting(nestingCounter, code, 3, 1));
   }
 }

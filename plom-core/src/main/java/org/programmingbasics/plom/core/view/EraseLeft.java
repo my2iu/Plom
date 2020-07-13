@@ -6,9 +6,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.ParseContext.ParseContextForCursor;
-import org.programmingbasics.plom.core.view.ParseContext.TokenPredictiveParseContext;
 
 public class EraseLeft
 {
