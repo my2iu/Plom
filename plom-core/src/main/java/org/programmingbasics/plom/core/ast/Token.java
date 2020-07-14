@@ -179,6 +179,9 @@ public abstract class Token
        final int prime = 31;
        int result = 1;
        result = prime * result + ((contents == null) ? 0 : contents.hashCode());
+       result = prime * result
+           + ((parameters == null) ? 0 : parameters.hashCode());
+       result = prime * result + ((postfix == null) ? 0 : postfix.hashCode());
        result = prime * result + ((type == null) ? 0 : type.hashCode());
        return result;
      }
@@ -194,6 +197,16 @@ public abstract class Token
          if (other.contents != null) return false;
        }
        else if (!contents.equals(other.contents)) return false;
+       if (parameters == null)
+       {
+         if (other.parameters != null) return false;
+       }
+       else if (!parameters.equals(other.parameters)) return false;
+       if (postfix == null)
+       {
+         if (other.postfix != null) return false;
+       }
+       else if (!postfix.equals(other.postfix)) return false;
        if (type != other.type) return false;
        return true;
      }

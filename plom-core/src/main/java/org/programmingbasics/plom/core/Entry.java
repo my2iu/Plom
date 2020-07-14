@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -24,7 +25,6 @@ import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
-import org.programmingbasics.plom.core.view.ErrorList;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;

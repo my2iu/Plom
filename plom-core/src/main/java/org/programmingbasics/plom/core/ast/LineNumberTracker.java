@@ -15,14 +15,21 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
  */
 public class LineNumberTracker
 {
+  /** Line number at the start of a token */
   public Map<Token, Integer> tokenLine = new IdentityHashMap<>();
-  public Map<TokenContainer, Integer> expressionLine = new IdentityHashMap<>();
+  /** Line number after a token */
+  public Map<TokenContainer, Integer> endContainerLine = new IdentityHashMap<>();
+  /** Line number at the start of a token container */
+  public Map<TokenContainer, Integer> containerLine = new IdentityHashMap<>();
   
-  int calculateLineNumbersForStatements(StatementContainer code, int startLine)
+  public int calculateLineNumbersForStatements(StatementContainer code, int startLine)
   {
     int lineNo = startLine;
+    if (code.statements.isEmpty())
+      return lineNo + 1;
     for (TokenContainer line: code.statements)
     {
+      containerLine.put(line, lineNo);
       lineNo = calculateLineNumbersForLine(line, lineNo) + 1;
     }
     return lineNo;
@@ -31,12 +38,13 @@ public class LineNumberTracker
   int calculateLineNumbersForLine(TokenContainer line, int startLine)
   {
     int lineNo = startLine;
-    expressionLine.put(line, lineNo);
+    containerLine.put(line, lineNo);
     for (Token tok: line.tokens)
     {
       tokenLine.put(tok, lineNo);
       lineNo = tok.visit(new TokenLineNumberAssigner(this), lineNo);
     }
+    endContainerLine.put(line, lineNo);
     return lineNo;
   }
   
@@ -68,13 +76,14 @@ public class LineNumberTracker
       if (exprContainer != null)
         lineTracker.calculateLineNumbersForLine(exprContainer, lineNo);
       if (blockContainer != null)
-        lineNo = lineTracker.calculateLineNumbersForStatements(blockContainer, lineNo + 1);
-      return lineNo;
+        return lineTracker.calculateLineNumbersForStatements(blockContainer, lineNo + 1);
+      else
+        return lineNo + 1;
     }
     
     @Override public Integer visitWideToken(WideToken token, Integer startLine)
     {
-      return visitWideToken(token, startLine);
+      return visitWideToken(token, null, null, startLine);
     }
 
     @Override public Integer visitOneBlockToken(OneBlockToken token, Integer startLine)

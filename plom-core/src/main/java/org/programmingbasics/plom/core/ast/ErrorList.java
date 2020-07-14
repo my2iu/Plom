@@ -1,10 +1,7 @@
-package org.programmingbasics.plom.core.view;
+package org.programmingbasics.plom.core.ast;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.programmingbasics.plom.core.ast.ParseToAst;
-import org.programmingbasics.plom.core.ast.Token;
 
 public class ErrorList
 {

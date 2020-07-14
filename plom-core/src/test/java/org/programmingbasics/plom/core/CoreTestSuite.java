@@ -12,6 +12,7 @@ import org.programmingbasics.plom.core.view.GatherCodeCompletionInfoTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;
 import org.programmingbasics.plom.core.view.InsertTokenTest;
+import org.programmingbasics.plom.core.view.LineForPositionTest;
 import org.programmingbasics.plom.core.view.NextPositionTest;
 import org.programmingbasics.plom.core.view.ParseContextTest;
 
@@ -38,6 +39,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(NextPositionTest.class);
       suite.addTestSuite(GatherCodeCompletionInfoTest.class);
       suite.addTestSuite(CodeNestingCounterTest.class);
+      suite.addTestSuite(LineForPositionTest.class);
       return suite;
    }
 

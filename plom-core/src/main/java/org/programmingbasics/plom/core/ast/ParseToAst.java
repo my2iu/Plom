@@ -6,7 +6,6 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.gen.Parser;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.ErrorList;
 
 public class ParseToAst 
 {
