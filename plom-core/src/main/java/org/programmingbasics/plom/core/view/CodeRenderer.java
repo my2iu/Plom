@@ -70,7 +70,7 @@ public class CodeRenderer
     {
       int nesting = supplement.nesting.tokenNesting.getOrDefault(token, 1) - 1;
       if (nesting < 0) nesting = 0;
-      el.getStyle().setProperty("line-height", (1 + nesting * 0.5) + "em");
+      el.getStyle().setProperty("line-height", (1.3 + nesting * 0.5) + "em");
       el.getStyle().setPaddingTop((nesting * 0.25) + "em");
       el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
     }

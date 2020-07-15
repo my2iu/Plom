@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
+import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -30,6 +31,7 @@ import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.InsertNewLine;
 import org.programmingbasics.plom.core.view.InsertToken;
+import org.programmingbasics.plom.core.view.LineForPosition;
 import org.programmingbasics.plom.core.view.NextPosition;
 import org.programmingbasics.plom.core.view.ParseContext;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
@@ -77,9 +79,7 @@ public class Entry implements EntryPoint
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
     
-    updateErrorList();
-    codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+    updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
     hookCodeClick(codeDiv);
     
@@ -131,6 +131,7 @@ public class Entry implements EntryPoint
   DivElement choicesDiv;
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
+  LineNumberTracker lineNumbers = new LineNumberTracker();
   ErrorList codeErrors = new ErrorList();
 
   // To ensure that predicted buttons end up in a consistent order and
@@ -292,9 +293,7 @@ public class Entry implements EntryPoint
       showPredictedTokenInput(choicesDiv);
       break;
     }
-    updateErrorList();
-    codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+    updateCodeView(true);
   }
 
   void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester)
@@ -356,16 +355,13 @@ public class Entry implements EntryPoint
     // Next button
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-      codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+      updateCodeView(false);
       showPredictedTokenInput(choicesDiv);
     }));
     // Backspace button
     choicesDiv.appendChild(makeButton("\u232B", true, () -> {
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
-      updateErrorList();
-      codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+      updateCodeView(true);
       showPredictedTokenInput(choicesDiv);
     })); 
     // Edit button for certain tokens
@@ -394,9 +390,7 @@ public class Entry implements EntryPoint
       choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
 
-        updateErrorList();
-        codeDiv.setInnerHTML("");
-        renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+        updateCodeView(true);
         showPredictedTokenInput(choicesDiv);
       }));
     }
@@ -466,8 +460,7 @@ public class Entry implements EntryPoint
       if (cursorPos != null)
       {
         cursorPos = newPos;
-        codeDiv.setInnerHTML("");
-        renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+        updateCodeView(false);
         showPredictedTokenInput(choicesDiv);
       }
     }, false);
@@ -486,17 +479,14 @@ public class Entry implements EntryPoint
       ((Token.SimpleToken)token).contents = val;
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-      updateErrorList();
-      codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+      updateCodeView(true);
     }
     else if (token instanceof Token.WideToken && ((Token.WideToken)token).type == Symbol.DUMMY_COMMENT)
     {
       ((Token.WideToken)token).contents = val;
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-      codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+      updateCodeView(true);
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
     {
@@ -505,9 +495,7 @@ public class Entry implements EntryPoint
           Token.ParameterToken.splitVarAtColonsForPostfix(val));
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-      updateErrorList();
-      codeDiv.setInnerHTML("");
-      renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+      updateCodeView(true);
     }
     if (isFinal)
     {
@@ -515,7 +503,6 @@ public class Entry implements EntryPoint
       simpleEntry.setVisible(false);
       showPredictedTokenInput(choicesDiv);
     }
-
   }
   
   void updateErrorList()
@@ -528,6 +515,20 @@ public class Entry implements EntryPoint
     {
       // No errors should be thrown
     }
+  }
+  
+  void updateCodeView(boolean isCodeChanged)
+  {
+    if (isCodeChanged)
+    {
+      updateErrorList();
+      lineNumbers.calculateLineNumbersForStatements(codeList, 1);
+    }
+    int lineNo = LineForPosition.inCode(codeList, cursorPos, lineNumbers);
+    Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+    lineEl.setTextContent("L" + lineNo);
+    codeDiv.setInnerHTML("");
+    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
   }
  
   void hookRun()

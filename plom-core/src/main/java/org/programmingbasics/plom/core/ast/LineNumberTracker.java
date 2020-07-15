@@ -22,6 +22,13 @@ public class LineNumberTracker
   /** Line number at the start of a token container */
   public Map<TokenContainer, Integer> containerLine = new IdentityHashMap<>();
   
+  public void clear()
+  {
+    tokenLine.clear();
+    endContainerLine.clear();
+    containerLine.clear();
+  }
+  
   public int calculateLineNumbersForStatements(StatementContainer code, int startLine)
   {
     int lineNo = startLine;
