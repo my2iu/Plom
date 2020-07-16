@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
@@ -536,6 +537,30 @@ public class Entry implements EntryPoint
     Element runEl = Browser.getDocument().querySelector("a.runbutton");
     runEl.addEventListener(Event.CLICK, (evt) -> {
       SimpleInterpreter terp = new SimpleInterpreter(codeList);
+      terp.setErrorLogger((err) -> {
+        Document doc = Browser.getDocument();
+        Element consoleEl = doc.querySelector(".console");
+        consoleEl.setInnerHTML("");
+        DivElement msg = doc.createDivElement();
+        if (err instanceof ParseException)
+        {
+          ParseException parseErr = (ParseException)err;
+          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
+          if (lineNo == 0)
+            msg.setTextContent("Syntax Error");
+          else
+            msg.setTextContent("Syntax Error (line " + lineNo + ")");
+        }
+        else if (err.getMessage() != null && !err.getMessage().isEmpty())
+        {
+          msg.setTextContent(err.getMessage());
+        }
+        else
+        {
+          msg.setTextContent(err.toString());
+        }
+        consoleEl.appendChild(msg);
+      });
       try {
         terp.runNoReturn();
       } 

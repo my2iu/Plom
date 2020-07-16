@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.function.Consumer;
+
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -24,7 +26,8 @@ public class SimpleInterpreter
   StatementContainer code;
   AstNode parsedCode;
   MachineContext ctx;
-
+  Consumer<Throwable> errorLogger;
+  
   // When parsing type information, we need a structure for stashing
   // that type info in order to return it
   static class GatheredTypeInfo
@@ -195,7 +198,11 @@ public class SimpleInterpreter
           });
   }
 
-  
+  public SimpleInterpreter setErrorLogger(Consumer<Throwable> errorLogger)
+  {
+    this.errorLogger = errorLogger;
+    return this;
+  }
   
   public void runCode(MachineContext ctx) throws ParseException, RunException
   {
@@ -213,18 +220,28 @@ public class SimpleInterpreter
     try {
       ctx.runToCompletion();
     } 
-    catch (RunException e)
+    catch (Throwable e)
     {
-      // Swallow errors for now
+      if (errorLogger != null)
+        errorLogger.accept(e);
     }
   }
 
   public void runNoReturn() throws ParseException, RunException
   {
-    ctx = new MachineContext();
-    StandardLibrary.createGlobals(this, ctx.getGlobalScope(), ctx.coreTypes());
-    ctx.pushNewScope();
-    runCode(ctx);
+    try {
+      ctx = new MachineContext();
+      StandardLibrary.createGlobals(this, ctx.getGlobalScope(), ctx.coreTypes());
+      ctx.pushNewScope();
+      runCode(ctx);
+    }
+    catch (Throwable e)
+    {
+      if (errorLogger != null)
+        errorLogger.accept(e);
+      else
+        throw e;
+    }
   }
 
   public void run() throws ParseException, RunException
