@@ -18,6 +18,7 @@ import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
@@ -550,6 +551,18 @@ public class Entry implements EntryPoint
             msg.setTextContent("Syntax Error");
           else
             msg.setTextContent("Syntax Error (line " + lineNo + ")");
+        }
+        else if (err instanceof RunException)
+        {
+          RunException runErr = (RunException)err;
+          Token errTok = runErr.getErrorTokenSource();
+          int lineNo = 0;
+          if (errTok != null) 
+            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
+          if (lineNo == 0)
+            msg.setTextContent("Run Error");
+          else
+            msg.setTextContent("Run Error (line " + lineNo + ")");
         }
         else if (err.getMessage() != null && !err.getMessage().isEmpty())
         {

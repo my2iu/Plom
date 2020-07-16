@@ -47,6 +47,22 @@ public class AstNode
     node.token = token;
     return node;
   }
+
+  /**
+   * Goes through a node and its children (but not its internal 
+   * children) and tries to find a Token (used for finding a concrete
+   * line number for a parse node)
+   */
+  public Token scanForToken()
+  {
+    if (token != null) return token;
+    for (AstNode node: children)
+    {
+      Token toReturn = node.scanForToken();
+      if (toReturn != null) return toReturn;
+    }
+    return null;
+  }
   
   public boolean matchesRule(List<Symbol> rule)
   {

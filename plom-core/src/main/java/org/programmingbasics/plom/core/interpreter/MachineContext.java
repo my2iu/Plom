@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
@@ -180,6 +181,11 @@ public class MachineContext
     {
       return ip.get(ipHead);
     }
+    public AstNode peekNode(int idx)
+    {
+      if (ipHead - idx < 0) return null;
+      return ip.get(ipHead - idx).node;
+    }
     public boolean hasNext()
     {
       return ipHead >= 0;
@@ -298,18 +304,38 @@ public class MachineContext
    */
   public boolean runToCompletion() throws RunException
   {
-    while (ip.hasNext())
-    {
-      if (blocked != null)
+    try {
+      while (ip.hasNext())
       {
-        if (blocked.checkDone != null)
-          blocked.checkDone.run();
-        if (blocked.isBlocked)
-          return false;
-        testBlockFinished();
+        if (blocked != null)
+        {
+          if (blocked.checkDone != null)
+            blocked.checkDone.run();
+          if (blocked.isBlocked)
+            return false;
+          testBlockFinished();
+        }
+        runNextStep();
       }
-      runNextStep();
+      return true;
+    } 
+    catch (RunException e)
+    {
+      // Augment the exception information with info about where in
+      // the code the error was triggered.
+      int idx = 0;
+      // Walk through the nodes from the top of the stack to the
+      // bottom until we hit one with an associated token
+      for (AstNode node = ip.peekNode(idx); node != null; idx++)
+      {
+        Token errorToken = node.scanForToken();
+        if (errorToken != null)
+        {
+          e.setErrorTokenSource(errorToken);
+          break;
+        }
+      }
+      throw e;
     }
-    return true;
   }
 }
