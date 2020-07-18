@@ -56,13 +56,14 @@ TODO:
 - number constants (change inputmode to numeric)
 - string constants (allow multi-line strings?)
 - valign to middle
-- nesting of blocks for functions
+- use @ for types?
 - keyboard movement
 - keyboard entry
 - adding a newline in the middle of a function call
 - type checking for errors
 - functions and methods returning void
 - null and Null type
+- when first creating a string/number, the cursor position should be shown as being after the token or on the token, not before it 
  */
 
 public class Entry implements EntryPoint

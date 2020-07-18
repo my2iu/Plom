@@ -129,7 +129,7 @@ public class CodeRenderer
           textHitBoxes.children.add(textHitBox);
         }
         boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
-        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, this, exprHitBox, supplement);
+        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, false, this, exprHitBox, supplement);
       }
       // Handle any postfix for the token
       SpanElement endSpan = doc.createSpanElement();
@@ -198,6 +198,7 @@ public class CodeRenderer
 
       // First line with optional expression
       DivElement startLine = doc.createDivElement();
+      startLine.getClassList().add("tokenline");
       SpanElement start = doc.createSpanElement();
       startLine.appendChild(start);
       if (supplement.codeErrors.containsToken(token))
@@ -209,7 +210,7 @@ public class CodeRenderer
         start.setTextContent(tokenText + " (");
         SpanElement expression = doc.createSpanElement();
         RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, this, exprHitBox, supplement);
+        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, false, this, exprHitBox, supplement);
         SpanElement middle = doc.createSpanElement();
         if (blockContainer == null)
           middle.setTextContent(")");
@@ -277,7 +278,7 @@ public class CodeRenderer
         lineHitBox.children = new ArrayList<>();
         renderedHitBoxes.children.add(lineHitBox);
       }
-      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, renderer, lineHitBox, supplement);
+      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, true, renderer, lineHitBox, supplement);
 
       codeDiv.appendChild(div);
       lineno++;
@@ -297,7 +298,7 @@ public class CodeRenderer
     }
   }
 
-  static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
+  static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
   {
     // Check if the line contains some wide tokens
     boolean hasWideTokens = false;
@@ -309,6 +310,10 @@ public class CodeRenderer
         break;
       }
     }
+
+    // Mark the parent container if it only contains non-wide tokens
+    if (!hasWideTokens && isStatement)
+      div.getClassList().add("tokenline");
     
     // Actually render the line
     DivElement subdiv = null;
@@ -328,6 +333,7 @@ public class CodeRenderer
         if (subdiv == null)
         {
           subdiv = doc.createDivElement();
+          subdiv.getClassList().add("tokenline");
           div.appendChild(subdiv);
         }
         subdiv.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
