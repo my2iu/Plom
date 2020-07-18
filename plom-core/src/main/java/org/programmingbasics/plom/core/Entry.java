@@ -354,19 +354,41 @@ public class Entry implements EntryPoint
     }
     Set<Symbol> allowedSymbols = stmtParser.allowedNextSymbols();
 
-    // Buttons for next, backspace, and enter
+    // Butons for backspace and enter should be on the right
+    DivElement floatDiv = Browser.getDocument().createDivElement();
+    floatDiv.getStyle().setProperty("float", "right");
+    floatDiv.getStyle().setProperty("text-align", "right");
+    choicesDiv.appendChild(floatDiv);
+    // Backspace button
+    DivElement floatDivLine = Browser.getDocument().createDivElement();
+    floatDiv.appendChild(floatDivLine);
+    floatDivLine.appendChild(makeButton("\u232B", true, () -> {
+      EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
+      updateCodeView(true);
+      showPredictedTokenInput(choicesDiv);
+    })); 
+    // newline button
+    floatDivLine = Browser.getDocument().createDivElement();
+    floatDiv.appendChild(floatDivLine);
+    if (parseContext.baseContext != Symbol.ExpressionOnly)
+    {
+      floatDivLine.appendChild(makeButton("\u21b5", true, () -> {
+        InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
+
+        updateCodeView(true);
+        showPredictedTokenInput(choicesDiv);
+      }));
+    }
+    else
+      floatDivLine.appendChild(makeButton("\u21b5", false, () -> {  }));
+    
+    // Buttons for next and edit buttons
     // Next button
     choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(false);
       showPredictedTokenInput(choicesDiv);
     }));
-    // Backspace button
-    choicesDiv.appendChild(makeButton("\u232B", true, () -> {
-      EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
-      updateCodeView(true);
-      showPredictedTokenInput(choicesDiv);
-    })); 
     // Edit button for certain tokens
     Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
     boolean showEditButton = false;
@@ -387,16 +409,6 @@ public class Entry implements EntryPoint
     }
     else
       choicesDiv.appendChild(makeButton("\u270e", false, () -> {  }));
-    // newline button
-    if (parseContext.baseContext != Symbol.ExpressionOnly)
-    {
-      choicesDiv.appendChild(makeButton("\u21b5", true, () -> {
-        InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
-
-        updateCodeView(true);
-        showPredictedTokenInput(choicesDiv);
-      }));
-    }
 
     
     // Just some random tokens for initial prototyping
