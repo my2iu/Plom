@@ -89,6 +89,8 @@ public class Entry implements EntryPoint
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
     hookRun();
+    
+    hookSubject();
   }
 
   StatementContainer codeList = new StatementContainer(
@@ -596,5 +598,45 @@ public class Entry implements EntryPoint
       }
       evt.preventDefault();
     }, false);
+  }
+ 
+  /**
+   * Basic UI for changing the class/method/function
+   */
+  void hookSubject()
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element editEl = subjectEl.querySelector(".edit");
+    
+    fillBreadcrumb(breadcrumbEl);
+    
+    editEl.setTextContent("\u270e");
+    editEl.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+    }, false);
+  }
+  
+  void fillBreadcrumb(Element breadcrumbEl)
+  {
+    Document doc = Browser.getDocument();
+    
+    AnchorElement a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent("Program");
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+    }, false);
+    breadcrumbEl.appendChild(a);
+    
+    a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent(".main " + "\u270e");
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+    }, false);
+    breadcrumbEl.appendChild(a);
   }
 }

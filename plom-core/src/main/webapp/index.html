@@ -6,7 +6,7 @@
     <style>
     	div.main {
     		width: calc(100vw - 2em);
-    		height: calc(100vh - 5em);
+    		height: calc(100vh - 7em);
     		background-color: #eee;
     		position: relative;
     	}
@@ -120,12 +120,31 @@
     	}
     	a.runbutton {
     	}
+    	.subject {
+    		display: flex;
+    		min-height: 1.5em; 
+    	}
+    	.subject .breadcrumb {
+    		flex-grow: 1;
+    	}
+    	.subject .breadcrumb .breadcrumb-item{
+    		padding-right: 1em;
+    	}
+    	.subject .edit {
+    		min-width: 1.5em;
+    		background-color: #ddd;
+    		text-align: center;
+    	}
     </style>
   </head>
 
   <body>
   <div class="testbuttons"><a class="runbutton" href="#">Run</a> <span class="lineIndicator"></span></div>
   <div class="console"></div>
+  <div class="subject">
+  	<div class="breadcrumb"></div>
+  	<a href="#" class="edit"></a>
+  </div>
   <div class="main">
   </div>
   </body>
