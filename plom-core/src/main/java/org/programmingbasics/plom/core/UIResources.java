@@ -14,4 +14,7 @@ public interface UIResources extends ClientBundle
    @Source("cursor.html")
    TextResource getCursorHtml();
 
+   @Source("methodpanel.html")
+   TextResource getMethodPanelHtml();
+
 }

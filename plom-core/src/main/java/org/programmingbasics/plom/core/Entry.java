@@ -16,6 +16,7 @@ import com.google.gwt.core.client.EntryPoint;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
@@ -41,17 +42,7 @@ public class Entry implements EntryPoint
   @Override
   public void onModuleLoad()
   {
-    codePanel = new CodePanel((DivElement)Browser.getDocument().querySelector("div.main"));
-    codePanel.setListener((isCodeChanged) -> {
-      if (isCodeChanged)
-      {
-        updateErrorList();
-        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
-      }
-      int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
-      Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
-      lineEl.setTextContent("L" + lineNo);
-    });
+    hookCodePanel();
     codePanel.setCode(new StatementContainer(
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
@@ -103,23 +94,36 @@ public class Entry implements EntryPoint
   CodePanel codePanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
 
-
-  void updateErrorList()
+  void hookCodePanel()
   {
-    codePanel.codeErrors.clear();
-    try {
-      ParseToAst.parseStatementContainer(codePanel.codeList, codePanel.codeErrors);
-    }
-    catch (Exception e)
-    {
-      // No errors should be thrown
-    }
+    codePanel = new CodePanel((DivElement)Browser.getDocument().querySelector("div.main"));
+    codePanel.setListener((isCodeChanged) -> {
+      if (isCodeChanged)
+      {
+        // Update error list
+        codePanel.codeErrors.clear();
+        try {
+          ParseToAst.parseStatementContainer(codePanel.codeList, codePanel.codeErrors);
+        }
+        catch (Exception e)
+        {
+          // No errors should be thrown
+        }
+        // Update line numbers
+        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
+      }
+      int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
+      Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+      lineEl.setTextContent("L" + lineNo);
+    });
   }
  
   void hookRun()
   {
     Element runEl = Browser.getDocument().querySelector("a.runbutton");
     runEl.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      if (codePanel == null) return;
       SimpleInterpreter terp = new SimpleInterpreter(codePanel.codeList);
       terp.setErrorLogger((err) -> {
         Document doc = Browser.getDocument();
@@ -164,7 +168,6 @@ public class Entry implements EntryPoint
       {
         Browser.getWindow().getConsole().log(err);
       }
-      evt.preventDefault();
     }, false);
   }
  
@@ -204,7 +207,29 @@ public class Entry implements EntryPoint
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
+      if (codePanel != null) codePanel.close();
+      codePanel = null;
+      showMethodPanel();
     }, false);
     breadcrumbEl.appendChild(a);
+  }
+  
+  void showMethodPanel()
+  {
+    DivElement mainDiv = (DivElement)Browser.getDocument().querySelector("div.main");
+    mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
+    
+    // Just some rough initial styling for type entry fields
+    NodeList typeEntryNodes = mainDiv.querySelectorAll(".typeEntry");
+    for (int n = 0; n < typeEntryNodes.length(); n++)
+    {
+      typeEntryNodes.item(n).setTextContent("\u00A0");
+    }
+    
+    AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
+    okButton.addEventListener(Event.CLICK, (e) -> {
+      hookCodePanel();
+      e.preventDefault();
+    }, false);
   }
 }

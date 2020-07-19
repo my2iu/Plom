@@ -66,6 +66,11 @@ public class CodePanel
     hookCodeClick(codeDiv);
   }
   
+  public void close()
+  {
+    
+  }
+  
   StatementContainer codeList = new StatementContainer();
   DivElement codeDiv;
   DivElement choicesDiv;
