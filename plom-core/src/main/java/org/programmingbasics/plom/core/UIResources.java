@@ -17,4 +17,6 @@ public interface UIResources extends ClientBundle
    @Source("methodpanel.html")
    TextResource getMethodPanelHtml();
 
+   @Source("globalspanel.html")
+   TextResource getGlobalsPanelHtml();
 }

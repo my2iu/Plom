@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -20,6 +21,7 @@ import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
+import elemental.html.InputElement;
 
 /*
 TODO:
@@ -43,46 +45,7 @@ public class Entry implements EntryPoint
   public void onModuleLoad()
   {
     hookCodePanel();
-    codePanel.setCode(new StatementContainer(
-        new TokenContainer(
-            new Token.SimpleToken("var", Symbol.Var),
-            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
-            ),
-        new TokenContainer(
-            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":=", Symbol.Assignment),
-            Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
-                new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
-            ),
-        new TokenContainer(
-            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
-                new TokenContainer(
-                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                    new Token.SimpleToken("=", Symbol.Eq),
-                    new Token.SimpleToken("\"8\"", Symbol.String)
-                    ),
-                new StatementContainer(
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                            new TokenContainer(
-                                new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
-                                ))
-                        ))
-                ),
-            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
-                new StatementContainer(
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                            new TokenContainer(
-                                new Token.SimpleToken("\"Incorrect\"", Symbol.String)
-                                ))
-                        ))
-                )
-            )
-        )
-    );
+    codePanel.setCode(repository.functions.get("main").code);
     
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
@@ -91,12 +54,15 @@ public class Entry implements EntryPoint
     hookSubject();
   }
   
+  
   CodePanel codePanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
 
+  ModuleCodeRepository repository = new ModuleCodeRepository();
+  
   void hookCodePanel()
   {
-    codePanel = new CodePanel((DivElement)Browser.getDocument().querySelector("div.main"));
+    codePanel = new CodePanel(getMainDiv());
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {
@@ -178,17 +144,17 @@ public class Entry implements EntryPoint
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
-    Element editEl = subjectEl.querySelector(".edit");
+//    Element editEl = subjectEl.querySelector(".edit");
     
-    fillBreadcrumb(breadcrumbEl);
+    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
     
-    editEl.setTextContent("\u270e");
-    editEl.addEventListener(Event.CLICK, (e) -> {
-      e.preventDefault();
-    }, false);
+//    editEl.setTextContent("\u270e");
+//    editEl.addEventListener(Event.CLICK, (e) -> {
+//      e.preventDefault();
+//    }, false);
   }
   
-  void fillBreadcrumb(Element breadcrumbEl)
+  void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionSignature sig)
   {
     Document doc = Browser.getDocument();
     
@@ -198,26 +164,58 @@ public class Entry implements EntryPoint
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
+      if (codePanel != null) codePanel.close();
+      codePanel = null;
+      showGlobalsPanel();
+      // TODO: Adjust breadcrumbs
     }, false);
     breadcrumbEl.appendChild(a);
     
     a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
-    a.setTextContent(".main " + "\u270e");
+    a.setTextContent("." + sig.getLookupName() + " \u270e");
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       if (codePanel != null) codePanel.close();
       codePanel = null;
-      showMethodPanel();
+      showMethodPanel(sig);
     }, false);
     breadcrumbEl.appendChild(a);
   }
   
-  void showMethodPanel()
+  private static DivElement getMainDiv()
   {
-    DivElement mainDiv = (DivElement)Browser.getDocument().querySelector("div.main");
+    return (DivElement)Browser.getDocument().querySelector("div.main");
+  }
+  
+  void showGlobalsPanel()
+  {
+    Document doc = Browser.getDocument();
+    DivElement mainDiv = getMainDiv();
+    mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
+    
+    Element functionListEl = mainDiv.querySelector(".functionList");
+    
+    for (String fnName: repository.functions.keySet())
+    {
+      AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setHref("#");
+      a.setTextContent(fnName);
+      a.addEventListener(Event.CLICK, (e) -> {
+        e.preventDefault();
+      }, false);
+      functionListEl.appendChild(a);
+    }
+  }
+  
+  void showMethodPanel(FunctionSignature sig)
+  {
+    DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
+    
+    // Fill in the function name
+    ((InputElement)mainDiv.querySelectorAll("input").item(0)).setValue(sig.getLookupName());
     
     // Just some rough initial styling for type entry fields
     NodeList typeEntryNodes = mainDiv.querySelectorAll(".typeEntry");
