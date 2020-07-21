@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
@@ -155,7 +156,7 @@ public class Entry implements EntryPoint
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      showMethodPanel(sig);
+      loadFunctionSignatureView(sig);
     }, false);
     breadcrumbEl.appendChild(a);
   }
@@ -170,11 +171,21 @@ public class Entry implements EntryPoint
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
     breadcrumbEl.setInnerHTML("");
-    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
+    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg(fnName));
     
     showCodePanel(repository.functions.get(fnName).code);
   }
 
+  void loadFunctionSignatureView(FunctionSignature sig)
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForFunction(breadcrumbEl, sig);
+    
+    showMethodPanel(sig);
+  }
+  
   void loadGlobalsView()
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
@@ -226,6 +237,26 @@ public class Entry implements EntryPoint
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
     
+    // For adding functions
+    Element newFunctionAnchor = mainDiv.querySelector(".functionsHeading a");
+    newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      String newFunctionName = "function";
+      int newFunctionNumber = 0;
+      while (repository.functions.containsKey(newFunctionName))
+      {
+        newFunctionNumber++;
+        newFunctionName = "function " + newFunctionNumber;
+      }
+      FunctionDescription func = new FunctionDescription(
+          FunctionSignature.noArg(newFunctionName),
+          new StatementContainer());
+      repository.functions.put(func.sig.getLookupName(), func);
+      
+      loadFunctionSignatureView(func.sig);
+    }, false);
+    
+    // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
     
     for (String fnName: repository.functions.keySet())
@@ -237,7 +268,9 @@ public class Entry implements EntryPoint
         e.preventDefault();
         loadFunctionCodeView(fnName);
       }, false);
-      functionListEl.appendChild(a);
+      DivElement div = doc.createDivElement();
+      div.appendChild(a);
+      functionListEl.appendChild(div);
     }
   }
   
@@ -261,7 +294,7 @@ public class Entry implements EntryPoint
     
     AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
-      showCodePanel(repository.functions.get(sig.getLookupName()).code);
+      loadFunctionCodeView(sig.getLookupName());
       e.preventDefault();
     }, false);
   }
