@@ -53,12 +53,12 @@ public class Entry implements EntryPoint
     
     loadFunctionCodeView("main");
   }
-  
+
+  ModuleCodeRepository repository = new ModuleCodeRepository();
   
   CodePanel codePanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
-
-  ModuleCodeRepository repository = new ModuleCodeRepository();
+  String currentFunctionBeingViewed = null;
   
   void hookRun()
   {
@@ -173,7 +173,9 @@ public class Entry implements EntryPoint
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg(fnName));
     
-    showCodePanel(repository.functions.get(fnName).code);
+    closeCodePanelIfOpen();
+    currentFunctionBeingViewed = fnName;
+    showCodePanel(repository.getFunctionDescription(fnName).code);
   }
 
   void loadFunctionSignatureView(FunctionSignature sig)
@@ -183,6 +185,7 @@ public class Entry implements EntryPoint
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForFunction(breadcrumbEl, sig);
     
+    closeCodePanelIfOpen();
     showMethodPanel(sig);
   }
   
@@ -192,14 +195,27 @@ public class Entry implements EntryPoint
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForGlobals(breadcrumbEl);
+    
+    closeCodePanelIfOpen();
     showGlobalsPanel();
   }
   
-  void showCodePanel(StatementContainer code)
+  private void closeCodePanelIfOpen()
   {
-    if (codePanel != null) codePanel.close();
+    if (codePanel != null) 
+    {
+      if (currentFunctionBeingViewed != null)
+      {
+        repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
+      }
+      codePanel.close();
+    }
+    currentFunctionBeingViewed = null;
     codePanel = null;
-    
+  }
+  
+  private void showCodePanel(StatementContainer code)
+  {
     codePanel = new CodePanel(getMainDiv());
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
@@ -228,11 +244,8 @@ public class Entry implements EntryPoint
   }
  
 
-  void showGlobalsPanel()
+  private void showGlobalsPanel()
   {
-    if (codePanel != null) codePanel.close();
-    codePanel = null;
-
     Document doc = Browser.getDocument();
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
@@ -243,7 +256,7 @@ public class Entry implements EntryPoint
       e.preventDefault();
       String newFunctionName = "function";
       int newFunctionNumber = 0;
-      while (repository.functions.containsKey(newFunctionName))
+      while (repository.hasFunctionWithName(newFunctionName))
       {
         newFunctionNumber++;
         newFunctionName = "function " + newFunctionNumber;
@@ -251,7 +264,7 @@ public class Entry implements EntryPoint
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.noArg(newFunctionName),
           new StatementContainer());
-      repository.functions.put(func.sig.getLookupName(), func);
+      repository.addFunction(func);
       
       loadFunctionSignatureView(func.sig);
     }, false);
@@ -259,7 +272,7 @@ public class Entry implements EntryPoint
     // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
     
-    for (String fnName: repository.functions.keySet())
+    for (String fnName: repository.getAllFunctions())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setHref("#");
@@ -274,16 +287,14 @@ public class Entry implements EntryPoint
     }
   }
   
-  void showMethodPanel(FunctionSignature sig)
+  private void showMethodPanel(FunctionSignature sig)
   {
-    if (codePanel != null) codePanel.close();
-    codePanel = null;
-    
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
     
     // Fill in the function name
-    ((InputElement)mainDiv.querySelectorAll("input").item(0)).setValue(sig.getLookupName());
+    InputElement nameInputEl = ((InputElement)mainDiv.querySelectorAll("input").item(0));
+    nameInputEl.setValue(sig.getLookupName());
     
     // Just some rough initial styling for type entry fields
     NodeList typeEntryNodes = mainDiv.querySelectorAll(".typeEntry");
@@ -294,7 +305,11 @@ public class Entry implements EntryPoint
     
     AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
-      loadFunctionCodeView(sig.getLookupName());
+      // TODO: Remove OK button and just have changes automatically be applied
+      // TODO: Check validity of function name
+      FunctionSignature newSig = FunctionSignature.noArg(nameInputEl.getValue()); 
+      repository.changeFunctionSignature(newSig, sig);
+      loadFunctionCodeView(newSig.getLookupName());
       e.preventDefault();
     }, false);
   }

@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class ModuleCodeRepository
     public StatementContainer code;
   }
   
-  public Map<String, FunctionDescription> functions = new HashMap<>(); 
+  private Map<String, FunctionDescription> functions = new HashMap<>(); 
   
   public ModuleCodeRepository()
   {
@@ -96,6 +97,35 @@ public class ModuleCodeRepository
                 )
             )
         );
+    functions.put(func.sig.getLookupName(), func);
+  }
+  
+  public FunctionDescription getFunctionDescription(String name)
+  {
+    return functions.get(name);
+  }
+  
+  public boolean hasFunctionWithName(String name)
+  {
+    return functions.containsKey(name);
+  }
+  
+  public void addFunction(FunctionDescription func)
+  {
+    functions.put(func.sig.getLookupName(), func);
+  }
+  
+  public List<String> getAllFunctions()
+  {
+    List<String> names = new ArrayList<>(functions.keySet());
+    names.sort(Comparator.naturalOrder());
+    return names;
+  }
+  
+  public void changeFunctionSignature(FunctionSignature newSig, FunctionSignature oldSig)
+  {
+    FunctionDescription func = functions.remove(oldSig.getLookupName());
+    func.sig = newSig;
     functions.put(func.sig.getLookupName(), func);
   }
 }
