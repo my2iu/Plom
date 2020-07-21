@@ -44,14 +44,13 @@ public class Entry implements EntryPoint
   @Override
   public void onModuleLoad()
   {
-    hookCodePanel();
-    codePanel.setCode(repository.functions.get("main").code);
-    
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
     hookRun();
     
     hookSubject();
+    
+    loadFunctionCodeView("main");
   }
   
   
@@ -60,30 +59,6 @@ public class Entry implements EntryPoint
 
   ModuleCodeRepository repository = new ModuleCodeRepository();
   
-  void hookCodePanel()
-  {
-    codePanel = new CodePanel(getMainDiv());
-    codePanel.setListener((isCodeChanged) -> {
-      if (isCodeChanged)
-      {
-        // Update error list
-        codePanel.codeErrors.clear();
-        try {
-          ParseToAst.parseStatementContainer(codePanel.codeList, codePanel.codeErrors);
-        }
-        catch (Exception e)
-        {
-          // No errors should be thrown
-        }
-        // Update line numbers
-        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
-      }
-      int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
-      Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
-      lineEl.setTextContent("L" + lineNo);
-    });
-  }
- 
   void hookRun()
   {
     Element runEl = Browser.getDocument().querySelector("a.runbutton");
@@ -146,7 +121,7 @@ public class Entry implements EntryPoint
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
 //    Element editEl = subjectEl.querySelector(".edit");
     
-    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
+//    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
     
 //    editEl.setTextContent("\u270e");
 //    editEl.addEventListener(Event.CLICK, (e) -> {
@@ -154,7 +129,7 @@ public class Entry implements EntryPoint
 //    }, false);
   }
   
-  void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionSignature sig)
+  void fillBreadcrumbForGlobals(Element breadcrumbEl)
   {
     Document doc = Browser.getDocument();
     
@@ -164,21 +139,22 @@ public class Entry implements EntryPoint
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      if (codePanel != null) codePanel.close();
-      codePanel = null;
-      showGlobalsPanel();
-      // TODO: Adjust breadcrumbs
+      loadGlobalsView();
     }, false);
     breadcrumbEl.appendChild(a);
+  }
+  
+  void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionSignature sig)
+  {
+    fillBreadcrumbForGlobals(breadcrumbEl);
+    Document doc = Browser.getDocument();
     
-    a = (AnchorElement)doc.createElement("a");
+    AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
     a.setTextContent("." + sig.getLookupName() + " \u270e");
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      if (codePanel != null) codePanel.close();
-      codePanel = null;
       showMethodPanel(sig);
     }, false);
     breadcrumbEl.appendChild(a);
@@ -189,8 +165,63 @@ public class Entry implements EntryPoint
     return (DivElement)Browser.getDocument().querySelector("div.main");
   }
   
+  void loadFunctionCodeView(String fnName)
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
+    
+    showCodePanel(repository.functions.get(fnName).code);
+  }
+
+  void loadGlobalsView()
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForGlobals(breadcrumbEl);
+    showGlobalsPanel();
+  }
+  
+  void showCodePanel(StatementContainer code)
+  {
+    if (codePanel != null) codePanel.close();
+    codePanel = null;
+    
+    codePanel = new CodePanel(getMainDiv());
+    codePanel.setListener((isCodeChanged) -> {
+      if (isCodeChanged)
+      {
+        // Update error list
+        codePanel.codeErrors.clear();
+        try {
+          ParseToAst.parseStatementContainer(codePanel.codeList, codePanel.codeErrors);
+        }
+        catch (Exception e)
+        {
+          // No errors should be thrown
+        }
+        // Update line numbers
+        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
+      }
+      int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
+      Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+      lineEl.setTextContent("L" + lineNo);
+    });
+    
+    if (code != null)
+      codePanel.setCode(code);
+    else
+      codePanel.setCode(new StatementContainer());
+  }
+ 
+
   void showGlobalsPanel()
   {
+    if (codePanel != null) codePanel.close();
+    codePanel = null;
+
     Document doc = Browser.getDocument();
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
@@ -204,6 +235,7 @@ public class Entry implements EntryPoint
       a.setTextContent(fnName);
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
+        loadFunctionCodeView(fnName);
       }, false);
       functionListEl.appendChild(a);
     }
@@ -211,6 +243,9 @@ public class Entry implements EntryPoint
   
   void showMethodPanel(FunctionSignature sig)
   {
+    if (codePanel != null) codePanel.close();
+    codePanel = null;
+    
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
     
@@ -226,7 +261,7 @@ public class Entry implements EntryPoint
     
     AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
-      hookCodePanel();
+      showCodePanel(repository.functions.get(sig.getLookupName()).code);
       e.preventDefault();
     }, false);
   }
