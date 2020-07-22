@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
@@ -11,6 +14,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -171,7 +175,7 @@ public class Entry implements EntryPoint
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
     breadcrumbEl.setInnerHTML("");
-    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg(fnName));
+    fillBreadcrumbForFunction(breadcrumbEl, repository.getFunctionDescription(fnName).sig);
     
     closeCodePanelIfOpen();
     currentFunctionBeingViewed = fnName;
@@ -291,10 +295,15 @@ public class Entry implements EntryPoint
   {
     DivElement mainDiv = getMainDiv();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
+    List<DivElement> nameEls = new ArrayList<>();
+    List<DivElement> argEls = new ArrayList<>();
     
     // Fill in the function name
-    InputElement nameInputEl = ((InputElement)mainDiv.querySelectorAll("input").item(0));
-    nameInputEl.setValue(sig.getLookupName());
+    nameEls.add((DivElement)mainDiv.querySelector("div.method_name"));
+    ((InputElement)nameEls.get(0).querySelector("input")).setValue(sig.nameParts.get(0));
+
+    for (int n = 0; n < sig.argNames.size(); n++)
+      addMethodPanelArg(mainDiv, sig.nameParts.get(n), sig.argNames.get(n), nameEls, argEls);
     
     // Just some rough initial styling for type entry fields
     NodeList typeEntryNodes = mainDiv.querySelectorAll(".typeEntry");
@@ -303,14 +312,67 @@ public class Entry implements EntryPoint
       typeEntryNodes.item(n).setTextContent("\u00A0");
     }
     
+    // Add argument button
+    mainDiv.querySelector(".method_args_add a").addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      addMethodPanelArg(mainDiv, "", "", nameEls, argEls);
+    }, false);
+    
+    // Ok Button
     AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
       // TODO: Remove OK button and just have changes automatically be applied
       // TODO: Check validity of function name
-      FunctionSignature newSig = FunctionSignature.noArg(nameInputEl.getValue()); 
+      List<String> nameParts = new ArrayList<>();
+      List<String> argNames = new ArrayList<>();
+      List<Type> argTypes = new ArrayList<>();
+      Type returnType = null;
+      for (DivElement div: nameEls)
+        nameParts.add(((InputElement)div.querySelector("input")).getValue());
+      for (DivElement div: argEls)
+        argNames.add(((InputElement)div.querySelector("input")).getValue());
+      FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes); 
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());
       e.preventDefault();
     }, false);
   }
+
+  private void addMethodPanelArg(DivElement mainDiv,
+      String nameVal, String argNameVal, 
+      List<DivElement> nameEls, List<DivElement> argEls)
+  {
+    if (!argEls.isEmpty())
+    {
+      DivElement nameDiv = Browser.getDocument().createDivElement();
+      nameDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_name\"><input size=\"15\" type=\"text\">:</div>");
+      ((InputElement)nameDiv.querySelector("input")).setValue(nameVal);
+      nameEls.add(nameDiv);
+      mainDiv.querySelector(".method_args").appendChild(nameDiv);
+    }
+    DivElement varDiv = Browser.getDocument().createDivElement();
+    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\">-</a></div>.<input size=\"15\" type=\"text\"><div class=\"typeEntry\">&nbsp;</div></div>");
+    ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
+    argEls.add(varDiv);
+    mainDiv.querySelector(".method_args").appendChild(varDiv);
+    // remove arg button
+    varDiv.querySelector(".method_args_var a").addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      int idx = argEls.indexOf(varDiv);
+      if (idx != 0)
+      {
+        DivElement div = nameEls.remove(idx);
+        div.getParentElement().removeChild(div);
+      }
+      else if (nameEls.size() > 1)
+      {
+        DivElement div = nameEls.get(1);
+        nameEls.remove(div);
+        div.getParentElement().removeChild(div);
+      }
+      argEls.remove(varDiv);
+      varDiv.getParentElement().removeChild(varDiv);
+    }, false);
+  }
+  
 }

@@ -37,6 +37,15 @@ public class ModuleCodeRepository
       sig.nameParts.add(name);
       return sig;
     }
+    public static FunctionSignature from(Type returnType, List<String> nameParts, List<String> argNames, List<Type> argTypes)
+    {
+      FunctionSignature sig = new FunctionSignature();
+      sig.returnType = returnType;
+      sig.nameParts = nameParts;
+      sig.argNames = argNames;
+      sig.argTypes = argTypes;
+      return sig;
+    }
   }
   
   public static class FunctionDescription
