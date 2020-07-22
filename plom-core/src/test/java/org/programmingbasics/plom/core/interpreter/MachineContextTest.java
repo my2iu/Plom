@@ -31,7 +31,7 @@ public class MachineContextTest extends TestCase
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     MachineContext machine = new MachineContext();
-    machine.setStart(parsed, new MachineContext.NodeHandlers());
+    machine.pushStackFrame(parsed, new MachineContext.NodeHandlers());
     machine.runToCompletion();
   }
   
@@ -77,8 +77,8 @@ public class MachineContextTest extends TestCase
     AstNode parsed = ParseToAst.parseStatementContainer(code);
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
+    machine.pushStackFrame(parsed, SimpleInterpreter.statementHandlers);
     machine.pushScope(scope);
-    machine.setStart(parsed, SimpleInterpreter.statementHandlers);
     // Machine should block
     Assert.assertFalse(machine.runToCompletion());
     Assert.assertEquals("hello ", fun.captured.val);

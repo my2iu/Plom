@@ -25,9 +25,9 @@ public class ExpressionEvaluatorTest extends TestCase
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
-    machine.pushScope(scope);
     // Start running the code
-    machine.setStart(parsed, ExpressionEvaluator.expressionHandlers);
+    machine.pushStackFrame(parsed, ExpressionEvaluator.expressionHandlers);
+    machine.pushScope(scope);
     machine.runToCompletion();
     // Result of the expression should be on the top of the stack
     Value val = machine.popValue();
@@ -43,9 +43,9 @@ public class ExpressionEvaluatorTest extends TestCase
     // Set up the machine to hold the execution state
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
-    machine.pushScope(scope);
     // Start running the code
-    machine.setStart(parsed, ExpressionEvaluator.assignmentLValueHandlers);
+    machine.pushStackFrame(parsed, ExpressionEvaluator.assignmentLValueHandlers);
+    machine.pushScope(scope);
     machine.runToCompletion();
   }
   

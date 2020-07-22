@@ -7,7 +7,8 @@ import java.util.Map;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 /**
- * Tracks the variables that exist in a certain scope.
+ * Tracks the variables that exist in a certain scope. A scope holds the 
+ * bindings of names to values where variables can be looked up.
  */
 public class VariableScope
 {
@@ -30,7 +31,7 @@ public class VariableScope
     {
       if (parent != null)
         return parent.lookup(name);
-      throw new RunException();
+      throw new RunException("Cannot find value " + name);
     }
     return val;
   }
@@ -41,7 +42,7 @@ public class VariableScope
     {
       if (parent != null)
         return parent.lookupLValue(name);
-      throw new RunException();
+      throw new RunException("Cannot find value " + name);
     }
     return LValue.readFromScope(this, name, val);
   }

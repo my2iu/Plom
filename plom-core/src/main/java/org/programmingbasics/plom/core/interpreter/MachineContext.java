@@ -38,11 +38,6 @@ public class MachineContext
   private VariableScope globalScope = new VariableScope();
   
   /**
-   * Scope where bindings of names to values for variables can be looked up
-   */
-  private VariableScope topScope = globalScope;
-
-  /**
    * Gets the global scope so that new global variables can be added
    */
   public VariableScope getGlobalScope()
@@ -52,20 +47,21 @@ public class MachineContext
   
   /**
    * Gets the current scope used for looking up variables and where
-   * new variables will be added.
+   * new variables will be added. A scope is where bindings of names 
+   * to values for variables can be looked up
    */
   public VariableScope currentScope()
   {
-    return topScope;
+    return topStackFrame.topScope;
   }
   
   /**
    * Pushes a new variable scope level (mainly used for testing)
    */
-  public void pushScope(VariableScope scope)
+  void pushScope(VariableScope scope)
   {
-    scope.setParent(topScope);
-    topScope = scope;
+    scope.setParent(topStackFrame.topScope);
+    topStackFrame.topScope = scope;
   }
   public void pushNewScope()
   {
@@ -74,7 +70,7 @@ public class MachineContext
   }
   public void popScope()
   {
-    topScope = topScope.getParent();
+    topStackFrame.topScope = topStackFrame.topScope.getParent();
   }
   
   /**
@@ -114,9 +110,8 @@ public class MachineContext
    * assert against. This value should later be put into the stack
    * frame.
    */
-  private int lValueStackAssertCheck;
-  public void setLValueAssertCheck(int val) { lValueStackAssertCheck = val; } 
-  public int getLValueAssertCheck() { return lValueStackAssertCheck; } 
+  public void setLValueAssertCheck(int val) { topStackFrame.lValueStackAssertCheck = val; } 
+  public int getLValueAssertCheck() { return topStackFrame.lValueStackAssertCheck; } 
   public int lValueStackSize() { return lvalueStack.size(); }
 
   /**
@@ -192,6 +187,88 @@ public class MachineContext
     }
   }
   public InstructionPointer ip = new InstructionPointer();
+  
+  /**
+   * Handles calls into different functions/methods
+   */
+  static class StackFrame
+  {
+    public StackFrame()
+    {
+      ip = new InstructionPointer();
+      valueStack = new ArrayList<>();
+      lvalueStack = new ArrayList<>();
+    }
+    /**
+     * Holds the instruction pointer of where execution is in the 
+     * current function/method
+     */
+    InstructionPointer ip;
+    
+    /**
+     * Local variables and call parameters available in the function/method
+     */
+    VariableScope topScope;
+    
+    /**
+     * Stack of values where values can be stashed while expressions
+     * are being evaluated.
+     */
+    private List<Value> valueStack;
+
+    /**
+     * For handling some correctness assertions for the assignment
+     * stuff, we have extra variables for storing values we can later
+     * assert against. This value should later be put into the stack
+     * frame.
+     */
+    private int lValueStackAssertCheck;
+
+    /**
+     * When doing an assignment into a variable, we don't want to track
+     * the value of the variable, but its location, so we'll use a separate
+     * data structure and stack for tracking and storing that information.
+     */
+    // TODO: Change LValue stuff to have a Value pool and to overwrite values
+    // instead of passing around references
+    private List<LValue> lvalueStack;
+  }
+  private List<StackFrame> stackFrames = new ArrayList<>();
+  private StackFrame topStackFrame;
+  
+  public void pushStackFrame(AstNode node, NodeHandlers instructionHandlers)
+  {
+    StackFrame frame = new StackFrame();
+    frame.ip.push(node, instructionHandlers);
+    frame.topScope = getGlobalScope();
+    
+    stackFrames.add(frame);
+    topStackFrame = frame;
+    
+    // Move current machine registers and other state to point to the current
+    // stack frame
+    ip = frame.ip;
+    valueStack = frame.valueStack;
+    lvalueStack = frame.lvalueStack;
+    pushNewScope();
+  }
+  
+  public void popStackFrame()
+  {
+    stackFrames.remove(stackFrames.size() - 1);
+    if (!stackFrames.isEmpty()) 
+    {
+      topStackFrame = stackFrames.get(stackFrames.size() - 1);
+      
+      // Move current machine registers and other state to point to the previous
+      // stack frame
+      ip = topStackFrame.ip;
+      valueStack = topStackFrame.valueStack;
+      lvalueStack = topStackFrame.lvalueStack;
+    }
+    else
+      topStackFrame = null;
+  }
   
   /**
    * We occasionally need to call blocking functions, but since JavaScript 
@@ -283,10 +360,10 @@ public class MachineContext
   /**
    * Sets the code that should be run in the machine
    */
-  public void setStart(AstNode node, NodeHandlers instructionHandlers)
-  {
-    ip.push(node, instructionHandlers);
-  }
+//  public void setStart(AstNode node, NodeHandlers instructionHandlers)
+//  {
+//    ip.push(node, instructionHandlers);
+//  }
   
   /**
    * Runs the next instruction or part of an instruction
@@ -298,6 +375,30 @@ public class MachineContext
   }
 
   /**
+   * This is used mainly for testing. It runs until there's no more code
+   * in the current stack frame to execute. If a function explicitly 
+   * returns prematurely, the code will continue execution though
+   * Returns true iff execution has finished (may return false if execution
+   * is blocked and needs to be retried later)
+   */
+  boolean runToEndOfFrame() throws RunException
+  {
+    while (ip.hasNext())
+    {
+      if (blocked != null)
+      {
+        if (blocked.checkDone != null)
+          blocked.checkDone.run();
+        if (blocked.isBlocked)
+          return false;
+        testBlockFinished();
+      }
+      runNextStep();
+    }
+    return true;
+  }
+  
+  /**
    * Keeps running instructions until there are no more instructions to run.
    * Returns true iff execution has finished (may return false if execution
    * is blocked and needs to be retried later)
@@ -305,17 +406,13 @@ public class MachineContext
   public boolean runToCompletion() throws RunException
   {
     try {
-      while (ip.hasNext())
+      while (topStackFrame != null)
       {
-        if (blocked != null)
-        {
-          if (blocked.checkDone != null)
-            blocked.checkDone.run();
-          if (blocked.isBlocked)
-            return false;
-          testBlockFinished();
-        }
-        runNextStep();
+        if (!runToEndOfFrame())
+          return false;
+        
+        // Finished executing the current stack frame, so exit it
+        popStackFrame();
       }
       return true;
     } 

@@ -14,6 +14,25 @@ import junit.framework.TestCase;
 
 public class SimpleInterpreterTest extends TestCase
 {
+  static class GlobalsSaver implements ConfigureGlobalScope
+  {
+    GlobalsSaver(ConfigureGlobalScope passthrough)
+    {
+      this.passthrough = passthrough;
+    }
+    ConfigureGlobalScope passthrough;
+    VariableScope globalScope;
+    CoreTypeLibrary coreTypes;
+    
+    @Override public void configure(VariableScope scope, CoreTypeLibrary coreTypes)
+    {
+      this.globalScope = scope;
+      this.coreTypes = coreTypes;
+      if (passthrough != null)
+        passthrough.configure(scope, coreTypes);
+    }
+  }
+  
   @Test
   public void testStatements() throws ParseException, RunException
   {
@@ -54,8 +73,7 @@ public class SimpleInterpreterTest extends TestCase
     SimpleInterpreter interpreter = new SimpleInterpreter(code);
     MachineContext ctx = new MachineContext();
     ctx.coreTypes = coreTypes;
-    ctx.pushScope(scope);
-    interpreter.runCode(ctx);
+    interpreter.runFrameForTesting(ctx, scope);
 
     Assert.assertEquals("hello world", fun.captured.val);
   }
@@ -77,8 +95,7 @@ public class SimpleInterpreterTest extends TestCase
       SimpleInterpreter interpreter = new SimpleInterpreter(code);
       MachineContext ctx = new MachineContext();
       ctx.coreTypes = coreTypes;
-      ctx.pushScope(scope);
-      interpreter.runCode(ctx);
+      interpreter.runFrameForTesting(ctx, scope);
     }
     
     Assert.assertEquals(coreTypes.getNullType(), scope.lookup("a").type);
@@ -96,8 +113,7 @@ public class SimpleInterpreterTest extends TestCase
       SimpleInterpreter interpreter = new SimpleInterpreter(code);
       MachineContext ctx = new MachineContext();
       ctx.coreTypes = coreTypes;
-      ctx.pushScope(scope);
-      interpreter.runCode(ctx);
+      interpreter.runFrameForTesting(ctx, scope);
     }
     
     Assert.assertEquals(3.0, scope.lookup("a").getNumberValue(), 0.0);
@@ -112,7 +128,6 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("b", coreTypes.getNullType(), Value.createNumberValue(coreTypes, 0));
     MachineContext ctx = new MachineContext();
     ctx.coreTypes = coreTypes;
-    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -136,12 +151,12 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("1", Symbol.Number)
             )
         );
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(5.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(1.0, scope.lookup("b").getNumberValue(), 0.0);
     
     scope.assignTo("a", Value.createNumberValue(coreTypes, 0));
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(2.0, scope.lookup("b").getNumberValue(), 0.0);
     Assert.assertEquals(scope, ctx.currentScope());
@@ -156,7 +171,6 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
     MachineContext ctx = new MachineContext();
     ctx.coreTypes = coreTypes;
-    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -201,19 +215,19 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("1", Symbol.Number)
             )
         );
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(8.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(1.0, scope.lookup("b").getNumberValue(), 0.0);
     Assert.assertEquals(scope, ctx.currentScope());
     
     scope.assignTo("a", Value.createNumberValue(coreTypes, 2));
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(16.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(2.0, scope.lookup("b").getNumberValue(), 0.0);
     Assert.assertEquals(scope, ctx.currentScope());
 
     scope.assignTo("a", Value.createNumberValue(coreTypes, 6));
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(3.0, scope.lookup("b").getNumberValue(), 0.0);
     Assert.assertEquals(scope, ctx.currentScope());
@@ -228,7 +242,6 @@ public class SimpleInterpreterTest extends TestCase
     scope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 1));
     MachineContext ctx = new MachineContext();
     ctx.coreTypes = coreTypes;
-    ctx.pushScope(scope);
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -261,7 +274,7 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("1", Symbol.Number)
             )
         );
-    new SimpleInterpreter(code).runCode(ctx);
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
     Assert.assertEquals(8.0, scope.lookup("a").getNumberValue(), 0.0);
     Assert.assertEquals(255.0, scope.lookup("b").getNumberValue(), 0.0);
     Assert.assertEquals(scope, ctx.currentScope());
@@ -270,12 +283,11 @@ public class SimpleInterpreterTest extends TestCase
   @Test
   public void testIfScope() throws ParseException, RunException
   {
-    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
-    MachineContext ctx = new MachineContext();
-    ctx.coreTypes = coreTypes;
-    VariableScope globalScope = ctx.getGlobalScope();
-    globalScope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
-    globalScope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      scope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    });
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -328,20 +340,19 @@ public class SimpleInterpreterTest extends TestCase
 
             )
         );
-    new SimpleInterpreter(code).runCode(ctx);
-    Assert.assertEquals(36.0, globalScope.lookup("a").getNumberValue(), 0.0);
-    Assert.assertEquals(3.0, globalScope.lookup("b").getNumberValue(), 0.0);
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(36.0, vars.globalScope.lookup("a").getNumberValue(), 0.0);
+    Assert.assertEquals(3.0, vars.globalScope.lookup("b").getNumberValue(), 0.0);
   }
 
   @Test
   public void testBooleanVariable() throws ParseException, RunException
   {
-    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
-    MachineContext ctx = new MachineContext();
-    ctx.coreTypes = coreTypes;
-    VariableScope globalScope = ctx.getGlobalScope();
-    globalScope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
-    globalScope.addVariable("b", coreTypes.getBooleanType(), Value.createBooleanValue(coreTypes, false));
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
+      scope.addVariable("b", coreTypes.getBooleanType(), Value.createBooleanValue(coreTypes, false));
+    });
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -353,18 +364,17 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("and", Symbol.And),
             new Token.SimpleToken("true", Symbol.TrueLiteral)
             ));
-    new SimpleInterpreter(code).runCode(ctx);
-    Assert.assertTrue(globalScope.lookup("b").getBooleanValue());
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertTrue(vars.globalScope.lookup("b").getBooleanValue());
   }
   
   @Test
   public void testNoArgPrimitiveMethod() throws ParseException, RunException
   {
-    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
-    MachineContext ctx = new MachineContext();
-    ctx.coreTypes = coreTypes;
-    VariableScope globalScope = ctx.getGlobalScope();
-    globalScope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, -3));
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, -3));
+    });
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -374,9 +384,9 @@ public class SimpleInterpreterTest extends TestCase
             Token.ParameterToken.fromContents(".abs", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".abs", Symbol.DotVariable)
             ));
-    new SimpleInterpreter(code).runCode(ctx);
-    Assert.assertEquals(coreTypes.getNumberType(), globalScope.lookup("a").type);
-    Assert.assertEquals(3, globalScope.lookup("a").getNumberValue(), 0);
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(vars.coreTypes.getNumberType(), vars.globalScope.lookup("a").type);
+    Assert.assertEquals(3, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
   @Test
@@ -397,9 +407,18 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("+", Symbol.Plus),
             new Token.SimpleToken("2", Symbol.Number)
             ));
-    new SimpleInterpreter(code).runCode(ctx);
-    Assert.assertEquals(coreTypes.getNumberType(), ctx.getGlobalScope().lookup("a").type);
-    Assert.assertEquals(3, ctx.getGlobalScope().lookup("a").getNumberValue(), 0);
+    VariableScope localScope = new VariableScope();
+    new SimpleInterpreter(code).runFrameForTesting(ctx, localScope);
+    Assert.assertEquals(coreTypes.getNumberType(), localScope.lookup("a").type);
+    Assert.assertEquals(3, localScope.lookup("a").getNumberValue(), 0);
+    try {
+      ctx.getGlobalScope().lookup("a");
+      fail();
+    } 
+    catch (RunException e)
+    {
+      // Variable shouldn't exist in global scope
+    }
   }
 
 }

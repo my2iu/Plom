@@ -204,17 +204,6 @@ public class SimpleInterpreter
     return this;
   }
   
-  public void runCode(MachineContext ctx) throws ParseException, RunException
-  {
-    if (parsedCode == null)
-    {
-      parsedCode = ParseToAst.parseStatementContainer(code);
-    }
-    
-    ctx.setStart(parsedCode, statementHandlers);
-    ctx.runToCompletion();
-  }
-
   public void continueRun()
   {
     try {
@@ -231,9 +220,13 @@ public class SimpleInterpreter
   {
     try {
       ctx = new MachineContext();
-      globalConfigurator.configure(ctx.getGlobalScope(), ctx.coreTypes());
-      ctx.pushNewScope();
-      runCode(ctx);
+      if (globalConfigurator != null)
+        globalConfigurator.configure(ctx.getGlobalScope(), ctx.coreTypes());
+      if (parsedCode == null)
+        parsedCode = ParseToAst.parseStatementContainer(code);
+      
+      ctx.pushStackFrame(parsedCode, statementHandlers);
+      ctx.runToCompletion();
     }
     catch (Throwable e)
     {
@@ -243,10 +236,24 @@ public class SimpleInterpreter
         throw e;
     }
   }
-
-  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException
+  
+  /**
+   * Mainly used for testing to check whether scopes are pushed and popped
+   * properly within a stack frame.
+   */
+  void runFrameForTesting(MachineContext ctx, VariableScope scope) throws ParseException, RunException
   {
-    runNoReturn(globalConfigurator);
-    ctx.popScope();
+    if (parsedCode == null)
+      parsedCode = ParseToAst.parseStatementContainer(code);
+    
+    ctx.pushStackFrame(parsedCode, statementHandlers);
+    if (scope != null)
+      ctx.pushScope(scope);
+    ctx.runToEndOfFrame();
   }
+
+//  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException
+//  {
+//    runNoReturn(globalConfigurator);
+//  }
 }
