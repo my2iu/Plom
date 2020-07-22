@@ -12,6 +12,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -105,7 +106,10 @@ public class Entry implements EntryPoint
         consoleEl.appendChild(msg);
       });
       try {
-        terp.runNoReturn();
+        terp.runNoReturn((scope, coreTypes) -> {
+          StandardLibrary.createGlobals(terp, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        });
       } 
       catch (Exception err)
       {
@@ -217,7 +221,10 @@ public class Entry implements EntryPoint
   
   private void showCodePanel(StatementContainer code)
   {
-    codePanel = new CodePanel(getMainDiv());
+    codePanel = new CodePanel(getMainDiv(), (scope, coreTypes) -> {
+      StandardLibrary.createGlobals(null, scope, coreTypes);
+      scope.setParent(new RepositoryScope(repository, coreTypes));
+    });
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

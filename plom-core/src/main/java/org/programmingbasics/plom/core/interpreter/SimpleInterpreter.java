@@ -227,11 +227,11 @@ public class SimpleInterpreter
     }
   }
 
-  public void runNoReturn() throws ParseException, RunException
+  public void runNoReturn(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException
   {
     try {
       ctx = new MachineContext();
-      StandardLibrary.createGlobals(this, ctx.getGlobalScope(), ctx.coreTypes());
+      globalConfigurator.configure(ctx.getGlobalScope(), ctx.coreTypes());
       ctx.pushNewScope();
       runCode(ctx);
     }
@@ -244,9 +244,9 @@ public class SimpleInterpreter
     }
   }
 
-  public void run() throws ParseException, RunException
+  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException
   {
-    runNoReturn();
+    runNoReturn(globalConfigurator);
     ctx.popScope();
   }
 }

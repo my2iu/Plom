@@ -12,7 +12,7 @@ import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.Suggester;
@@ -41,8 +41,10 @@ import elemental.html.DivElement;
 
 public class CodePanel
 {
-  public CodePanel(DivElement mainDiv)
+  public CodePanel(DivElement mainDiv, ConfigureGlobalScope globalConfigurator)
   {
+    this.globalConfigurator = globalConfigurator;
+    
     mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
@@ -76,6 +78,12 @@ public class CodePanel
   DivElement choicesDiv;
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
+  
+  /** 
+   * Allows for the configuration of what global variables/types there are
+   * for type checking.
+   * */
+  ConfigureGlobalScope globalConfigurator; 
   
   // Errors to show in the code listing (error tokens will be underlined)
   ErrorList codeErrors = new ErrorList();
@@ -214,7 +222,7 @@ public class CodePanel
       else if (parentSymbols.contains(Symbol.DotMember))
       {
         CodeCompletionContext suggestionContext = new CodeCompletionContext();
-        StandardLibrary.createGlobals(null, suggestionContext.currentScope(), suggestionContext.coreTypes());
+        globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
         GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
         MemberSuggester suggester = new MemberSuggester(suggestionContext);
         showSimpleEntryForToken(newToken, false, suggester);
@@ -222,7 +230,7 @@ public class CodePanel
       else
       {
         CodeCompletionContext suggestionContext = new CodeCompletionContext();
-        StandardLibrary.createGlobals(null, suggestionContext.currentScope(), suggestionContext.coreTypes());
+        globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
         GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
         VariableSuggester suggester = new VariableSuggester(suggestionContext);
         showSimpleEntryForToken(newToken, false, suggester);
