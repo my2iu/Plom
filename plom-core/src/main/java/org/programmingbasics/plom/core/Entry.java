@@ -10,11 +10,8 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
-import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -325,8 +322,8 @@ public class Entry implements EntryPoint
       // TODO: Check validity of function name
       List<String> nameParts = new ArrayList<>();
       List<String> argNames = new ArrayList<>();
-      List<Type> argTypes = new ArrayList<>();
-      Type returnType = null;
+      List<Token.ParameterToken> argTypes = new ArrayList<>();
+      Token.ParameterToken returnType = null;
       for (DivElement div: nameEls)
         nameParts.add(((InputElement)div.querySelector("input")).getValue());
       for (DivElement div: argEls)

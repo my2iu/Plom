@@ -10,7 +10,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.Type;
 
 public class ModuleCodeRepository
 {
@@ -18,8 +17,8 @@ public class ModuleCodeRepository
   {
     public List<String> nameParts = new ArrayList<>();
     public List<String> argNames = new ArrayList<>();
-    public List<Type> argTypes = new ArrayList<>();
-    public Type returnType;
+    public List<Token.ParameterToken> argTypes = new ArrayList<>();
+    public Token.ParameterToken returnType;
     public String getLookupName()
     {
       String name = "";
@@ -37,7 +36,7 @@ public class ModuleCodeRepository
       sig.nameParts.add(name);
       return sig;
     }
-    public static FunctionSignature from(Type returnType, List<String> nameParts, List<String> argNames, List<Type> argTypes)
+    public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<String> argNames, List<Token.ParameterToken> argTypes)
     {
       FunctionSignature sig = new FunctionSignature();
       sig.returnType = returnType;
