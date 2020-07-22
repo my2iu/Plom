@@ -183,7 +183,10 @@ public class ExpressionEvaluator
                 args.add(machine.readValue(node.internalChildren.size() - n - 1));
               }
               machine.popValues(node.internalChildren.size());
-              if (toReturn.type.isPrimitiveNonBlockingFunction())
+              if (toReturn.type.isNormalFunction()) {
+                throw new RunException("Functions not supported");
+              }
+              else if (toReturn.type.isPrimitiveNonBlockingFunction())
               {
                 toReturn = ((PrimitiveFunction)toReturn.val).call(args);
                 machine.pushValue(toReturn);

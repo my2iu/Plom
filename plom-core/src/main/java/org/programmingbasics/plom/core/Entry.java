@@ -88,12 +88,15 @@ public class Entry implements EntryPoint
           RunException runErr = (RunException)err;
           Token errTok = runErr.getErrorTokenSource();
           int lineNo = 0;
+          String errString = "Run Error";
+          if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
+            errString = runErr.getMessage();
           if (errTok != null) 
             lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
           if (lineNo == 0)
-            msg.setTextContent("Run Error");
+            msg.setTextContent(errString);
           else
-            msg.setTextContent("Run Error (line " + lineNo + ")");
+            msg.setTextContent(errString + " (line " + lineNo + ")");
         }
         else if (err.getMessage() != null && !err.getMessage().isEmpty())
         {

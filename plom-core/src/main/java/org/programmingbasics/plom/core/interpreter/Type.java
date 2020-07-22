@@ -71,7 +71,7 @@ public class Type
     }
   }
   
-  static TypeSignature makeFunctionType(Type returnType, Type...args)
+  public static TypeSignature makeFunctionType(Type returnType, Type...args)
   {
     TypeSignature t = new TypeSignature("Function", returnType, args);
     return t;
@@ -107,6 +107,10 @@ public class Type
   public boolean isPrimitiveMethod()
   {
     return "PrimitiveMethod".equals(name);
+  }
+  public boolean isNormalFunction()
+  {
+    return "Function".equals(name);
   }
   
   public static class TypeSignature extends Type

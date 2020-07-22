@@ -295,6 +295,16 @@ public class CodePanel
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
 
+    // We have some buttons that float to the right, but on wide displays, those
+    // buttons are too far to the right and get lost, so we put everything into
+    // a separate inline-block div whose width is just the width of the content,
+    // so then a div that floats right inside of it will just appear to the right
+    // of the buttons instead of the right of the screen.
+    DivElement contentDiv = Browser.getDocument().createDivElement();
+    contentDiv.getStyle().setDisplay(Display.INLINE_BLOCK);
+    contentDiv.getStyle().setProperty("white-space", "normal");
+    choicesDiv.appendChild(contentDiv);
+    
     // Parse the current statement up to the cursor position
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
     LL1Parser stmtParser = new LL1Parser();
@@ -309,7 +319,7 @@ public class CodePanel
     DivElement floatDiv = Browser.getDocument().createDivElement();
     floatDiv.getStyle().setProperty("float", "right");
     floatDiv.getStyle().setProperty("text-align", "right");
-    choicesDiv.appendChild(floatDiv);
+    contentDiv.appendChild(floatDiv);
     // Backspace button
     DivElement floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
@@ -335,7 +345,7 @@ public class CodePanel
     
     // Buttons for next and edit buttons
     // Next button
-    choicesDiv.appendChild(makeButton("\u27a0", true, () -> {
+    contentDiv.appendChild(makeButton("\u27a0", true, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(false);
       showPredictedTokenInput(choicesDiv);
@@ -354,12 +364,12 @@ public class CodePanel
     }
     if (showEditButton)
     {
-      choicesDiv.appendChild(makeButton("\u270e", true, () -> {
+      contentDiv.appendChild(makeButton("\u270e", true, () -> {
         showSimpleEntryForToken(currentToken, true, null);
       }));
     }
     else
-      choicesDiv.appendChild(makeButton("\u270e", false, () -> {  }));
+      contentDiv.appendChild(makeButton("\u270e", false, () -> {  }));
 
     
     // Just some random tokens for initial prototyping
@@ -407,9 +417,9 @@ public class CodePanel
       // Instead we show all normally allowed symbols, but disable the ones that
       // aren't valid for this particular context
       if (isValidSymbol)
-        choicesDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
+        contentDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
-        choicesDiv.appendChild(makeButton(tokenText, false, () -> {  }));
+        contentDiv.appendChild(makeButton(tokenText, false, () -> {  }));
     }
   }
 

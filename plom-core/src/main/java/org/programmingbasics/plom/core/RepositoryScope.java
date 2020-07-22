@@ -32,7 +32,7 @@ public class RepositoryScope extends VariableScope
     {
       Value val = new Value();
       val.val = func;
-      val.type = new Type.TypeSignature(name, coreTypes.getVoidType());
+      val.type = Type.makeFunctionType(coreTypes.getVoidType());
       return val;
     }
     return super.lookup(name);
