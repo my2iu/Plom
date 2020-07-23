@@ -183,8 +183,13 @@ public class ExpressionEvaluator
                 args.add(machine.readValue(node.internalChildren.size() - n - 1));
               }
               machine.popValues(node.internalChildren.size());
-              if (toReturn.type.isNormalFunction()) {
-                throw new RunException("Functions not supported");
+              if (toReturn.type.isNormalFunction()) 
+              {
+                ExecutableFunction fn = (ExecutableFunction)toReturn.val;
+                machine.pushValue(machine.coreTypes.getNullValue());
+                machine.ip.pop();  // TODO: set ip so that we can read the return value of the function
+                machine.pushStackFrame(fn.code, SimpleInterpreter.statementHandlers);
+                return;
               }
               else if (toReturn.type.isPrimitiveNonBlockingFunction())
               {

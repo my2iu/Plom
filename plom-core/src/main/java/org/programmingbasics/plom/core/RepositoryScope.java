@@ -3,7 +3,10 @@ package org.programmingbasics.plom.core;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
+import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
@@ -16,8 +19,10 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
  */
 public class RepositoryScope extends VariableScope
 {
+  // TODO: Add caching to this
   private ModuleCodeRepository repository;
   private CoreTypeLibrary coreTypes;
+  
   public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes)
   {
     this.repository = repository;
@@ -31,8 +36,17 @@ public class RepositoryScope extends VariableScope
     if (func != null)
     {
       Value val = new Value();
-      val.val = func;
       val.type = Type.makeFunctionType(coreTypes.getVoidType());
+      ExecutableFunction funcInfo = new ExecutableFunction();
+      try {
+        funcInfo.code = ParseToAst.parseStatementContainer(func.code);
+      } 
+      catch (ParseException e)
+      {
+        // TODO: Augment parse info with function name etc.
+        throw new RunException(e);
+      }
+      val.val = funcInfo;
       return val;
     }
     return super.lookup(name);

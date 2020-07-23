@@ -39,7 +39,11 @@ TODO:
 - type checking for errors
 - functions and methods returning void
 - null and Null type
-- when first creating a string/number, the cursor position should be shown as being after the token or on the token, not before it 
+- when first creating a string/number, the cursor position should be shown as being after the token or on the token, not before it
+- keep track of names of functions so that it can show up in stack traces
+- default to a name of empty string to the first piece of code executed
+- store function name when an error is thrown
+- properly support passing in arguments for functions 
  */
 
 public class Entry implements EntryPoint
