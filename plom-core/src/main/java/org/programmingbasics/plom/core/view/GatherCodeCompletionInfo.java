@@ -108,12 +108,7 @@ public class GatherCodeCompletionInfo
     Type type;
   }
   static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
-      .add(Rule.DotType_DotVariable, (triggers, node, typesToReturn, context) -> {
-        // Just pass through
-        node.recursiveVisitChildren(triggers, typesToReturn, context);
-        return true;
-      })
-      .add(Rule.DotVariable, (triggers, node, typesToReturn, context) -> {
+      .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
         Type t = context.lookupType(((Token.ParameterToken)node.token).getLookupName());
         typesToReturn.type = t;
         return true;

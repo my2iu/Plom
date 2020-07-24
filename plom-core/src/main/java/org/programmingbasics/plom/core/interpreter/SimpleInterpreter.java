@@ -35,12 +35,7 @@ public class SimpleInterpreter
     Type type;
   }
   static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException>()
-      .add(Rule.DotType_DotVariable, (triggers, node, typesToReturn, machine) -> {
-        // Just pass through
-        node.recursiveVisitChildren(triggers, typesToReturn, machine);
-        return true;
-      })
-      .add(Rule.DotVariable, (triggers, node, typesToReturn, machine) -> {
+      .add(Rule.AtType, (triggers, node, typesToReturn, machine) -> {
         Type t = new Type(((Token.ParameterToken)node.token).getLookupName());
         typesToReturn.type = t;
         return true;

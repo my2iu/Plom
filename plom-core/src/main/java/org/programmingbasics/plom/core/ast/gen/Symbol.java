@@ -38,6 +38,7 @@ public enum Symbol
 	FalseLiteral,
 	Number,
 	DotVariable,
+	AtType,
 	Var,
 	Colon,
 	Assignment,
@@ -76,6 +77,7 @@ public enum Symbol
 		case FalseLiteral:
 		case Number:
 		case DotVariable:
+		case AtType:
 		case Var:
 		case Colon:
 		case Assignment:

@@ -38,6 +38,7 @@ enum Symbol
   FalseLiteral(true),
   Number(true),
   DotVariable(true),
+  AtType(true),
   // I was thinking of having a separate DotType symbol, but it might be better to have a 
   // single symbol for all tokens that look the same so that programmers aren't 
   // confused if they cut&paste a DotType like .number and try to use it elsewhere as a DotVariable

@@ -70,7 +70,7 @@ public class ModuleCodeRepository
                 new Token.SimpleToken("var", Symbol.Var),
                 Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
                 new Token.SimpleToken(":", Symbol.Colon),
-                Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+                Token.ParameterToken.fromContents("@string", Symbol.AtType)
                 ),
             new TokenContainer(
                 Token.ParameterToken.fromContents(".a", Symbol.DotVariable),

@@ -95,6 +95,7 @@ public class CodePanel
   static {
     Symbol[] symbolOrder = new Symbol[] {
         Symbol.DotVariable,
+        Symbol.AtType,
         Symbol.Number,
         Symbol.String,
         Symbol.TrueLiteral,
@@ -186,6 +187,12 @@ public class CodePanel
     case COMPOUND_ELSE:
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
+    case AtType:
+      newToken = new Token.ParameterToken(
+          Token.ParameterToken.splitVarAtColons(tokenText), 
+          Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
+          tokenType);
+      break;
     case DotVariable:
       newToken = new Token.ParameterToken(
           Token.ParameterToken.splitVarAtColons(tokenText), 
@@ -202,20 +209,19 @@ public class CodePanel
     InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
     switch (tokenType)
     {
+    case AtType:
+      showSimpleEntryForToken(newToken, false, (prefix) -> {
+        List<String> toReturn = new ArrayList<>();
+        toReturn.add("string");
+        toReturn.add("number");
+        toReturn.add("object");
+        toReturn.add("boolean");
+        return toReturn;
+      });
+      break;
+
     case DotVariable:
-      if (parentSymbols.contains(Symbol.DotType))
-      {
-        Suggester suggester = (prefix) -> {
-          List<String> toReturn = new ArrayList<>();
-          toReturn.add("string");
-          toReturn.add("number");
-          toReturn.add("object");
-          toReturn.add("boolean");
-          return toReturn;
-        };
-        showSimpleEntryForToken(newToken, false, suggester);
-      }
-      else if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
+      if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
       {
         showSimpleEntryForToken(newToken, false, null);
       }
@@ -266,6 +272,11 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
+      break;
+    case AtType:
+      choicesDiv.getStyle().setDisplay(Display.NONE);
+      initialValue = initialValue.substring(1);
+      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -399,6 +410,7 @@ public class CodePanel
       case ClosedParenthesis: text = ")"; break;
       case DUMMY_COMMENT: text = "//"; break;
       case DotVariable: text = "."; break;
+      case AtType: text = "@"; break;
       case TrueLiteral: text = "true"; break;
       case FalseLiteral: text = "false"; break;
       case Number: text = "123..."; break;
@@ -465,6 +477,15 @@ public class CodePanel
       updateCodeView(true);
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
+    {
+      ((Token.ParameterToken)token).setContents(
+          Token.ParameterToken.splitVarAtColons(val),
+          Token.ParameterToken.splitVarAtColonsForPostfix(val));
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      updateCodeView(true);
+    }
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.AtType)
     {
       ((Token.ParameterToken)token).setContents(
           Token.ParameterToken.splitVarAtColons(val),
