@@ -5,14 +5,17 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -247,9 +250,12 @@ public class Entry implements EntryPoint
         // Update line numbers
         lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
       }
-      int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
-      Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
-      lineEl.setTextContent("L" + lineNo);
+      if (codePanel.cursorPos != null)
+      {
+        int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
+        Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+        lineEl.setTextContent("L" + lineNo);
+      }
     });
     
     if (code != null)
@@ -308,27 +314,26 @@ public class Entry implements EntryPoint
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
     List<DivElement> nameEls = new ArrayList<>();
     List<DivElement> argEls = new ArrayList<>();
+    List<TypeEntryField> argTypeFields = new ArrayList<>();
+    TypeEntryField returnTypeField;
     
     // Fill in the function name
     nameEls.add((DivElement)mainDiv.querySelector("div.method_name"));
     ((InputElement)nameEls.get(0).querySelector("input")).setValue(sig.nameParts.get(0));
 
     for (int n = 0; n < sig.argNames.size(); n++)
-      addMethodPanelArg(mainDiv, sig.nameParts.get(n), sig.argNames.get(n), nameEls, argEls);
-    
-    // Just some rough initial styling for type entry fields
-    NodeList typeEntryNodes = mainDiv.querySelectorAll(".typeEntry");
-    for (int n = 0; n < typeEntryNodes.length(); n++)
-    {
-      typeEntryNodes.item(n).setTextContent("\u00A0");
-    }
+      addMethodPanelArg(mainDiv, sig.nameParts.get(n), sig.argNames.get(n), sig.argTypes.get(n), nameEls, argEls, argTypeFields);
     
     // Add argument button
     mainDiv.querySelector(".method_args_add a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      addMethodPanelArg(mainDiv, "", "", nameEls, argEls);
+      addMethodPanelArg(mainDiv, "", "", null, nameEls, argEls, argTypeFields);
     }, false);
-    
+
+    // Render the return type
+    returnTypeField = new TypeEntryField((DivElement)mainDiv.querySelector(".method_return .typeEntry"), sig.returnType);
+    returnTypeField.render();
+
     // Ok Button
     AnchorElement okButton = (AnchorElement)mainDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
@@ -342,6 +347,9 @@ public class Entry implements EntryPoint
         nameParts.add(((InputElement)div.querySelector("input")).getValue());
       for (DivElement div: argEls)
         argNames.add(((InputElement)div.querySelector("input")).getValue());
+      for (TypeEntryField typeField: argTypeFields)
+        argTypes.add(typeField.type);
+      returnType = returnTypeField.type;
       FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes); 
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());
@@ -350,8 +358,9 @@ public class Entry implements EntryPoint
   }
 
   private void addMethodPanelArg(DivElement mainDiv,
-      String nameVal, String argNameVal, 
-      List<DivElement> nameEls, List<DivElement> argEls)
+      String nameVal, String argNameVal, Token.ParameterToken argTypeVal, 
+      List<DivElement> nameEls, List<DivElement> argEls, 
+      List<TypeEntryField> argTypeFields)
   {
     if (!argEls.isEmpty())
     {
@@ -366,6 +375,12 @@ public class Entry implements EntryPoint
     ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
     argEls.add(varDiv);
     mainDiv.querySelector(".method_args").appendChild(varDiv);
+
+    // argument type
+    TypeEntryField typeField = new TypeEntryField((DivElement)varDiv.querySelector(".typeEntry"), argTypeVal);
+    argTypeFields.add(typeField);
+    typeField.render();
+
     // remove arg button
     varDiv.querySelector(".method_args_var a").addEventListener(Event.CLICK, (evt) -> {
       evt.preventDefault();
@@ -383,6 +398,7 @@ public class Entry implements EntryPoint
       }
       argEls.remove(varDiv);
       varDiv.getParentElement().removeChild(varDiv);
+      argTypeFields.remove(typeField);
     }, false);
   }
   

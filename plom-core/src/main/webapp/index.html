@@ -50,7 +50,8 @@
     		padding-left: 2em;
     		text-indent: -2em;
     	}
-    	.codemain div.token {
+    	.codemain div.token,
+    	.methodpanel .typeEntry div.token {
     		background-color: #ccc;
     		display: inline-block;
     		padding: 0.2em;
@@ -58,7 +59,8 @@
     		border: 1px solid #aaa;
     		text-indent: 0;
     	}
-    	.codemain span.token {
+    	.codemain span.token,
+    	.methodpanel .typeEntry span.token {
     		background-color: #ccc;
     		display: inline;
     		padding: 0.2em;
@@ -66,14 +68,16 @@
     		border: 1px solid #aaa;
     		text-indent: 0;
     	}
-    	.codemain div.blocktoken {
+    	.codemain div.blocktoken,
+    	.methodpanel .typeEntry div.blocktoken {
     		background-color: #ddd;
     		display: block;
     		padding: 0.2em;
     		border-radius: 0.2em;
     		border: 1px solid #aaa;
     	}
-    	.codemain .tokenError {
+    	.codemain .tokenError, 
+    	.methodpanel .typeEntry tokenError {
     		text-decoration: underline;
     		text-decoration: underline red;
     	}
@@ -135,10 +139,18 @@
     		background-color: #ddd;
     		text-align: center;
     	}
+    	.globalspanel .functionList > div {
+    		margin-top: 0.5em;
+    		margin-bottom: 0.5em;
+    	}
     	.methodpanel .typeEntry {
     		display: inline-block;
     		border: 1px solid black;
     		min-width: 3em;
+    		padding-right: 1em;
+    	}
+    	.methodpanel .typeEntry .tokenline {
+    		display: inline;
     	}
     </style>
   </head>
