@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,11 @@ public class ModuleCodeRepository
             )
         );
     functions.put(func.sig.getLookupName(), func);
+    
+    FunctionDescription testParamFunc = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), Arrays.asList("test"), Arrays.asList("arg1"), Arrays.asList(Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+        new StatementContainer());
+    functions.put(testParamFunc.sig.getLookupName(), testParamFunc);
   }
   
   public FunctionDescription getFunctionDescription(String name)
