@@ -28,7 +28,7 @@ public class GetToken
     return null;
   }
   
-  static Token inLine(TokenContainer line, Symbol baseContext, CodePosition pos, int level)
+  public static Token inLine(TokenContainer line, Symbol baseContext, CodePosition pos, int level)
   {
     if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
     {

@@ -62,7 +62,7 @@ public class CodeRenderer
     if (type != null)
     {
       CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn(); 
-      type.visit(renderer, returnedRenderedToken, pos, 0, hitBox);
+      type.visit(renderer, returnedRenderedToken, pos, 1, hitBox);
       Element el = returnedRenderedToken.el;
       div.setInnerHTML("");
       div.appendChild(el);
@@ -363,6 +363,8 @@ public class CodeRenderer
         hitBox = new RenderedHitBox();
       tok.visit(renderer, returnedRenderedToken, pos != null && pos.getOffset(level) == tokenno && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
       Element el = returnedRenderedToken.el;
+      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
+        el.getClassList().add("typeTokenSelected");
       // Put non-wide tokens in a div line
       if (hasWideTokens && !tok.isWide())
       {

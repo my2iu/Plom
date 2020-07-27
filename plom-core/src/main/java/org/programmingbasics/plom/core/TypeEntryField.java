@@ -1,17 +1,19 @@
 package org.programmingbasics.plom.core;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
+import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
-import org.programmingbasics.plom.core.view.NextPosition;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
+import org.programmingbasics.plom.core.view.SetTypeToken;
 
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.events.Event;
 import elemental.events.MouseEvent;
 import elemental.html.ClientRect;
@@ -52,21 +54,17 @@ public class TypeEntryField
       {
         cursorPos = new CodePosition();
       }
-      if (type == null)
-        type = new Token.ParameterToken(
-                Token.ParameterToken.splitVarAtColons("@"), 
-                Token.ParameterToken.splitVarAtColonsForPostfix("@"), 
-                Symbol.AtType);
-      Token hitToken = type;
+      Token hitToken = GetToken.inLine(new TokenContainer(Arrays.asList(type)), null, cursorPos, 0);
+      if (hitToken == null)
+      {
+        hitToken = new Token.ParameterToken(
+            Token.ParameterToken.splitVarAtColons("@"), 
+            Token.ParameterToken.splitVarAtColonsForPostfix("@"), 
+            Symbol.AtType);
+        type = (ParameterToken) SetTypeToken.set(type, hitToken, cursorPos);
+      }
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, (prefix) -> {
-        List<String> toReturn = new ArrayList<>();
-        toReturn.add("string");
-        toReturn.add("number");
-        toReturn.add("object");
-        toReturn.add("boolean");
-        return toReturn;
-      }, this::simpleEntryInput);
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(), this::simpleEntryInput);
 
       render();
     }, false);
@@ -79,13 +77,14 @@ public class TypeEntryField
         Token.ParameterToken.splitVarAtColonsForPostfix(val));
 //    if (advanceToNext && isFinal)
 //      NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-    render();
     
     if (isFinal)
     {
       cursorPos = null;
       simpleEntry.setVisible(false);
     }
+    render();
+      
     
   }
   

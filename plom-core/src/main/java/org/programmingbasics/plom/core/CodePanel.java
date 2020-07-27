@@ -16,6 +16,7 @@ import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.Suggester;
+import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
@@ -210,14 +211,7 @@ public class CodePanel
     switch (tokenType)
     {
     case AtType:
-      showSimpleEntryForToken(newToken, false, (prefix) -> {
-        List<String> toReturn = new ArrayList<>();
-        toReturn.add("string");
-        toReturn.add("number");
-        toReturn.add("object");
-        toReturn.add("boolean");
-        return toReturn;
-      });
+      showSimpleEntryForToken(newToken, false, new TypeSuggester());
       break;
 
     case DotVariable:

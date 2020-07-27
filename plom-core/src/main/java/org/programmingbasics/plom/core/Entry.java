@@ -27,7 +27,6 @@ TODO:
 - number constants (change inputmode to numeric)
 - string constants (allow multi-line strings?)
 - valign to middle
-- use @ for types?
 - keyboard movement
 - keyboard entry
 - adding a newline in the middle of a function call
@@ -40,7 +39,8 @@ TODO:
 - store function name when an error is thrown
 - properly support passing in arguments for functions
 - save code before running things
-- always run the main function, not whatever code is showing in the code panel 
+- always run the main function, not whatever code is showing in the code panel
+- properly handle focus and loss of focus on type entry fields of the method panel 
  */
 
 public class Entry implements EntryPoint
