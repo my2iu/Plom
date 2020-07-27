@@ -128,7 +128,7 @@ public abstract class Token
        return (String.join("", contents) + postfix).substring(1);
      }
      @Override public Symbol getType() { return type; }
-     @Override public String getTextContent() { return String.join("", contents); }
+     @Override public String getTextContent() { return String.join("", contents) + postfix; }
      public static List<String> splitVarAtColons(String val)
      {
        if (!val.contains(":"))

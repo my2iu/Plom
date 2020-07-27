@@ -20,7 +20,7 @@ public class CodeNestingCounter
   public Map<Token, Integer> tokenNesting = new IdentityHashMap<>();
   public Map<TokenContainer, Integer> expressionNesting = new IdentityHashMap<>();
   
-  void calculateNestingForStatements(StatementContainer code)
+  public void calculateNestingForStatements(StatementContainer code)
   {
     for (TokenContainer line: code.statements)
     {

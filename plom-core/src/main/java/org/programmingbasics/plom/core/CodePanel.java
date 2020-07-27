@@ -437,7 +437,8 @@ public class CodePanel
 
   void hookCodeClick(DivElement div)
   {
-    div.addEventListener(Event.CLICK, (evt)-> {
+    div.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
       MouseEvent mevt = (MouseEvent)evt;
       ClientRect rect = div.getBoundingClientRect();
       int x = (int)(mevt.getClientX() - rect.getLeft()) + div.getScrollLeft();

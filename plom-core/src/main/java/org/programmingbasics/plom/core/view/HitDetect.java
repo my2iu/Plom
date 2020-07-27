@@ -240,4 +240,109 @@ public class HitDetect
     }
   }
 
+  /**
+   * Type fields are just a single token, so we have special type
+   * detection for them.
+   */
+  public static CodePosition hitDetectTypeField(int x, int y, 
+      Token type, RenderedHitBox hitBox,
+      CodePosition newPos, int level)
+  {
+    // Find which token that mouse position is over
+    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+    TokenHitLocation loc = type.visit(isClickedOnTokenOrLater, x, y, hitBox);
+    // Update the cursor position
+    newPos.setOffset(level, 0);
+    
+    // For compound tokens, check if we're clicking on some element inside the token
+    if (loc == TokenHitLocation.ON)
+    {
+      type.visit(new TypeInternalHitDetection(), newPos, level + 1, new HitDetectParam(hitBox, x, y));
+    }
+    
+    return newPos;
+  }
+
+  /** Although a parameter token can hold an entire expression inside,
+   * for types, we only expect a single token at most, so we can
+   * simplify the logic.
+   */
+  private static CodePosition hitDetectTypeTokens(int x, int y, 
+      TokenContainer tokens, RenderedHitBox renderedLineHitBoxes,
+      CodePosition newPos, int level)
+  {
+    newPos.setOffset(level, 0);
+    // Find which token that mouse position is over
+    int tokenno = 0;
+//    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+    if (renderedLineHitBoxes.children == null)
+    {
+      return newPos;
+    }
+    tokenno = 0;
+//    for (int n = 0; n < renderedLineHitBoxes.children.size(); n++)
+//    {
+//      Token token = tokens.tokens.get(n);
+//      TokenHitLocation loc = token.visit(isClickedOnTokenOrLater, x, y, renderedLineHitBoxes.children.get(n));
+//      if (loc == TokenHitLocation.AFTER)
+//        tokenno = n;
+//      if (loc == TokenHitLocation.ON)
+//      {
+//        tokenno = n;
+//        break;
+//      }
+//    }
+    // Update the cursor position
+    newPos.setOffset(level, tokenno);
+    
+    // For compound tokens, check if we're clicking on some element inside the token
+    if (tokenno < tokens.tokens.size())
+    {
+      tokens.tokens.get(tokenno).visit(new TypeInternalHitDetection(), newPos, level + 1, new HitDetectParam(renderedLineHitBoxes.children.get(tokenno), x, y));
+    }
+    
+    return newPos;
+  }
+
+  static class TypeInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam>
+  {
+    @Override
+    public Void visitSimpleToken(SimpleToken token, CodePosition pos,
+        Integer level, HitDetectParam param)
+    {
+      return null;
+    }
+    @Override
+    public Void visitParameterToken(ParameterToken token, CodePosition pos,
+        Integer level, HitDetectParam param)
+    {
+      RenderedHitBox hitBox = param.hitBox;
+      int x = param.x;
+      int y = param.y;
+      // Check each parameter to see if we're clicking in there
+      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+      if (paramHitBox == null)
+        return null;
+      for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
+      {
+        if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
+        {
+          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+          pos.setOffset(level + 1, n);
+          hitDetectTypeTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
+          return null;
+        }
+      }
+      return null;
+    }
+    @Override
+    Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
+        StatementContainer blockContainer, CodePosition pos, int level,
+        HitDetectParam param)
+    {
+      throw new IllegalArgumentException();
+    }
+  }
+  
+  
 }

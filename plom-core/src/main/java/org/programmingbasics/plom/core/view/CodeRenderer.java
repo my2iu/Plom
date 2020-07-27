@@ -14,6 +14,7 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.FontStyle;
 import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.css.CSSStyleDeclaration.WhiteSpace;
@@ -37,6 +38,7 @@ public class CodeRenderer
   {
     public ErrorList codeErrors;
     public CodeNestingCounter nesting;
+    public boolean renderTypeFieldStyle = false;  // When rendering type fields, we highlight entire type tokens instead of cursor positions 
   }
   
   public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
@@ -48,6 +50,40 @@ public class CodeRenderer
     renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes, supplement);
   }
 
+  public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
+  {
+    RenderedHitBox hitBox = new RenderedHitBox(null);
+    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
+    supplement.codeErrors = new ErrorList();
+    supplement.nesting = new CodeNestingCounter();
+    supplement.nesting.calculateNestingForStatements(type == null ? new StatementContainer(new TokenContainer()) : new StatementContainer(new TokenContainer(type)));
+    supplement.renderTypeFieldStyle = true;
+    CodeRenderer.TokenRenderer renderer = new CodeRenderer.TokenRenderer(Browser.getDocument(), supplement);
+    if (type != null)
+    {
+      CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn(); 
+      type.visit(renderer, returnedRenderedToken, pos, 0, hitBox);
+      Element el = returnedRenderedToken.el;
+      div.setInnerHTML("");
+      div.appendChild(el);
+      if (pos != null && !pos.hasOffset(1))
+        el.getClassList().add("typeTokenSelected");
+      return hitBox;
+    }
+    else
+    {
+      if (pos != null)
+      {
+        DivElement toInsert = Browser.getDocument().createDivElement();
+        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+        div.appendChild(toInsert.querySelector("div"));
+      }
+      else
+        div.setTextContent("\u00A0");
+      return null;
+    }
+  }
+  
   /** Holds data to be returned about how a token is rendered */
   static class TokenRendererReturn
   {
