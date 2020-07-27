@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core;
 
+import java.util.function.Consumer;
+
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
@@ -7,6 +9,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -38,8 +41,6 @@ TODO:
 - default to a name of empty string to the first piece of code executed
 - store function name when an error is thrown
 - properly support passing in arguments for functions
-- save code before running things
-- always run the main function, not whatever code is showing in the code panel
 - properly handle focus and loss of focus on type entry fields of the method panel 
  */
 
@@ -63,53 +64,62 @@ public class Entry implements EntryPoint
   MethodPanel methodPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
   String currentFunctionBeingViewed = null;
-  
+  Consumer<Throwable> errorLogger = (err) -> {
+    Document doc = Browser.getDocument();
+    Element consoleEl = doc.querySelector(".console");
+    consoleEl.setInnerHTML("");
+    DivElement msg = doc.createDivElement();
+    if (err instanceof ParseException)
+    {
+      ParseException parseErr = (ParseException)err;
+      int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
+      if (lineNo == 0)
+        msg.setTextContent("Syntax Error");
+      else
+        msg.setTextContent("Syntax Error (line " + lineNo + ")");
+    }
+    else if (err instanceof RunException)
+    {
+      RunException runErr = (RunException)err;
+      Token errTok = runErr.getErrorTokenSource();
+      int lineNo = 0;
+      String errString = "Run Error";
+      if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
+        errString = runErr.getMessage();
+      if (errTok != null) 
+        lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
+      if (lineNo == 0)
+        msg.setTextContent(errString);
+      else
+        msg.setTextContent(errString + " (line " + lineNo + ")");
+    }
+    else if (err.getMessage() != null && !err.getMessage().isEmpty())
+    {
+      msg.setTextContent(err.getMessage());
+    }
+    else
+    {
+      msg.setTextContent(err.toString());
+    }
+    consoleEl.appendChild(msg);
+  }; 
+      
+      
   void hookRun()
   {
     Element runEl = Browser.getDocument().querySelector("a.runbutton");
     runEl.addEventListener(Event.CLICK, (evt) -> {
       evt.preventDefault();
-      if (codePanel == null) return;
-      SimpleInterpreter terp = new SimpleInterpreter(codePanel.codeList);
-      terp.setErrorLogger((err) -> {
-        Document doc = Browser.getDocument();
-        Element consoleEl = doc.querySelector(".console");
-        consoleEl.setInnerHTML("");
-        DivElement msg = doc.createDivElement();
-        if (err instanceof ParseException)
-        {
-          ParseException parseErr = (ParseException)err;
-          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
-          if (lineNo == 0)
-            msg.setTextContent("Syntax Error");
-          else
-            msg.setTextContent("Syntax Error (line " + lineNo + ")");
-        }
-        else if (err instanceof RunException)
-        {
-          RunException runErr = (RunException)err;
-          Token errTok = runErr.getErrorTokenSource();
-          int lineNo = 0;
-          String errString = "Run Error";
-          if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
-            errString = runErr.getMessage();
-          if (errTok != null) 
-            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
-          if (lineNo == 0)
-            msg.setTextContent(errString);
-          else
-            msg.setTextContent(errString + " (line " + lineNo + ")");
-        }
-        else if (err.getMessage() != null && !err.getMessage().isEmpty())
-        {
-          msg.setTextContent(err.getMessage());
-        }
-        else
-        {
-          msg.setTextContent(err.toString());
-        }
-        consoleEl.appendChild(msg);
-      });
+      saveCodeToRepository();
+      // Find code to run
+      FunctionDescription fd = repository.getFunctionDescription("main");
+      if (fd == null)
+      {
+        errorLogger.accept(new RunException("No main function"));
+        return;
+      }
+      SimpleInterpreter terp = new SimpleInterpreter(fd.code);
+      terp.setErrorLogger(errorLogger);
       try {
         terp.runNoReturn((scope, coreTypes) -> {
           StandardLibrary.createGlobals(terp, scope, coreTypes);
@@ -123,6 +133,20 @@ public class Entry implements EntryPoint
     }, false);
   }
  
+  /** If any code is currently being displayed in the code panel, save it
+   * to the repository
+   */
+  void saveCodeToRepository()
+  {
+    if (codePanel != null) 
+    {
+      if (currentFunctionBeingViewed != null)
+      {
+        repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
+      }
+    }
+  }
+  
   /**
    * Basic UI for changing the class/method/function
    */
@@ -212,12 +236,9 @@ public class Entry implements EntryPoint
   
   private void closeCodePanelIfOpen()
   {
+    saveCodeToRepository();
     if (codePanel != null) 
     {
-      if (currentFunctionBeingViewed != null)
-      {
-        repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
-      }
       codePanel.close();
     }
     currentFunctionBeingViewed = null;
@@ -278,7 +299,7 @@ public class Entry implements EntryPoint
         newFunctionName = "function " + newFunctionNumber;
       }
       FunctionDescription func = new FunctionDescription(
-          FunctionSignature.noArg(newFunctionName),
+          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newFunctionName),
           new StatementContainer());
       repository.addFunction(func);
       

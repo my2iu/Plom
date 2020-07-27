@@ -63,7 +63,7 @@ public class MethodPanel
     }, false);
 
     // Render the return type
-    returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry);
+    returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true);
     returnTypeField.render();
 
     // Ok Button
@@ -109,7 +109,7 @@ public class MethodPanel
     mainDiv.querySelector(".method_args").appendChild(varDiv);
 
     // argument type
-    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry);
+    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false);
     argTypeFields.add(typeField);
     typeField.render();
 

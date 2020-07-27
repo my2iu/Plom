@@ -24,13 +24,15 @@ import elemental.html.DivElement;
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
+    this.isReturnType = isReturnType;
     fieldDiv = div;
     hookCodeClick(div);
   }
+  boolean isReturnType;  // Should void be allowed as a type
   DivElement fieldDiv;
   SimpleEntry simpleEntry;
   Token.ParameterToken type;
@@ -64,7 +66,7 @@ public class TypeEntryField
         type = (ParameterToken) SetTypeToken.set(type, hitToken, cursorPos);
       }
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(), this::simpleEntryInput);
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput);
 
       render();
     }, false);

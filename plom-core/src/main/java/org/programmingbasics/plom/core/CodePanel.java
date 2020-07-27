@@ -211,7 +211,7 @@ public class CodePanel
     switch (tokenType)
     {
     case AtType:
-      showSimpleEntryForToken(newToken, false, new TypeSuggester());
+      showSimpleEntryForToken(newToken, false, new TypeSuggester(false));
       break;
 
     case DotVariable:

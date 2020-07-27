@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -31,11 +32,21 @@ public class ModuleCodeRepository
       }
       return name;
     }
-    public static FunctionSignature noArg(String name)
+    public static FunctionSignature from(Token.ParameterToken returnType, String name)
     {
-      FunctionSignature sig = new FunctionSignature();
-      sig.nameParts.add(name);
-      return sig;
+      return from(returnType, Arrays.asList(name.split(":")), new ArrayList<>(), new ArrayList<>());
+    }
+    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type)
+    {
+      return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name), Arrays.asList(arg1Type));
+    }
+    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type, String arg2Name, Token.ParameterToken arg2Type)
+    {
+      return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name, arg2Name), Arrays.asList(arg1Type, arg2Type));
+    }
+    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type, String arg2Name, Token.ParameterToken arg2Type, String arg3Name, Token.ParameterToken arg3Type)
+    {
+      return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name, arg2Name, arg3Name), Arrays.asList(arg1Type, arg2Type, arg3Type));
     }
     public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<String> argNames, List<Token.ParameterToken> argTypes)
     {
@@ -65,7 +76,7 @@ public class ModuleCodeRepository
   {
     // Create a basic main function that can be filled in
     FunctionDescription func = new FunctionDescription(
-        FunctionSignature.noArg("main"),
+        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("var", Symbol.Var),
