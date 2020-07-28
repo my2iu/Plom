@@ -35,6 +35,14 @@ public class Value
   {
     return val ? coreTypes.getTrueValue() : coreTypes.getFalseValue();
   }
+  /** void isn't really a value, but just to be consistent over all function calls, void functions will still return a value */
+  public static Value createVoidValue(CoreTypeLibrary coreTypes)
+  {
+    Value newVal = new Value();
+    newVal.type = coreTypes.getVoidType();
+    newVal.val = null;
+    return newVal;
+  }
   public static Value readFromScope(VariableScope scope, String binding, Value val)
   {
     Value newVal = new Value();

@@ -463,4 +463,40 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
+  @Test
+  public void testFunctionReturningSimpleValue() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      
+      // Create an adder function that assigns the result to a global variable
+      // (that way we don't need to handle return values yet)
+      ExecutableFunction getFn = new ExecutableFunction();
+      try {
+        getFn.code = ParseToAst.parseStatementContainer(
+            new StatementContainer(
+                new TokenContainer(
+                    new Token.SimpleToken("return", Symbol.Return),
+                    new Token.SimpleToken("32", Symbol.Number)
+                    )
+                )
+            );
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+      Value getFnVal = new Value();
+      getFnVal.val = getFn;
+      getFnVal.type = Type.makeFunctionType(coreTypes.getNumberType());
+      scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".getVal", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(32, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
 }

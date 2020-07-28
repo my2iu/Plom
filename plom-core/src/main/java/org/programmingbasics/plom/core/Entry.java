@@ -41,7 +41,10 @@ TODO:
 - default to a name of empty string to the first piece of code executed
 - store function name when an error is thrown
 - properly support passing in arguments for functions
-- properly handle focus and loss of focus on type entry fields of the method panel 
+- properly handle focus and loss of focus on type entry fields of the method panel
+- do type checking of arguments of a function
+- type checking of return type of a function
+- suggestions should include argument names of function being modified
  */
 
 public class Entry implements EntryPoint

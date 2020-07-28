@@ -186,13 +186,11 @@ public class ExpressionEvaluator
               if (toReturn.type.isNormalFunction()) 
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
-                machine.pushValue(machine.coreTypes.getNullValue());
-                machine.ip.pop();  // TODO: set ip so that we can read the return value of the function
+                machine.ip.pop();
                 machine.pushStackFrame(fn.code, SimpleInterpreter.statementHandlers);
                 machine.pushNewScope();
                 for (int n = 0; n < fn.argPosToName.size(); n++)
                 {
-                  // TODO: handle types of arguments
                   machine.currentScope().addVariable(fn.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
                 }
                 return;

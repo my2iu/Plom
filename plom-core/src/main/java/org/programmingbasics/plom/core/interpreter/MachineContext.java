@@ -77,7 +77,7 @@ public class MachineContext
    * Stack of values where values can be stashed while expressions
    * are being evaluated.
    */
-  private List<Value> valueStack = new ArrayList<>();
+  private List<Value> valueStack;
   
   // TODO: Change Value stuff to have a Value pool and to overwrite values
   // instead of passing around references
@@ -253,7 +253,7 @@ public class MachineContext
     pushNewScope();
   }
   
-  public void popStackFrame()
+  public void popStackFrameReturning(Value returnVal)
   {
     stackFrames.remove(stackFrames.size() - 1);
     if (!stackFrames.isEmpty()) 
@@ -265,6 +265,7 @@ public class MachineContext
       ip = topStackFrame.ip;
       valueStack = topStackFrame.valueStack;
       lvalueStack = topStackFrame.lvalueStack;
+      pushValue(returnVal);
     }
     else
       topStackFrame = null;
@@ -412,7 +413,7 @@ public class MachineContext
           return false;
         
         // Finished executing the current stack frame, so exit it
-        popStackFrame();
+        popStackFrameReturning(Value.createVoidValue(coreTypes()));
       }
       return true;
     } 

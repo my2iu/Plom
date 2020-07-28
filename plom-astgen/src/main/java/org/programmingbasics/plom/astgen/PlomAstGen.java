@@ -29,6 +29,7 @@ public class PlomAstGen
       rule(StatementOrEmpty),
       rule(Statement, AssignmentExpression),
       rule(Statement, VarStatement),
+      rule(Statement, ReturnStatement),
       rule(Statement, WideStatement, StatementOrEmpty),
       rule(WideStatement, COMPOUND_IF, AfterIf),
       rule(WideStatement, COMPOUND_WHILE),
@@ -81,7 +82,8 @@ public class PlomAstGen
       rule(DotMember, DotVariable),
       rule(VarAssignment, Assignment, Expression),
       rule(VarAssignment),
-//      rule(IfMore, COMPOUND_ELSEIF, OptionalComment, AfterIf),
+      rule(ReturnStatement, Return, Expression),
+//      rule(IfMore, COMPOUND_ELSEIF, OptionalComm ent, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),
 //      rule(OptionalComment),
 //      rule(OptionalComment, DUMMY_COMMENT, OptionalComment)

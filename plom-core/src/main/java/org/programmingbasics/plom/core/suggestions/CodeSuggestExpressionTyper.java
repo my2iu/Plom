@@ -100,6 +100,7 @@ public class CodeSuggestExpressionTyper
         context.setLastTypeUsed(context.coreTypes().getBooleanType());
         return true;
       })
+      .add(Rule.Return, clearLastUsedType)
       .add(Rule.Assignment, clearLastUsedType)
       .add(Rule.Plus, clearLastUsedType)
       .add(Rule.Minus, clearLastUsedType)

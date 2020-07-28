@@ -90,6 +90,13 @@ public class SimpleInterpreter
             else
               machine.ip.pop();
           })
+      .add(Rule.ReturnStatement_Return_Expression, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 0)
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), ExpressionEvaluator.expressionHandlers);
+            else
+              machine.popStackFrameReturning(machine.popValue());
+          })
       .add(Rule.WideStatement_COMPOUND_IF_AfterIf,
           (MachineContext machine, AstNode node, int idx) -> {
             switch (idx)

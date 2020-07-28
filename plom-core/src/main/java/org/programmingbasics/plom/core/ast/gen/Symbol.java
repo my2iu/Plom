@@ -12,6 +12,7 @@ public enum Symbol
 	OptionalComment,
 	AfterIf,
 	IfMore,
+	ReturnStatement,
 	VarStatement,
 	VarType,
 	VarAssignment,
@@ -36,6 +37,7 @@ public enum Symbol
 	EndStatement,
 	TrueLiteral,
 	FalseLiteral,
+	String,
 	Number,
 	DotVariable,
 	AtType,
@@ -56,9 +58,8 @@ public enum Symbol
 	Divide,
 	OpenParenthesis,
 	ClosedParenthesis,
-	String,
+	Return,
 	DotDeclareIdentifier,
-	DotType,
 	DotMember,
 	DUMMY_COMMENT,
 	COMPOUND_IF,
@@ -75,6 +76,7 @@ public enum Symbol
 		case EndStatement:
 		case TrueLiteral:
 		case FalseLiteral:
+		case String:
 		case Number:
 		case DotVariable:
 		case AtType:
@@ -95,7 +97,7 @@ public enum Symbol
 		case Divide:
 		case OpenParenthesis:
 		case ClosedParenthesis:
-		case String:
+		case Return:
 		case DUMMY_COMMENT:
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:

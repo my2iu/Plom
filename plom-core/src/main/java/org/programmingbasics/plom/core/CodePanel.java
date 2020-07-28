@@ -122,6 +122,7 @@ public class CodePanel
         Symbol.COMPOUND_IF,
         Symbol.COMPOUND_ELSEIF,
         Symbol.COMPOUND_ELSE,
+        Symbol.Return,
     };
     for (int n = 0; n < symbolOrder.length; n++)
       buttonOrderPriority.put(symbolOrder[n], n);
@@ -415,6 +416,7 @@ public class CodePanel
       case COMPOUND_ELSE: text = "else"; break;
       case COMPOUND_ELSEIF: text = "elseif"; break;
       case COMPOUND_WHILE: text = "while"; break;
+      case Return: text = "return"; break;
       default:
       }
       String tokenText = text;
