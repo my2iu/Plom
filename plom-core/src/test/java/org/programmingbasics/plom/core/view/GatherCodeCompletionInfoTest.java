@@ -27,7 +27,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
             ),
         new TokenContainer(
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
@@ -38,7 +38,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
             )
         );
     CodePosition pos = CodePosition.fromOffsets(1);
@@ -72,13 +72,13 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
             ),
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("Astring", Symbol.AtType)
             ),
         new TokenContainer(
             new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF), 
@@ -164,13 +164,13 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
             ),
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".boolean", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("@boolean", Symbol.AtType)
             ),
         new TokenContainer(
             new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
@@ -280,7 +280,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
             ),
         new TokenContainer(
             new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
@@ -290,7 +290,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
                         new Token.SimpleToken("var", Symbol.Var),
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
                         new Token.SimpleToken(":", Symbol.Colon),
-                        Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+                        Token.ParameterToken.fromContents("@string", Symbol.AtType)
                         ),
                     new TokenContainer(
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable))
@@ -298,7 +298,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".string", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("@string", Symbol.AtType)
             )
         );
     
@@ -334,7 +334,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
             ),
         new TokenContainer(
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),

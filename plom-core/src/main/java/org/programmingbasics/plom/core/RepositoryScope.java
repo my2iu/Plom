@@ -46,6 +46,10 @@ public class RepositoryScope extends VariableScope
         // TODO: Augment parse info with function name etc.
         throw new RunException(e);
       }
+      for (int n = 0; n < func.sig.argNames.size(); n++)
+      {
+        funcInfo.argPosToName.add(func.sig.argNames.get(n));
+      }
       val.val = funcInfo;
       return val;
     }

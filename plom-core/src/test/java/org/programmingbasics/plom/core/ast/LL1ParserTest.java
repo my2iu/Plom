@@ -74,10 +74,15 @@ public class LL1ParserTest extends TestCase
      parser.addToParse(Symbol.FullStatement);
      new SimpleToken("", Symbol.Var).visit(parser);
      Assert.assertTrue(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
-     Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotType));
-       new SimpleToken("", Symbol.DotVariable).visit(parser);
+     Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotMember));
+     new SimpleToken("", Symbol.DotVariable).visit(parser);
      new SimpleToken("", Symbol.Colon).visit(parser);
+     new SimpleToken("", Symbol.AtType).visit(parser);
+     new SimpleToken("", Symbol.Assignment).visit(parser);
      Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
-     Assert.assertTrue(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotType));
+     Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotMember));
+     new SimpleToken("", Symbol.DotVariable).visit(parser);
+     Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
+     Assert.assertTrue(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotMember));
    }
 }

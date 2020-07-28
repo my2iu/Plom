@@ -1,11 +1,13 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -88,7 +90,7 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
             )
         );
     {
@@ -302,7 +304,7 @@ public class SimpleInterpreterTest extends TestCase
                         new Token.SimpleToken("var", Symbol.Var),
                         Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
                         new Token.SimpleToken(":", Symbol.Colon),
-                        Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
+                        Token.ParameterToken.fromContents("@number", Symbol.AtType)
                         ),
                     new TokenContainer(
                         Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
@@ -401,7 +403,7 @@ public class SimpleInterpreterTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents(".number", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
             new Token.SimpleToken(":=", Symbol.Assignment),
             new Token.SimpleToken("1", Symbol.Number),
             new Token.SimpleToken("+", Symbol.Plus),
@@ -419,6 +421,46 @@ public class SimpleInterpreterTest extends TestCase
     {
       // Variable shouldn't exist in global scope
     }
+  }
+  
+  @Test
+  public void testFunctionCallWithParametersNoReturn() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      
+      // Create an adder function that assigns the result to a global variable
+      // (that way we don't need to handle return values yet)
+      ExecutableFunction adderFn = new ExecutableFunction();
+      adderFn.argPosToName = Arrays.asList("val1", "val2");
+      try {
+      adderFn.code = ParseToAst.parseStatementContainer(
+          new StatementContainer(
+              new TokenContainer(
+                  Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                  new Token.SimpleToken(":=", Symbol.Assignment),
+                  Token.ParameterToken.fromContents(".val1", Symbol.DotVariable),
+                  new Token.SimpleToken("+", Symbol.Plus),
+                  Token.ParameterToken.fromContents(".val2", Symbol.DotVariable)
+                  )
+              )
+          );
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+      Value adderFnVal = new Value();
+      adderFnVal.val = adderFn;
+      adderFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType());
+      scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".add:to:", Symbol.DotVariable,
+                new TokenContainer(new Token.SimpleToken("2", Symbol.Number)),
+                new TokenContainer(new Token.SimpleToken("3", Symbol.Number)))
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
 }
