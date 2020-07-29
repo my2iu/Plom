@@ -63,6 +63,19 @@ public class RepositoryScope extends VariableScope
   }
 
   @Override
+  public Type lookupType(String name)
+  {
+    switch (name)
+    {
+      case "number": return coreTypes.getNumberType();
+      case "string": return coreTypes.getStringType();
+      case "boolean": return coreTypes.getBooleanType();
+      case "object": return coreTypes.getObjectType();
+      default: return new Type(name);
+    }
+  }
+  
+  @Override
   public void lookupSuggestions(String val, List<String> suggestions)
   {
     suggestions.addAll(repository.getAllFunctions());

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -68,6 +69,11 @@ public class CodePanel
     showPredictedTokenInput(choicesDiv);
     hookCodeClick(codeDiv);
   }
+
+  public void setVariableContextConfigurator(Consumer<CodeCompletionContext> configurator)
+  {
+    variableContextConfigurator = configurator;
+  }
   
   public void close()
   {
@@ -85,8 +91,11 @@ public class CodePanel
    * for type checking.
    * */
   ConfigureGlobalScope globalConfigurator; 
+
+  /** To configure object variables and function arguments that are accessible for code completion */
+  Consumer<CodeCompletionContext> variableContextConfigurator; 
   
-  // Errors to show in the code listing (error tokens will be underlined)
+  /** Errors to show in the code listing (error tokens will be underlined) */
   ErrorList codeErrors = new ErrorList();
 
   // To ensure that predicted buttons end up in a consistent order and
@@ -220,20 +229,17 @@ public class CodePanel
       {
         showSimpleEntryForToken(newToken, false, null);
       }
-      else if (parentSymbols.contains(Symbol.DotMember))
-      {
-        CodeCompletionContext suggestionContext = new CodeCompletionContext();
-        globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
-        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
-        MemberSuggester suggester = new MemberSuggester(suggestionContext);
-        showSimpleEntryForToken(newToken, false, suggester);
-      }
       else
       {
         CodeCompletionContext suggestionContext = new CodeCompletionContext();
         globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
+        variableContextConfigurator.accept(suggestionContext);
+        suggestionContext.pushNewScope();
         GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
-        VariableSuggester suggester = new VariableSuggester(suggestionContext);
+        Suggester suggester = 
+            parentSymbols.contains(Symbol.DotMember) ?
+                new MemberSuggester(suggestionContext)
+                : new VariableSuggester(suggestionContext);
         showSimpleEntryForToken(newToken, false, suggester);
       }
       break;

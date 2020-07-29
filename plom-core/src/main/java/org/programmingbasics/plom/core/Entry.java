@@ -13,6 +13,8 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -45,6 +47,23 @@ TODO:
 - do type checking of arguments of a function
 - type checking of return type of a function
 - suggestions should include argument names of function being modified
+- move primitive functions into regular functions so that they appear in the functions list and can have documentation
+- global variables
+- objects
+- generics
+- js native API
+- saving and loading
+- export + import projects
+- github integration
+- debugger
+- standard library
+- Android + iOS apps
+- web lessons
+- tutorial mode
+- export as html5 program
+- external images, external html
+- run in a separate browser window
+- transpile to JavaScript
  */
 
 public class Entry implements EntryPoint
@@ -253,6 +272,24 @@ public class Entry implements EntryPoint
     codePanel = new CodePanel(getMainDiv(), (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
       scope.setParent(new RepositoryScope(repository, coreTypes));
+    });
+    codePanel.setVariableContextConfigurator((context) -> {
+      // Add in function arguments
+      if (currentFunctionBeingViewed != null)
+      {
+        FunctionDescription fd = repository.getFunctionDescription(currentFunctionBeingViewed);
+        if (fd != null)
+        {
+          context.pushNewScope();
+          for (int n = 0; n < fd.sig.argNames.size(); n++)
+          {
+            String name = fd.sig.argNames.get(n);
+            Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
+            Type type = context.currentScope().lookupType(typeToken.getLookupName());
+            context.currentScope().addVariable(name, type, new Value());
+          }
+        }
+      }
     });
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)

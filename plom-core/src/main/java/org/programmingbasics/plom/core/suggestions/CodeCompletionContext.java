@@ -24,17 +24,17 @@ public class CodeCompletionContext
    * Used internally to lookup types and do type checking when computing 
    * which types are used (returns a type object for a type with a given name).
    */
-  public Type lookupType(String name)
-  {
-    switch (name) 
-    {
-    case "number": return coreTypes().getNumberType();
-    case "string": return coreTypes().getStringType();
-    case "boolean": return coreTypes().getBooleanType();
-    case "object": return coreTypes().getObjectType();
-    default: return new Type(name);
-    }
-  }
+//  public Type lookupType(String name)
+//  {
+//    switch (name) 
+//    {
+//    case "number": return coreTypes().getNumberType();
+//    case "string": return coreTypes().getStringType();
+//    case "boolean": return coreTypes().getBooleanType();
+//    case "object": return coreTypes().getObjectType();
+//    default: return new Type(name);
+//    }
+//  }
   
   public Type getLastTypeUsed()
   {

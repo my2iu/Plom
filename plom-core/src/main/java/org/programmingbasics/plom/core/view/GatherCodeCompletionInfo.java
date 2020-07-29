@@ -109,7 +109,7 @@ public class GatherCodeCompletionInfo
   }
   static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
       .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
-        Type t = context.lookupType(((Token.ParameterToken)node.token).getLookupName());
+        Type t = context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName());
         typesToReturn.type = t;
         return true;
       });
