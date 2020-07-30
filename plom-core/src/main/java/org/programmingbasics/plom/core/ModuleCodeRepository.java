@@ -11,6 +11,9 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
+import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
+import org.programmingbasics.plom.core.interpreter.Type;
 
 public class ModuleCodeRepository
 {
@@ -123,15 +126,28 @@ public class ModuleCodeRepository
         new StatementContainer());
     functions.put(testParamFunc.sig.getLookupName(), testParamFunc);
     
+    FunctionDescription printStringPrimitive = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print string:", "value", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.WideToken("// Prints a string to the screen", Symbol.DUMMY_COMMENT),
+                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
+            ));
+    functions.put(printStringPrimitive.sig.getLookupName(), printStringPrimitive);
+
     FunctionDescription printPrimitive = new FunctionDescription(
         FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print:", "value", Token.ParameterToken.fromContents("@object", Symbol.AtType)),
         new StatementContainer(
             new TokenContainer(
                 new Token.WideToken("// Prints a value to the screen", Symbol.DUMMY_COMMENT),
-                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
-            ));
+                Token.ParameterToken.fromContents(".print string:", Symbol.DotVariable, 
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".value", Symbol.DotVariable),
+                        Token.ParameterToken.fromContents(".to string", Symbol.DotVariable))
+                    )
+            )));
     functions.put(printPrimitive.sig.getLookupName(), printPrimitive);
-    
+
     FunctionDescription inputPrimitive = new FunctionDescription(
         FunctionSignature.from(Token.ParameterToken.fromContents("@string", Symbol.AtType), "input:", "prompt", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
         new StatementContainer(
