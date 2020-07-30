@@ -42,12 +42,10 @@ TODO:
 - keep track of names of functions so that it can show up in stack traces
 - default to a name of empty string to the first piece of code executed
 - store function name when an error is thrown
-- properly support passing in arguments for functions
 - properly handle focus and loss of focus on type entry fields of the method panel
 - do type checking of arguments of a function
 - type checking of return type of a function
-- suggestions should include argument names of function being modified
-- move primitive functions into regular functions so that they appear in the functions list and can have documentation
+- move standard library code back out of the repository and into the standard library so that people don't need to have a repository for normal stuff (and so that standard library can't be modified)
 - global variables
 - objects
 - generics
@@ -208,7 +206,7 @@ public class Entry implements EntryPoint
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
-    a.setTextContent("." + sig.getLookupName() + " \u270e");
+    a.setTextContent("." + sig.getDisplayName() + " \u270e");
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();

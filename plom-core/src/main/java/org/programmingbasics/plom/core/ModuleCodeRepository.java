@@ -34,6 +34,31 @@ public class ModuleCodeRepository
       }
       return name;
     }
+    
+    public String getDisplayName()
+    {
+      String name = "";
+      for (int n = 0; n < nameParts.size(); n++)
+      {
+        if (n != 0)
+          name += " ";
+        name += nameParts.get(n);
+        if (!argNames.isEmpty())
+        {
+          name += ": (.";
+          name += argNames.get(n);
+          name += " @";
+          if (argTypes.get(n) != null)
+            name += argTypes.get(n).getLookupName();
+          name += ")";
+        }
+      }
+      if (returnType != null)
+      {
+        name += " @" + returnType.getLookupName();
+      }
+      return name;
+    }
     public static FunctionSignature from(Token.ParameterToken returnType, String name)
     {
       return from(returnType, Arrays.asList(name.split(":")), new ArrayList<>(), new ArrayList<>());
