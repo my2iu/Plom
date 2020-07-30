@@ -453,13 +453,12 @@ public class CodePanel
       int y = (int)(mevt.getClientY() - rect.getTop()) + div.getScrollTop();
 
       CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos, codeErrors);
+      if (newPos == null)
+        newPos = new CodePosition();
+      cursorPos = newPos;
 
-      if (cursorPos != null)
-      {
-        cursorPos = newPos;
-        updateCodeView(false);
-        showPredictedTokenInput(choicesDiv);
-      }
+      updateCodeView(false);
+      showPredictedTokenInput(choicesDiv);
     }, false);
   }
 
