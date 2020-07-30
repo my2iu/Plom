@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 /**
@@ -63,6 +64,16 @@ public class VariableScope
     {
       suggestions.add(name);
     }
+  }
+  /**
+   * Returns the Type object used to represent a type within this 
+   * interpreter for the given textual Type description
+   */
+  public Type typeFromToken(Token typeToken) throws RunException
+  {
+    if (parent != null)
+      return parent.typeFromToken(typeToken);
+    throw new RunException();
   }
 
   // Overwrites a variable in this scope

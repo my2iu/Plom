@@ -122,6 +122,25 @@ public class ModuleCodeRepository
         FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), Arrays.asList("test"), Arrays.asList("arg1"), Arrays.asList(Token.ParameterToken.fromContents("@number", Symbol.AtType))),
         new StatementContainer());
     functions.put(testParamFunc.sig.getLookupName(), testParamFunc);
+    
+    FunctionDescription printPrimitive = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print:", "value", Token.ParameterToken.fromContents("@object", Symbol.AtType)),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.WideToken("// Prints a value to the screen", Symbol.DUMMY_COMMENT),
+                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
+            ));
+    functions.put(printPrimitive.sig.getLookupName(), printPrimitive);
+    
+    FunctionDescription inputPrimitive = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@string", Symbol.AtType), "input:", "prompt", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.WideToken("// Displays a prompt asking for input and returns the value entered by the user", Symbol.DUMMY_COMMENT),
+                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
+            ));
+    functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
+
   }
   
   public FunctionDescription getFunctionDescription(String name)

@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.AstNode;
@@ -8,6 +10,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
 
 /**
  * In order to work out how the language will work, I need a simple 
@@ -96,6 +99,55 @@ public class SimpleInterpreter
               machine.ip.pushAndAdvanceIdx(node.children.get(1), ExpressionEvaluator.expressionHandlers);
             else
               machine.popStackFrameReturning(machine.popValue());
+          })
+      .add(Rule.PrimitivePassthrough, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            
+//            Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
+//            if (toReturn.type.isCallable())
+//            {
+//              List<Value> args = new ArrayList<>();
+//              for (int n = 0; n < node.internalChildren.size(); n++)
+//              {
+//                args.add(machine.readValue(node.internalChildren.size() - n - 1));
+//              }
+//              machine.popValues(node.internalChildren.size());
+//              if (toReturn.type.isNormalFunction()) 
+//              {
+//                ExecutableFunction fn = (ExecutableFunction)toReturn.val;
+//                machine.ip.pop();
+//                machine.pushStackFrame(fn.code, SimpleInterpreter.statementHandlers);
+//                machine.pushNewScope();
+//                for (int n = 0; n < fn.argPosToName.size(); n++)
+//                {
+//                  machine.currentScope().addVariable(fn.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
+//                }
+//                return;
+//              }
+//              if (toReturn.type.isPrimitiveNonBlockingFunction())
+//              {
+//                toReturn = ((PrimitiveFunction)toReturn.val).call(args);
+//                machine.pushValue(toReturn);
+//                machine.ip.pop();
+//                return;
+//              }
+//              else if (toReturn.type.isPrimitiveBlockingFunction())
+//              {
+//                MachineContext.PrimitiveBlockingFunctionReturn blockWait = new MachineContext.PrimitiveBlockingFunctionReturn(); 
+//                ((PrimitiveBlockingFunction)toReturn.val).call(blockWait, args);
+//                machine.waitOnBlockingFunction(blockWait);
+//                machine.ip.pop();
+//                return;
+//              }
+//              else 
+                throw new RunException();
+//            }
+            
+            
+//            if (idx == 0)
+//              machine.ip.pushAndAdvanceIdx(node.children.get(1), ExpressionEvaluator.expressionHandlers);
+//            else
+//              machine.popStackFrameReturning(machine.popValue());
           })
       .add(Rule.WideStatement_COMPOUND_IF_AfterIf,
           (MachineContext machine, AstNode node, int idx) -> {

@@ -8,8 +8,10 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.VariableScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
@@ -27,7 +29,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
             ),
         new TokenContainer(
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
@@ -38,14 +40,11 @@ public class GatherCodeCompletionInfoTest extends TestCase
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
             new Token.SimpleToken(":", Symbol.Colon),
-            Token.ParameterToken.fromContents("Anumber", Symbol.AtType)
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
             )
         );
     CodePosition pos = CodePosition.fromOffsets(1);
-    CodeCompletionContext context = new CodeCompletionContext();
-    StandardLibrary.createCoreTypes(context.coreTypes()); 
-    context.pushNewScope();
-    GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
+    CodeCompletionContext context = codeCompletionForPosition(code, pos);
     Assert.assertNull(context.currentScope().lookupType("b"));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
     
@@ -59,6 +58,21 @@ public class GatherCodeCompletionInfoTest extends TestCase
   {
     CodeCompletionContext context = new CodeCompletionContext();
     StandardLibrary.createCoreTypes(context.coreTypes());
+    context.currentScope().setParent(new VariableScope() {
+      @Override
+      public Type typeFromToken(Token typeToken) throws RunException
+      {
+        String name = ((Token.ParameterToken)typeToken).getLookupName(); 
+        switch (name)
+        {
+          case "number": return context.coreTypes().getNumberType();
+          case "string": return context.coreTypes().getStringType();
+          case "boolean": return context.coreTypes().getBooleanType();
+          case "object": return context.coreTypes().getObjectType();
+          default: return new Type(name);
+        }
+      }
+    });
     context.pushNewScope();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     return context;

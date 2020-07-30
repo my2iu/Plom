@@ -316,6 +316,10 @@ public class CodePanel
     contentDiv.getStyle().setDisplay(Display.INLINE_BLOCK);
     contentDiv.getStyle().setProperty("white-space", "normal");
     choicesDiv.appendChild(contentDiv);
+    // Actually, I don't like how the enter and backspace buttons keep moving
+    // around now. I'll just clamp the width of the keyboard area.
+    contentDiv.getStyle().setDisplay(Display.BLOCK);
+    contentDiv.getStyle().setProperty("max-width", "35em");
     
     // Parse the current statement up to the cursor position
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
@@ -423,9 +427,11 @@ public class CodePanel
       case COMPOUND_ELSEIF: text = "elseif"; break;
       case COMPOUND_WHILE: text = "while"; break;
       case Return: text = "return"; break;
+      case PrimitivePassthrough: text = "primitive"; break;
       default:
       }
       String tokenText = text;
+      if (sym == Symbol.PrimitivePassthrough) continue;
       // Here we distinguish between allowed symbols and valid symbols because we
       // don't want the UI to keep changing all the time with the changes in context.
       // Instead we show all normally allowed symbols, but disable the ones that

@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
@@ -109,8 +110,15 @@ public class GatherCodeCompletionInfo
   }
   static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
       .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
-        Type t = context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName());
-        typesToReturn.type = t;
+          try
+          {
+            Type t = context.currentScope().typeFromToken(node.token);
+            typesToReturn.type = t;
+          }
+          catch (RunException e)
+          {
+            typesToReturn.type = null;
+          }
         return true;
       });
 

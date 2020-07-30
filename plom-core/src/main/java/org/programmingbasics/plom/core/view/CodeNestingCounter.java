@@ -76,7 +76,7 @@ public class CodeNestingCounter
     
     @Override public Integer visitWideToken(WideToken token)
     {
-      return visitWideToken(token);
+      return visitWideToken(token, null, null);
     }
 
     @Override public Integer visitOneBlockToken(OneBlockToken token)

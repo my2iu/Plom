@@ -59,6 +59,7 @@ enum Symbol
   OpenParenthesis(true),
   ClosedParenthesis(true),
   Return(true),
+  PrimitivePassthrough(true),
   
   DotDeclareIdentifier(false),  // Expands to DotVariable
   DotMember(false),             // Expands to DotVariable

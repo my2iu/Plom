@@ -59,6 +59,7 @@ public enum Symbol
 	OpenParenthesis,
 	ClosedParenthesis,
 	Return,
+	PrimitivePassthrough,
 	DotDeclareIdentifier,
 	DotMember,
 	DUMMY_COMMENT,
@@ -98,6 +99,7 @@ public enum Symbol
 		case OpenParenthesis:
 		case ClosedParenthesis:
 		case Return:
+		case PrimitivePassthrough:
 		case DUMMY_COMMENT:
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:

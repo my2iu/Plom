@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
@@ -63,8 +64,9 @@ public class RepositoryScope extends VariableScope
   }
 
   @Override
-  public Type lookupType(String name)
+  public Type typeFromToken(Token typeToken) throws RunException
   {
+    String name = ((Token.ParameterToken)typeToken).getLookupName(); 
     switch (name)
     {
       case "number": return coreTypes.getNumberType();

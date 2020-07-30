@@ -285,8 +285,14 @@ public class Entry implements EntryPoint
           {
             String name = fd.sig.argNames.get(n);
             Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
-            Type type = context.currentScope().lookupType(typeToken.getLookupName());
-            context.currentScope().addVariable(name, type, new Value());
+            try {
+              Type type = context.currentScope().typeFromToken(typeToken);
+              context.currentScope().addVariable(name, type, new Value());
+            }
+            catch (RunException e)
+            {
+              // Ignore the argument if it doesn't have a valid type
+            }
           }
         }
       }
