@@ -1,11 +1,14 @@
 package org.programmingbasics.plom.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.RunException;
@@ -38,20 +41,22 @@ public class RepositoryScope extends VariableScope
     {
       Value val = new Value();
       val.type = Type.makeFunctionType(coreTypes.getVoidType());
-      ExecutableFunction funcInfo = new ExecutableFunction();
+      
+      AstNode code;
       try {
-        funcInfo.code = ParseToAst.parseStatementContainer(func.code);
+        code = ParseToAst.parseStatementContainer(func.code);
       } 
       catch (ParseException e)
       {
         // TODO: Augment parse info with function name etc.
         throw new RunException(e);
       }
+      List<String> argPosToName = new ArrayList<>();
       for (int n = 0; n < func.sig.argNames.size(); n++)
       {
-        funcInfo.argPosToName.add(func.sig.argNames.get(n));
+        argPosToName.add(func.sig.argNames.get(n));
       }
-      val.val = funcInfo;
+      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), code, argPosToName);
       return val;
     }
     return super.lookup(name);

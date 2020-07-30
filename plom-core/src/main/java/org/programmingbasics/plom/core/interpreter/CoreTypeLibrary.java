@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Provides easy access to the core types needed for basic operations
  */
@@ -24,6 +27,19 @@ public class CoreTypeLibrary
   protected Value nullVal;
   protected Value trueVal;
   protected Value falseVal;
+  
+  protected Map<CodeUnitLocation, PrimitivePassthrough> primitives = new HashMap<>();
+  
+  public CoreTypeLibrary addPrimitive(CodeUnitLocation codeUnit, PrimitivePassthrough func)
+  {
+    primitives.put(codeUnit, func);
+    return this;
+  }
+  
+  public PrimitivePassthrough lookupPrimitive(CodeUnitLocation codeUnit)
+  {
+    return primitives.get(codeUnit);
+  }
   
   public static CoreTypeLibrary createTestLibrary()
   {

@@ -200,6 +200,11 @@ public class MachineContext
       lvalueStack = new ArrayList<>();
     }
     /**
+     * Debug information about where code is from
+     */
+    CodeUnitLocation codeUnit;
+    
+    /**
      * Holds the instruction pointer of where execution is in the 
      * current function/method
      */
@@ -236,11 +241,12 @@ public class MachineContext
   private List<StackFrame> stackFrames = new ArrayList<>();
   private StackFrame topStackFrame;
   
-  public void pushStackFrame(AstNode node, NodeHandlers instructionHandlers)
+  public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, NodeHandlers instructionHandlers)
   {
     StackFrame frame = new StackFrame();
     frame.ip.push(node, instructionHandlers);
     frame.topScope = getGlobalScope();
+    frame.codeUnit = codeUnit;
     
     stackFrames.add(frame);
     topStackFrame = frame;
@@ -271,6 +277,11 @@ public class MachineContext
       topStackFrame = null;
   }
   
+  StackFrame getTopStackFrame()
+  {
+    return topStackFrame;
+  }
+  
   /**
    * We occasionally need to call blocking functions, but since JavaScript 
    * doesn't support that, we need to exit the interpreter loop and then
@@ -284,6 +295,13 @@ public class MachineContext
     /** Function needs to set the returnValue to whatever the function should return */
     Value returnValue;
     
+    void reset()
+    {
+      isBlocked = true;
+      checkDone = null;
+      returnValue = null;
+    }
+    
     public void unblockAndReturn(Value returnValue)
     {
       this.returnValue = returnValue;
@@ -296,6 +314,33 @@ public class MachineContext
 //    {
 //      machine.runToCompletion();
 //    }
+  }
+  
+  PrimitiveBlockingFunctionReturn reusableBlocker = new PrimitiveBlockingFunctionReturn();
+  /** 
+   * Gives you a blocker object that can be used when calling a primitive function.
+   * Right now, it just constantly reuses the same blocker object, but to support
+   * reentrant primitives functions, then this would have to be modified to support
+   * more than one blocker object. 
+   */
+  PrimitiveBlockingFunctionReturn getNewBlocker()
+  {
+    reusableBlocker.reset();
+    return reusableBlocker;
+  }
+  PrimitiveBlockingFunctionReturn blockedPrimitive;
+  void waitOnBlockingPrimitive(PrimitiveBlockingFunctionReturn blockWait)
+  {
+    blockedPrimitive = blockWait;
+  }
+  void testPrimitiveBlockFinished()
+  {
+    // Check if the thing we're blocking on is still blocked
+    if (blockedPrimitive.isBlocked)
+      return;
+    // If we're unblocked then save the return value on the stack and clear the blocking state
+    popStackFrameReturning(blockedPrimitive.returnValue);
+    blockedPrimitive = null;
   }
   PrimitiveBlockingFunctionReturn blocked;
   void waitOnBlockingFunction(PrimitiveBlockingFunctionReturn blockWait)
@@ -393,6 +438,14 @@ public class MachineContext
         if (blocked.isBlocked)
           return false;
         testBlockFinished();
+      }
+      if (blockedPrimitive != null)
+      {
+        if (blockedPrimitive.checkDone != null)
+          blockedPrimitive.checkDone.run();
+        if (blockedPrimitive.isBlocked)
+          return false;
+        testPrimitiveBlockFinished();
       }
       runNextStep();
     }

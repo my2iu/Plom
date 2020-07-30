@@ -5,12 +5,13 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.MachineContext.PrimitiveBlockingFunctionReturn;
 
 import junit.framework.TestCase;
 
@@ -432,25 +433,26 @@ public class SimpleInterpreterTest extends TestCase
       
       // Create an adder function that assigns the result to a global variable
       // (that way we don't need to handle return values yet)
-      ExecutableFunction adderFn = new ExecutableFunction();
-      adderFn.argPosToName = Arrays.asList("val1", "val2");
       try {
-      adderFn.code = ParseToAst.parseStatementContainer(
-          new StatementContainer(
-              new TokenContainer(
-                  Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                  new Token.SimpleToken(":=", Symbol.Assignment),
-                  Token.ParameterToken.fromContents(".val1", Symbol.DotVariable),
-                  new Token.SimpleToken("+", Symbol.Plus),
-                  Token.ParameterToken.fromContents(".val2", Symbol.DotVariable)
-                  )
-              )
-          );
+        ExecutableFunction adderFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forFunction(""), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".val1", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".val2", Symbol.DotVariable)
+                        )
+                    )
+                ), 
+            Arrays.asList("val1", "val2"));
+        Value adderFnVal = new Value();
+        adderFnVal.val = adderFn;
+        adderFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType());
+        scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
-      Value adderFnVal = new Value();
-      adderFnVal.val = adderFn;
-      adderFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType());
-      scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
     });
     
     StatementContainer code = new StatementContainer(
@@ -470,23 +472,23 @@ public class SimpleInterpreterTest extends TestCase
       StandardLibrary.createCoreTypes(coreTypes);
       scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
       
-      // Create an adder function that assigns the result to a global variable
-      // (that way we don't need to handle return values yet)
-      ExecutableFunction getFn = new ExecutableFunction();
       try {
-        getFn.code = ParseToAst.parseStatementContainer(
-            new StatementContainer(
-                new TokenContainer(
-                    new Token.SimpleToken("return", Symbol.Return),
-                    new Token.SimpleToken("32", Symbol.Number)
+        ExecutableFunction getFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forFunction(""), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.SimpleToken("32", Symbol.Number)
+                        )
                     )
-                )
-            );
+                ), 
+            Arrays.asList());
+        Value getFnVal = new Value();
+        getFnVal.val = getFn;
+        getFnVal.type = Type.makeFunctionType(coreTypes.getNumberType());
+        scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
-      Value getFnVal = new Value();
-      getFnVal.val = getFn;
-      getFnVal.type = Type.makeFunctionType(coreTypes.getNumberType());
-      scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
     });
     
     StatementContainer code = new StatementContainer(
@@ -497,6 +499,81 @@ public class SimpleInterpreterTest extends TestCase
             ));
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(32, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
+  @Test
+  public void testBlockingPrimitive() throws ParseException, RunException
+  {
+    // Set-up some variables and functions
+    class CapturePrimitive implements PrimitivePassthrough {
+      Value captured;
+      int checkedCount = 0;
+      MachineContext machine;
+      MachineContext.PrimitiveBlockingFunctionReturn blockWait;
+      @Override
+      public void call(PrimitiveBlockingFunctionReturn blockWait,
+          MachineContext machine) throws RunException
+      {
+        this.machine = machine;
+        captured = machine.currentScope().lookup("val");
+        this.blockWait = blockWait;
+        blockWait.checkDone = () -> { checkedCount++; };
+      }
+      void unblock()
+      {
+        blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), 32));
+      }
+    }
+    CapturePrimitive fun = new CapturePrimitive();
+    
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      
+      try {
+        ExecutableFunction aFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forFunction("a:"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough)
+                        )
+                    )
+                ), 
+            Arrays.asList("val"));
+        Value aFnVal = new Value();
+        aFnVal.val = aFn;
+        aFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
+        scope.addVariable("a:", aFnVal.type, aFnVal);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+      coreTypes.addPrimitive(CodeUnitLocation.forFunction("a:"), fun); ;
+      scope.addVariable("b", coreTypes.getStringType(), Value.createStringValue(coreTypes, "hello "));
+      scope.addVariable("c", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 2));
+    });
+    
+    // Run some code that uses those variables
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable, 
+                new TokenContainer(Token.ParameterToken.fromContents(".b", Symbol.DotVariable)))
+            )
+        );
+    SimpleInterpreter terp = new SimpleInterpreter(code); 
+    // Machine should block
+    terp.runNoReturn(vars);
+    Assert.assertEquals("hello ", fun.captured.val);
+    Assert.assertEquals(2.0, vars.globalScope.lookup("c").getNumberValue(), 0.0);
+    Assert.assertEquals(1, fun.checkedCount);
+    // Machine will still be blocked if we run again
+    terp.continueRun();
+    Assert.assertEquals(2.0, vars.globalScope.lookup("c").getNumberValue(), 0.0);
+    Assert.assertEquals(2, fun.checkedCount);
+    // Unblock things and let the machine run to completion
+    fun.unblock();
+    terp.continueRun();
+    Assert.assertEquals(3, fun.checkedCount);
+    Assert.assertEquals(32.0, vars.globalScope.lookup("c").getNumberValue(), 0.0);
   }
 
 }

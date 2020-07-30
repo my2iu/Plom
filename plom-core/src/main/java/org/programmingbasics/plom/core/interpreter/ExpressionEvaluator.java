@@ -187,7 +187,7 @@ public class ExpressionEvaluator
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
                 machine.ip.pop();
-                machine.pushStackFrame(fn.code, SimpleInterpreter.statementHandlers);
+                machine.pushStackFrame(fn.code, fn.codeUnit, SimpleInterpreter.statementHandlers);
                 machine.pushNewScope();
                 for (int n = 0; n < fn.argPosToName.size(); n++)
                 {
