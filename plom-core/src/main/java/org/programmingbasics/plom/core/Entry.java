@@ -82,6 +82,7 @@ public class Entry implements EntryPoint
   
   CodePanel codePanel;
   MethodPanel methodPanel;
+  GlobalsPanel globalsPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
   String currentFunctionBeingViewed = null;
   Consumer<Throwable> errorLogger = (err) -> {
@@ -327,45 +328,13 @@ public class Entry implements EntryPoint
 
   private void showGlobalsPanel()
   {
-    Document doc = Browser.getDocument();
     DivElement mainDiv = getMainDiv();
-    mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
     
-    // For adding functions
-    Element newFunctionAnchor = mainDiv.querySelector(".functionsHeading a");
-    newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
-      e.preventDefault();
-      String newFunctionName = "function";
-      int newFunctionNumber = 0;
-      while (repository.hasFunctionWithName(newFunctionName))
-      {
-        newFunctionNumber++;
-        newFunctionName = "function " + newFunctionNumber;
-      }
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newFunctionName),
-          new StatementContainer());
-      repository.addFunction(func);
-      
-      loadFunctionSignatureView(func.sig);
-    }, false);
-    
-    // List of functions
-    Element functionListEl = mainDiv.querySelector(".functionList");
-    
-    for (String fnName: repository.getAllFunctions())
-    {
-      AnchorElement a = (AnchorElement)doc.createElement("a");
-      a.setHref("#");
-      a.setTextContent(fnName);
-      a.addEventListener(Event.CLICK, (e) -> {
-        e.preventDefault();
-        loadFunctionCodeView(fnName);
-      }, false);
-      DivElement div = doc.createDivElement();
-      div.appendChild(a);
-      functionListEl.appendChild(div);
-    }
+    globalsPanel = new GlobalsPanel(mainDiv, repository,
+        new GlobalsPanel.GlobalsPanelViewSwitcher() {
+          @Override public void loadFunctionSignatureView(FunctionSignature sig) { Entry.this.loadFunctionSignatureView(sig); }
+          @Override public void loadFunctionCodeView(String fnName) { Entry.this.loadFunctionCodeView(fnName); }
+        });
   }
   
   private void showMethodPanel(FunctionSignature sig)

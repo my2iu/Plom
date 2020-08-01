@@ -19,4 +19,10 @@ public interface UIResources extends ClientBundle
 
    @Source("globalspanel.html")
    TextResource getGlobalsPanelHtml();
+   
+   @Source("classpanel.html")
+   TextResource getClassPanelHtml();
+   
+   @Source("simpleentrycontents.html")
+   TextResource getSimpleEntryContentsHtml();
 }

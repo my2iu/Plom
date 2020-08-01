@@ -33,6 +33,7 @@ public class SimpleEntry
   
   SimpleEntry(DivElement el, DivElement suggestionsEl)
   {
+    el.setInnerHTML(UIResources.INSTANCE.getSimpleEntryContentsHtml().getText());
     container = el;
     suggestionsContainer = suggestionsEl;
     hookSimpleEntry(el);

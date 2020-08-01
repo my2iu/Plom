@@ -96,8 +96,11 @@ public class ModuleCodeRepository
     public FunctionSignature sig;
     public StatementContainer code;
   }
+
+  private Map<String, FunctionDescription> functions = new HashMap<>();
   
-  private Map<String, FunctionDescription> functions = new HashMap<>(); 
+  /** Lists global variables and their types */
+  private Map<String, Token.ParameterToken> globalVars = new HashMap<>(); 
   
   public ModuleCodeRepository()
   {
@@ -182,6 +185,8 @@ public class ModuleCodeRepository
             ));
     functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
 
+    globalVars.put("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
+    
   }
   
   public FunctionDescription getFunctionDescription(String name)
@@ -212,4 +217,17 @@ public class ModuleCodeRepository
     func.sig = newSig;
     functions.put(func.sig.getLookupName(), func);
   }
+  
+  public List<String> getAllGlobalVars()
+  {
+    List<String> names = new ArrayList<>(globalVars.keySet());
+    names.sort(Comparator.naturalOrder());
+    return names;
+  }
+  
+  public Token.ParameterToken getGlobalVarType(String name)
+  {
+    return globalVars.get(name);
+  }
+
 }

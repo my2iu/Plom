@@ -12,14 +12,16 @@
     	}
     	
     	.codemain,
-    	.methodpanel {
+    	.methodpanel,
+    	.globalspanel {
     		width: 100%;
     		height: 100%;
     		display: flex;
     		flex-direction: column;
     	}
     	.codesidesplit,
-    	.methodsidesplit {
+    	.methodsidesplit,
+    	.globalsidesplit {
     		display: flex;
     		flex-direction: row;
     		flex-grow: 1;
@@ -53,7 +55,8 @@
     		text-indent: -2em;
     	}
     	.codemain div.token,
-    	.methodpanel .typeEntry div.token {
+    	.methodpanel .typeEntry div.token,
+    	.globalspanel .typeEntry div.token {
     		background-color: #ccc;
     		display: inline-block;
     		padding: 0.2em;
@@ -62,7 +65,8 @@
     		text-indent: 0;
     	}
     	.codemain span.token,
-    	.methodpanel .typeEntry span.token {
+    	.methodpanel .typeEntry span.token,
+    	.globalspanel .typeEntry span.token {
     		background-color: #ccc;
     		display: inline;
     		padding: 0.2em;
@@ -71,7 +75,8 @@
     		text-indent: 0;
     	}
     	.codemain div.blocktoken,
-    	.methodpanel .typeEntry div.blocktoken {
+    	.methodpanel .typeEntry div.blocktoken,
+    	.globalspanel .typeEntry div.blocktoken {
     		background-color: #ddd;
     		display: block;
     		padding: 0.2em;
@@ -79,7 +84,8 @@
     		border: 1px solid #aaa;
     	}
     	.codemain .tokenError, 
-    	.methodpanel .typeEntry tokenError {
+    	.methodpanel .typeEntry tokenError,
+    	.globalspanel .typeEntry tokenError {
     		text-decoration: underline;
     		text-decoration: underline red;
     	}
@@ -145,17 +151,41 @@
     		margin-top: 0.5em;
     		margin-bottom: 0.5em;
     	}
-    	.methodpanel .typeEntry {
+    	.globalspanel .functionsHeading {
+    		margin-top: 1em;
+    	}
+    	.globalspanel .globalVarsList > div {
+    		margin-top: 0.5em;
+    		margin-bottom: 0.5em;
+    	}
+    	.globalspanel .globalVarsHeading {
+    		margin-top: 1em;
+    	}
+    	.globalspanel .classesList > div {
+    		margin-top: 0.5em;
+    		margin-bottom: 0.5em;
+    	}
+    	.globalspanel .classesHeading {
+    		margin-top: 1em;
+    	}
+    	.classpanel .methodsList > div {
+    		margin-top: 0.5em;
+    		margin-bottom: 0.5em;
+    	}
+    	.methodpanel .typeEntry,
+    	.globalspanel .typeEntry {
     		display: inline-block;
     		border: 1px solid black;
     		min-width: 3em;
     		padding-right: 1em;
     		position: relative;
     	}
-    	.methodpanel .typeEntry .tokenline {
+    	.methodpanel .typeEntry .tokenline,
+    	.globalspanel .typeEntry .tokenline {
     		display: inline;
     	}
-    	.methodpanel .typeEntry span.typeTokenSelected {
+    	.methodpanel .typeEntry span.typeTokenSelected,
+    	.globalspanel .typeEntry span.typeTokenSelected {
     		background-color: #7f7;
     	}
     </style>
