@@ -1,9 +1,12 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
@@ -31,6 +34,19 @@ public class RepositoryScope extends VariableScope
   {
     this.repository = repository;
     this.coreTypes = coreTypes;
+    
+    // Create variables for all the global variables in the module
+    for (VariableDescription v: repository.getAllGlobalVars())
+    {
+      try {
+        addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
+      }
+      catch (RunException e)
+      {
+        // Ignore errors when registering variables
+      }
+      
+    }
   }
   
   @Override

@@ -47,6 +47,7 @@ public class VariableScope
     }
     return LValue.readFromScope(this, name, val);
   }
+  /** Looks up the type of a variable */
   public Type lookupType(String name)
   {
     Type type = types.get(name);
