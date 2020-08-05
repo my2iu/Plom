@@ -1,24 +1,22 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
-import org.programmingbasics.plom.core.interpreter.VariableScope;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
+import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 /**
  * Maps a code repository so that it can be accessed in the scope stack
@@ -36,7 +34,7 @@ public class RepositoryScope extends VariableScope
     this.coreTypes = coreTypes;
     
     // Create variables for all the global variables in the module
-    for (VariableDescription v: repository.getAllGlobalVars())
+    for (VariableDescription v: repository.globalVars)
     {
       try {
         addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
@@ -102,5 +100,9 @@ public class RepositoryScope extends VariableScope
   public void lookupSuggestions(String val, List<String> suggestions)
   {
     suggestions.addAll(repository.getAllFunctions());
+    for (VariableDescription v: repository.globalVars)
+    {
+      suggestions.add(v.name);
+    }
   }
 }
