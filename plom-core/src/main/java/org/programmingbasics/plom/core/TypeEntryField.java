@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
@@ -38,6 +39,18 @@ public class TypeEntryField
   Token.ParameterToken type;
   CodePosition cursorPos;
   RenderedHitBox hitBox;
+  BiConsumer<Token.ParameterToken, Boolean> listener;
+  
+  /** 
+   * You don't actually need to listen for changes because if there is an
+   * existing type, the contents of the type will actually be rewritten with
+   * the new type, but it's safer to have one, and it's needed if you don't
+   * have an existing type with the type field being blank at the beginning
+   */
+  public void setChangeListener(BiConsumer<Token.ParameterToken, Boolean> listener)
+  {
+    this.listener = listener;
+  }
   
   void hookCodeClick(DivElement div)
   {
@@ -86,7 +99,8 @@ public class TypeEntryField
       simpleEntry.setVisible(false);
     }
     render();
-      
+    if (listener != null)
+      listener.accept(type, isFinal);
     
   }
   

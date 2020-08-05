@@ -11,9 +11,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
-import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
-import org.programmingbasics.plom.core.interpreter.Type;
 
 public class ModuleCodeRepository
 {
@@ -97,10 +94,17 @@ public class ModuleCodeRepository
     public StatementContainer code;
   }
 
+  public static class VariableDescription
+  {
+    public int id;
+    public String name;
+    public Token.ParameterToken type;
+  }
+  
   private Map<String, FunctionDescription> functions = new HashMap<>();
   
   /** Lists global variables and their types */
-  private Map<String, Token.ParameterToken> globalVars = new HashMap<>(); 
+  List<VariableDescription> globalVars = new ArrayList<>();
   
   public ModuleCodeRepository()
   {
@@ -185,8 +189,7 @@ public class ModuleCodeRepository
             ));
     functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
 
-    globalVars.put("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
-    
+    addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
   }
   
   public FunctionDescription getFunctionDescription(String name)
@@ -218,16 +221,32 @@ public class ModuleCodeRepository
     functions.put(func.sig.getLookupName(), func);
   }
   
-  public List<String> getAllGlobalVars()
+  public List<VariableDescription> getAllGlobalVars()
   {
-    List<String> names = new ArrayList<>(globalVars.keySet());
-    names.sort(Comparator.naturalOrder());
-    return names;
+    // Assign ids to all the global variables and put them in a sorted list
+    List<VariableDescription> toReturn = new ArrayList<>();
+    for (int n = 0; n < globalVars.size(); n++)
+    {
+      VariableDescription var = globalVars.get(n);
+      var.id = n;
+      toReturn.add(var);
+    }
+    toReturn.sort(Comparator.comparing((VariableDescription v) -> v.name));
+    return toReturn;
   }
   
-  public Token.ParameterToken getGlobalVarType(String name)
+  public void addGlobalVarAndResetIds(String name, Token.ParameterToken type)
   {
-    return globalVars.get(name);
+    // Add a new variable at the beginning of the list so that it's more likely
+    // to appear near the top of the variable list
+    VariableDescription v = new VariableDescription();
+    v.name = name;
+    v.type = type;
+    globalVars.add(0, v);
   }
-
+  
+  public void updateGlobalVariable(VariableDescription v)
+  {
+    globalVars.set(v.id, v);
+  }
 }

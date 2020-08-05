@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -24,8 +25,19 @@ public class GlobalsPanel
 {
   Document doc = Browser.getDocument();
   SimpleEntry simpleEntry;
+  ModuleCodeRepository repository;
+  DivElement mainDiv;
+  GlobalsPanelViewSwitcher viewSwitchCallback;
   
   GlobalsPanel(DivElement mainDiv, ModuleCodeRepository repository, GlobalsPanelViewSwitcher callback)
+  {
+    this.mainDiv = mainDiv;
+    this.repository = repository;
+    this.viewSwitchCallback = callback;
+    rebuildView();
+  }
+  
+  void rebuildView()
   {
     Document doc = Browser.getDocument();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
@@ -51,7 +63,7 @@ public class GlobalsPanel
           new StatementContainer());
       repository.addFunction(func);
       
-      callback.loadFunctionSignatureView(func.sig);
+      viewSwitchCallback.loadFunctionSignatureView(func.sig);
     }, false);
     
     // List of functions
@@ -64,7 +76,7 @@ public class GlobalsPanel
       a.setTextContent(fnName);
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-        callback.loadFunctionCodeView(fnName);
+        viewSwitchCallback.loadFunctionCodeView(fnName);
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
@@ -75,39 +87,41 @@ public class GlobalsPanel
     Element newGlobalAnchor = mainDiv.querySelector(".globalVarsHeading a");
     newGlobalAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newVarName = "variable";
-      int newVarNumber = 0;
-      while (repository.hasFunctionWithName(newVarName))
-      {
-        newVarNumber++;
-        newVarName = "variable " + newVarNumber;
-      }
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newVarName),
-          new StatementContainer());
-      repository.addFunction(func);
-      
+      String newVarName = "";
+      repository.addGlobalVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      rebuildView();
     }, false);
    
     List<DivElement> globalVarDivs = new ArrayList<>();
-    for (String globalName: repository.getAllGlobalVars())
+    for (VariableDescription v: repository.getAllGlobalVars())
     {
-      addGlobalVarEntry(mainDiv, globalName, repository.getGlobalVarType(globalName), globalVarDivs);
+      addGlobalVarEntry(mainDiv, v, globalVarDivs);
     }
-    
   }
 
   private void addGlobalVarEntry(DivElement mainDiv,
-      String name, Token.ParameterToken type, 
+      VariableDescription v,
       List<DivElement> varDivs)
   {
+    String name = v.name;
+    Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
     div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\"> <div class=\"typeEntry\">&nbsp;</div></div>");
     ((InputElement)div.querySelector("input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".globalVarsList").appendChild(div);
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false);
+    typeField.setChangeListener((newType, isFinal) -> {
+      v.type = newType; 
+      repository.updateGlobalVariable(v);
+    });
     typeField.render();
+    
+    InputElement nameInput = (InputElement)div.querySelector("input"); 
+    nameInput.addEventListener(Event.CHANGE, (evt) -> {
+      v.name = nameInput.getValue(); 
+      repository.updateGlobalVariable(v);
+    }, false);
     
 //    DivElement varDiv = doc.createDivElement();
 //    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\">-</a></div>.<input size=\"15\" type=\"text\"><div class=\"typeEntry\">&nbsp;</div></div>");
