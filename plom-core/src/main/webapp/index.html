@@ -13,7 +13,8 @@
     	
     	.codemain,
     	.methodpanel,
-    	.globalspanel {
+    	.globalspanel,
+    	.classpanel {
     		width: 100%;
     		height: 100%;
     		display: flex;
@@ -21,7 +22,8 @@
     	}
     	.codesidesplit,
     	.methodsidesplit,
-    	.globalsidesplit {
+    	.globalsidesplit,
+    	.classsidesplit {
     		display: flex;
     		flex-direction: row;
     		flex-grow: 1;
@@ -56,7 +58,8 @@
     	}
     	.codemain div.token,
     	.methodpanel .typeEntry div.token,
-    	.globalspanel .typeEntry div.token {
+    	.globalspanel .typeEntry div.token,
+    	.classpanel .typeEntry div.token {
     		background-color: #ccc;
     		display: inline-block;
     		padding: 0.2em;
@@ -66,7 +69,8 @@
     	}
     	.codemain span.token,
     	.methodpanel .typeEntry span.token,
-    	.globalspanel .typeEntry span.token {
+    	.globalspanel .typeEntry span.token,
+    	.classpanel .typeEntry span.token {
     		background-color: #ccc;
     		display: inline;
     		padding: 0.2em;
@@ -76,7 +80,8 @@
     	}
     	.codemain div.blocktoken,
     	.methodpanel .typeEntry div.blocktoken,
-    	.globalspanel .typeEntry div.blocktoken {
+    	.globalspanel .typeEntry div.blocktoken,
+    	.classpanel .typeEntry div.blocktoken {
     		background-color: #ddd;
     		display: block;
     		padding: 0.2em;
@@ -85,7 +90,8 @@
     	}
     	.codemain .tokenError, 
     	.methodpanel .typeEntry tokenError,
-    	.globalspanel .typeEntry tokenError {
+    	.globalspanel .typeEntry tokenError,
+    	.classpanel .typeEntry tokenError {
     		text-decoration: underline;
     		text-decoration: underline red;
     	}
@@ -173,7 +179,8 @@
     		margin-bottom: 0.5em;
     	}
     	.methodpanel .typeEntry,
-    	.globalspanel .typeEntry {
+    	.globalspanel .typeEntry,
+    	.classpanel .typeEntry {
     		display: inline-block;
     		border: 1px solid black;
     		min-width: 3em;
@@ -181,11 +188,13 @@
     		position: relative;
     	}
     	.methodpanel .typeEntry .tokenline,
-    	.globalspanel .typeEntry .tokenline {
+    	.globalspanel .typeEntry .tokenline,
+    	.classpanel .typeEntry .tokenline {
     		display: inline;
     	}
     	.methodpanel .typeEntry span.typeTokenSelected,
-    	.globalspanel .typeEntry span.typeTokenSelected {
+    	.globalspanel .typeEntry span.typeTokenSelected,
+    	.classpanel .typeEntry span.typeTokenSelected {
     		background-color: #7f7;
     	}
     </style>

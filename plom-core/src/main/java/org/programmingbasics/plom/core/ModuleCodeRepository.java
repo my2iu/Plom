@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -82,8 +83,13 @@ public class ModuleCodeRepository
       return sig;
     }
   }
+
+  public static class DescriptionWithId
+  {
+    public int id;
+  }
   
-  public static class FunctionDescription
+  public static class FunctionDescription extends DescriptionWithId
   {
     public FunctionDescription(FunctionSignature sig, StatementContainer code)
     {
@@ -94,17 +100,52 @@ public class ModuleCodeRepository
     public StatementContainer code;
   }
 
-  public static class VariableDescription
+  public static class VariableDescription extends DescriptionWithId
   {
-    public int id;
     public String name;
     public Token.ParameterToken type;
   }
 
-  public static class ClassDescription
+  public static class ClassDescription extends DescriptionWithId
   {
-    public int id;
     public String name;
+    List<FunctionDescription> methods = new ArrayList<>();
+    List<VariableDescription> variables = new ArrayList<>();
+    public List<FunctionDescription> getAllMethods()
+    {
+      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()));
+    }
+    public void addMethod(FunctionDescription f)
+    {
+      methods.add(f);
+    }
+    public boolean hasMethodWithName(String name)
+    {
+      for (FunctionDescription m: methods)
+      {
+        if (m.sig.getLookupName().equals(name)) 
+          return true;
+      }
+      return false;
+    }
+    public void addVarAndResetIds(String name, Token.ParameterToken type)
+    {
+      // Add a new variable at the beginning of the list so that it's more likely
+      // to appear near the top of the variable list
+      VariableDescription v = new VariableDescription();
+      v.name = name;
+      v.type = type;
+      variables.add(0, v);
+    }
+    public List<VariableDescription> getAllVars()
+    {
+      return getSortedWithIds(variables, Comparator.comparing((VariableDescription v) -> v.name));
+    }
+    public void updateVariable(VariableDescription v)
+    {
+      variables.set(v.id, v);
+    }
+    
   }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();
@@ -203,6 +244,32 @@ public class ModuleCodeRepository
     addClassAndResetIds("Test");
   }
   
+  public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)
+  {
+    String name = base;
+    int postfix = 0;
+    while (!isNameAvailable.apply(name))
+    {
+      postfix++;
+      name = base + " " + postfix;
+    }
+    return name;
+  }
+
+  public static <U extends DescriptionWithId> List<U> getSortedWithIds(List<U> unsorted, Comparator<U> comparator)
+  {
+    // Assign ids to all the items and put them in a sorted list
+    List<U> toReturn = new ArrayList<>();
+    for (int n = 0; n < unsorted.size(); n++)
+    {
+      U cls = unsorted.get(n);
+      cls.id = n;
+      toReturn.add(cls);
+    }
+    toReturn.sort(comparator);
+    return toReturn;
+  }
+
   public FunctionDescription getFunctionDescription(String name)
   {
     return functions.get(name);
@@ -234,16 +301,7 @@ public class ModuleCodeRepository
   
   public List<VariableDescription> getAllGlobalVars()
   {
-    // Assign ids to all the global variables and put them in a sorted list
-    List<VariableDescription> toReturn = new ArrayList<>();
-    for (int n = 0; n < globalVars.size(); n++)
-    {
-      VariableDescription var = globalVars.get(n);
-      var.id = n;
-      toReturn.add(var);
-    }
-    toReturn.sort(Comparator.comparing((VariableDescription v) -> v.name));
-    return toReturn;
+    return getSortedWithIds(globalVars, Comparator.comparing((VariableDescription v) -> v.name));
   }
   
   public void addGlobalVarAndResetIds(String name, Token.ParameterToken type)
@@ -263,23 +321,16 @@ public class ModuleCodeRepository
   
   public List<ClassDescription> getAllClasses()
   {
-    // Assign ids to all the classes and put them in a sorted list
-    List<ClassDescription> toReturn = new ArrayList<>();
-    for (int n = 0; n < classes.size(); n++)
-    {
-      ClassDescription cls = classes.get(n);
-      cls.id = n;
-      toReturn.add(cls);
-    }
-    toReturn.sort(Comparator.comparing((ClassDescription v) -> v.name));
-    return toReturn;
+    return getSortedWithIds(classes, Comparator.comparing((ClassDescription v) -> v.name));
   }
 
-  public void addClassAndResetIds(String name)
+  public ClassDescription addClassAndResetIds(String name)
   {
     ClassDescription cls = new ClassDescription();
     cls.name = name;
     classes.add(0, cls);
+    cls.id = 0;
+    return cls;
   }
   
   public boolean hasClassWithName(String name)

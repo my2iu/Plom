@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 import java.util.function.Consumer;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
@@ -81,6 +82,7 @@ public class Entry implements EntryPoint
   
   CodePanel codePanel;
   MethodPanel methodPanel;
+  ClassPanel classPanel;
   GlobalsPanel globalsPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
   String currentFunctionBeingViewed = null;
@@ -214,7 +216,23 @@ public class Entry implements EntryPoint
     }, false);
     breadcrumbEl.appendChild(a);
   }
-  
+
+  void fillBreadcrumbForClass(Element breadcrumbEl, ClassDescription cls)
+  {
+    fillBreadcrumbForGlobals(breadcrumbEl);
+    Document doc = Browser.getDocument();
+    
+    AnchorElement a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent("@" + cls.name);
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      loadClassView(cls);
+    }, false);
+    breadcrumbEl.appendChild(a);
+  }
+
   private static DivElement getMainDiv()
   {
     return (DivElement)Browser.getDocument().querySelector("div.main");
@@ -241,6 +259,17 @@ public class Entry implements EntryPoint
     
     closeCodePanelIfOpen();
     showMethodPanel(sig);
+  }
+
+  void loadClassView(ClassDescription cls)
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForClass(breadcrumbEl, cls);
+    
+    closeCodePanelIfOpen();
+    showClassPanel(cls);
   }
   
   void loadGlobalsView()
@@ -333,6 +362,7 @@ public class Entry implements EntryPoint
         new GlobalsPanel.GlobalsPanelViewSwitcher() {
           @Override public void loadFunctionSignatureView(FunctionSignature sig) { Entry.this.loadFunctionSignatureView(sig); }
           @Override public void loadFunctionCodeView(String fnName) { Entry.this.loadFunctionCodeView(fnName); }
+          @Override public void loadClassView(ClassDescription cls) { Entry.this.loadClassView(cls); }
         });
   }
   
@@ -343,7 +373,11 @@ public class Entry implements EntryPoint
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());
     });
-    
+  }
+  
+  private void showClassPanel(ClassDescription cls)
+  {
+    classPanel = new ClassPanel(getMainDiv(), repository, cls, null);
   }
 
 }

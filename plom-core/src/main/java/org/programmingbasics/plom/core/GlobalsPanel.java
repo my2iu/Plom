@@ -53,16 +53,10 @@ public class GlobalsPanel
     newClassAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       // Find a unique class name
-      String newClassName = "class";
-      int newClassNumber = 0;
-      while (repository.hasClassWithName(newClassName))
-      {
-        newClassNumber++;
-        newClassName = "class " + newClassNumber;
-      }
-      repository.addClassAndResetIds(newClassName);
+      String newClassName = ModuleCodeRepository.findUniqueName("class", (name) -> !repository.hasClassWithName(name));
+      ClassDescription c = repository.addClassAndResetIds(newClassName);
       // Switch to view the class
-      rebuildView();  // Temporary until I implement view for classes
+      viewSwitchCallback.loadClassView(c);
     }, false);
 
     // List of classes
@@ -74,7 +68,7 @@ public class GlobalsPanel
       a.setTextContent(cls.name);
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-//        viewSwitchCallback.loadFunctionCodeView(fnName);
+        viewSwitchCallback.loadClassView(cls);
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
@@ -86,13 +80,7 @@ public class GlobalsPanel
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       // Find a unique function name
-      String newFunctionName = "function";
-      int newFunctionNumber = 0;
-      while (repository.hasFunctionWithName(newFunctionName))
-      {
-        newFunctionNumber++;
-        newFunctionName = "function " + newFunctionNumber;
-      }
+      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> !repository.hasFunctionWithName(name));
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newFunctionName),
           new StatementContainer());
@@ -156,42 +144,12 @@ public class GlobalsPanel
       v.name = nameInput.getValue(); 
       repository.updateGlobalVariable(v);
     }, false);
-    
-//    DivElement varDiv = doc.createDivElement();
-//    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\">-</a></div>.<input size=\"15\" type=\"text\"><div class=\"typeEntry\">&nbsp;</div></div>");
-//    ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
-//    argEls.add(varDiv);
-//    mainDiv.querySelector(".method_args").appendChild(varDiv);
-//
-//    // argument type
-//    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false);
-//    argTypeFields.add(typeField);
-//    typeField.render();
-//
-//    // remove arg button
-//    varDiv.querySelector(".method_args_var a").addEventListener(Event.CLICK, (evt) -> {
-//      evt.preventDefault();
-//      int idx = argEls.indexOf(varDiv);
-//      if (idx != 0)
-//      {
-//        DivElement div = nameEls.remove(idx);
-//        div.getParentElement().removeChild(div);
-//      }
-//      else if (nameEls.size() > 1)
-//      {
-//        DivElement div = nameEls.get(1);
-//        nameEls.remove(div);
-//        div.getParentElement().removeChild(div);
-//      }
-//      argEls.remove(varDiv);
-//      varDiv.getParentElement().removeChild(varDiv);
-//      argTypeFields.remove(typeField);
-//    }, false);
   }
 
   public static interface GlobalsPanelViewSwitcher
   {
     void loadFunctionCodeView(String fnName);
     void loadFunctionSignatureView(FunctionSignature sig);
+    void loadClassView(ClassDescription cls);
   }
 }
