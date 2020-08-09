@@ -100,11 +100,20 @@ public class ModuleCodeRepository
     public String name;
     public Token.ParameterToken type;
   }
+
+  public static class ClassDescription
+  {
+    public int id;
+    public String name;
+  }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();
   
   /** Lists global variables and their types */
   List<VariableDescription> globalVars = new ArrayList<>();
+
+  /** All classes */
+  List<ClassDescription> classes = new ArrayList<>();
   
   public ModuleCodeRepository()
   {
@@ -190,6 +199,8 @@ public class ModuleCodeRepository
     functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
 
     addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
+    
+    addClassAndResetIds("Test");
   }
   
   public FunctionDescription getFunctionDescription(String name)
@@ -248,5 +259,36 @@ public class ModuleCodeRepository
   public void updateGlobalVariable(VariableDescription v)
   {
     globalVars.set(v.id, v);
+  }
+  
+  public List<ClassDescription> getAllClasses()
+  {
+    // Assign ids to all the classes and put them in a sorted list
+    List<ClassDescription> toReturn = new ArrayList<>();
+    for (int n = 0; n < classes.size(); n++)
+    {
+      ClassDescription cls = classes.get(n);
+      cls.id = n;
+      toReturn.add(cls);
+    }
+    toReturn.sort(Comparator.comparing((ClassDescription v) -> v.name));
+    return toReturn;
+  }
+
+  public void addClassAndResetIds(String name)
+  {
+    ClassDescription cls = new ClassDescription();
+    cls.name = name;
+    classes.add(0, cls);
+  }
+  
+  public boolean hasClassWithName(String name)
+  {
+    for (ClassDescription c: classes)
+    {
+      if (c.name.equals(name)) 
+        return true;
+    }
+    return false;
   }
 }

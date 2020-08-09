@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
@@ -46,11 +47,45 @@ public class GlobalsPanel
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
         (DivElement)mainDiv.querySelector("div.sidechoices"));
     simpleEntry.setVisible(false);
+
+    // For adding classes
+    Element newClassAnchor = mainDiv.querySelector(".classesHeading a");
+    newClassAnchor.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      // Find a unique class name
+      String newClassName = "class";
+      int newClassNumber = 0;
+      while (repository.hasClassWithName(newClassName))
+      {
+        newClassNumber++;
+        newClassName = "class " + newClassNumber;
+      }
+      repository.addClassAndResetIds(newClassName);
+      // Switch to view the class
+      rebuildView();  // Temporary until I implement view for classes
+    }, false);
+
+    // List of classes
+    Element classListEl = mainDiv.querySelector(".classesList");
+    for (ClassDescription cls: repository.getAllClasses())
+    {
+      AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setHref("#");
+      a.setTextContent(cls.name);
+      a.addEventListener(Event.CLICK, (e) -> {
+        e.preventDefault();
+//        viewSwitchCallback.loadFunctionCodeView(fnName);
+      }, false);
+      DivElement div = doc.createDivElement();
+      div.appendChild(a);
+      classListEl.appendChild(div);
+    }
     
     // For adding functions
     Element newFunctionAnchor = mainDiv.querySelector(".functionsHeading a");
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
+      // Find a unique function name
       String newFunctionName = "function";
       int newFunctionNumber = 0;
       while (repository.hasFunctionWithName(newFunctionName))
@@ -68,7 +103,6 @@ public class GlobalsPanel
     
     // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
-    
     for (String fnName: repository.getAllFunctions())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
