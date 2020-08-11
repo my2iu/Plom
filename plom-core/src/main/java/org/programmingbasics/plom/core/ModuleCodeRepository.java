@@ -117,6 +117,7 @@ public class ModuleCodeRepository
     }
     public void addMethod(FunctionDescription f)
     {
+      f.id = methods.size();
       methods.add(f);
     }
     public boolean hasMethodWithName(String name)
@@ -145,7 +146,10 @@ public class ModuleCodeRepository
     {
       variables.set(v.id, v);
     }
-    
+    public void updateMethod(FunctionDescription m)
+    {
+      // No change needed currently
+    }
   }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();

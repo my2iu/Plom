@@ -59,8 +59,7 @@ public class ClassPanel
           new StatementContainer());
       cls.addMethod(func);
 
-      rebuildView();   // temporary
-//      callback.loadFunctionSignatureView(func.sig);
+      viewSwitchCallback.loadMethodSignatureView(cls, func);
     }, false);
     
     // List of methods
@@ -73,7 +72,7 @@ public class ClassPanel
       a.setTextContent(fn.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-//        callback.loadFunctionCodeView(fnName);
+        viewSwitchCallback.loadMethodCodeView(cls, fn);
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
@@ -125,7 +124,7 @@ public class ClassPanel
   
   public static interface ClassPanelViewSwitcher
   {
-    void loadFunctionCodeView(String fnName);
-    void loadFunctionSignatureView(FunctionSignature sig);
+    void loadMethodCodeView(ClassDescription cls, FunctionDescription method);
+    void loadMethodSignatureView(ClassDescription cls, FunctionDescription method);
   }
 }

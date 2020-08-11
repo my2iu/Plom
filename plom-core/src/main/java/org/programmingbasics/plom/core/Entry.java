@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -86,6 +87,8 @@ public class Entry implements EntryPoint
   GlobalsPanel globalsPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
   String currentFunctionBeingViewed = null;
+  ClassDescription currentMethodClassBeingViewed = null;
+  FunctionDescription currentMethodBeingViewed = null;
   Consumer<Throwable> errorLogger = (err) -> {
     Document doc = Browser.getDocument();
     Element consoleEl = doc.querySelector(".console");
@@ -166,6 +169,12 @@ public class Entry implements EntryPoint
       {
         repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
       }
+      if (currentMethodBeingViewed != null)
+      {
+        // Fill this in properly
+        currentMethodBeingViewed.code = codePanel.codeList;
+        currentMethodClassBeingViewed.updateMethod(currentMethodBeingViewed);
+      }
     }
   }
   
@@ -233,6 +242,32 @@ public class Entry implements EntryPoint
     breadcrumbEl.appendChild(a);
   }
 
+  void fillBreadcrumbForMethod(Element breadcrumbEl, ClassDescription cls, FunctionDescription m)
+  {
+    fillBreadcrumbForGlobals(breadcrumbEl);
+    Document doc = Browser.getDocument();
+    
+    AnchorElement a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent("@" + cls.name);
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      loadClassView(cls);
+    }, false);
+    breadcrumbEl.appendChild(a);
+    
+    a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent("." + m.sig.getDisplayName() + " \u270e");
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      loadMethodSignatureView(cls, m);
+    }, false);
+    breadcrumbEl.appendChild(a);
+  }
+
   private static DivElement getMainDiv()
   {
     return (DivElement)Browser.getDocument().querySelector("div.main");
@@ -258,7 +293,7 @@ public class Entry implements EntryPoint
     fillBreadcrumbForFunction(breadcrumbEl, sig);
     
     closeCodePanelIfOpen();
-    showMethodPanel(sig);
+    showFunctionPanel(sig);
   }
 
   void loadClassView(ClassDescription cls)
@@ -271,7 +306,31 @@ public class Entry implements EntryPoint
     closeCodePanelIfOpen();
     showClassPanel(cls);
   }
-  
+
+  void loadMethodCodeView(ClassDescription cls, FunctionDescription m)
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForMethod(breadcrumbEl, cls, m);
+    
+    closeCodePanelIfOpen();
+    currentMethodClassBeingViewed = cls;
+    currentMethodBeingViewed = m;
+    showCodePanel(m.code);
+  }
+
+  void loadMethodSignatureView(ClassDescription cls, FunctionDescription m)
+  {
+    Element subjectEl = Browser.getDocument().querySelector(".subject");
+    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForMethod(breadcrumbEl, cls, m);
+    
+    closeCodePanelIfOpen();
+    showMethodPanel(cls, m);
+  }
+
   void loadGlobalsView()
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
@@ -291,6 +350,8 @@ public class Entry implements EntryPoint
       codePanel.close();
     }
     currentFunctionBeingViewed = null;
+    currentMethodBeingViewed = null;
+    currentMethodClassBeingViewed = null;
     codePanel = null;
   }
   
@@ -301,25 +362,48 @@ public class Entry implements EntryPoint
       scope.setParent(new RepositoryScope(repository, coreTypes));
     });
     codePanel.setVariableContextConfigurator((context) -> {
-      // Add in function arguments
-      if (currentFunctionBeingViewed != null)
+      if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
+        return;
+
+      // Add in instance variables
+      if (currentMethodClassBeingViewed != null)
       {
-        FunctionDescription fd = repository.getFunctionDescription(currentFunctionBeingViewed);
-        if (fd != null)
+        context.pushNewScope();
+        for (VariableDescription v: currentMethodClassBeingViewed.getAllVars())
         {
-          context.pushNewScope();
-          for (int n = 0; n < fd.sig.argNames.size(); n++)
+          String name = v.name;
+          Token.ParameterToken typeToken = v.type;
+          try {
+            Type type = context.currentScope().typeFromToken(typeToken);
+            context.currentScope().addVariable(name, type, new Value());
+          }
+          catch (RunException e)
           {
-            String name = fd.sig.argNames.get(n);
-            Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
-            try {
-              Type type = context.currentScope().typeFromToken(typeToken);
-              context.currentScope().addVariable(name, type, new Value());
-            }
-            catch (RunException e)
-            {
-              // Ignore the argument if it doesn't have a valid type
-            }
+            // Ignore the argument if it doesn't have a valid type
+          }
+        }
+      }
+
+      // Add in function arguments
+      FunctionDescription fd = null;
+      if (currentFunctionBeingViewed != null)
+        fd = repository.getFunctionDescription(currentFunctionBeingViewed);
+      else if (currentMethodBeingViewed != null)
+        fd = currentMethodBeingViewed;
+      if (fd != null)
+      {
+        context.pushNewScope();
+        for (int n = 0; n < fd.sig.argNames.size(); n++)
+        {
+          String name = fd.sig.argNames.get(n);
+          Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
+          try {
+            Type type = context.currentScope().typeFromToken(typeToken);
+            context.currentScope().addVariable(name, type, new Value());
+          }
+          catch (RunException e)
+          {
+            // Ignore the argument if it doesn't have a valid type
           }
         }
       }
@@ -366,7 +450,7 @@ public class Entry implements EntryPoint
         });
   }
   
-  private void showMethodPanel(FunctionSignature sig)
+  private void showFunctionPanel(FunctionSignature sig)
   {
     methodPanel = new MethodPanel(getMainDiv(), sig);
     methodPanel.setListener((newSig, isFinal) -> {
@@ -374,10 +458,26 @@ public class Entry implements EntryPoint
       loadFunctionCodeView(newSig.getLookupName());
     });
   }
-  
+
+  private void showMethodPanel(ClassDescription cls, FunctionDescription m)
+  {
+    methodPanel = new MethodPanel(getMainDiv(), m.sig);
+    methodPanel.setListener((newSig, isFinal) -> {
+      m.sig = newSig;
+      cls.updateMethod(m);
+      loadMethodCodeView(cls, m);
+    });
+  }
+
   private void showClassPanel(ClassDescription cls)
   {
-    classPanel = new ClassPanel(getMainDiv(), repository, cls, null);
+    classPanel = new ClassPanel(getMainDiv(), repository, cls, 
+        new ClassPanel.ClassPanelViewSwitcher() {
+          @Override public void loadMethodSignatureView(ClassDescription cls, FunctionDescription method)
+            { Entry.this.loadMethodSignatureView(cls, method); }
+          @Override public void loadMethodCodeView(ClassDescription cls, FunctionDescription method)
+            { Entry.this.loadMethodCodeView(cls, method); }
+        });
   }
 
 }

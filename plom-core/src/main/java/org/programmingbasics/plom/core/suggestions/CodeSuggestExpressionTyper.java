@@ -30,7 +30,10 @@ public class CodeSuggestExpressionTyper
       Type left = context.popType();
       Type right = context.popType();
       Type.TypeSignature sig = left.lookupMethodSignature(methodName);
-      context.pushType(sig.returnType);
+      if (sig != null)
+        context.pushType(sig.returnType);
+      else
+        context.pushType(context.coreTypes().getVoidType());
       if (node.children.get(2) != null)
         node.children.get(2).recursiveVisit(triggers, context, param);
       return true;
