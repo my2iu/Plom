@@ -576,4 +576,39 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(32.0, vars.globalScope.lookup("c").getNumberValue(), 0.0);
   }
 
+  @Test
+  public void testBasicMethodCall() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      
+      try {
+        ExecutableFunction getFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("number", "testGetVal"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.SimpleToken("32", Symbol.Number)
+                        )
+                    )
+                ), 
+            Arrays.asList());
+        coreTypes.getNumberType().addMethod("testGetVal", getFn, coreTypes.getNumberType());
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("2", Symbol.Number),
+            Token.ParameterToken.fromContents(".testGetVal", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(32, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
 }

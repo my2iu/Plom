@@ -41,16 +41,29 @@ public class Type
   }
   public Type parent;
   
-  private Map<String, PrimitiveFunction.PrimitiveMethod> methods = new HashMap<>();
+  private Map<String, PrimitiveFunction.PrimitiveMethod> primMethods = new HashMap<>();
+  private Map<String, ExecutableFunction> methods = new HashMap<>();
   private Map<String, TypeSignature> methodTypeSigs = new HashMap<>();
   public void addPrimitiveMethod(String name, PrimitiveFunction.PrimitiveMethod fn, Type returnType, Type...args)
   {
-    methods.put(name, fn);
+    primMethods.put(name, fn);
     methodTypeSigs.put(name, makePrimitiveMethodType(returnType, args));
   }
   public PrimitiveFunction.PrimitiveMethod lookupPrimitiveMethod(String name)
   {
     PrimitiveFunction.PrimitiveMethod m = null;
+    for (Type type = this; m == null && type != null; type = type.parent)
+      m = type.primMethods.get(name);
+    return m;
+  }
+  public void addMethod(String name, ExecutableFunction fn, Type returnType, Type...args)
+  {
+    methods.put(name, fn);
+    methodTypeSigs.put(name, makeFunctionType(returnType, args));
+  }
+  public ExecutableFunction lookupMethod(String name)
+  {
+    ExecutableFunction m = null;
     for (Type type = this; m == null && type != null; type = type.parent)
       m = type.methods.get(name);
     return m;

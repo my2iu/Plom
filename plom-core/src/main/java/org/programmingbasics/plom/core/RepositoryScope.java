@@ -1,14 +1,18 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
@@ -27,7 +31,7 @@ public class RepositoryScope extends VariableScope
   // TODO: Add caching to this
   private ModuleCodeRepository repository;
   private CoreTypeLibrary coreTypes;
-  
+
   public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes)
   {
     this.repository = repository;
@@ -42,6 +46,33 @@ public class RepositoryScope extends VariableScope
       catch (RunException e)
       {
         // Ignore errors when registering variables
+      }
+    }
+    
+    // Create all methods for all classes
+    for (ClassDescription cls: repository.classes)
+    {
+      try {
+        Type t = typeFromToken(Token.ParameterToken.fromContents("@" + cls.name, Symbol.AtType));
+        for (FunctionDescription fn: cls.methods)
+        {
+          Type[] args = new Type[fn.sig.argTypes.size()];
+          for (int n = 0; n < fn.sig.argTypes.size(); n++)
+            args[n] = typeFromToken(fn.sig.argTypes.get(n));
+          AstNode code = ParseToAst.parseStatementContainer(fn.code);
+          ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
+              code, fn.sig.argNames);
+          t.addMethod(fn.sig.getLookupName(), execFn, 
+              typeFromToken(fn.sig.returnType), args);
+        }
+      }
+      catch (RunException e)
+      {
+        // Ignore errors when setting up methods on classes
+      }
+      catch (ParseException e)
+      {
+        // Ignore errors when setting up methods on classes
       }
       
     }
@@ -82,18 +113,25 @@ public class RepositoryScope extends VariableScope
     return super.lookupLValue(name);
   }
 
+  // TODO: String not good enough for generics
+  private Map<String, Type> typeLookupCache = new HashMap<>(); 
+
   @Override
   public Type typeFromToken(Token typeToken) throws RunException
   {
-    String name = ((Token.ParameterToken)typeToken).getLookupName(); 
+    String name = ((Token.ParameterToken)typeToken).getLookupName();
+    Type toReturn = typeLookupCache.get(name);
+    if (toReturn != null) return toReturn;
     switch (name)
     {
-      case "number": return coreTypes.getNumberType();
-      case "string": return coreTypes.getStringType();
-      case "boolean": return coreTypes.getBooleanType();
-      case "object": return coreTypes.getObjectType();
-      default: return new Type(name);
+      case "number": toReturn = coreTypes.getNumberType(); break;
+      case "string": toReturn = coreTypes.getStringType(); break;
+      case "boolean": toReturn = coreTypes.getBooleanType(); break;
+      case "object": toReturn = coreTypes.getObjectType(); break;
+      default: toReturn = new Type(name); break;
     }
+    typeLookupCache.put(name, toReturn);
+    return toReturn;
   }
   
   @Override

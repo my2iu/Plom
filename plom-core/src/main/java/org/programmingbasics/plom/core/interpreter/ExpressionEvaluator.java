@@ -227,18 +227,40 @@ public class ExpressionEvaluator
             else 
             {
               Value self = machine.readValue(methodNode.internalChildren.size());
-              PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
-              if (primitiveMethod == null)
-                throw new RunException();
-              List<Value> args = new ArrayList<>();
-              for (int n = 0; n < methodNode.internalChildren.size(); n++)
+              ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+              if (method != null)
               {
-                args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+                List<Value> args = new ArrayList<>();
+                for (int n = 0; n < methodNode.internalChildren.size(); n++)
+                {
+                  args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+                }
+                machine.popValues(methodNode.internalChildren.size() + 1);
+                machine.ip.pop();
+                machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+                machine.pushNewScope();
+                for (int n = 0; n < method.argPosToName.size(); n++)
+                {
+                  // TODO: Add in this
+                  machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
+                }
+                return;
               }
-              machine.popValues(methodNode.internalChildren.size() + 1);
-              Value toReturn = primitiveMethod.call(self, args);
-              machine.pushValue(toReturn);
-              machine.ip.pop();
+              else
+              {
+                PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+                if (primitiveMethod == null)
+                  throw new RunException();
+                List<Value> args = new ArrayList<>();
+                for (int n = 0; n < methodNode.internalChildren.size(); n++)
+                {
+                  args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+                }
+                machine.popValues(methodNode.internalChildren.size() + 1);
+                Value toReturn = primitiveMethod.call(self, args);
+                machine.pushValue(toReturn);
+                machine.ip.pop();
+              }
             }
       });
   }

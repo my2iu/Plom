@@ -49,6 +49,15 @@ public class ClassPanel
         (DivElement)mainDiv.querySelector("div.sidechoices"));
     simpleEntry.setVisible(false);
 
+    // For setting class name
+    InputElement nameAnchor = (InputElement)mainDiv.querySelector(".className input");
+    nameAnchor.setValue(cls.name);
+    nameAnchor.addEventListener(Event.CHANGE, (e) -> {
+      e.preventDefault();
+      cls.setName(nameAnchor.getValue());
+    }, false);
+    
+    
     // For adding methods
     Element newFunctionAnchor = mainDiv.querySelector(".methodsHeading a");
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {

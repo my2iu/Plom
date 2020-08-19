@@ -150,6 +150,10 @@ public class ModuleCodeRepository
     {
       // No change needed currently
     }
+    public void setName(String name)
+    {
+      this.name = name;
+    }
   }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();

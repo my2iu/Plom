@@ -7,6 +7,7 @@ package org.programmingbasics.plom.core.interpreter;
  */
 public class CodeUnitLocation
 {
+  public String className;
   public String functionName;
   
   @Override
@@ -14,6 +15,7 @@ public class CodeUnitLocation
   {
     final int prime = 31;
     int result = 1;
+    result = prime * result + ((className == null) ? 0 : className.hashCode());
     result = prime * result
         + ((functionName == null) ? 0 : functionName.hashCode());
     return result;
@@ -26,6 +28,11 @@ public class CodeUnitLocation
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     CodeUnitLocation other = (CodeUnitLocation) obj;
+    if (className == null)
+    {
+      if (other.className != null) return false;
+    }
+    else if (!className.equals(other.className)) return false;
     if (functionName == null)
     {
       if (other.functionName != null) return false;
@@ -34,6 +41,14 @@ public class CodeUnitLocation
     return true;
   }
 
+  public static CodeUnitLocation forMethod(String className, String functionName)
+  {
+    CodeUnitLocation toReturn = new CodeUnitLocation();
+    toReturn.className = className;
+    toReturn.functionName = functionName;
+    return toReturn;
+  }
+  
   public static CodeUnitLocation forFunction(String functionName)
   {
     CodeUnitLocation toReturn = new CodeUnitLocation();
