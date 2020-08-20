@@ -1,10 +1,5 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.programmingbasics.plom.core.interpreter.MachineContext.PrimitiveBlockingFunctionReturn;
-
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.html.DivElement;
@@ -26,6 +21,10 @@ public class StandardLibrary
     coreTypes.getObjectType().addPrimitiveMethod("to string", (self, args) -> {
       return Value.createStringValue(coreTypes, self.type.name);
     }, coreTypes.getStringType());
+//    coreTypes.addPrimitive(CodeUnitLocation.forMethod("object", "to string"), 
+//        (blockWait, machine) -> {
+//          blockWait.unblockAndReturn(Value.createStringValue(coreTypes, self.type.name));
+//        });
     coreTypes.getObjectType().addPrimitiveMethod("=:", (self, args) -> {
       return Value.createBooleanValue(coreTypes, self.val == args.get(0).val);
     }, coreTypes.getBooleanType(), coreTypes.getObjectType());

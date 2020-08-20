@@ -167,6 +167,11 @@ public class ExpressionEvaluator
             machine.pushValue(machine.coreTypes().getFalseValue());
             machine.ip.pop();
       })
+      .add(Rule.This, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            machine.pushValue(machine.currentScope().lookupThis());
+            machine.ip.pop();
+      })
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx < node.internalChildren.size())
@@ -244,6 +249,7 @@ public class ExpressionEvaluator
                   // TODO: Add in this
                   machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
                 }
+                machine.currentScope().setThis(self);
                 return;
               }
               else

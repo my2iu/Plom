@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
@@ -21,7 +22,7 @@ import junit.framework.TestCase;
 public class GatherCodeCompletionInfoTest extends TestCase
 {
   @Test
-  public void testFlatVariables()
+  public void testFlatVariables() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -53,8 +54,13 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("b"));
   }
+
+  private CodeCompletionContext codeCompletionForPosition(StatementContainer code, CodePosition pos) throws RunException
+  {
+    return codeCompletionForPosition(code, null, pos);
+  }
   
-  private CodeCompletionContext codeCompletionForPosition(StatementContainer code, CodePosition pos)
+  private CodeCompletionContext codeCompletionForPosition(StatementContainer code, String thisTypeString, CodePosition pos) throws RunException
   {
     CodeCompletionContext context = new CodeCompletionContext();
     StandardLibrary.createCoreTypes(context.coreTypes());
@@ -73,13 +79,19 @@ public class GatherCodeCompletionInfoTest extends TestCase
         }
       }
     });
+    if (thisTypeString != null)
+    {
+      Value thisValue = new Value();
+      thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + thisTypeString, Symbol.AtType));
+      context.currentScope().setThis(thisValue);
+    }
     context.pushNewScope();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     return context;
   }
   
   @Test
-  public void testLastTypeInExpression()
+  public void testLastTypeInExpression() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -171,7 +183,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
 
   @Test
-  public void testLastTypeInBooleanExpression()
+  public void testLastTypeInBooleanExpression() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -219,7 +231,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
   
   @Test
-  public void testLastTypeInCall()
+  public void testLastTypeInCall() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -253,7 +265,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
   
   @Test
-  public void testLastTypeWithParenthesis()
+  public void testLastTypeWithParenthesis() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -287,7 +299,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
 
   @Test
-  public void testVariablesInBlocks()
+  public void testVariablesInBlocks() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -341,7 +353,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
   
   @Test
-  public void testMemberSuggestions()
+  public void testMemberSuggestions() throws RunException
   {
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -369,5 +381,34 @@ public class GatherCodeCompletionInfoTest extends TestCase
     suggestions = new MemberSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("substring from:to:"));
     Assert.assertTrue(suggestions.contains("to string"));
+  }
+  
+  @Test
+  public void testThis() throws RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("return", Symbol.Return),
+            new Token.SimpleToken("this", Symbol.This),
+            Token.ParameterToken.fromContents(".abs", Symbol.DotVariable)
+            ));
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 2));
+    List<String> suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 3));
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
   }
 }

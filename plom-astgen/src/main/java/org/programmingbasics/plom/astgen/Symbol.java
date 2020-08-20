@@ -35,6 +35,7 @@ enum Symbol
   ParenthesisExpression(false),
   ValueExpression(false),
   EndStatement(true),
+  This(true),
   TrueLiteral(true),
   FalseLiteral(true),
   String(true),

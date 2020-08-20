@@ -16,6 +16,7 @@ public class VariableScope
   private Map<String, Value> values = new HashMap<>();
   private Map<String, Type> types = new HashMap<>();
   private VariableScope parent;
+  private Value thisValue;
   
   public void setParent(VariableScope parentScope)
   {
@@ -77,6 +78,26 @@ public class VariableScope
     throw new RunException();
   }
 
+  /**
+   * Looks up the value of "this" i.e. the current object
+   */
+  public Value lookupThis() throws RunException
+  {
+    Value val = thisValue;
+    if (val == null)
+    {
+      if (parent != null)
+        return parent.lookupThis();
+      throw new RunException("Cannot find a this value");
+    }
+    return val;
+  }
+  public void setThis(Value thisValue)
+  {
+    this.thisValue = thisValue;
+  }
+
+  
   // Overwrites a variable in this scope
   public void assignTo(String name, Value val) throws RunException
   {

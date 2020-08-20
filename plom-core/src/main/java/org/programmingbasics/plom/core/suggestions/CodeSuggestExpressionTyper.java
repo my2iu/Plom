@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 
 /**
@@ -101,6 +102,19 @@ public class CodeSuggestExpressionTyper
       .add(Rule.FalseLiteral, (triggers, node, context, param) -> {
         context.pushType(context.coreTypes().getBooleanType());
         context.setLastTypeUsed(context.coreTypes().getBooleanType());
+        return true;
+      })
+      .add(Rule.This, (triggers, node, context, param) -> {
+        Type thisType;
+        try {
+          thisType = context.currentScope().lookupThis().type;
+        }
+        catch (RunException e)
+        {
+          thisType = context.coreTypes().getVoidType();
+        }
+        context.pushType(thisType);
+        context.setLastTypeUsed(thisType);
         return true;
       })
       .add(Rule.Return, clearLastUsedType)

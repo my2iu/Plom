@@ -48,6 +48,7 @@ public class Rule
 	public final static List<Symbol> MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore);
 	public final static List<Symbol> ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis = Arrays.asList(Symbol.ParenthesisExpression, Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis);
 	public final static List<Symbol> ParenthesisExpression_ValueExpression = Arrays.asList(Symbol.ParenthesisExpression, Symbol.ValueExpression);
+	public final static List<Symbol> ValueExpression_This = Arrays.asList(Symbol.ValueExpression, Symbol.This);
 	public final static List<Symbol> ValueExpression_TrueLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.TrueLiteral);
 	public final static List<Symbol> ValueExpression_FalseLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.FalseLiteral);
 	public final static List<Symbol> ValueExpression_Number = Arrays.asList(Symbol.ValueExpression, Symbol.Number);
@@ -67,6 +68,7 @@ public class Rule
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
+	public final static List<Symbol> This = Arrays.asList(Symbol.This);
 	public final static List<Symbol> TrueLiteral = Arrays.asList(Symbol.TrueLiteral);
 	public final static List<Symbol> FalseLiteral = Arrays.asList(Symbol.FalseLiteral);
 	public final static List<Symbol> String = Arrays.asList(Symbol.String);

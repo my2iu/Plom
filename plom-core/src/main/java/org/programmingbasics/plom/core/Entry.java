@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -49,6 +50,11 @@ TODO:
 - move standard library code back out of the repository and into the standard library so that people don't need to have a repository for normal stuff (and so that standard library can't be modified)
 - global variables
 - objects
+- object method primitives
+- instance data members
+- object this
+- object super
+- standard library core type repository
 - generics
 - js native API
 - saving and loading
@@ -365,10 +371,10 @@ public class Entry implements EntryPoint
       if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
         return;
 
-      // Add in instance variables
       if (currentMethodClassBeingViewed != null)
       {
         context.pushNewScope();
+        // Add in instance variables
         for (VariableDescription v: currentMethodClassBeingViewed.getAllVars())
         {
           String name = v.name;
@@ -381,6 +387,16 @@ public class Entry implements EntryPoint
           {
             // Ignore the argument if it doesn't have a valid type
           }
+        }
+        // Set the this value
+        try {
+          Value thisValue = new Value();
+          thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
+          context.currentScope().setThis(thisValue);
+        } 
+        catch (RunException e)
+        {
+          // Ignore any errors when setting this
         }
       }
 

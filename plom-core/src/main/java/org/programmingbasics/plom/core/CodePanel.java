@@ -110,6 +110,7 @@ public class CodePanel
         Symbol.String,
         Symbol.TrueLiteral,
         Symbol.FalseLiteral,
+        Symbol.This,
         Symbol.Assignment,
         Symbol.Plus,
         Symbol.Minus,
@@ -416,6 +417,7 @@ public class CodePanel
       case DUMMY_COMMENT: text = "//"; break;
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
+      case This: text = "this"; break;
       case TrueLiteral: text = "true"; break;
       case FalseLiteral: text = "false"; break;
       case Number: text = "123..."; break;
