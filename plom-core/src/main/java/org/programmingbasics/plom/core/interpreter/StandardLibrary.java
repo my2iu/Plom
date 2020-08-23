@@ -37,7 +37,7 @@ public class StandardLibrary
     public List<String> argNames; 
     public List<String> argTypes;
     public PrimitivePassthrough primitive;
-    public static StdLibMethod code(String className, String methodName, String comment, StatementContainer code, PrimitivePassthrough primitive, String returnType, List<String> argNames, List<String> argTypes)
+    public static StdLibMethod code(String className, String methodName, PrimitivePassthrough primitive, String returnType, List<String> argNames, List<String> argTypes, StatementContainer code)
     {
       StdLibMethod toReturn = new StdLibMethod();
       toReturn.className = className;
@@ -51,13 +51,37 @@ public class StandardLibrary
     }
     public static StdLibMethod primitive(String className, String methodName, String comment, String returnType, List<String> argNames, List<String> argTypes, PrimitivePassthrough primitive)
     {
-      return code(className, methodName, comment,
+      return code(className, methodName, primitive,
+          returnType, argNames, argTypes, 
           new StatementContainer(
               new TokenContainer(
+                  new Token.WideToken("// " + comment, Symbol.DUMMY_COMMENT),
                   new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough)
-                  )),
-          primitive,
-          returnType, argNames, argTypes);
+                  ))
+          );
+    }
+    // Some convenience methods providing easier ways to make some common primitives
+    public static interface NoArgPrimitive
+    {
+      public void execute(MachineContext.PrimitiveBlockingFunctionReturn blockWait, MachineContext machine, Value thisVal) throws RunException;
+    }
+    public static StdLibMethod primitiveNoArg(String className, String methodName, String comment, String returnType, NoArgPrimitive primitive)
+    {
+      return primitive(className, methodName, comment, returnType, Collections.emptyList(), Collections.emptyList(),
+          (blockWait, machine) -> {
+            primitive.execute(blockWait, machine, machine.currentScope().lookupThis());
+          });
+    }
+    public static interface OneArgPrimitive
+    {
+      public void execute(MachineContext.PrimitiveBlockingFunctionReturn blockWait, MachineContext machine, Value thisVal, Value val) throws RunException;
+    }
+    public static StdLibMethod primitiveOneArg(String className, String methodName, String comment, String returnType, String argType, OneArgPrimitive primitive)
+    {
+      return primitive(className, methodName, comment, returnType, Arrays.asList("val"), Arrays.asList(argType),
+          (blockWait, machine) -> {
+            primitive.execute(blockWait, machine, machine.currentScope().lookupThis(), machine.currentScope().lookup("val"));
+          });
     }
   }
   
@@ -65,13 +89,147 @@ public class StandardLibrary
       new StdLibClass("object", null));
   
   public static List<StdLibMethod> stdLibMethods = Arrays.asList(
+      // some object methods
       StdLibMethod.primitive("object", "to string", "Comment", "string", Collections.emptyList(), Collections.emptyList(),
           (blockWait, machine) -> {
             blockWait.unblockAndReturn(Value.createStringValue(machine.coreTypes(), machine.currentScope().lookupThis().type.name));
           }),
-      StdLibMethod.primitive("number", "abs", "Comment", "number", Collections.emptyList(), Collections.emptyList(),
+      StdLibMethod.primitive("object", "=:", "Comment", "boolean", Arrays.asList("val"), Arrays.asList("object"),
           (blockWait, machine) -> {
-            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Math.abs(machine.currentScope().lookupThis().getNumberValue())));
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), machine.currentScope().lookupThis().val == machine.currentScope().lookup("val").val));
+          }),
+      StdLibMethod.code("object", "!=:", null, "boolean", Arrays.asList("val"), Arrays.asList("object"),
+          new StatementContainer(
+              new TokenContainer(
+                  new Token.SimpleToken("return", Symbol.Return),
+                  new Token.SimpleToken("(", Symbol.OpenParenthesis),
+                  new Token.SimpleToken("this", Symbol.This),
+                  new Token.SimpleToken("=", Symbol.Eq),
+                  Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
+                  new Token.SimpleToken(")", Symbol.ClosedParenthesis),
+                  Token.ParameterToken.fromContents(".not", Symbol.DotVariable)
+                  ))),
+      
+      // some number methods
+      StdLibMethod.primitiveNoArg("number", "abs", "Comment", "number", 
+          (blockWait, machine, thisVal) -> {
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Math.abs(thisVal.getNumberValue())));
+          }),
+      StdLibMethod.primitiveNoArg("number", "floor", "Comment", "number", 
+          (blockWait, machine, thisVal) -> {
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Math.floor(thisVal.getNumberValue())));
+          }),
+      StdLibMethod.primitiveNoArg("number", "ceiling", "Comment", "number", 
+          (blockWait, machine, thisVal) -> {
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Math.ceil(thisVal.getNumberValue())));
+          }),
+      StdLibMethod.primitiveNoArg("number", "round", "Comment", "number", 
+          (blockWait, machine, thisVal) -> {
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Math.round(thisVal.getNumberValue())));
+          }),
+      StdLibMethod.primitiveNoArg("number", "to string", "Comment", "string", 
+          (blockWait, machine, self) -> {
+            blockWait.unblockAndReturn(Value.createStringValue(machine.coreTypes(), Double.toString(self.getNumberValue())));
+          }),
+      StdLibMethod.primitiveOneArg("number", "+:", "Comment", "number", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), self.getNumberValue() + val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "-:", "Comment", "number", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), self.getNumberValue() - val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "*:", "Comment", "number", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), self.getNumberValue() * val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "/:", "Comment", "number", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), self.getNumberValue() / val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", ">:", "Comment", "boolean", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() > val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", ">=:", "Comment", "boolean", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() >= val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "<:", "Comment", "boolean", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() < val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "<=:", "Comment", "boolean", "number", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() <= val.getNumberValue()));
+          }),
+      StdLibMethod.primitiveOneArg("number", "=:", "Comment", "boolean", "object", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNumberType().equals(val.type))
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), false));
+            else
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() == val.getNumberValue()));
+          }),
+
+      // some string methods
+      StdLibMethod.primitiveNoArg("string", "to string", "Comment", "string", 
+          (blockWait, machine, self) -> {
+            blockWait.unblockAndReturn(Value.createStringValue(machine.coreTypes(), self.getStringValue()));
+          }),
+      StdLibMethod.primitiveOneArg("string", "+:", "Comment", "boolean", "string", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getStringType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createStringValue(machine.coreTypes(), self.getStringValue() + val.getStringValue()));
+          }),
+      StdLibMethod.primitiveOneArg("string", "=:", "Comment", "boolean", "object", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getStringType().equals(val.type))
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), false));
+            else
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getStringValue().equals(val.getStringValue())));
+          }),
+      StdLibMethod.primitive("string", "substring from:to:", "Comment", "string", Arrays.asList("from", "to"), Arrays.asList("number", "number"), 
+          (blockWait, machine) -> {
+            blockWait.unblockAndReturn(Value.createStringValue(machine.coreTypes(), machine.currentScope().lookupThis().getStringValue().substring((int)machine.currentScope().lookup("from").getNumberValue(), (int)machine.currentScope().lookup("to").getNumberValue())));
+          }),
+      
+      // some boolean methods
+      StdLibMethod.primitiveOneArg("boolean", "=:", "Comment", "boolean", "object", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getBooleanType().equals(val.type))
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), false));
+            else
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getBooleanValue() == val.getBooleanValue()));
+          }),
+      StdLibMethod.primitiveNoArg("boolean", "not", "Comment", "boolean", 
+          (blockWait, machine, self) -> {
+            blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), !self.getBooleanValue()));
+          }),
+      
+      // some Null methods
+      StdLibMethod.primitiveOneArg("null", "=:", "Comment", "boolean", "object", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getNullType().equals(val.type))
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), false));
+            else
+              blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), true));
           })
       );
   
@@ -85,106 +243,6 @@ public class StandardLibrary
     coreTypes.stringType = new Type("string", coreTypes.objectType);
     coreTypes.voidType = new Type("void");
 
-    // Add some object methods
-    coreTypes.getObjectType().addPrimitiveMethod("=:", (self, args) -> {
-      return Value.createBooleanValue(coreTypes, self.val == args.get(0).val);
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-    coreTypes.getObjectType().addPrimitiveMethod("!=:", (self, args) -> {
-      return Value.createBooleanValue(coreTypes,
-          !self.type.lookupPrimitiveMethod("=:").call(self, args).getBooleanValue());
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-    
-    // Add some number methods
-    coreTypes.getNumberType().addPrimitiveMethod("floor", (self, args) -> {
-      return Value.createNumberValue(coreTypes, Math.floor(self.getNumberValue()));
-    }, coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("ceiling", (self, args) -> {
-      return Value.createNumberValue(coreTypes, Math.ceil(self.getNumberValue()));
-    }, coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("round", (self, args) -> {
-      return Value.createNumberValue(coreTypes, Math.round(self.getNumberValue()));
-    }, coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("to string", (self, args) -> {
-      return Value.createStringValue(coreTypes, Double.toString(self.getNumberValue()));
-    }, coreTypes.getStringType());
-    coreTypes.getNumberType().addPrimitiveMethod("+:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createNumberValue(coreTypes, self.getNumberValue() + args.get(0).getNumberValue());
-    }, coreTypes.getNumberType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("-:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createNumberValue(coreTypes, self.getNumberValue() - args.get(0).getNumberValue());
-    }, coreTypes.getNumberType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("*:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createNumberValue(coreTypes, self.getNumberValue() * args.get(0).getNumberValue());
-    }, coreTypes.getNumberType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("/:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createNumberValue(coreTypes, self.getNumberValue() / args.get(0).getNumberValue());
-    }, coreTypes.getNumberType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod(">:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createBooleanValue(coreTypes, self.getNumberValue() > args.get(0).getNumberValue());
-    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod(">=:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createBooleanValue(coreTypes, self.getNumberValue() >= args.get(0).getNumberValue());
-    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("<:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createBooleanValue(coreTypes, self.getNumberValue() < args.get(0).getNumberValue());
-    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("<=:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createBooleanValue(coreTypes, self.getNumberValue() <= args.get(0).getNumberValue());
-    }, coreTypes.getBooleanType(), coreTypes.getNumberType());
-    coreTypes.getNumberType().addPrimitiveMethod("=:", (self, args) -> {
-      if (!coreTypes.getNumberType().equals(args.get(0).type))
-        return Value.createBooleanValue(coreTypes, false);
-      return Value.createBooleanValue(coreTypes, self.getNumberValue() == args.get(0).getNumberValue());
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-    
-    // Add some string methods
-    coreTypes.getStringType().addPrimitiveMethod("to string", (self, args) -> {
-      return Value.createStringValue(coreTypes, self.getStringValue());
-    }, coreTypes.getStringType());
-    coreTypes.getStringType().addPrimitiveMethod("substring from:to:", (self, args) -> {
-      return Value.createStringValue(coreTypes, self.getStringValue().substring((int)args.get(0).getNumberValue(), (int)args.get(1).getNumberValue()));
-    }, coreTypes.getStringType(), coreTypes.getNumberType(), coreTypes.getNumberType());
-    coreTypes.getStringType().addPrimitiveMethod("+:", (self, args) -> {
-      if (!coreTypes.getStringType().equals(args.get(0).type))
-        throw new RunException();
-      return Value.createStringValue(coreTypes, self.getStringValue() + args.get(0).getStringValue());
-    }, coreTypes.getStringType(), coreTypes.getStringType());
-    coreTypes.getStringType().addPrimitiveMethod("=:", (self, args) -> {
-      if (!coreTypes.getStringType().equals(args.get(0).type))
-        return Value.createBooleanValue(coreTypes, false);
-      return Value.createBooleanValue(coreTypes, self.getStringValue().equals(args.get(0).getStringValue()));
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-
-    // Add some boolean methods
-    coreTypes.getBooleanType().addPrimitiveMethod("=:", (self, args) -> {
-      if (!coreTypes.getBooleanType().equals(args.get(0).type))
-        return Value.createBooleanValue(coreTypes, false);
-      return Value.createBooleanValue(coreTypes, self.getBooleanValue() == args.get(0).getBooleanValue());
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-
-    // Add some Null methods
-    coreTypes.getNullType().addPrimitiveMethod("=:", (self, args) -> {
-      if (!coreTypes.getNullType().equals(args.get(0).type))
-        return Value.createBooleanValue(coreTypes, false);
-      return Value.createBooleanValue(coreTypes, true);
-    }, coreTypes.getBooleanType(), coreTypes.getObjectType());
-
     // Create some literals
     coreTypes.nullVal = new Value();
     coreTypes.trueVal = new Value();
@@ -196,7 +254,7 @@ public class StandardLibrary
     coreTypes.falseVal.type = coreTypes.booleanType;
     coreTypes.falseVal.val = false;
     
-    // Load up code for all the objects
+    // Load up code for all the primitive objects
     try {
       for (StdLibMethod m: stdLibMethods)
       {

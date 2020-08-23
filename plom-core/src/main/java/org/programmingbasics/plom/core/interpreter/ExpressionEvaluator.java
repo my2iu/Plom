@@ -20,7 +20,7 @@ public class ExpressionEvaluator
     public Value apply(MachineContext ctx, Value left, Value right) throws RunException;
   }
   
-  private static BinaryOperatorHandler createBinaryOperatorToMethodCall(String methodName)
+  private static BinaryOperatorHandler createBinaryOperatorToPrimitiveMethodCall(String methodName)
   {
     return (ctx, left, right) -> {
       PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod(methodName);
@@ -58,39 +58,74 @@ public class ExpressionEvaluator
     };
   }
 
+  // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
+  // and we often passthrough to a method, so we have a function for easily making handlers for that situation 
+  static MachineContext.MachineNodeVisitor createBinaryOperatorHandlerMoreForMethodPassthrough(String methodName)
+  {
+    return (machine, node, idx) -> {
+      switch(idx)
+      {
+      case 0:
+        machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+        break;
+      case 1:
+        {
+          Value right = machine.popValue();
+          Value left = machine.popValue();
+          ExecutableFunction method = left.type.lookupMethod(methodName);
+          if (method == null)
+            throw new RunException();
+          Value self = left;
+          machine.ip.advanceIdx();
+          machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+          machine.pushNewScope();
+          machine.currentScope().addVariable(method.argPosToName.get(0), right.type, right);
+          machine.currentScope().setThis(self);
+          break;
+        }
+      case 2:
+        machine.ip.pushAndAdvanceIdx(node.children.get(2), expressionHandlers);
+        break;
+      case 3:
+        machine.ip.pop();
+      }
+    };
+  }
+
+
   
   static MachineContext.NodeHandlers expressionHandlers = new MachineContext.NodeHandlers();
   static {
     expressionHandlers
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("+:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("+:")
       )
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore,
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("-:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("-:")
       )
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("*:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("*:")
       )
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore,
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("/:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("/:")
       )
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("=:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("=:")
       )
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("!=:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("!=:")
       )
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall(">:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough(">:")
       )
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall(">=:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough(">=:")
       )
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("<:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("<:")
       )
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
-          createBinaryOperatorHandlerMore(createBinaryOperatorToMethodCall("<=:"))
+          createBinaryOperatorHandlerMoreForMethodPassthrough("<=:")
       )
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, 
           (machine, node, idx) -> {
