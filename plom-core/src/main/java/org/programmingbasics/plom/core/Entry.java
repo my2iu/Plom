@@ -54,6 +54,7 @@ TODO:
 - instance data members
 - object this
 - object super
+- lazily load the methods of objects only when a type is loaded
 - standard library core type repository
 - generics
 - js native API
