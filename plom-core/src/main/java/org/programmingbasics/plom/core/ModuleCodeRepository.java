@@ -24,6 +24,7 @@ public class ModuleCodeRepository
     public List<String> argNames = new ArrayList<>();
     public List<Token.ParameterToken> argTypes = new ArrayList<>();
     public Token.ParameterToken returnType;
+    public boolean isBuiltIn = false;
     public String getLookupName()
     {
       String name = "";
@@ -375,6 +376,7 @@ public class ModuleCodeRepository
     {
       ClassDescription c = classMap.get(mdef.className);
       FunctionSignature sig = FunctionSignature.from(Token.ParameterToken.fromContents("@" + mdef.returnType, Symbol.AtType), mdef.methodName, mdef.argNames, mdef.argTypes.stream().map(typeStr -> Token.ParameterToken.fromContents("@" + typeStr, Symbol.AtType)).collect(Collectors.toList()));
+      sig.isBuiltIn = true;
       c.addMethod(new FunctionDescription(sig, mdef.code));
     }
   }

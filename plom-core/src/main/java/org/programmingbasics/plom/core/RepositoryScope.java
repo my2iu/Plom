@@ -11,8 +11,8 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
@@ -31,12 +31,36 @@ public class RepositoryScope extends VariableScope
   // TODO: Add caching to this
   private ModuleCodeRepository repository;
   private CoreTypeLibrary coreTypes;
-
+  private Map<String, ClassDescription> codeRepositoryClasses;
+  
   public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes)
   {
     this.repository = repository;
     this.coreTypes = coreTypes;
+
+    // Hash the different classes so that we can look them up more quickly later
+    codeRepositoryClasses = new HashMap<>();
+    for (ClassDescription cls: repository.classes)
+    {
+      codeRepositoryClasses.put(cls.name, cls);
+    }
     
+    // Force a load of the standard built-in types (the interpreter
+    // has direct access to these types, but the repository may have
+    // extra methods defined on them)
+    try {
+      typeFromToken(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      typeFromToken(Token.ParameterToken.fromContents("@number", Symbol.AtType));
+      typeFromToken(Token.ParameterToken.fromContents("@boolean", Symbol.AtType));
+      typeFromToken(Token.ParameterToken.fromContents("@string", Symbol.AtType));
+      typeFromToken(Token.ParameterToken.fromContents("@null", Symbol.AtType));
+      typeFromToken(Token.ParameterToken.fromContents("@void", Symbol.AtType));
+    }
+    catch (RunException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
+
     // Create variables for all the global variables in the module
     for (VariableDescription v: repository.globalVars)
     {
@@ -47,34 +71,6 @@ public class RepositoryScope extends VariableScope
       {
         // Ignore errors when registering variables
       }
-    }
-    
-    // Create all methods for all classes
-    for (ClassDescription cls: repository.classes)
-    {
-      try {
-        Type t = typeFromToken(Token.ParameterToken.fromContents("@" + cls.name, Symbol.AtType));
-        for (FunctionDescription fn: cls.methods)
-        {
-          Type[] args = new Type[fn.sig.argTypes.size()];
-          for (int n = 0; n < fn.sig.argTypes.size(); n++)
-            args[n] = typeFromToken(fn.sig.argTypes.get(n));
-          AstNode code = ParseToAst.parseStatementContainer(fn.code);
-          ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
-              code, fn.sig.argNames);
-          t.addMethod(fn.sig.getLookupName(), execFn, 
-              typeFromToken(fn.sig.returnType), args);
-        }
-      }
-      catch (RunException e)
-      {
-        // Ignore errors when setting up methods on classes
-      }
-      catch (ParseException e)
-      {
-        // Ignore errors when setting up methods on classes
-      }
-      
     }
   }
   
@@ -128,8 +124,43 @@ public class RepositoryScope extends VariableScope
       case "string": toReturn = coreTypes.getStringType(); break;
       case "boolean": toReturn = coreTypes.getBooleanType(); break;
       case "object": toReturn = coreTypes.getObjectType(); break;
-      default: toReturn = new Type(name); break;
+      case "null": toReturn = coreTypes.getNullType(); break;
+      case "void": toReturn = coreTypes.getVoidType(); break;
+      default: 
+      {
+        if (codeRepositoryClasses.containsKey(name))
+          toReturn = new Type(name); 
+        else
+          throw new RunException("Unknown class");
+        break;
+      }
     }
+    
+    // Load any methods into it as needed
+    if (codeRepositoryClasses.containsKey(name))
+    {
+      ClassDescription cls = codeRepositoryClasses.get(name); 
+      for (FunctionDescription fn: cls.methods)
+      {
+        if (fn.sig.isBuiltIn) continue;
+        Type[] args = new Type[fn.sig.argTypes.size()];
+        for (int n = 0; n < fn.sig.argTypes.size(); n++)
+          args[n] = typeFromToken(fn.sig.argTypes.get(n));
+        try {
+          AstNode code = ParseToAst.parseStatementContainer(fn.code);
+          ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
+              code, fn.sig.argNames);
+          toReturn.addMethod(fn.sig.getLookupName(), execFn, 
+              typeFromToken(fn.sig.returnType), args);
+        } 
+        catch (ParseException e)
+        {
+          // Ignore parse exceptions for now (allowing us to run
+          // code that might have errors in unrelated methods)
+        }
+      }
+    }
+    
     typeLookupCache.put(name, toReturn);
     return toReturn;
   }
