@@ -7,11 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
 public class ModuleCodeRepository
 {
@@ -72,6 +75,10 @@ public class ModuleCodeRepository
     public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type, String arg2Name, Token.ParameterToken arg2Type, String arg3Name, Token.ParameterToken arg3Type)
     {
       return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name, arg2Name, arg3Name), Arrays.asList(arg1Type, arg2Type, arg3Type));
+    }
+    public static FunctionSignature from(Token.ParameterToken returnType, String name, List<String> argNames, List<Token.ParameterToken> argTypes)
+    {
+      return from(returnType, Arrays.asList(name.split(":")), argNames, argTypes);
     }
     public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<String> argNames, List<Token.ParameterToken> argTypes)
     {
@@ -349,5 +356,26 @@ public class ModuleCodeRepository
         return true;
     }
     return false;
+  }
+
+  
+  
+  public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
+  {
+    Map<String, ClassDescription> classMap = new HashMap<>();
+    for (ClassDescription c: classes)
+      classMap.put(c.name, c);
+    for (StdLibClass clsdef: stdLibClasses)
+    {
+      if (classMap.containsKey(clsdef.name)) continue;
+      classMap.put(clsdef.name, addClassAndResetIds(clsdef.name));
+    }
+    
+    for (StdLibMethod mdef: stdLibMethods)
+    {
+      ClassDescription c = classMap.get(mdef.className);
+      FunctionSignature sig = FunctionSignature.from(Token.ParameterToken.fromContents("@" + mdef.returnType, Symbol.AtType), mdef.methodName, mdef.argNames, mdef.argTypes.stream().map(typeStr -> Token.ParameterToken.fromContents("@" + typeStr, Symbol.AtType)).collect(Collectors.toList()));
+      c.addMethod(new FunctionDescription(sig, mdef.code));
+    }
   }
 }

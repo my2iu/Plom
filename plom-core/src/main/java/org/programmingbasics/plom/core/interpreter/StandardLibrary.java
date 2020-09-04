@@ -33,7 +33,7 @@ public class StandardLibrary
     public String className;
     public String methodName;
     public StatementContainer code;
-    String returnType;
+    public String returnType;
     public List<String> argNames; 
     public List<String> argTypes;
     public PrimitivePassthrough primitive;
@@ -86,7 +86,12 @@ public class StandardLibrary
   }
   
   public static List<StdLibClass> stdLibClasses = Arrays.asList(
-      new StdLibClass("object", null));
+      new StdLibClass("object", null),
+      new StdLibClass("number", "object"),
+      new StdLibClass("string", "object"),
+      new StdLibClass("boolean", "object"),
+      new StdLibClass("null", "object")
+  );
   
   public static List<StdLibMethod> stdLibMethods = Arrays.asList(
       // some object methods

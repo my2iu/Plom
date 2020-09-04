@@ -77,6 +77,10 @@ public class Entry implements EntryPoint
   @Override
   public void onModuleLoad()
   {
+    // Load in the built-in primitives of the interpreter into the 
+    // code repository so that they can be browsed in the UI
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
     hookRun();
