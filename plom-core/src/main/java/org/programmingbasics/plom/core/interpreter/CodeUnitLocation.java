@@ -9,6 +9,7 @@ public class CodeUnitLocation
 {
   public String className;
   public String functionName;
+  public boolean isStaticOrConstructor;
   
   @Override
   public int hashCode()
@@ -18,6 +19,7 @@ public class CodeUnitLocation
     result = prime * result + ((className == null) ? 0 : className.hashCode());
     result = prime * result
         + ((functionName == null) ? 0 : functionName.hashCode());
+    result = prime * result + (isStaticOrConstructor ? 1231 : 1237);
     return result;
   }
 
@@ -38,6 +40,7 @@ public class CodeUnitLocation
       if (other.functionName != null) return false;
     }
     else if (!functionName.equals(other.functionName)) return false;
+    if (isStaticOrConstructor != other.isStaticOrConstructor) return false;
     return true;
   }
 
@@ -48,7 +51,16 @@ public class CodeUnitLocation
     toReturn.functionName = functionName;
     return toReturn;
   }
-  
+
+  public static CodeUnitLocation forStaticOrConstructorMethod(String className, String functionName)
+  {
+    CodeUnitLocation toReturn = new CodeUnitLocation();
+    toReturn.isStaticOrConstructor = true;
+    toReturn.className = className;
+    toReturn.functionName = functionName;
+    return toReturn;
+  }
+
   public static CodeUnitLocation forFunction(String functionName)
   {
     CodeUnitLocation toReturn = new CodeUnitLocation();

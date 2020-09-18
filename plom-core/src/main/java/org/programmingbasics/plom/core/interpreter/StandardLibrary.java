@@ -37,6 +37,8 @@ public class StandardLibrary
     public List<String> argNames; 
     public List<String> argTypes;
     public PrimitivePassthrough primitive;
+    public boolean isStatic = false;
+    public boolean isConstructor = false;
     public static StdLibMethod code(String className, String methodName, PrimitivePassthrough primitive, String returnType, List<String> argNames, List<String> argTypes, StatementContainer code)
     {
       StdLibMethod toReturn = new StdLibMethod();
@@ -47,6 +49,12 @@ public class StandardLibrary
       toReturn.argNames = argNames;
       toReturn.argTypes = argTypes;
       toReturn.primitive = primitive;
+      return toReturn;
+    }
+    public static StdLibMethod constructor(String className, String methodName, PrimitivePassthrough primitive, String returnType, List<String> argNames, List<String> argTypes, StatementContainer code)
+    {
+      StdLibMethod toReturn = StdLibMethod.code(className, methodName, primitive, returnType, argNames, argTypes, code);
+      toReturn.isConstructor = true;
       return toReturn;
     }
     public static StdLibMethod primitive(String className, String methodName, String comment, String returnType, List<String> argNames, List<String> argTypes, PrimitivePassthrough primitive)
@@ -114,6 +122,8 @@ public class StandardLibrary
                   new Token.SimpleToken(")", Symbol.ClosedParenthesis),
                   Token.ParameterToken.fromContents(".not", Symbol.DotVariable)
                   ))),
+      StdLibMethod.constructor("object", "new", null, "void", Collections.emptyList(), Collections.emptyList(),
+          new StatementContainer()),
       
       // some number methods
       StdLibMethod.primitiveNoArg("number", "abs", "Comment", "number", 
@@ -266,13 +276,26 @@ public class StandardLibrary
         Type [] argTypes = new Type[m.argTypes.size()];
         for (int n = 0; n < m.argTypes.size(); n++)
           argTypes[n] = coreTypeFromString(m.argTypes.get(n), coreTypes);
-        coreTypeFromString(m.className, coreTypes).addMethod(m.methodName,
-            ExecutableFunction.forCode(
-                CodeUnitLocation.forMethod(m.className, m.methodName), 
-                ParseToAst.parseStatementContainer(m.code),
-                m.argNames), 
-            coreTypeFromString(m.returnType, coreTypes),
-            argTypes);
+ 
+        if (m.isConstructor || m.isStatic)
+        {
+          ExecutableFunction execFn = ExecutableFunction.forCode(
+              CodeUnitLocation.forStaticOrConstructorMethod(m.className, m.methodName), 
+              ParseToAst.parseStatementContainer(m.code),
+              m.argNames); 
+// TODO: Fix this up!
+          coreTypeFromString(m.className, coreTypes).addMethod(m.methodName,
+              execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
+        }
+        else
+        {
+          ExecutableFunction execFn = ExecutableFunction.forCode(
+              CodeUnitLocation.forMethod(m.className, m.methodName), 
+              ParseToAst.parseStatementContainer(m.code),
+              m.argNames); 
+          coreTypeFromString(m.className, coreTypes).addMethod(m.methodName,
+              execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
+        }
       }
     }
     catch (ParseException e)

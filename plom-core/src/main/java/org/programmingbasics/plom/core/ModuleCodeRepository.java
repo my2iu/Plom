@@ -25,6 +25,8 @@ public class ModuleCodeRepository
     public List<Token.ParameterToken> argTypes = new ArrayList<>();
     public Token.ParameterToken returnType;
     public boolean isBuiltIn = false;
+    public boolean isStatic = false;
+    public boolean isConstructor = false;
     public String getLookupName()
     {
       String name = "";
@@ -60,6 +62,16 @@ public class ModuleCodeRepository
         name += " @" + returnType.getLookupName();
       }
       return name;
+    }
+    public FunctionSignature setIsConstructor(boolean val)
+    {
+      isConstructor = val;
+      return this;
+    }
+    public FunctionSignature setIsStatic(boolean val)
+    {
+      isStatic = val;
+      return this;
     }
     public static FunctionSignature from(Token.ParameterToken returnType, String name)
     {
@@ -119,9 +131,15 @@ public class ModuleCodeRepository
     public String name;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
-    public List<FunctionDescription> getAllMethods()
+    public List<FunctionDescription> getInstanceMethods()
     {
-      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()));
+      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
+          .stream().filter(fn -> !fn.sig.isConstructor && !fn.sig.isStatic).collect(Collectors.toList());
+    }
+    public List<FunctionDescription> getStaticAndConstructorMethods()
+    {
+      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
+          .stream().filter(fn -> fn.sig.isConstructor || fn.sig.isStatic).collect(Collectors.toList());
     }
     public void addMethod(FunctionDescription f)
     {
@@ -376,6 +394,10 @@ public class ModuleCodeRepository
     {
       ClassDescription c = classMap.get(mdef.className);
       FunctionSignature sig = FunctionSignature.from(Token.ParameterToken.fromContents("@" + mdef.returnType, Symbol.AtType), mdef.methodName, mdef.argNames, mdef.argTypes.stream().map(typeStr -> Token.ParameterToken.fromContents("@" + typeStr, Symbol.AtType)).collect(Collectors.toList()));
+      if (mdef.isStatic)
+        sig.setIsStatic(true);
+      else if (mdef.isConstructor)
+        sig.setIsConstructor(true);
       sig.isBuiltIn = true;
       c.addMethod(new FunctionDescription(sig, mdef.code));
     }

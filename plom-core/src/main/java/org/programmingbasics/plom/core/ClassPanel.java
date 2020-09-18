@@ -71,23 +71,37 @@ public class ClassPanel
       viewSwitchCallback.loadMethodSignatureView(cls, func);
     }, false);
     
-    // List of methods
-    Element methodListEl = mainDiv.querySelector(".methodsList");
+    // List of instance methods
+    createMethodList(mainDiv.querySelector(".methodsList"), cls.getInstanceMethods());
+
+    // For adding static methods
+    mainDiv.querySelectorAll(".staticMethodsHeading a").item(0).addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      FunctionDescription func = new FunctionDescription(
+          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newMethodName)
+              .setIsStatic(true),
+          new StatementContainer());
+      cls.addMethod(func);
+
+      viewSwitchCallback.loadMethodSignatureView(cls, func);
+    }, false);
+    // For adding constructor methods
+    mainDiv.querySelectorAll(".staticMethodsHeading a").item(1).addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      FunctionDescription func = new FunctionDescription(
+          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newMethodName)
+              .setIsConstructor(true),
+          new StatementContainer());
+      cls.addMethod(func);
+
+      viewSwitchCallback.loadMethodSignatureView(cls, func);
+    }, false);
     
-    for (FunctionDescription fn: cls.getAllMethods())
-    {
-      AnchorElement a = (AnchorElement)doc.createElement("a");
-      a.setHref("#");
-      a.setTextContent(fn.sig.getLookupName());
-      a.addEventListener(Event.CLICK, (e) -> {
-        e.preventDefault();
-        viewSwitchCallback.loadMethodCodeView(cls, fn);
-      }, false);
-      DivElement div = doc.createDivElement();
-      div.appendChild(a);
-      methodListEl.appendChild(div);
-    }
-    
+    // List of static methods
+    createMethodList(mainDiv.querySelector(".staticMethodsList"), cls.getStaticAndConstructorMethods());
+
     // Variables
     Element newVarAnchor = mainDiv.querySelector(".varsHeading a");
     newVarAnchor.addEventListener(Event.CLICK, (e) -> {
@@ -103,6 +117,26 @@ public class ClassPanel
       addVarEntry(mainDiv, v, varDivs);
     }
 
+  }
+
+  private void createMethodList(Element methodListEl, List<FunctionDescription> fnList)
+  {
+    for (FunctionDescription fn: fnList)
+    {
+      AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setHref("#");
+      if (fn.sig.isConstructor)
+        a.setTextContent("(*) " + fn.sig.getLookupName());
+      else
+        a.setTextContent(fn.sig.getLookupName());
+      a.addEventListener(Event.CLICK, (e) -> {
+        e.preventDefault();
+        viewSwitchCallback.loadMethodCodeView(cls, fn);
+      }, false);
+      DivElement div = doc.createDivElement();
+      div.appendChild(a);
+      methodListEl.appendChild(div);
+    }
   }
   
   private void addVarEntry(DivElement mainDiv,
