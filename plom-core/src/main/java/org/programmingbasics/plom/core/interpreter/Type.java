@@ -44,6 +44,8 @@ public class Type
   private Map<String, PrimitiveFunction.PrimitiveMethod> primMethods = new HashMap<>();
   private Map<String, ExecutableFunction> methods = new HashMap<>();
   private Map<String, TypeSignature> methodTypeSigs = new HashMap<>();
+  private Map<String, ExecutableFunction> staticMethods = new HashMap<>();
+  private Map<String, TypeSignature> staticMethodTypeSigs = new HashMap<>();
   public void addPrimitiveMethod(String name, PrimitiveFunction.PrimitiveMethod fn, Type returnType, Type...args)
   {
     primMethods.put(name, fn);
@@ -82,6 +84,15 @@ public class Type
       if (!suggestions.contains(memberName))
         suggestions.add(memberName);
     }
+  }
+  public void addStaticMethod(String name, ExecutableFunction fn, Type returnType, Type...args)
+  {
+    staticMethods.put(name, fn);
+    staticMethodTypeSigs.put(name, makeFunctionType(returnType, args));
+  }
+  public ExecutableFunction lookupStaticMethod(String name)
+  {
+    return staticMethods.get(name);
   }
   
   public static TypeSignature makeFunctionType(Type returnType, Type...args)

@@ -52,9 +52,10 @@ public class Rule
 	public final static List<Symbol> ValueExpression_TrueLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.TrueLiteral);
 	public final static List<Symbol> ValueExpression_FalseLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.FalseLiteral);
 	public final static List<Symbol> ValueExpression_Number = Arrays.asList(Symbol.ValueExpression, Symbol.Number);
-	public final static List<Symbol> ValueExpression_AtType = Arrays.asList(Symbol.ValueExpression, Symbol.AtType);
+	public final static List<Symbol> ValueExpression_StaticMethodCallExpression = Arrays.asList(Symbol.ValueExpression, Symbol.StaticMethodCallExpression);
 	public final static List<Symbol> ValueExpression_DotVariable = Arrays.asList(Symbol.ValueExpression, Symbol.DotVariable);
 	public final static List<Symbol> ValueExpression_String = Arrays.asList(Symbol.ValueExpression, Symbol.String);
+	public final static List<Symbol> StaticMethodCallExpression_AtType_DotMember = Arrays.asList(Symbol.StaticMethodCallExpression, Symbol.AtType, Symbol.DotMember);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSEIF_AfterIf = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSEIF, Symbol.AfterIf);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSE = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSE);
 	public final static List<Symbol> AfterIf = Arrays.asList(Symbol.AfterIf);

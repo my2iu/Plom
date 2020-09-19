@@ -34,9 +34,9 @@ public class SimpleInterpreter
   {
     Type type;
   }
-  static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RuntimeException>()
+  static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException>()
       .add(Rule.AtType, (triggers, node, typesToReturn, machine) -> {
-        Type t = new Type(((Token.ParameterToken)node.token).getLookupName());
+        Type t = machine.currentScope().typeFromToken((Token.ParameterToken)node.token);
         typesToReturn.type = t;
         return true;
       });

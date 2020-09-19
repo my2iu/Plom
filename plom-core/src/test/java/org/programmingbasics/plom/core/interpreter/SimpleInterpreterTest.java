@@ -1,7 +1,9 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,22 +19,61 @@ import junit.framework.TestCase;
 
 public class SimpleInterpreterTest extends TestCase
 {
+  static class TestScopeWithTypes extends VariableScope
+  {
+    TestScopeWithTypes(CoreTypeLibrary coreTypes)
+    {
+      this.coreTypes = coreTypes;
+    }
+    CoreTypeLibrary coreTypes;
+    Map<String, Type> typeLookup = new HashMap<>(); 
+
+    public void addType(Type t)
+    {
+      typeLookup.put(t.name, t);
+    }
+    
+    @Override
+    public Type typeFromToken(Token typeToken) throws RunException
+    {
+      String name = ((Token.ParameterToken)typeToken).getLookupName();
+      Type toReturn = typeLookup.get(name);
+      if (toReturn != null) return toReturn;
+      switch (name)
+      {
+        case "number": return coreTypes.getNumberType(); 
+        case "string": return coreTypes.getStringType(); 
+        case "boolean": return coreTypes.getBooleanType(); 
+        case "object": return coreTypes.getObjectType(); 
+        case "null": return coreTypes.getNullType(); 
+        case "void": return coreTypes.getVoidType(); 
+      }
+      throw new RunException("Unknown class");
+    }
+  }
+  
+  static interface ConfigureTestGlobalScope
+  {
+    public void configure(TestScopeWithTypes scope, CoreTypeLibrary coreTypes);
+  }
+  
   static class GlobalsSaver implements ConfigureGlobalScope
   {
-    GlobalsSaver(ConfigureGlobalScope passthrough)
+    GlobalsSaver(ConfigureTestGlobalScope passthrough)
     {
       this.passthrough = passthrough;
     }
-    ConfigureGlobalScope passthrough;
-    VariableScope globalScope;
+    ConfigureTestGlobalScope passthrough;
+    TestScopeWithTypes globalScope;
     CoreTypeLibrary coreTypes;
     
     @Override public void configure(VariableScope scope, CoreTypeLibrary coreTypes)
     {
-      this.globalScope = scope;
+      this.globalScope = new TestScopeWithTypes(coreTypes);
+      scope.setParent(this.globalScope);
       this.coreTypes = coreTypes;
       if (passthrough != null)
-        passthrough.configure(scope, coreTypes);
+        passthrough.configure(this.globalScope, coreTypes);
     }
   }
   
@@ -98,6 +139,7 @@ public class SimpleInterpreterTest extends TestCase
       SimpleInterpreter interpreter = new SimpleInterpreter(code);
       MachineContext ctx = new MachineContext();
       ctx.coreTypes = coreTypes;
+      ctx.getGlobalScope().setParent(new TestScopeWithTypes(coreTypes));
       interpreter.runFrameForTesting(ctx, scope);
     }
     
@@ -398,6 +440,7 @@ public class SimpleInterpreterTest extends TestCase
     CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
     MachineContext ctx = new MachineContext();
     ctx.coreTypes = coreTypes;
+    ctx.getGlobalScope().setParent(new TestScopeWithTypes(coreTypes));
     
     StatementContainer code = new StatementContainer(
         new TokenContainer(
@@ -649,4 +692,43 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
+  @Test
+  public void testStaticMethodCall() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      
+      Type testType = new Type("test", coreTypes.getObjectType());
+      try {
+        ExecutableFunction getFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forStaticOrConstructorMethod("test", "calcVal"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("2", Symbol.Number),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("3", Symbol.Number)
+                        )
+                    )
+                ), 
+            Arrays.asList());
+        testType.addStaticMethod("calcVal", getFn, coreTypes.getVoidType());
+        scope.addType(testType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@test", Symbol.AtType),
+            Token.ParameterToken.fromContents(".calcVal", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+  
 }

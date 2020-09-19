@@ -34,6 +34,7 @@ enum Symbol
   MemberExpressionMore(false),
   ParenthesisExpression(false),
   ValueExpression(false),
+  StaticMethodCallExpression(false),
   EndStatement(true),
   This(true),
   TrueLiteral(true),

@@ -34,6 +34,7 @@ public enum Symbol
 	MemberExpressionMore,
 	ParenthesisExpression,
 	ValueExpression,
+	StaticMethodCallExpression,
 	EndStatement,
 	This,
 	TrueLiteral,

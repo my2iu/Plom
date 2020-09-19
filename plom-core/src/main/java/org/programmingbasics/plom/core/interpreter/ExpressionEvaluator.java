@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ExpressionEvaluator
@@ -217,25 +218,19 @@ public class ExpressionEvaluator
             Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
             if (toReturn.type.isCallable())
             {
+              if (toReturn.type.isNormalFunction())
+              {
+                ExecutableFunction fn = (ExecutableFunction)toReturn.val;
+                callMethodOrFunction(machine, node, null, fn);
+                return;
+              }
               List<Value> args = new ArrayList<>();
               for (int n = 0; n < node.internalChildren.size(); n++)
               {
                 args.add(machine.readValue(node.internalChildren.size() - n - 1));
               }
               machine.popValues(node.internalChildren.size());
-              if (toReturn.type.isNormalFunction()) 
-              {
-                ExecutableFunction fn = (ExecutableFunction)toReturn.val;
-                machine.ip.pop();
-                machine.pushStackFrame(fn.code, fn.codeUnit, SimpleInterpreter.statementHandlers);
-                machine.pushNewScope();
-                for (int n = 0; n < fn.argPosToName.size(); n++)
-                {
-                  machine.currentScope().addVariable(fn.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
-                }
-                return;
-              }
-              else if (toReturn.type.isPrimitiveNonBlockingFunction())
+              if (toReturn.type.isPrimitiveNonBlockingFunction())
               {
                 toReturn = ((PrimitiveFunction)toReturn.val).call(args);
                 machine.pushValue(toReturn);
@@ -270,21 +265,7 @@ public class ExpressionEvaluator
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
-                List<Value> args = new ArrayList<>();
-                for (int n = 0; n < methodNode.internalChildren.size(); n++)
-                {
-                  args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
-                }
-                machine.popValues(methodNode.internalChildren.size() + 1);
-                machine.ip.pop();
-                machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-                machine.pushNewScope();
-                for (int n = 0; n < method.argPosToName.size(); n++)
-                {
-                  // TODO: Add in this
-                  machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
-                }
-                machine.currentScope().setThis(self);
+                callMethodOrFunction(machine, methodNode, self, method);
                 return;
               }
               else
@@ -303,9 +284,63 @@ public class ExpressionEvaluator
                 machine.ip.pop();
               }
             }
+      })
+      .add(Rule.StaticMethodCallExpression_AtType_DotMember, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            AstNode methodNode = node.children.get(1).children.get(0);
+            if (idx < methodNode.internalChildren.size())
+            {
+              machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
+              return;
+            }
+            else 
+            {
+              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+              node.children.get(0).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
+              Type calleeType = typeInfo.type;
+//              Value self = machine.readValue(methodNode.internalChildren.size());
+              ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+              if (method != null)
+              {
+                callMethodOrFunction(machine, methodNode, null, method);
+                return;
+              }
+              else
+              {
+                throw new RunException();
+              }
+            }
       });
   }
 
+
+
+  static void callMethodOrFunction(MachineContext machine, AstNode methodNode,
+      Value self, ExecutableFunction method)
+  {
+    List<Value> args = new ArrayList<>();
+    for (int n = 0; n < methodNode.internalChildren.size(); n++)
+    {
+      args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+    }
+    if (self != null)
+      machine.popValues(methodNode.internalChildren.size() + 1);
+    else
+      machine.popValues(methodNode.internalChildren.size());
+
+    machine.ip.pop();
+    machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+    machine.pushNewScope();
+    for (int n = 0; n < method.argPosToName.size(); n++)
+    {
+      machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
+    }
+    if (self != null)
+      machine.currentScope().setThis(self);
+  }
+
+  
+  
   /** Just an easy way to throw an exception in lvalue code */
   static MachineNodeVisitor lValueInvalid() { 
     return (MachineContext machine, AstNode node, int idx) -> {
