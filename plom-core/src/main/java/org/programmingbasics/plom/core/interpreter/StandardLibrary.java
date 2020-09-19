@@ -91,6 +91,15 @@ public class StandardLibrary
             primitive.execute(blockWait, machine, machine.currentScope().lookupThis(), machine.currentScope().lookup("val"));
           });
     }
+    public static StdLibMethod primitiveStaticOneArg(String className, String methodName, String comment, String returnType, String argType, OneArgPrimitive primitive)
+    {
+      StdLibMethod m = primitive(className, methodName, comment, returnType, Arrays.asList("val"), Arrays.asList(argType),
+          (blockWait, machine) -> {
+            primitive.execute(blockWait, machine, null, machine.currentScope().lookup("val"));
+          });
+      m.isStatic = true;
+      return m;
+    }
   }
   
   public static List<StdLibClass> stdLibClasses = Arrays.asList(
@@ -201,6 +210,12 @@ public class StandardLibrary
             else
               blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), self.getNumberValue() == val.getNumberValue()));
           }),
+      StdLibMethod.primitiveStaticOneArg("number", "parse US number:", "Comment", "number", "string", 
+          (blockWait, machine, self, val) -> {
+            if (!machine.coreTypes().getStringType().equals(val.type))
+              throw new RunException();
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Double.parseDouble(val.getStringValue())));
+          }),
 
       // some string methods
       StdLibMethod.primitiveNoArg("string", "to string", "Comment", "string", 
@@ -283,8 +298,7 @@ public class StandardLibrary
               CodeUnitLocation.forStaticOrConstructorMethod(m.className, m.methodName), 
               ParseToAst.parseStatementContainer(m.code),
               m.argNames); 
-// TODO: Fix this up!
-          coreTypeFromString(m.className, coreTypes).addMethod(m.methodName,
+          coreTypeFromString(m.className, coreTypes).addStaticMethod(m.methodName,
               execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
         }
         else
@@ -307,7 +321,10 @@ public class StandardLibrary
     for (StdLibMethod m: stdLibMethods)
     {
       if (m.primitive == null) continue;
-      coreTypes.addPrimitive(CodeUnitLocation.forMethod(m.className, m.methodName), m.primitive);
+      if (m.isStatic)
+        coreTypes.addPrimitive(CodeUnitLocation.forStaticOrConstructorMethod(m.className, m.methodName), m.primitive);
+      else
+        coreTypes.addPrimitive(CodeUnitLocation.forMethod(m.className, m.methodName), m.primitive);
     }
   }
   

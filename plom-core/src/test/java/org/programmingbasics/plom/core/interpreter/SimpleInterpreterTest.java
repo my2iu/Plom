@@ -712,10 +712,15 @@ public class SimpleInterpreterTest extends TestCase
                         new Token.SimpleToken(":=", Symbol.Assignment),
                         new Token.SimpleToken("2", Symbol.Number),
                         new Token.SimpleToken("+", Symbol.Plus),
-                        new Token.SimpleToken("3", Symbol.Number)
+                        Token.ParameterToken.fromContents("@number", Symbol.AtType),
+                        Token.ParameterToken.fromContents(".parse US number:", Symbol.DotVariable,
+                            new TokenContainer(
+                                new Token.SimpleToken("\"3\"", Symbol.String)
+                            )
                         )
                     )
-                ), 
+                )
+            ),
             Arrays.asList());
         testType.addStaticMethod("calcVal", getFn, coreTypes.getVoidType());
         scope.addType(testType);
