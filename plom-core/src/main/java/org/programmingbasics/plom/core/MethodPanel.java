@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
 import elemental.dom.Document;
@@ -15,8 +16,10 @@ import elemental.html.InputElement;
 
 public class MethodPanel
 {
-  MethodPanel(DivElement mainDiv, FunctionSignature sig)
+  MethodPanel(DivElement mainDiv, ModuleCodeRepository repository, FunctionSignature sig)
   {
+    this.repository = repository;
+
     doc = Browser.getDocument();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
     
@@ -30,6 +33,7 @@ public class MethodPanel
 
   final Document doc;
   SignatureListener listener;
+  ModuleCodeRepository repository;
   SimpleEntry simpleEntry;
   
   public static interface SignatureListener
@@ -63,7 +67,12 @@ public class MethodPanel
     }, false);
 
     // Render the return type
-    returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true);
+    returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {});
     returnTypeField.render();
 
     // Ok Button
@@ -109,7 +118,12 @@ public class MethodPanel
     mainDiv.querySelector(".method_args").appendChild(varDiv);
 
     // argument type
-    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false);
+    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false,
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {});
     argTypeFields.add(typeField);
     typeField.render();
 

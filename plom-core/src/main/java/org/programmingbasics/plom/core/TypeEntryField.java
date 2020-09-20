@@ -2,11 +2,14 @@ package org.programmingbasics.plom.core;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
+import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
@@ -25,12 +28,14 @@ import elemental.html.DivElement;
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> variableContextConfigurator)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
     this.isReturnType = isReturnType;
     fieldDiv = div;
+    this.globalConfigurator = globalConfigurator;
+    this.variableContextConfigurator = variableContextConfigurator;
     hookCodeClick(div);
   }
   boolean isReturnType;  // Should void be allowed as a type
@@ -40,7 +45,16 @@ public class TypeEntryField
   CodePosition cursorPos;
   RenderedHitBox hitBox;
   BiConsumer<Token.ParameterToken, Boolean> listener;
-  
+
+  /** 
+   * Allows for the configuration of what global variables/types there are
+   * for type checking.
+   * */
+  ConfigureGlobalScope globalConfigurator; 
+
+  /** To configure object variables and function arguments that are accessible for code completion */
+  Consumer<CodeCompletionContext> variableContextConfigurator; 
+
   /** 
    * You don't actually need to listen for changes because if there is an
    * existing type, the contents of the type will actually be rewritten with
@@ -79,7 +93,8 @@ public class TypeEntryField
         type = (ParameterToken) SetTypeToken.set(type, hitToken, cursorPos);
       }
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput);
+      CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, globalConfigurator, variableContextConfigurator);
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput);
 
       render();
     }, false);

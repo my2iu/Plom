@@ -43,10 +43,8 @@ import elemental.html.DivElement;
 
 public class CodePanel
 {
-  public CodePanel(DivElement mainDiv, ConfigureGlobalScope globalConfigurator)
+  public CodePanel(DivElement mainDiv)
   {
-    this.globalConfigurator = globalConfigurator;
-    
     mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
@@ -70,8 +68,9 @@ public class CodePanel
     hookCodeClick(codeDiv);
   }
 
-  public void setVariableContextConfigurator(Consumer<CodeCompletionContext> configurator)
+  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> configurator)
   {
+    this.globalConfigurator = globalConfigurator;
     variableContextConfigurator = configurator;
   }
   
@@ -222,8 +221,11 @@ public class CodePanel
     switch (tokenType)
     {
     case AtType:
-      showSimpleEntryForToken(newToken, false, new TypeSuggester(false));
+    {
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, false));
       break;
+    }
 
     case DotVariable:
       if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
@@ -232,11 +234,7 @@ public class CodePanel
       }
       else
       {
-        CodeCompletionContext suggestionContext = new CodeCompletionContext();
-        globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
-        variableContextConfigurator.accept(suggestionContext);
-        suggestionContext.pushNewScope();
-        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
+        CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
         Suggester suggester = 
             parentSymbols.contains(Symbol.DotMember) ?
                 new MemberSuggester(suggestionContext)
@@ -256,6 +254,17 @@ public class CodePanel
       break;
     }
     updateCodeView(true);
+  }
+
+  static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos, ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> variableContextConfigurator)
+  {
+    CodeCompletionContext suggestionContext = new CodeCompletionContext();
+    globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
+    variableContextConfigurator.accept(suggestionContext);
+    suggestionContext.pushNewScope();
+    if (codeList != null && pos != null)
+      GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
+    return suggestionContext;
   }
 
   void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester)

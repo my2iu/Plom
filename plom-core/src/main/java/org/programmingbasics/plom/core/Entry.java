@@ -367,67 +367,69 @@ public class Entry implements EntryPoint
   
   private void showCodePanel(StatementContainer code)
   {
-    codePanel = new CodePanel(getMainDiv(), (scope, coreTypes) -> {
-      StandardLibrary.createGlobals(null, scope, coreTypes);
-      scope.setParent(new RepositoryScope(repository, coreTypes));
-    });
-    codePanel.setVariableContextConfigurator((context) -> {
-      if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
-        return;
+    codePanel = new CodePanel(getMainDiv());
+    codePanel.setVariableContextConfigurator(
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {
+          if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
+            return;
 
-      if (currentMethodClassBeingViewed != null)
-      {
-        context.pushNewScope();
-        // Add in instance variables
-        for (VariableDescription v: currentMethodClassBeingViewed.getAllVars())
-        {
-          String name = v.name;
-          Token.ParameterToken typeToken = v.type;
-          try {
-            Type type = context.currentScope().typeFromToken(typeToken);
-            context.currentScope().addVariable(name, type, new Value());
-          }
-          catch (RunException e)
+          if (currentMethodClassBeingViewed != null)
           {
-            // Ignore the argument if it doesn't have a valid type
+            context.pushNewScope();
+            // Add in instance variables
+            for (VariableDescription v: currentMethodClassBeingViewed.getAllVars())
+            {
+              String name = v.name;
+              Token.ParameterToken typeToken = v.type;
+              try {
+                Type type = context.currentScope().typeFromToken(typeToken);
+                context.currentScope().addVariable(name, type, new Value());
+              }
+              catch (RunException e)
+              {
+                // Ignore the argument if it doesn't have a valid type
+              }
+            }
+            // Set the this value
+            try {
+              Value thisValue = new Value();
+              thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
+              context.currentScope().setThis(thisValue);
+            } 
+            catch (RunException e)
+            {
+              // Ignore any errors when setting this
+            }
           }
-        }
-        // Set the this value
-        try {
-          Value thisValue = new Value();
-          thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
-          context.currentScope().setThis(thisValue);
-        } 
-        catch (RunException e)
-        {
-          // Ignore any errors when setting this
-        }
-      }
 
-      // Add in function arguments
-      FunctionDescription fd = null;
-      if (currentFunctionBeingViewed != null)
-        fd = repository.getFunctionDescription(currentFunctionBeingViewed);
-      else if (currentMethodBeingViewed != null)
-        fd = currentMethodBeingViewed;
-      if (fd != null)
-      {
-        context.pushNewScope();
-        for (int n = 0; n < fd.sig.argNames.size(); n++)
-        {
-          String name = fd.sig.argNames.get(n);
-          Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
-          try {
-            Type type = context.currentScope().typeFromToken(typeToken);
-            context.currentScope().addVariable(name, type, new Value());
-          }
-          catch (RunException e)
+          // Add in function arguments
+          FunctionDescription fd = null;
+          if (currentFunctionBeingViewed != null)
+            fd = repository.getFunctionDescription(currentFunctionBeingViewed);
+          else if (currentMethodBeingViewed != null)
+            fd = currentMethodBeingViewed;
+          if (fd != null)
           {
-            // Ignore the argument if it doesn't have a valid type
+            context.pushNewScope();
+            for (int n = 0; n < fd.sig.argNames.size(); n++)
+            {
+              String name = fd.sig.argNames.get(n);
+              Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
+              try {
+                Type type = context.currentScope().typeFromToken(typeToken);
+                context.currentScope().addVariable(name, type, new Value());
+              }
+              catch (RunException e)
+              {
+                // Ignore the argument if it doesn't have a valid type
+              }
+            }
           }
-        }
-      }
-    });
+        });
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {
@@ -472,7 +474,7 @@ public class Entry implements EntryPoint
   
   private void showFunctionPanel(FunctionSignature sig)
   {
-    methodPanel = new MethodPanel(getMainDiv(), sig);
+    methodPanel = new MethodPanel(getMainDiv(), repository, sig);
     methodPanel.setListener((newSig, isFinal) -> {
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());
@@ -481,7 +483,7 @@ public class Entry implements EntryPoint
 
   private void showMethodPanel(ClassDescription cls, FunctionDescription m)
   {
-    methodPanel = new MethodPanel(getMainDiv(), m.sig);
+    methodPanel = new MethodPanel(getMainDiv(), repository, m.sig);
     methodPanel.setListener((newSig, isFinal) -> {
       m.sig = newSig;
       cls.updateMethod(m);

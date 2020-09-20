@@ -10,6 +10,7 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
 import elemental.dom.Document;
@@ -132,7 +133,12 @@ public class GlobalsPanel
     ((InputElement)div.querySelector("input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".globalVarsList").appendChild(div);
-    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false);
+    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {});
     typeField.setChangeListener((newType, isFinal) -> {
       v.type = newType; 
       repository.updateGlobalVariable(v);

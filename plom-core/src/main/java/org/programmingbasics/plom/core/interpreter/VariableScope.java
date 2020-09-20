@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,18 @@ public class VariableScope
     throw new RunException();
   }
 
+  /**
+   * Returns all the types available at this point in the code (including
+   * generic parameter types). This is an expensive operation and should
+   * only be used for type suggestions when coding.
+   */
+  public List<Type> getAllKnownTypes()
+  {
+    if (parent != null)
+      return parent.getAllKnownTypes();
+    return Collections.emptyList();
+  }
+  
   /**
    * Looks up the value of "this" i.e. the current object
    */

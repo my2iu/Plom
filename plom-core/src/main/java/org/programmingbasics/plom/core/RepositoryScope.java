@@ -168,6 +168,24 @@ public class RepositoryScope extends VariableScope
     typeLookupCache.put(name, toReturn);
     return toReturn;
   }
+
+  @Override
+  public List<Type> getAllKnownTypes()
+  {
+    List<Type> types = new ArrayList<>();
+    // Create Type objects for all classes in the repository
+    for (ClassDescription cls: codeRepositoryClasses.values())
+    {
+      try {
+        types.add(typeFromToken(Token.ParameterToken.fromContents("@" + cls.name, Symbol.AtType)));
+      }
+      catch (RunException e)
+      {
+        // Eat all errors
+      }
+    }
+    return types;
+  }
   
   @Override
   public void lookupSuggestions(String val, List<String> suggestions)
