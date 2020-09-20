@@ -735,5 +735,25 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-  
+
+  @Test
+  public void testConstructorCall() throws RunException, ParseException
+  {
+    // Create a plain object
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNullType(), coreTypes.getNullValue());
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@object", Symbol.AtType),
+            Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(vars.coreTypes.getObjectType(), vars.globalScope.lookup("a").type);
+  }
+
 }
