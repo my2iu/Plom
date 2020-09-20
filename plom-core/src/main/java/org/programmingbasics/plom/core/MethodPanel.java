@@ -83,7 +83,7 @@ public class MethodPanel
       for (TypeEntryField typeField: argTypeFields)
         argTypes.add(typeField.type);
       returnType = returnTypeField.type;
-      FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes);
+      FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes, sig);
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);

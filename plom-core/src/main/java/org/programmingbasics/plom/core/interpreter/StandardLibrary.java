@@ -214,7 +214,15 @@ public class StandardLibrary
           (blockWait, machine, self, val) -> {
             if (!machine.coreTypes().getStringType().equals(val.type))
               throw new RunException();
-            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), Double.parseDouble(val.getStringValue())));
+            Value toReturn;
+            try {
+              toReturn = Value.createNumberValue(machine.coreTypes(), Double.parseDouble(val.getStringValue()));
+            } 
+            catch (NumberFormatException e)
+            {
+              toReturn = machine.coreTypes().getNullValue();
+            }
+            blockWait.unblockAndReturn(toReturn);
           }),
 
       // some string methods
