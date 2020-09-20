@@ -118,9 +118,9 @@ public class GatherCodeCompletionInfo
         node.children.get(2).recursiveVisit(CodeSuggestExpressionTyper.typeParsingHandlers, typeInfo, context);
         Type type = typeInfo.type;
         if (type == null) type = context.coreTypes().getVoidType();
-        Value val = context.coreTypes().getNullValue();
-        if (node.children.get(3) == null || !node.children.get(3).matchesRule(Rule.VarAssignment))
-          return true;
+//        Value val = context.coreTypes().getNullValue();
+//        if (node.children.get(3) == null || !node.children.get(3).matchesRule(Rule.VarAssignment))
+//          return true;
         context.currentScope().addVariable(name, type, context.coreTypes().getNullValue());
         return true;
       });
