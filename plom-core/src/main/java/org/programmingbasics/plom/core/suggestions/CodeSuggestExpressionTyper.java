@@ -6,20 +6,39 @@ import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
-
 /**
  * Holds code for typing expressions in order to make code suggestions.
  */
 public class CodeSuggestExpressionTyper
 {
+  // When parsing type information, we need a structure for stashing
+  // that type info in order to return it
+  public static class GatheredTypeInfo
+  {
+    public Type type;
+  }
+  public static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
+      .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
+          try
+          {
+            Type t = context.currentScope().typeFromToken(node.token);
+            typesToReturn.type = t;
+          }
+          catch (RunException e)
+          {
+            typesToReturn.type = null;
+          }
+        return true;
+      });
+
+  
+  // Helpers for quickly clearing the last type used
   static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> clearLastUsedType = (triggers, node, context, param) -> {
     context.clearLastTypeUsed();
     return true;
   };
-//  static interface BinaryTypeHandler
-//  {
-//    public Type apply(Type left, Type right);
-//  }
+  
+  // Helper for handling operators 
   static RecursiveWalkerVisitor<CodeCompletionContext, Void, RuntimeException> createBinaryTypeToMethodHandler(String methodName) {
     return (triggers, node, context, param) -> {
       if (node.children.get(0) == null)
@@ -59,7 +78,8 @@ public class CodeSuggestExpressionTyper
 //      return true;
 //    }; 
 //  }
-  
+ 
+  // Code for tracking types when executing partial code
   public static AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException> lastTypeHandlers = new AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException>();
   static {
     lastTypeHandlers
@@ -81,6 +101,48 @@ public class CodeSuggestExpressionTyper
         else
         {
           context.setLastTypeUsed(null);
+        }
+        return true;
+      })
+      .add(Rule.StaticMethodCallExpression_AtType_DotMember, (triggers, node, context, param) -> {
+        // This rule wouldn't be matched unless we have at least the first child 
+        // (i.e. the Type that the static call is being made on)
+        GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+        node.children.get(0).recursiveVisit(typeParsingHandlers, typeInfo, context);
+        Type type = typeInfo.type;
+        
+        // See setLastTypeForStaticCall() for more info about what's going on here
+        if (node.children.get(1) == null)
+        {
+          // We have a type defined, but no static member accessed, so we're probably being
+          // used to suggest a type for a static call, so store the type that the static call
+          // is being made on
+          context.setLastTypeForStaticCall(type);
+        }
+        else
+        {
+          // We have a static call, and all the parts are there, so we probably aren't being
+          // used to suggest completions for the static call, but for something further on 
+          // in the code, so just return the type of the static call
+          if (type != null)
+          {
+            Type.TypeSignature sig = type.lookupStaticMethodSignature(((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName());
+            if (sig != null)
+            {
+              context.setLastTypeUsed(sig.returnType);
+              context.pushType(sig.returnType);
+            }
+            else
+            {
+              context.setLastTypeUsed(context.coreTypes().getVoidType());
+              context.pushType(context.coreTypes().getVoidType());
+            }
+          }
+          else
+          {
+            context.setLastTypeUsed(context.coreTypes().getVoidType());
+            context.pushType(context.coreTypes().getVoidType());
+          }
         }
         return true;
       })
@@ -232,5 +294,4 @@ public class CodeSuggestExpressionTyper
       )
       ;
   }
-
 }

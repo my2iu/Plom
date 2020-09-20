@@ -16,6 +16,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
+import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
@@ -235,10 +236,19 @@ public class CodePanel
       else
       {
         CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-        Suggester suggester = 
-            parentSymbols.contains(Symbol.DotMember) ?
-                new MemberSuggester(suggestionContext)
-                : new VariableSuggester(suggestionContext);
+        Suggester suggester;
+        if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
+        {
+          suggester = new StaticMemberSuggester(suggestionContext);
+        }
+        else if (parentSymbols.contains(Symbol.DotMember))
+        {
+          suggester = new MemberSuggester(suggestionContext);
+        }
+        else
+        {
+          suggester = new VariableSuggester(suggestionContext);
+        }
         showSimpleEntryForToken(newToken, false, suggester);
       }
       break;

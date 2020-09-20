@@ -94,6 +94,18 @@ public class Type
   {
     return staticMethods.get(name);
   }
+  public TypeSignature lookupStaticMethodSignature(String name)
+  {
+    return staticMethodTypeSigs.get(name);
+  }
+  public void lookupStaticMemberSuggestions(String val, List<String> suggestions)
+  {
+    for (String memberName: staticMethodTypeSigs.keySet())
+    {
+      if (!suggestions.contains(memberName))
+        suggestions.add(memberName);
+    }
+  }
   
   public static TypeSignature makeFunctionType(Type returnType, Type...args)
   {

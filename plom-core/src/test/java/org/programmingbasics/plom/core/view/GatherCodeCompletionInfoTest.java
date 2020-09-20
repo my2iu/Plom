@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
+import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 
 import junit.framework.TestCase;
@@ -382,7 +383,48 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(suggestions.contains("substring from:to:"));
     Assert.assertTrue(suggestions.contains("to string"));
   }
-  
+
+  @Test
+  public void testStaticMemberSuggestions() throws RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            Token.ParameterToken.fromContents(".parse US number:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("\"123\"", Symbol.String))),
+            Token.ParameterToken.fromContents(".abs", Symbol.DotVariable)
+            ));
+
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeForStaticCall());
+    List<String> suggestions = new StaticMemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("parse US number:"));
+    
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getLastTypeForStaticCall());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
+
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getLastTypeForStaticCall());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
+
+//    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 3));
+//    suggestions = new MemberSuggester(context).gatherSuggestions("");
+//    Assert.assertTrue(suggestions.contains("substring from:to:"));
+//    Assert.assertTrue(suggestions.contains("to string"));
+//
+  }
+
   @Test
   public void testThis() throws RunException
   {

@@ -13,6 +13,7 @@ import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper;
+import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper.GatheredTypeInfo;
 
 public class GatherCodeCompletionInfo
 {
@@ -102,26 +103,6 @@ public class GatherCodeCompletionInfo
 //    return null;
   }
   
-  // When parsing type information, we need a structure for stashing
-  // that type info in order to return it
-  static class GatheredTypeInfo
-  {
-    Type type;
-  }
-  static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
-      .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
-          try
-          {
-            Type t = context.currentScope().typeFromToken(node.token);
-            typesToReturn.type = t;
-          }
-          catch (RunException e)
-          {
-            typesToReturn.type = null;
-          }
-        return true;
-      });
-
   static AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException>();
   static {
     statementHandlers
@@ -134,7 +115,7 @@ public class GatherCodeCompletionInfo
         GatheredTypeInfo typeInfo = new GatheredTypeInfo();
         if (node.children.get(2) == null)
           return true;
-        node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, context);
+        node.children.get(2).recursiveVisit(CodeSuggestExpressionTyper.typeParsingHandlers, typeInfo, context);
         Type type = typeInfo.type;
         if (type == null) type = context.coreTypes().getVoidType();
         Value val = context.coreTypes().getNullValue();

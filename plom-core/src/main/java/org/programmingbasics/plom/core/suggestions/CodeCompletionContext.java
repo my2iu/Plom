@@ -19,6 +19,7 @@ public class CodeCompletionContext
   VariableScope topScope = globalScope;
   List<Type> typeStack = new ArrayList<>();
   Type lastTypeUsed;
+  Type lastTypeForStaticCall;
   
   /**
    * Used internally to lookup types and do type checking when computing 
@@ -48,6 +49,21 @@ public class CodeCompletionContext
   {
     lastTypeUsed = val;
   }
+  
+  // This is used in a bit of a weird way. The value is not properly tracked over everywhere
+  // in the code. It's only used for static method calls, so we specifically check for when
+  // we need to find types for static method calls, and then when executing the code, we look
+  // for an incomplete static call, and set the type that the static call was on there.
+  public void setLastTypeForStaticCall(Type val)
+  {
+    lastTypeForStaticCall = val;
+  }
+  public Type getLastTypeForStaticCall()
+  {
+    return lastTypeForStaticCall;
+  }
+  
+  
   // Eventually, I'll need to recreate expression evaluation in the code completer, but
   // this would mainly be for handling types for brackets. We mainly need the type for
   // doing predictions of the . (member) operator. Handling predictions of other symbols
