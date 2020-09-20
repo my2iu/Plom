@@ -281,7 +281,11 @@ public class ModuleCodeRepository
 
     addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
     
-    addClassAndResetIds("Test");
+    ClassDescription testClass = addClassAndResetIds("Test");
+    testClass.addMethod(new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("void", Symbol.AtType), "new")
+            .setIsConstructor(true),
+        new StatementContainer()));
   }
   
   public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)

@@ -19,11 +19,7 @@ public class StaticMemberSuggester implements Suggester
   {
     List<String> suggestions = new ArrayList<>();
     Type type = context.getLastTypeForStaticCall();
-    while (type != null)
-    {
-      type.lookupStaticMemberSuggestions(val, suggestions);
-      type = type.parent;
-    }
+    type.lookupStaticMemberSuggestions(val, suggestions);
     return suggestions;
   }
 }

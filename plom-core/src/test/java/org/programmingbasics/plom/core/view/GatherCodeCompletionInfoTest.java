@@ -401,6 +401,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeForStaticCall());
     List<String> suggestions = new StaticMemberSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("parse US number:"));
+    Assert.assertFalse(suggestions.contains("new"));
     
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 2));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
