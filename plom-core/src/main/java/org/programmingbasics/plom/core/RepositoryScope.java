@@ -135,11 +135,16 @@ public class RepositoryScope extends VariableScope
         break;
       }
     }
+    typeLookupCache.put(name, toReturn);
     
     // Load any methods into it as needed
     if (codeRepositoryClasses.containsKey(name))
     {
-      ClassDescription cls = codeRepositoryClasses.get(name); 
+      ClassDescription cls = codeRepositoryClasses.get(name);
+      for (VariableDescription var: cls.variables)
+      {
+        toReturn.addMemberVariable(var.name, typeFromToken(var.type));
+      }
       for (FunctionDescription fn: cls.methods)
       {
         if (fn.sig.isBuiltIn) continue;
@@ -178,7 +183,6 @@ public class RepositoryScope extends VariableScope
       }
     }
     
-    typeLookupCache.put(name, toReturn);
     return toReturn;
   }
 

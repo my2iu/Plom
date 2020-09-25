@@ -283,7 +283,7 @@ public class ModuleCodeRepository
     
     ClassDescription testClass = addClassAndResetIds("Test");
     testClass.addMethod(new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("void", Symbol.AtType), "new")
+        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "new")
             .setIsConstructor(true),
         new StatementContainer()));
   }

@@ -379,22 +379,7 @@ public class Entry implements EntryPoint
 
           if (currentMethodClassBeingViewed != null)
           {
-            context.pushNewScope();
-            // Add in instance variables
-            for (VariableDescription v: currentMethodClassBeingViewed.getAllVars())
-            {
-              String name = v.name;
-              Token.ParameterToken typeToken = v.type;
-              try {
-                Type type = context.currentScope().typeFromToken(typeToken);
-                context.currentScope().addVariable(name, type, new Value());
-              }
-              catch (RunException e)
-              {
-                // Ignore the argument if it doesn't have a valid type
-              }
-            }
-            // Set the this value
+            // Create an object scope that will handle this and instance variables
             try {
               Value thisValue = new Value();
               thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
