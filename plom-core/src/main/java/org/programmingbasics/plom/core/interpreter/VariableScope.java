@@ -17,7 +17,7 @@ public class VariableScope
   private Map<String, Value> values = new HashMap<>();
   private Map<String, Type> types = new HashMap<>();
   private VariableScope parent;
-  private Value thisValue;
+//  private Value thisValue;
   
   public void setParent(VariableScope parentScope)
   {
@@ -96,19 +96,19 @@ public class VariableScope
    */
   public Value lookupThis() throws RunException
   {
-    Value val = thisValue;
-    if (val == null)
-    {
+//    Value val = thisValue;
+//    if (val == null)
+//    {
       if (parent != null)
         return parent.lookupThis();
       throw new RunException("Cannot find a this value");
-    }
-    return val;
+//    }
+//    return val;
   }
-  public void setThis(Value thisValue)
-  {
-    this.thisValue = thisValue;
-  }
+//  public void setThis(Value thisValue)
+//  {
+//    this.thisValue = thisValue;
+//  }
 
   
   // Overwrites a variable in this scope

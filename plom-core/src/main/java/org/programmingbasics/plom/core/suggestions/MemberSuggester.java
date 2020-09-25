@@ -21,7 +21,7 @@ public class MemberSuggester implements Suggester
     Type type = context.lastTypeUsed;
     while (type != null)
     {
-      type.lookupMemberSuggestions(val, suggestions);
+      type.lookupMethodSuggestions(val, suggestions);
       type = type.parent;
     }
     return suggestions;

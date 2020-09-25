@@ -398,7 +398,7 @@ public class Entry implements EntryPoint
             try {
               Value thisValue = new Value();
               thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
-              context.currentScope().setThis(thisValue);
+              context.pushObjectScope(thisValue);
             } 
             catch (RunException e)
             {

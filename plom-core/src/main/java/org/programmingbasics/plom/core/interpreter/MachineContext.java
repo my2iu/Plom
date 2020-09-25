@@ -63,6 +63,11 @@ public class MachineContext
     scope.setParent(topStackFrame.topScope);
     topStackFrame.topScope = scope;
   }
+  public void pushObjectScope(Value self)
+  {
+    VariableScope scope = new ObjectScope(self);
+    pushScope(scope);
+  }
   public void pushNewScope()
   {
     VariableScope scope = new VariableScope();

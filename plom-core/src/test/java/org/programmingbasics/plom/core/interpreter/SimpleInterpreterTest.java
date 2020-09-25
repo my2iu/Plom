@@ -704,7 +704,7 @@ public class SimpleInterpreterTest extends TestCase
       Type testType = new Type("test", coreTypes.getObjectType());
       try {
         ExecutableFunction getFn = ExecutableFunction.forCode(
-            CodeUnitLocation.forStaticOrConstructorMethod("test", "calcVal"), 
+            CodeUnitLocation.forStaticMethod("test", "calcVal"), 
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
                     new TokenContainer(
@@ -737,7 +737,7 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
-  public void testConstructorCall() throws RunException, ParseException
+  public void testConstructorCallCreateObject() throws RunException, ParseException
   {
     // Create a plain object
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
@@ -754,6 +754,66 @@ public class SimpleInterpreterTest extends TestCase
             ));
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(vars.coreTypes.getObjectType(), vars.globalScope.lookup("a").type);
+  }
+
+  @Test
+  public void testConstructObjectWithMemberVars() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type testType = new Type("test", coreTypes.getObjectType());
+      testType.addMemberVariable("testMember", coreTypes.getObjectType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("test", "create"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("2", Symbol.Number)
+                    )
+                )
+            ),
+            Arrays.asList());
+        testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("test", "get"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable)
+                    )
+                )
+            ),
+            Arrays.asList());
+        testType.addMethod("get", valFn, coreTypes.getNumberType());
+        scope.addType(testType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@test", Symbol.AtType),
+            Token.ParameterToken.fromContents(".create", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
 }

@@ -9,7 +9,8 @@ public class CodeUnitLocation
 {
   public String className;
   public String functionName;
-  public boolean isStaticOrConstructor;
+  public boolean isStatic;
+  public boolean isConstructor;
   
   @Override
   public int hashCode()
@@ -19,7 +20,8 @@ public class CodeUnitLocation
     result = prime * result + ((className == null) ? 0 : className.hashCode());
     result = prime * result
         + ((functionName == null) ? 0 : functionName.hashCode());
-    result = prime * result + (isStaticOrConstructor ? 1231 : 1237);
+    result = prime * result + (isConstructor ? 1231 : 1237);
+    result = prime * result + (isStatic ? 1231 : 1237);
     return result;
   }
 
@@ -40,7 +42,8 @@ public class CodeUnitLocation
       if (other.functionName != null) return false;
     }
     else if (!functionName.equals(other.functionName)) return false;
-    if (isStaticOrConstructor != other.isStaticOrConstructor) return false;
+    if (isConstructor != other.isConstructor) return false;
+    if (isStatic != other.isStatic) return false;
     return true;
   }
 
@@ -52,10 +55,19 @@ public class CodeUnitLocation
     return toReturn;
   }
 
-  public static CodeUnitLocation forStaticOrConstructorMethod(String className, String functionName)
+  public static CodeUnitLocation forStaticMethod(String className, String functionName)
   {
     CodeUnitLocation toReturn = new CodeUnitLocation();
-    toReturn.isStaticOrConstructor = true;
+    toReturn.isStatic = true;
+    toReturn.className = className;
+    toReturn.functionName = functionName;
+    return toReturn;
+  }
+
+  public static CodeUnitLocation forConstructorMethod(String className, String functionName)
+  {
+    CodeUnitLocation toReturn = new CodeUnitLocation();
+    toReturn.isConstructor = true;
     toReturn.className = className;
     toReturn.functionName = functionName;
     return toReturn;

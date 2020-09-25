@@ -1,7 +1,6 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.AstNode;
@@ -21,15 +20,15 @@ public class ExpressionEvaluator
     public Value apply(MachineContext ctx, Value left, Value right) throws RunException;
   }
   
-  private static BinaryOperatorHandler createBinaryOperatorToPrimitiveMethodCall(String methodName)
-  {
-    return (ctx, left, right) -> {
-      PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod(methodName);
-      if (primitiveMethod == null)
-        throw new RunException();
-      return primitiveMethod.call(left, Collections.singletonList(right));
-    };
-  }
+//  private static BinaryOperatorHandler createBinaryOperatorToPrimitiveMethodCall(String methodName)
+//  {
+//    return (ctx, left, right) -> {
+//      PrimitiveFunction.PrimitiveMethod primitiveMethod = left.type.lookupPrimitiveMethod(methodName);
+//      if (primitiveMethod == null)
+//        throw new RunException();
+//      return primitiveMethod.call(left, Collections.singletonList(right));
+//    };
+//  }
 
   // The pattern of binary operators expressed in an LL1 grammar with a More rule is pretty common,
   // so we have a function for easily making handlers for that situation 
@@ -79,9 +78,9 @@ public class ExpressionEvaluator
           Value self = left;
           machine.ip.advanceIdx();
           machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+          machine.pushObjectScope(self);
           machine.pushNewScope();
           machine.currentScope().addVariable(method.argPosToName.get(0), right.type, right);
-          machine.currentScope().setThis(self);
           break;
         }
       case 2:
@@ -221,7 +220,7 @@ public class ExpressionEvaluator
               if (toReturn.type.isNormalFunction())
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
-                callMethodOrFunction(machine, node, null, fn);
+                callMethodOrFunction(machine, node, null, fn, false);
                 return;
               }
               List<Value> args = new ArrayList<>();
@@ -265,7 +264,7 @@ public class ExpressionEvaluator
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
-                callMethodOrFunction(machine, methodNode, self, method);
+                callMethodOrFunction(machine, methodNode, self, method, false);
                 return;
               }
               else
@@ -293,7 +292,7 @@ public class ExpressionEvaluator
               machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
               return;
             }
-            else 
+            else if (idx == methodNode.internalChildren.size()) 
             {
               GatheredTypeInfo typeInfo = new GatheredTypeInfo();
               node.children.get(0).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
@@ -302,7 +301,20 @@ public class ExpressionEvaluator
               ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
-                callMethodOrFunction(machine, methodNode, null, method);
+                if (method.codeUnit.isStatic)
+                {
+                  callMethodOrFunction(machine, methodNode, null, method, false);
+                }
+                else if (method.codeUnit.isConstructor)
+                {
+                  // Create empty object
+                  Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
+                  // We need to do adjust the return value of the constructor so that
+                  // it points to the new object
+                  machine.ip.advanceIdx();
+                  // Call constructor on the empty object to configure it
+                  callMethodOrFunction(machine, methodNode, self, method, true);
+                }
                 return;
               }
               else
@@ -310,33 +322,46 @@ public class ExpressionEvaluator
                 throw new RunException();
               }
             }
+            else  // idx == methodNode.internalChildren.size() + 1
+            {
+              // For constructors, we get control after returning from the constructor
+              // so that we can pop off the result of the constructor method (i.e. void),
+              // leaving only the constructed object
+              machine.popValue();
+              machine.ip.pop();
+            }
       });
   }
 
 
 
   static void callMethodOrFunction(MachineContext machine, AstNode methodNode,
-      Value self, ExecutableFunction method)
+      Value self, ExecutableFunction method, boolean isConstructor)
   {
     List<Value> args = new ArrayList<>();
     for (int n = 0; n < methodNode.internalChildren.size(); n++)
     {
       args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
     }
-    if (self != null)
+    if (self != null && !isConstructor)
       machine.popValues(methodNode.internalChildren.size() + 1);
     else
       machine.popValues(methodNode.internalChildren.size());
 
-    machine.ip.pop();
+    if (!isConstructor)
+      machine.ip.pop();
+    else
+      machine.pushValue(self);
     machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+    if (self != null)
+      machine.pushObjectScope(self);
     machine.pushNewScope();
     for (int n = 0; n < method.argPosToName.size(); n++)
     {
       machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
     }
-    if (self != null)
-      machine.currentScope().setThis(self);
+//    if (self != null)
+//      machine.currentScope().setThis(self);
   }
 
   

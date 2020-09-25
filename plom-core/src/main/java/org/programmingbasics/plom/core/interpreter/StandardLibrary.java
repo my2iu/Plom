@@ -300,10 +300,19 @@ public class StandardLibrary
         for (int n = 0; n < m.argTypes.size(); n++)
           argTypes[n] = coreTypeFromString(m.argTypes.get(n), coreTypes);
  
-        if (m.isConstructor || m.isStatic)
+        if (m.isStatic)
         {
           ExecutableFunction execFn = ExecutableFunction.forCode(
-              CodeUnitLocation.forStaticOrConstructorMethod(m.className, m.methodName), 
+              CodeUnitLocation.forStaticMethod(m.className, m.methodName), 
+              ParseToAst.parseStatementContainer(m.code),
+              m.argNames); 
+          coreTypeFromString(m.className, coreTypes).addStaticMethod(m.methodName,
+              execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
+        }
+        else if (m.isConstructor)
+        {
+          ExecutableFunction execFn = ExecutableFunction.forCode(
+              CodeUnitLocation.forConstructorMethod(m.className, m.methodName), 
               ParseToAst.parseStatementContainer(m.code),
               m.argNames); 
           coreTypeFromString(m.className, coreTypes).addStaticMethod(m.methodName,
@@ -330,7 +339,9 @@ public class StandardLibrary
     {
       if (m.primitive == null) continue;
       if (m.isStatic)
-        coreTypes.addPrimitive(CodeUnitLocation.forStaticOrConstructorMethod(m.className, m.methodName), m.primitive);
+        coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod(m.className, m.methodName), m.primitive);
+      else if (m.isConstructor)
+        coreTypes.addPrimitive(CodeUnitLocation.forConstructorMethod(m.className, m.methodName), m.primitive);
       else
         coreTypes.addPrimitive(CodeUnitLocation.forMethod(m.className, m.methodName), m.primitive);
     }

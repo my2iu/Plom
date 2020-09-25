@@ -148,14 +148,27 @@ public class RepositoryScope extends VariableScope
           args[n] = typeFromToken(fn.sig.argTypes.get(n));
         try {
           AstNode code = ParseToAst.parseStatementContainer(fn.code);
-          ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
-              code, fn.sig.argNames);
           if (fn.sig.isStatic)
+          {
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.name, fn.sig.getLookupName()), 
+                code, fn.sig.argNames);
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
                 typeFromToken(fn.sig.returnType), args);
+          }
+          else if (fn.sig.isConstructor)
+          {
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.name, fn.sig.getLookupName()), 
+                code, fn.sig.argNames);
+            toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
+                typeFromToken(fn.sig.returnType), args);
+          }
           else
+          {
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
+                code, fn.sig.argNames);
             toReturn.addMethod(fn.sig.getLookupName(), execFn, 
                 typeFromToken(fn.sig.returnType), args);
+          }
         } 
         catch (ParseException e)
         {

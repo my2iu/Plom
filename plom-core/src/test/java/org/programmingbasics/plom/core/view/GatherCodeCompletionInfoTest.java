@@ -84,7 +84,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     {
       Value thisValue = new Value();
       thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + thisTypeString, Symbol.AtType));
-      context.currentScope().setThis(thisValue);
+      context.pushObjectScope(thisValue);
     }
     context.pushNewScope();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);

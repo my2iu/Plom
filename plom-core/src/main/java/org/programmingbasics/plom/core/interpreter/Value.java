@@ -17,6 +17,11 @@ public class Value
   {
     return ((Boolean)val).booleanValue();
   }
+  public void copyFrom(Value v)
+  {
+    val = v.val;
+    type = v.type;
+  }
   public static Value createNumberValue(CoreTypeLibrary coreTypes, double val)
   {
     Value newVal = new Value();
@@ -41,6 +46,19 @@ public class Value
     Value newVal = new Value();
     newVal.type = coreTypes.getVoidType();
     newVal.val = null;
+    return newVal;
+  }
+  public static Value createEmptyObject(CoreTypeLibrary coreTypes, Type type)
+  {
+    Value newVal = new Value();
+    newVal.type = type;
+    newVal.val = new PlomObject(coreTypes, type.numValueSlots);
+    return newVal;
+  }
+  public static Value createCopy(Value v)
+  {
+    Value newVal = new Value();
+    newVal.copyFrom(v);
     return newVal;
   }
   public static Value readFromScope(VariableScope scope, String binding, Value val)

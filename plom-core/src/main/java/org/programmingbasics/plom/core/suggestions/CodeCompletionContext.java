@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
+import org.programmingbasics.plom.core.interpreter.ObjectScope;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 /**
@@ -81,6 +83,12 @@ public class CodeCompletionContext
   public void pushNewScope()
   {
     VariableScope scope = new VariableScope();
+    scope.setParent(topScope);
+    topScope = scope;
+  }
+  public void pushObjectScope(Value thisValue)
+  {
+    VariableScope scope = new ObjectScope(thisValue);
     scope.setParent(topScope);
     topScope = scope;
   }
