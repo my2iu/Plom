@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -38,7 +37,6 @@ TODO:
 - keyboard entry
 - adding a newline in the middle of a function call
 - type checking for errors
-- functions and methods returning void
 - null and Null type
 - when first creating a string/number, the cursor position should be shown as being after the token or on the token, not before it
 - keep track of names of functions so that it can show up in stack traces
@@ -47,13 +45,12 @@ TODO:
 - properly handle focus and loss of focus on type entry fields of the method panel
 - do type checking of arguments of a function
 - type checking of return type of a function
-- move standard library code back out of the repository and into the standard library so that people don't need to have a repository for normal stuff (and so that standard library can't be modified)
-- global variables
-- objects
-- object method primitives
-- instance data members
-- object this
 - object super
+- constructor chaining
+- separate constructor list
+- call constructor from instance method
+- constructors cannot return a value
+- autogeneration of getter and setters for instance data members
 - standard library core type repository
 - generics
 - js native API
