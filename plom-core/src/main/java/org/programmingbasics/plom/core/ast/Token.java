@@ -13,6 +13,7 @@ public abstract class Token
    public abstract <S, T, U, V> S visit(TokenVisitor3<S, T, U, V> visitor, T param1, U param2, V param3);
    public abstract <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4);
    public abstract <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5);
+   public abstract <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E;
    public boolean isWide() { return false; }
    
    public static interface TokenWithSymbol
@@ -58,6 +59,10 @@ public abstract class Token
       public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
       {
          return visitor.visitSimpleToken(this, param1, param2, param3, param4, param5);
+      }
+      public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+      {
+        return visitor.visitSimpleToken(this);
       }
       @Override
       public int hashCode()
@@ -173,7 +178,11 @@ public abstract class Token
      {
         return visitor.visitParameterToken(this, param1, param2, param3, param4, param5);
      }
-     @Override
+     public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+     {
+       return visitor.visitParameterToken(this);
+     }
+    @Override
      public int hashCode()
      {
        final int prime = 31;
@@ -249,6 +258,10 @@ public abstract class Token
       {
          return visitor.visitWideToken(this, param1, param2, param3, param4, param5);
       }
+      public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+      {
+        return visitor.visitWideToken(this);
+      }
       @Override
       public int hashCode()
       {
@@ -312,6 +325,10 @@ public abstract class Token
      {
         return visitor.visitOneBlockToken(this, param1, param2, param3, param4, param5);
      }
+     public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+     {
+       return visitor.visitOneBlockToken(this);
+     }
     @Override
     public int hashCode()
     {
@@ -372,6 +389,10 @@ public abstract class Token
       {
          return visitor.visitOneExpressionOneBlockToken(this, param1, param2, param3, param4, param5);
       }
+      public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+      {
+        return visitor.visitOneExpressionOneBlockToken(this);
+      }
       @Override
       public int hashCode()
       {
@@ -396,7 +417,16 @@ public abstract class Token
         return true;
       }
    }
-   
+
+   public static interface TokenVisitorErr<S, E extends Throwable>
+   {
+      public S visitSimpleToken(SimpleToken token) throws E;
+      public S visitParameterToken(ParameterToken token) throws E;
+      public S visitWideToken(WideToken token) throws E;
+      public S visitOneBlockToken(OneBlockToken token) throws E;
+      public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws E;
+   }
+
    public static interface TokenVisitor<S>
    {
       public S visitSimpleToken(SimpleToken token);
