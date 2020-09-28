@@ -28,6 +28,11 @@ public class PlomTextWriter
     return str;
   }
   
+  public static String escapeStringLiteral(String str)
+  {
+    return str;
+  }
+  
   static final Map<Symbol, String> symbolTokenMap = new HashMap<>();
   static {
     symbolTokenMap.put(Symbol.This, "this");
@@ -91,8 +96,12 @@ public class PlomTextWriter
         switch (token.getType())
         {
         case String:
+          out.append("\"");
+          out.append(escapeStringLiteral(token.contents.substring(1, token.contents.length() - 1)));
+          out.append("\"");
           break;
         case Number:
+          out.append(" " + token.contents);
           break;
         default:
           out.append(" ");
