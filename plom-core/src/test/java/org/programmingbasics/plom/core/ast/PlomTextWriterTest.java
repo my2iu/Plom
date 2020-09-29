@@ -10,6 +10,12 @@ import junit.framework.TestCase;
 
 public class PlomTextWriterTest extends TestCase
 {
+  private static void assertTokenEquals(String str, Symbol sym, PlomTextReader.StringToken tok)
+  {
+    Assert.assertEquals(str, tok.str);
+    Assert.assertEquals(sym, tok.sym);
+  }
+  
   @Test
   public void testWriteToken() throws IOException
   {
@@ -28,22 +34,38 @@ public class PlomTextWriterTest extends TestCase
     PlomTextReader reader = new PlomTextReader();
     PlomTextReader.StringToken tok = new PlomTextReader.StringToken();
     reader.lexInput(in, tok);
-    Assert.assertEquals("return", tok.str);
-    Assert.assertEquals(Symbol.Return, tok.sym);
+    assertTokenEquals("return", Symbol.Return, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("var", tok.str);
-    Assert.assertEquals(Symbol.Var, tok.sym);
+    assertTokenEquals("var", Symbol.Var, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("(", tok.str);
-    Assert.assertEquals(Symbol.OpenParenthesis, tok.sym);
+    assertTokenEquals("(", Symbol.OpenParenthesis, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("\"hello\"", tok.str);
-    Assert.assertEquals(Symbol.String, tok.sym);
+    assertTokenEquals("\"hello\"", Symbol.String, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("0.156", tok.str);
-    Assert.assertEquals(Symbol.Number, tok.sym);
+    assertTokenEquals("0.156", Symbol.Number, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("-22", tok.str);
-    Assert.assertEquals(Symbol.Number, tok.sym);
+    assertTokenEquals("-22", Symbol.Number, tok);
   }
+  
+  @Test
+  public void testWriteParameterTokens() throws IOException
+  {
+    PlomTextWriter writer = new PlomTextWriter();
+    StringBuilder out = new StringBuilder();
+    writer.writeToken(out, Token.ParameterToken.fromContents(".a hello:b:", Symbol.DotVariable, 
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            Token.ParameterToken.fromContents(".next", Symbol.DotVariable),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("1", Symbol.Number)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".sd d  a:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("\"good\"", Symbol.String)
+                    )
+                )
+            )));
+    Assert.assertEquals(".{a hello:{@{number}.{next} + 1}b:{.{sd d  a:{\"good\"}}}}", out.toString());
+  }  
 }

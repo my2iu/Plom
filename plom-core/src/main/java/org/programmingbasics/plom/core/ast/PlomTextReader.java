@@ -177,9 +177,38 @@ public class PlomTextReader
     toReturn.setToErr();
   }
 
+  // Scans the input for part of a parameter token. Returns the string, or null for eof or nothing matching
+  public String lexParameterTokenPart(StringTextReader in) throws IOException
+  {
+    // Skip whitespace
+    if (in.peek() < 0)
+    {
+      return null;
+    }
+    while (Character.isWhitespace(in.peek()))
+      in.read();
+    if (in.peek() < 0)
+    {
+      return null;
+    }
+    
+    String match = "";
+    int peek = in.peek();
+    while (peek != ':' && peek != '}' && peek >= 0)
+    {
+      match += (char)in.read();
+      peek = in.peek();
+    }
+    if (peek == ':')
+      match += (char)in.read();
+    if (match.isEmpty()) 
+      return null;
+    return match;
+  }
+  
   private boolean isNumberMatch(String toMatch)
   {
-    return toMatch.matches("[-]?([0-9]+|[0-9]*[.][0-9]*)");
+    return toMatch.matches("[-]?([0-9]+|[0-9]+[.][0-9]*)");
   }
   
   // Check if it matches one of the expected tokens (we'll do this inefficiently for now)
@@ -194,4 +223,6 @@ public class PlomTextReader
     }
     return null;
   }
+  
+  
 }

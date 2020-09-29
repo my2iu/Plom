@@ -18,12 +18,7 @@ public class PlomTextWriter
 {
   // We use { } as special symbols, so we need to escape them if they
   // appear in tokens and variables (though they shouldn't)
-  public static String escape(String str)
-  {
-    return str;
-  }
-  
-  public static String unescape(String str)
+  public static String escapeParameterTokenPart(String str)
   {
     return str;
   }
@@ -117,16 +112,29 @@ public class PlomTextWriter
         case AtType:
           out.append("@");
           out.append("{");
-          out.append("}");
           break;
         case DotVariable:
           out.append(".");
           out.append("{");
-          out.append("}");
           break;
         default:
           throw new IllegalArgumentException("Unknown token type");
         }
+        for (int n = 0; n < token.contents.size(); n++)
+        {
+          if (n == 0)
+            out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
+          else
+            out.append(escapeParameterTokenPart(token.contents.get(n)));
+          out.append("{");
+          writeTokenContainer(out, token.parameters.get(n));
+          out.append("}");
+        }
+        if (token.contents.isEmpty())
+          out.append(escapeParameterTokenPart(token.postfix.substring(1)));
+        else
+          out.append(escapeParameterTokenPart(token.postfix));
+        out.append("}");
         return null;
       }
 
@@ -148,5 +156,12 @@ public class PlomTextWriter
         return null;
       }});
   }
-  
+
+  public void writeTokenContainer(StringBuilder out, TokenContainer tokens) throws IOException
+  {
+    for (Token tok: tokens.tokens)
+    {
+      writeToken(out, tok);
+    }
+  }
 }

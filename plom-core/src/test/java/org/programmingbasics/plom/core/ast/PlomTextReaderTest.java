@@ -10,6 +10,12 @@ import junit.framework.TestCase;
 
 public class PlomTextReaderTest extends TestCase
 {
+  private static void assertTokenEquals(String str, Symbol sym, PlomTextReader.StringToken tok)
+  {
+    Assert.assertEquals(str, tok.str);
+    Assert.assertEquals(sym, tok.sym);
+  }
+
   @Test
   public void testReadKeywords() throws IOException
   {
@@ -17,43 +23,81 @@ public class PlomTextReaderTest extends TestCase
     PlomTextReader reader = new PlomTextReader();
     PlomTextReader.StringToken tok = new PlomTextReader.StringToken();
     reader.lexInput(in, tok);
-    Assert.assertEquals("var", tok.str);
-    Assert.assertEquals(Symbol.Var, tok.sym);
+    assertTokenEquals("var", Symbol.Var, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("}", tok.str);
-    Assert.assertEquals(null, tok.sym);
+    assertTokenEquals("}", null, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("if", tok.str);
-    Assert.assertEquals(Symbol.COMPOUND_IF, tok.sym);
+    assertTokenEquals("if", Symbol.COMPOUND_IF, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("{", tok.str);
-    Assert.assertEquals(null, tok.sym);
+    assertTokenEquals("{", null, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("+", tok.str);
-    Assert.assertEquals(Symbol.Plus, tok.sym);
+    assertTokenEquals("+", Symbol.Plus, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("-", tok.str);
-    Assert.assertEquals(Symbol.Minus, tok.sym);
+    assertTokenEquals("-", Symbol.Minus, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("/", tok.str);
-    Assert.assertEquals(Symbol.Divide, tok.sym);
+    assertTokenEquals("/", Symbol.Divide, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("*", tok.str);
-    Assert.assertEquals(Symbol.Multiply, tok.sym);
+    assertTokenEquals("*", Symbol.Multiply, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("\"hello\"", tok.str);
-    Assert.assertEquals(Symbol.String, tok.sym);
+    assertTokenEquals("\"hello\"", Symbol.String, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("0.23", tok.str);
-    Assert.assertEquals(Symbol.Number, tok.sym);
+    assertTokenEquals("0.23", Symbol.Number, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("-", tok.str);
-    Assert.assertEquals(Symbol.Minus, tok.sym);
+    assertTokenEquals("-", Symbol.Minus, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("-36", tok.str);
-    Assert.assertEquals(Symbol.Number, tok.sym);
+    assertTokenEquals("-36", Symbol.Number, tok);
     reader.lexInput(in, tok);
-    Assert.assertEquals("//", tok.str);
-    Assert.assertEquals(Symbol.DUMMY_COMMENT, tok.sym);
+    assertTokenEquals("//", Symbol.DUMMY_COMMENT, tok);
+  }
+  
+  @Test
+  public void testReadParameterTokens() throws IOException
+  {
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(".{ a hello:  {.{a}} big:{.{c}.{b}}} + 22");
+    PlomTextReader reader = new PlomTextReader();
+    PlomTextReader.StringToken tok = new PlomTextReader.StringToken();
+    
+    reader.lexInput(in, tok);
+    assertTokenEquals(".", Symbol.DotVariable, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    Assert.assertEquals("a hello:", reader.lexParameterTokenPart(in));
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals(".", Symbol.DotVariable, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    Assert.assertEquals("a", reader.lexParameterTokenPart(in));
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    Assert.assertEquals("big:", reader.lexParameterTokenPart(in));
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals(".", Symbol.DotVariable, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    Assert.assertEquals("c", reader.lexParameterTokenPart(in));
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals(".", Symbol.DotVariable, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("{", null, tok);
+    Assert.assertEquals("b", reader.lexParameterTokenPart(in));
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("}", null, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("+", Symbol.Plus, tok);
+    reader.lexInput(in, tok);
+    assertTokenEquals("22", Symbol.Number, tok);
+    Assert.assertEquals(null, reader.lexParameterTokenPart(in));
   }
 }
