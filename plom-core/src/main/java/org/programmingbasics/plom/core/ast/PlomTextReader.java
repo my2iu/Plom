@@ -1,6 +1,5 @@
 package org.programmingbasics.plom.core.ast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,6 +77,9 @@ public class PlomTextReader
     // Some extra ones
     validLexerTokens.add("{");
     validLexerTokens.add("}");
+    validLexerTokens.add("\r");
+    validLexerTokens.add("\r\n");
+    validLexerTokens.add("\n");
     // This sort assumes that "ab" comes before "abc"
     validLexerTokens.sort(Comparator.naturalOrder());
   }
@@ -154,7 +156,7 @@ public class PlomTextReader
       {
         return null;
       }
-      while (Character.isWhitespace(in.peek()))
+      while (Character.isWhitespace(in.peek()) && in.peek() != '\r' && in.peek() != '\n')
         in.read();
       if (in.peek() < 0)
       {
@@ -207,7 +209,7 @@ public class PlomTextReader
       {
         return null;
       }
-      while (Character.isWhitespace(in.peek()))
+      while (Character.isWhitespace(in.peek()) && in.peek() != '\r' && in.peek() != '\n')
         in.read();
       if (in.peek() < 0)
       {
@@ -226,6 +228,33 @@ public class PlomTextReader
       if (match.isEmpty()) 
         return null;
       return match;
+    }
+    
+    public String lexComment() throws PlomReadException
+    {
+      String toReturn = "";
+      while (in.peek() >= 0 && in.peek() != '\r' && in.peek() != '\n')
+      {
+        int next = in.read();
+        if (next == '\\')
+        {
+          if (in.peek() == '\\')
+            next = '\\';
+          else if (in.peek() == 'n')
+            next = '\n';
+          else if (in.peek() == 'r')
+            next = '\r';
+          else if (in.peek() == '\n')
+            next = '\n';
+          else if (in.peek() == '\r')
+            next = '\r';
+          else
+            throw new PlomReadException("Unknown or unfinished escape in comment", in);
+          in.read();
+        }
+        toReturn += (char)next;
+      }
+      return toReturn;
     }
     
     // Check if it matches one of the expected tokens (we'll do this inefficiently for now)
@@ -255,7 +284,25 @@ public class PlomTextReader
     if (!lexer.lexInput().equals(expected))
       throw new PlomReadException("Expecting a " + expected, lexer);
   }
+
+  private static void expectNewlineToken(PlomTextScanner lexer) throws PlomReadException
+  {
+    if (!isNewline(lexer.lexInput()))
+      throw new PlomReadException("Expecting a newline", lexer);
+  }
+
+  private static void swallowOptionalNewlineToken(PlomTextScanner lexer) throws PlomReadException
+  {
+    if (isNewline(lexer.peekLexInput()))
+      lexer.lexInput();
+  }
+
+  private static boolean isNewline(String toMatch)
+  {
+    return toMatch.equals("\r") || toMatch.equals("\r\n") || toMatch.equals("\n");
+  }
   
+
   public static Token readToken(PlomTextScanner lexer) throws PlomReadException
   {
     String peek = lexer.peekLexInput();
@@ -264,7 +311,39 @@ public class PlomTextReader
     if (sym == null) return null;
     if (sym.isWide())
     {
-      
+      switch (sym)
+      {
+      case COMPOUND_IF:
+      case COMPOUND_ELSEIF:
+      case COMPOUND_WHILE:
+      {
+        lexer.lexInput();
+        expectToken(lexer, "{");
+        TokenContainer expression = readTokenContainer(lexer);
+        expectToken(lexer, "}");
+        expectToken(lexer, "{");
+        swallowOptionalNewlineToken(lexer);
+        StatementContainer block = readStatementContainer(lexer);
+        expectToken(lexer, "}");
+        swallowOptionalNewlineToken(lexer);
+        return new Token.OneExpressionOneBlockToken(peek, sym, expression, block);
+      }
+      case COMPOUND_ELSE:
+      {
+        lexer.lexInput();
+        expectToken(lexer, "{");
+        swallowOptionalNewlineToken(lexer);
+        StatementContainer block = readStatementContainer(lexer);
+        expectToken(lexer, "}");
+        swallowOptionalNewlineToken(lexer);
+        return new Token.OneBlockToken(peek, sym, block);
+      }
+      case DUMMY_COMMENT:
+        lexer.lexInput();
+        String str = lexer.lexComment();
+        expectNewlineToken(lexer);
+        return new Token.WideToken("//" + str, sym);
+      }
     }
     else
     {
@@ -286,6 +365,8 @@ public class PlomTextReader
             expectToken(lexer, "}");
             nextPart = lexer.lexParameterTokenPart();
             if (nextPart == null) break;
+            if (!nextPart.endsWith(":"))
+              throw new PlomReadException("Expecting identifier part to end with :", lexer); 
           }
           expectToken(lexer, "}");
           return Token.ParameterToken.fromContents(prefix + name, sym, params.toArray(new TokenContainer[0]));
@@ -313,5 +394,26 @@ public class PlomTextReader
       tokens.tokens.add(next);
     }
     return tokens;
+  }
+  
+  public static StatementContainer readStatementContainer(PlomTextScanner lexer) throws PlomReadException
+  {
+    StatementContainer container = new StatementContainer();
+    TokenContainer tokens = readTokenContainer(lexer);
+    container.statements.add(tokens);
+    while (true)
+    {
+      String peek = lexer.peekLexInput();
+      if (peek == null || !isNewline(peek))
+        break;
+      lexer.lexInput();
+      tokens = readTokenContainer(lexer);
+      container.statements.add(tokens);
+    }
+    // The last line might have a newline at the end (signaling a new line),
+    // but we don't want a blank line there.
+    if (!container.statements.isEmpty() && container.statements.get(container.statements.size() - 1).tokens.isEmpty())
+      container.statements.remove(container.statements.size() - 1);
+    return container;
   }
 }

@@ -54,5 +54,61 @@ public class PlomTextWriterTest extends TestCase
                 )
             )));
     Assert.assertEquals(".{a hello:{@{number}.{next} + 1}b:{.{sd d  a:{\"good\"}}}}", out.toString());
-  }  
+  } 
+  
+  @Test
+  public void testWriteStatementContainer() throws IOException, PlomTextReader.PlomReadException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
+            ),
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("var", Symbol.Var),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":", Symbol.Colon),
+                        Token.ParameterToken.fromContents("@string", Symbol.AtType)
+                        ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable))
+                    )), 
+            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.WideToken("//Comment\nComment line 2", Symbol.DUMMY_COMMENT)
+                        ))),
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
+            new Token.SimpleToken(":", Symbol.Colon),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType)
+            )
+        );
+    PlomTextWriter writer = new PlomTextWriter();
+    StringBuilder out = new StringBuilder();
+    writer.writeStatementContainer(out, code);
+
+    Assert.assertEquals(" var.{a} :@{number}\n" + 
+        " if{}{\n" + 
+        " var.{b} :@{string}\n" + 
+        ".{b}\n" + 
+        "}\n" + 
+        " else{\n" + 
+        " //Comment\\nComment line 2\n\n" + 
+        "}\n" + 
+        " var.{c} :@{string}\n" + 
+        "", out.toString());
+
+    // Check if we can read back the output
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    StatementContainer read = PlomTextReader.readStatementContainer(lexer);
+    Assert.assertEquals(code, read);
+  }
 }

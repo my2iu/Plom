@@ -1,7 +1,5 @@
 package org.programmingbasics.plom.core.ast;
 
-import java.io.IOException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.gen.Symbol;

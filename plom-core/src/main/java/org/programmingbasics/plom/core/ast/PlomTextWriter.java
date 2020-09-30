@@ -23,6 +23,11 @@ public class PlomTextWriter
     return str;
   }
   
+  public static String escapeComment(String str)
+  {
+    return str.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r");
+  }
+  
   public static String escapeStringLiteral(String str)
   {
     return str;
@@ -140,19 +145,35 @@ public class PlomTextWriter
 
       @Override public Void visitWideToken(WideToken token) throws IOException
       {
-        // TODO Auto-generated method stub
+        out.append(" ");
+        out.append(symbolTokenMap.get(token.getType()));
+        if (token.getType() != Symbol.DUMMY_COMMENT)
+          throw new IllegalArgumentException("Comments are the only wide comments that can be written out right now");
+        out.append(escapeComment(token.contents.substring(2)));
+        out.append("\n");
         return null;
       }
 
       @Override public Void visitOneBlockToken(OneBlockToken token) throws IOException
       {
-        // TODO Auto-generated method stub
+        out.append(" ");
+        out.append(symbolTokenMap.get(token.getType()));
+        out.append("{\n");
+        writeStatementContainer(out, token.block);
+        out.append("}\n");
         return null;
       }
 
       @Override public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws IOException
       {
-        // TODO Auto-generated method stub
+        out.append(" ");
+        out.append(symbolTokenMap.get(token.getType()));
+        out.append("{");
+        writeTokenContainer(out, token.expression);
+        out.append("}");
+        out.append("{\n");
+        writeStatementContainer(out, token.block);
+        out.append("}\n");
         return null;
       }});
   }
@@ -162,6 +183,15 @@ public class PlomTextWriter
     for (Token tok: tokens.tokens)
     {
       writeToken(out, tok);
+    }
+  }
+  
+  public void writeStatementContainer(StringBuilder out, StatementContainer container) throws IOException
+  {
+    for (TokenContainer tokens: container.statements)
+    {
+      writeTokenContainer(out, tokens);
+      out.append("\n");
     }
   }
 }
