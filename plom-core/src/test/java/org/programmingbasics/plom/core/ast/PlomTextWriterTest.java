@@ -10,14 +10,8 @@ import junit.framework.TestCase;
 
 public class PlomTextWriterTest extends TestCase
 {
-  private static void assertTokenEquals(String str, Symbol sym, PlomTextReader.StringToken tok)
-  {
-    Assert.assertEquals(str, tok.str);
-    Assert.assertEquals(sym, tok.sym);
-  }
-  
   @Test
-  public void testWriteToken() throws IOException
+  public void testWriteToken() throws IOException, PlomTextReader.PlomReadException
   {
     PlomTextWriter writer = new PlomTextWriter();
     StringBuilder out = new StringBuilder();
@@ -31,20 +25,13 @@ public class PlomTextWriterTest extends TestCase
     
     // Check if we can read back the output
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
-    PlomTextReader reader = new PlomTextReader();
-    PlomTextReader.StringToken tok = new PlomTextReader.StringToken();
-    reader.lexInput(in, tok);
-    assertTokenEquals("return", Symbol.Return, tok);
-    reader.lexInput(in, tok);
-    assertTokenEquals("var", Symbol.Var, tok);
-    reader.lexInput(in, tok);
-    assertTokenEquals("(", Symbol.OpenParenthesis, tok);
-    reader.lexInput(in, tok);
-    assertTokenEquals("\"hello\"", Symbol.String, tok);
-    reader.lexInput(in, tok);
-    assertTokenEquals("0.156", Symbol.Number, tok);
-    reader.lexInput(in, tok);
-    assertTokenEquals("-22", Symbol.Number, tok);
+    PlomTextReader.PlomTextScanner reader = new PlomTextReader.PlomTextScanner(in);
+    Assert.assertEquals("return", reader.lexInput());
+    Assert.assertEquals("var", reader.lexInput());
+    Assert.assertEquals("(", reader.lexInput());
+    Assert.assertEquals("\"hello\"", reader.lexInput());
+    Assert.assertEquals("0.156", reader.lexInput());
+    Assert.assertEquals("-22", reader.lexInput());
   }
   
   @Test

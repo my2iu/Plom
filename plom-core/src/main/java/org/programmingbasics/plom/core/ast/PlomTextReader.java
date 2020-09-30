@@ -50,27 +50,17 @@ public class PlomTextReader
   {
     public String str;
     public Symbol sym;
-    public boolean isErr;
     public boolean isEnd;
     public void setToEof()
     {
       str = null;
       sym = null;
-      isErr = false;
       isEnd = true;
-    }
-    public void setToErr()
-    {
-      str = null;
-      sym = null;
-      isErr = true;
-      isEnd = false;
     }
     public void setToken(String str, Symbol sym)
     {
       this.str = str;
       this.sym = sym;
-      isErr = false;
       isEnd = false;
     }
   }
@@ -91,138 +81,237 @@ public class PlomTextReader
     // This sort assumes that "ab" comes before "abc"
     validLexerTokens.sort(Comparator.naturalOrder());
   }
-  
-  private void lexStringLiteral(StringTextReader in, StringToken toReturn)
-  {
-    String str = "";
-    
-    int next = in.read();
-    if (next != '\"') throw new IllegalArgumentException("Expecting string to start with double quotation");
-    str += (char)next;
-    
-    next = in.read();
-    while (next != '\"' && next >= 0)
-    {
-      // TODO: Handle escaping
-      str += (char)next;
-      next = in.read();
-    }
-    if (next < 0)
-    {
-      // Unterminated string
-      toReturn.setToErr();
-      return;
-    }
-    str += (char)next;
-    toReturn.setToken(str, Symbol.String);
-  }
 
-  // Scans the input and returns the next chunk of text
-  public void lexInput(StringTextReader in, StringToken toReturn) throws IOException
-  {
-    // Skip whitespace
-    if (in.peek() < 0)
-    {
-      toReturn.setToEof();
-      return;
-    }
-    while (Character.isWhitespace(in.peek()))
-      in.read();
-    if (in.peek() < 0)
-    {
-      toReturn.setToEof();
-      return;
-    }
-    
-    // Check for special cases
-    int peek = in.peek();
-    if (peek == '\"')
-    {
-      lexStringLiteral(in, toReturn);
-      return;
-    }
-    
-    // Read ahead until we can match a symbol
-    String chars = "";
-    int bestMatch = -1;
-    for (int peekAhead = 0;; peekAhead++)
-    {
-      peek = in.peek(peekAhead);
-      if (peek < 0) break;
-      chars = chars + (char)in.peek(peekAhead);
-      String match = prefixMatch(chars);
-      if (match == null && isNumberMatch(chars))
-        match = chars;
-      if (match != null)
-      {
-        if (match.length() == chars.length())
-          bestMatch = peekAhead;
-      }
-      else
-        break;
-    }
-    
-    // If we matched a token, then return it.
-    if (bestMatch >= 0)
-    {
-      String matched = "";
-      for (int n = 0; n <= bestMatch; n++)
-        matched += (char)in.read();
-      if (isNumberMatch(matched))
-        toReturn.setToken(matched, Symbol.Number);
-      else
-        toReturn.setToken(matched, reverseSymbolTokenMap.get(matched));
-      return;
-    }
-    toReturn.setToErr();
-  }
-
-  // Scans the input for part of a parameter token. Returns the string, or null for eof or nothing matching
-  public String lexParameterTokenPart(StringTextReader in) throws IOException
-  {
-    // Skip whitespace
-    if (in.peek() < 0)
-    {
-      return null;
-    }
-    while (Character.isWhitespace(in.peek()))
-      in.read();
-    if (in.peek() < 0)
-    {
-      return null;
-    }
-    
-    String match = "";
-    int peek = in.peek();
-    while (peek != ':' && peek != '}' && peek >= 0)
-    {
-      match += (char)in.read();
-      peek = in.peek();
-    }
-    if (peek == ':')
-      match += (char)in.read();
-    if (match.isEmpty()) 
-      return null;
-    return match;
-  }
-  
-  private boolean isNumberMatch(String toMatch)
+  private static boolean isNumberMatch(String toMatch)
   {
     return toMatch.matches("[-]?([0-9]+|[0-9]+[.][0-9]*)");
   }
-  
-  // Check if it matches one of the expected tokens (we'll do this inefficiently for now)
-  private String prefixMatch(String toMatch)
+
+  private static Symbol classifyTokenString(String str)
   {
-    // Assume that validLexerTokens is sorted so that "ab" comes before "abc"
-    for (String str: validLexerTokens)
+    if (str.startsWith("\""))
+      return Symbol.String;
+    else if (isNumberMatch(str))
+      return Symbol.Number;
+    else
+      return reverseSymbolTokenMap.get(str);
+  }
+
+  public static class PlomTextScanner
+  {
+    public PlomTextScanner(StringTextReader in)
     {
-      if (!str.startsWith(toMatch))
-        continue;
+      this.in = in;
+    }
+    private StringTextReader in;
+    
+    private String lexStringLiteral() throws PlomReadException
+    {
+      String str = "";
+      
+      int next = in.read();
+      if (next != '\"') throw new IllegalArgumentException("Expecting string to start with double quotation");
+      str += (char)next;
+      
+      next = in.read();
+      while (next != '\"' && next >= 0)
+      {
+        // TODO: Handle escaping
+        str += (char)next;
+        next = in.read();
+      }
+      if (next < 0)
+      {
+        // Unterminated string
+        throw new PlomReadException("Unterminated string", in);
+      }
+      str += (char)next;
       return str;
+    }
+
+    private String peekedLex;
+    
+    public String peekLexInput() throws PlomReadException
+    {
+      if (peekedLex != null)
+        return peekedLex;
+      peekedLex = lexInput();
+      return peekedLex;
+    }
+    
+    // Scans the input and returns the next chunk of text
+    public String lexInput() throws PlomReadException
+    {
+      if (peekedLex != null)
+      {
+        String toReturn = peekedLex;
+        peekedLex = null;
+        return toReturn;
+      }
+      
+      // Skip whitespace
+      if (in.peek() < 0)
+      {
+        return null;
+      }
+      while (Character.isWhitespace(in.peek()))
+        in.read();
+      if (in.peek() < 0)
+      {
+        return null;
+      }
+      
+      // Check for special cases
+      int peek = in.peek();
+      if (peek == '\"')
+      {
+        return lexStringLiteral();
+      }
+      
+      // Read ahead until we can match a symbol
+      String chars = "";
+      int bestMatch = -1;
+      for (int peekAhead = 0;; peekAhead++)
+      {
+        peek = in.peek(peekAhead);
+        if (peek < 0) break;
+        chars = chars + (char)in.peek(peekAhead);
+        String match = prefixMatch(chars);
+        if (match == null && isNumberMatch(chars))
+          match = chars;
+        if (match != null)
+        {
+          if (match.length() == chars.length())
+            bestMatch = peekAhead;
+        }
+        else
+          break;
+      }
+      
+      // If we matched a token, then return it.
+      if (bestMatch >= 0)
+      {
+        String matched = "";
+        for (int n = 0; n <= bestMatch; n++)
+          matched += (char)in.read();
+        return matched;
+      }
+      throw new PlomReadException("Unknown keyword", in);
+    }
+
+    // Scans the input for part of a parameter token. Returns the string, or null for eof or nothing matching
+    public String lexParameterTokenPart() throws PlomReadException
+    {
+      // Skip whitespace
+      if (in.peek() < 0)
+      {
+        return null;
+      }
+      while (Character.isWhitespace(in.peek()))
+        in.read();
+      if (in.peek() < 0)
+      {
+        return null;
+      }
+      
+      String match = "";
+      int peek = in.peek();
+      while (peek != ':' && peek != '}' && peek >= 0)
+      {
+        match += (char)in.read();
+        peek = in.peek();
+      }
+      if (peek == ':')
+        match += (char)in.read();
+      if (match.isEmpty()) 
+        return null;
+      return match;
+    }
+    
+    // Check if it matches one of the expected tokens (we'll do this inefficiently for now)
+    private static String prefixMatch(String toMatch)
+    {
+      // Assume that validLexerTokens is sorted so that "ab" comes before "abc"
+      for (String str: validLexerTokens)
+      {
+        if (!str.startsWith(toMatch))
+          continue;
+        return str;
+      }
+      return null;
+    }
+  }
+  
+  public static class PlomReadException extends Exception
+  {
+    public PlomReadException() {}
+    public PlomReadException(String msg, StringTextReader readState) { super(msg); }
+    public PlomReadException(String msg, PlomTextScanner readState) { super(msg); }
+    public PlomReadException(Throwable chain) { super(chain); }
+  }
+
+  private static void expectToken(PlomTextScanner lexer, String expected) throws PlomReadException
+  {
+    if (!lexer.lexInput().equals(expected))
+      throw new PlomReadException("Expecting a " + expected, lexer);
+  }
+  
+  public static Token readToken(PlomTextScanner lexer) throws PlomReadException
+  {
+    String peek = lexer.peekLexInput();
+    if (peek == null) return null;
+    Symbol sym = classifyTokenString(peek);
+    if (sym == null) return null;
+    if (sym.isWide())
+    {
+      
+    }
+    else
+    {
+      if (sym == Symbol.AtType || sym == Symbol.DotVariable)
+      {
+        String prefix = (sym == Symbol.AtType ? "@" : "."); 
+        lexer.lexInput();
+        expectToken(lexer, "{");
+        String name = "";
+        List<TokenContainer> params = new ArrayList<>();
+        String nextPart = lexer.lexParameterTokenPart();
+        if (nextPart.endsWith(":"))
+        {
+          while (true)
+          {
+            name += nextPart;
+            expectToken(lexer, "{");
+            params.add(readTokenContainer(lexer));
+            expectToken(lexer, "}");
+            nextPart = lexer.lexParameterTokenPart();
+            if (nextPart == null) break;
+          }
+          expectToken(lexer, "}");
+          return Token.ParameterToken.fromContents(prefix + name, sym, params.toArray(new TokenContainer[0]));
+        }
+        else
+        {
+          expectToken(lexer, "}");
+          return Token.ParameterToken.fromContents(prefix + nextPart, sym);
+        }
+      }
+      else
+      {
+        lexer.lexInput();
+        return new Token.SimpleToken(peek, sym);
+      }
     }
     return null;
   }
   
-  
+  public static TokenContainer readTokenContainer(PlomTextScanner lexer) throws PlomReadException
+  {
+    TokenContainer tokens = new TokenContainer();
+    for (Token next = readToken(lexer); next != null; next = readToken(lexer))
+    {
+      tokens.tokens.add(next);
+    }
+    return tokens;
+  }
 }
