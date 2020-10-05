@@ -87,8 +87,33 @@ public class PlomTextWriter
       }
     }
   }
+
+  public static class PlomCodeOutputFormatter
+  {
+    public PlomCodeOutputFormatter(StringBuilder out)
+    {
+      this.out = out;
+    }
+    StringBuilder out;
+    public PlomCodeOutputFormatter append(String str)
+    {
+      out.append(str);
+      return this;
+    }
+    public PlomCodeOutputFormatter newline()
+    {
+      out.append("\n");
+      return this;
+    }
+    public PlomCodeOutputFormatter token(String str)
+    {
+      out.append(" ");
+      out.append(str);
+      return this;
+    }
+  }
   
-  public void writeToken(StringBuilder out, Token tok) throws IOException
+  public static void writeToken(PlomCodeOutputFormatter out, Token tok) throws IOException
   {
     tok.visit(new Token.TokenVisitorErr<Void, IOException>() {
       @Override public Void visitSimpleToken(SimpleToken token) throws IOException
@@ -101,11 +126,10 @@ public class PlomTextWriter
           out.append("\"");
           break;
         case Number:
-          out.append(" " + token.contents);
+          out.token(token.contents);
           break;
         default:
-          out.append(" ");
-          out.append(symbolTokenMap.get(token.getType()));
+          out.token(symbolTokenMap.get(token.getType()));
         }
         return null;
       }
@@ -115,12 +139,12 @@ public class PlomTextWriter
         switch(token.getType())
         {
         case AtType:
-          out.append("@");
-          out.append("{");
+          out.token("@");
+          out.token("{");
           break;
         case DotVariable:
-          out.append(".");
-          out.append("{");
+          out.token(".");
+          out.token("{");
           break;
         default:
           throw new IllegalArgumentException("Unknown token type");
@@ -131,54 +155,55 @@ public class PlomTextWriter
             out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
           else
             out.append(escapeParameterTokenPart(token.contents.get(n)));
-          out.append("{");
+          out.token("{");
           writeTokenContainer(out, token.parameters.get(n));
-          out.append("}");
+          out.token("}");
         }
         if (token.contents.isEmpty())
           out.append(escapeParameterTokenPart(token.postfix.substring(1)));
         else
           out.append(escapeParameterTokenPart(token.postfix));
-        out.append("}");
+        out.token("}");
         return null;
       }
 
       @Override public Void visitWideToken(WideToken token) throws IOException
       {
-        out.append(" ");
-        out.append(symbolTokenMap.get(token.getType()));
+        out.token(symbolTokenMap.get(token.getType()));
         if (token.getType() != Symbol.DUMMY_COMMENT)
           throw new IllegalArgumentException("Comments are the only wide comments that can be written out right now");
         out.append(escapeComment(token.contents.substring(2)));
-        out.append("\n");
+        out.newline();
         return null;
       }
 
       @Override public Void visitOneBlockToken(OneBlockToken token) throws IOException
       {
-        out.append(" ");
-        out.append(symbolTokenMap.get(token.getType()));
-        out.append("{\n");
+        out.token(symbolTokenMap.get(token.getType()));
+        out.token("{");
+        out.newline();
         writeStatementContainer(out, token.block);
-        out.append("}\n");
+        out.token("}");
+        out.newline();
         return null;
       }
 
       @Override public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws IOException
       {
-        out.append(" ");
-        out.append(symbolTokenMap.get(token.getType()));
-        out.append("{");
+        out.token(symbolTokenMap.get(token.getType()));
+        out.token("{");
         writeTokenContainer(out, token.expression);
-        out.append("}");
-        out.append("{\n");
+        out.token("}");
+        out.token("{");
+        out.newline();
         writeStatementContainer(out, token.block);
-        out.append("}\n");
+        out.token("}");
+        out.newline();
         return null;
       }});
   }
 
-  public void writeTokenContainer(StringBuilder out, TokenContainer tokens) throws IOException
+  public static void writeTokenContainer(PlomCodeOutputFormatter out, TokenContainer tokens) throws IOException
   {
     for (Token tok: tokens.tokens)
     {
@@ -186,12 +211,12 @@ public class PlomTextWriter
     }
   }
   
-  public void writeStatementContainer(StringBuilder out, StatementContainer container) throws IOException
+  public static void writeStatementContainer(PlomCodeOutputFormatter out, StatementContainer container) throws IOException
   {
     for (TokenContainer tokens: container.statements)
     {
       writeTokenContainer(out, tokens);
-      out.append("\n");
+      out.newline();
     }
   }
 }

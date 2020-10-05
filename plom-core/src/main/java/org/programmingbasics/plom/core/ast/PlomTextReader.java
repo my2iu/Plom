@@ -71,7 +71,8 @@ public class PlomTextReader
     // The ones that directly map onto symbols
     for (Map.Entry<Symbol, String> tok: symbolTokenMap.entrySet())
     {
-      validLexerTokens.add(tok.getValue());
+      if (!isKeywordPatternMatch(tok.getValue()))
+        validLexerTokens.add(tok.getValue());
       reverseSymbolTokenMap.put(tok.getValue(), tok.getKey());
     }
     // Some extra ones
@@ -89,6 +90,18 @@ public class PlomTextReader
     return toMatch.matches("[-]?([0-9]+|[0-9]+[.][0-9]*)");
   }
 
+  private static boolean isKeywordPatternMatch(String toMatch)
+  {
+    if (!Character.isUnicodeIdentifierStart(toMatch.charAt(0)))
+      return false;
+    for (int n = 1; n < toMatch.length(); n++)
+    {
+      if (!Character.isUnicodeIdentifierPart(toMatch.charAt(n)))
+        return false;
+    }
+    return true;
+  }
+  
   private static Symbol classifyTokenString(String str)
   {
     if (str.startsWith("\""))
@@ -178,9 +191,13 @@ public class PlomTextReader
         peek = in.peek(peekAhead);
         if (peek < 0) break;
         chars = chars + (char)in.peek(peekAhead);
-        String match = prefixMatch(chars);
-        if (match == null && isNumberMatch(chars))
+        String match = null;
+        if (isNumberMatch(chars))
           match = chars;
+        else if (isKeywordPatternMatch(chars))
+          match = chars;
+        else
+          match = prefixMatch(chars);
         if (match != null)
         {
           if (match.length() == chars.length())
@@ -218,7 +235,7 @@ public class PlomTextReader
       
       String match = "";
       int peek = in.peek();
-      while (peek != ':' && peek != '}' && peek >= 0)
+      while (peek != ':' && peek != '}' && peek != '.' && peek != '{' && peek >= 0)
       {
         match += (char)in.read();
         peek = in.peek();
@@ -227,7 +244,7 @@ public class PlomTextReader
         match += (char)in.read();
       if (match.isEmpty()) 
         return null;
-      return match;
+      return match.trim();
     }
     
     public String lexComment() throws PlomReadException
@@ -269,6 +286,25 @@ public class PlomTextReader
       }
       return null;
     }
+    
+    public void expectToken(String expected) throws PlomReadException
+    {
+      if (!lexInput().equals(expected))
+        throw new PlomReadException("Expecting a " + expected, this);
+    }
+
+    public void expectNewlineToken() throws PlomReadException
+    {
+      if (!isNewline(lexInput()))
+        throw new PlomReadException("Expecting a newline", this);
+    }
+
+    public void swallowOptionalNewlineToken() throws PlomReadException
+    {
+      if (isNewline(peekLexInput()))
+        lexInput();
+    }
+
   }
   
   public static class PlomReadException extends Exception
@@ -279,23 +315,6 @@ public class PlomTextReader
     public PlomReadException(Throwable chain) { super(chain); }
   }
 
-  private static void expectToken(PlomTextScanner lexer, String expected) throws PlomReadException
-  {
-    if (!lexer.lexInput().equals(expected))
-      throw new PlomReadException("Expecting a " + expected, lexer);
-  }
-
-  private static void expectNewlineToken(PlomTextScanner lexer) throws PlomReadException
-  {
-    if (!isNewline(lexer.lexInput()))
-      throw new PlomReadException("Expecting a newline", lexer);
-  }
-
-  private static void swallowOptionalNewlineToken(PlomTextScanner lexer) throws PlomReadException
-  {
-    if (isNewline(lexer.peekLexInput()))
-      lexer.lexInput();
-  }
 
   private static boolean isNewline(String toMatch)
   {
@@ -318,30 +337,30 @@ public class PlomTextReader
       case COMPOUND_WHILE:
       {
         lexer.lexInput();
-        expectToken(lexer, "{");
+        lexer.expectToken("{");
         TokenContainer expression = readTokenContainer(lexer);
-        expectToken(lexer, "}");
-        expectToken(lexer, "{");
-        swallowOptionalNewlineToken(lexer);
+        lexer.expectToken("}");
+        lexer.expectToken("{");
+        lexer.swallowOptionalNewlineToken();
         StatementContainer block = readStatementContainer(lexer);
-        expectToken(lexer, "}");
-        swallowOptionalNewlineToken(lexer);
+        lexer.expectToken("}");
+        lexer.swallowOptionalNewlineToken();
         return new Token.OneExpressionOneBlockToken(peek, sym, expression, block);
       }
       case COMPOUND_ELSE:
       {
         lexer.lexInput();
-        expectToken(lexer, "{");
-        swallowOptionalNewlineToken(lexer);
+        lexer.expectToken("{");
+        lexer.swallowOptionalNewlineToken();
         StatementContainer block = readStatementContainer(lexer);
-        expectToken(lexer, "}");
-        swallowOptionalNewlineToken(lexer);
+        lexer.expectToken("}");
+        lexer.swallowOptionalNewlineToken();
         return new Token.OneBlockToken(peek, sym, block);
       }
       case DUMMY_COMMENT:
         lexer.lexInput();
         String str = lexer.lexComment();
-        expectNewlineToken(lexer);
+        lexer.expectNewlineToken();
         return new Token.WideToken("//" + str, sym);
       }
     }
@@ -351,7 +370,7 @@ public class PlomTextReader
       {
         String prefix = (sym == Symbol.AtType ? "@" : "."); 
         lexer.lexInput();
-        expectToken(lexer, "{");
+        lexer.expectToken("{");
         String name = "";
         List<TokenContainer> params = new ArrayList<>();
         String nextPart = lexer.lexParameterTokenPart();
@@ -360,20 +379,20 @@ public class PlomTextReader
           while (true)
           {
             name += nextPart;
-            expectToken(lexer, "{");
+            lexer.expectToken("{");
             params.add(readTokenContainer(lexer));
-            expectToken(lexer, "}");
+            lexer.expectToken("}");
             nextPart = lexer.lexParameterTokenPart();
             if (nextPart == null) break;
             if (!nextPart.endsWith(":"))
               throw new PlomReadException("Expecting identifier part to end with :", lexer); 
           }
-          expectToken(lexer, "}");
+          lexer.expectToken("}");
           return Token.ParameterToken.fromContents(prefix + name, sym, params.toArray(new TokenContainer[0]));
         }
         else
         {
-          expectToken(lexer, "}");
+          lexer.expectToken("}");
           return Token.ParameterToken.fromContents(prefix + nextPart, sym);
         }
       }

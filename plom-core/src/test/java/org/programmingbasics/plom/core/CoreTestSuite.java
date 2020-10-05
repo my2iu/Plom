@@ -27,6 +27,7 @@ public class CoreTestSuite extends TestSuite
    public static Test suite() 
    {
       TestSuite suite = new TestSuite();
+      suite.addTestSuite(ModuleCodeRepositoryTest.class);
       suite.addTestSuite(LL1ParserTest.class);
       suite.addTestSuite(ParseToAstTest.class);
       suite.addTestSuite(LineNumberTrackerTest.class);

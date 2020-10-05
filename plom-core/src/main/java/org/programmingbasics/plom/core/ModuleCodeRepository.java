@@ -1,5 +1,6 @@
 package org.programmingbasics.plom.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -9,6 +10,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -411,5 +415,277 @@ public class ModuleCodeRepository
       sig.isBuiltIn = true;
       c.addMethod(new FunctionDescription(sig, mdef.code));
     }
+  }
+  
+  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out) throws IOException
+  {
+    out.token("module");
+    out.token(".{program}");
+    out.token("{");
+    out.newline();
+
+    // Output global variables
+    for (VariableDescription v: globalVars)
+    {
+      saveVariable(out, v);
+    }
+    
+    // Output global functions
+    for (FunctionDescription fn: functions.values())
+    {
+      saveFunction(out, fn);
+    }
+    
+    // Output classes
+    for (ClassDescription cls: classes)
+    {
+      saveClass(out, cls);
+    }
+
+    out.token("}");
+  }
+  
+  public static void saveClass(PlomTextWriter.PlomCodeOutputFormatter out, ClassDescription c) throws IOException
+  {
+    out.token("class");
+    out.token(".");
+    out.token("{");
+    out.token(c.name);
+    out.token("}");
+    
+    out.token("{");
+    out.newline();
+
+    for (VariableDescription v: c.getAllVars())
+    {
+      saveVariable(out, v);
+    }
+    
+    for (FunctionDescription fn: c.getInstanceMethods())
+    {
+      if (fn.sig.isBuiltIn) continue;
+      saveFunction(out, fn);
+    }
+
+    for (FunctionDescription fn: c.getStaticAndConstructorMethods())
+    {
+      if (fn.sig.isBuiltIn) continue;
+      saveFunction(out, fn);
+      
+    }
+
+    out.token("}");
+    out.newline();
+  }
+
+  private static void saveVariable(PlomTextWriter.PlomCodeOutputFormatter out,
+      VariableDescription v) throws IOException
+  {
+    out.token("var");
+    out.token(".");
+    out.token("{");
+    out.token(v.name);
+    out.token("}");
+    PlomTextWriter.writeToken(out, v.type);
+    out.newline();
+  }
+  
+  static void saveFunction(PlomTextWriter.PlomCodeOutputFormatter out, FunctionDescription fn) throws IOException
+  {
+    if (fn.sig.isStatic)
+      out.token("classfunction");
+    else if (fn.sig.isConstructor)
+      out.token("constructor");
+    else
+      out.token("function");
+    
+    out.token(".");
+    out.token("{");
+    if (fn.sig.argNames.isEmpty())
+    {
+      out.append(fn.sig.nameParts.get(0));
+    }
+    else
+    {
+      for (int n = 0; n < fn.sig.argNames.size(); n++)
+      {
+        out.append(fn.sig.nameParts.get(n) + ":");
+        out.token(".");
+        out.token("{");
+        out.token(fn.sig.argNames.get(n));
+        out.token("}");
+        PlomTextWriter.writeToken(out, fn.sig.argTypes.get(n));
+      }
+    }
+    out.token("}");
+    
+    if (!fn.sig.isConstructor)
+    {
+      PlomTextWriter.writeToken(out, fn.sig.returnType);
+    }
+    
+    out.token("{");
+    out.newline();
+    PlomTextWriter.writeStatementContainer(out, fn.code);
+    out.token("}");
+    out.newline();
+  }
+  
+  public void loadModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    lexer.expectToken("module");
+    lexer.expectToken(".");
+    lexer.expectToken("{");
+    String moduleName = lexer.lexParameterTokenPart();
+    lexer.expectToken("}");
+    
+    lexer.expectToken("{");
+    lexer.swallowOptionalNewlineToken();
+    
+    while (!"}".equals(lexer.peekLexInput()))
+    {
+      String peek = lexer.peekLexInput();
+      if ("var".equals(peek))
+      {
+        VariableDescription v = loadVariable(lexer);
+        addGlobalVarAndResetIds(v.name, v.type);
+        lexer.expectNewlineToken();
+      }
+      else if ("function".equals(peek))
+      {
+        FunctionDescription fn = loadFunction(lexer);
+        addFunction(fn);
+      }
+      else if ("class".equals(peek))
+      {
+        ClassDescription loaded = loadClass(lexer);
+        ClassDescription cls = addClassAndResetIds(loaded.name);
+        for (VariableDescription v: loaded.variables)
+        {
+          cls.addVarAndResetIds(v.name, v.type);
+        }
+        for (FunctionDescription fn: loaded.methods)
+        {
+          cls.addMethod(fn);
+        }
+      }
+      else
+        throw new PlomReadException("Unexpected module contents", lexer);
+    }
+    
+    lexer.expectToken("}");
+  }
+  
+  public static ClassDescription loadClass(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    lexer.expectToken("class");
+    lexer.expectToken(".");
+    lexer.expectToken("{");
+    String className = lexer.lexParameterTokenPart();
+    if (className == null)
+      throw new PlomReadException("Cannot read class name", lexer);
+    lexer.expectToken("}");
+    
+    ClassDescription cls = new ClassDescription();
+    cls.name = className;
+    
+    lexer.expectToken("{");
+    lexer.swallowOptionalNewlineToken();
+    
+    while (!"}".equals(lexer.peekLexInput()))
+    {
+      String peek = lexer.peekLexInput();
+      if ("var".equals(peek))
+      {
+        VariableDescription v = loadVariable(lexer);
+        cls.addVarAndResetIds(v.name, v.type);
+        lexer.expectNewlineToken();
+      }
+      else if ("classfunction".equals(peek) || "function".equals(peek) || "constructor".equals(peek))
+      {
+        cls.addMethod(loadFunction(lexer));
+      }
+      else
+        throw new PlomReadException("Unexpected class contents", lexer);
+    }
+    
+    lexer.expectToken("}");
+    lexer.swallowOptionalNewlineToken();
+    
+    return cls;
+  }
+
+  private static VariableDescription loadVariable(
+      PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    VariableDescription v = new VariableDescription();
+    lexer.expectToken("var");
+    lexer.expectToken(".");
+    lexer.expectToken("{");
+    String varName = lexer.lexParameterTokenPart();
+    lexer.expectToken("}");
+    
+    // Read the variable type
+    Token.ParameterToken type = (Token.ParameterToken)PlomTextReader.readToken(lexer);
+    v.name = varName;
+    v.type = type;
+    return v;
+  }
+  
+  static FunctionDescription loadFunction(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    boolean isConstructor = "constructor".equals(lexer.peekLexInput());
+    boolean isStatic = "classfunction".equals(lexer.peekLexInput());
+    boolean isFunction = "function".equals(lexer.peekLexInput());
+    if (!isConstructor && !isStatic && !isFunction)
+      throw new PlomReadException("Unknown function type", lexer);
+    lexer.lexInput();
+
+    lexer.expectToken(".");
+    lexer.expectToken("{");
+    String fnName = "";
+    List<String> argNames = new ArrayList<>();
+    List<Token.ParameterToken> argTypes = new ArrayList<>();
+    String namePart = lexer.lexParameterTokenPart();
+    if (namePart == null)
+      throw new PlomReadException("Expecting function name", lexer);
+    if (namePart.endsWith(":"))
+    {
+      while (namePart != null)
+      {
+        fnName += namePart;
+        lexer.expectToken(".");
+        lexer.expectToken("{");
+        argNames.add(lexer.lexParameterTokenPart());
+        lexer.expectToken("}");
+        argTypes.add((Token.ParameterToken)PlomTextReader.readToken(lexer));
+        namePart = lexer.lexParameterTokenPart();
+      }
+    }
+    else
+    {
+      fnName += namePart;
+    }
+    lexer.expectToken("}");
+    
+    Token.ParameterToken returnType;
+    if (!isConstructor)
+      returnType = (Token.ParameterToken)PlomTextReader.readToken(lexer);
+    else
+      returnType = Token.ParameterToken.fromContents("@void", Symbol.AtType);
+    
+    FunctionSignature sig = FunctionSignature.from(returnType, fnName, argNames, argTypes);
+    if (isConstructor)
+      sig.isConstructor = true;
+    if (isStatic)
+      sig.isStatic = true;
+
+    lexer.expectToken("{");
+    lexer.swallowOptionalNewlineToken();
+    StatementContainer code = PlomTextReader.readStatementContainer(lexer);
+    lexer.expectToken("}");
+    lexer.swallowOptionalNewlineToken();
+    
+    return new FunctionDescription(sig, code);
   }
 }

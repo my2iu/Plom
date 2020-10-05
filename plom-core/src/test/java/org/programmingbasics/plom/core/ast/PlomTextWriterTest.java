@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import junit.framework.TestCase;
@@ -14,17 +15,18 @@ public class PlomTextWriterTest extends TestCase
   public void testWriteToken() throws IOException, PlomTextReader.PlomReadException
   {
     PlomTextWriter writer = new PlomTextWriter();
-    StringBuilder out = new StringBuilder();
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
     writer.writeToken(out, new Token.SimpleToken("return", Symbol.Return));
     writer.writeToken(out, new Token.SimpleToken("var", Symbol.Var));
     writer.writeToken(out, new Token.SimpleToken("(", Symbol.OpenParenthesis));
     writer.writeToken(out, new Token.SimpleToken("\"hello\"", Symbol.String));
     writer.writeToken(out, new Token.SimpleToken("0.156", Symbol.Number));
     writer.writeToken(out, new Token.SimpleToken("-22", Symbol.Number));
-    Assert.assertEquals(" return var (\"hello\" 0.156 -22", out.toString());
+    Assert.assertEquals(" return var (\"hello\" 0.156 -22", strBuilder.toString());
     
     // Check if we can read back the output
-    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(strBuilder.toString());
     PlomTextReader.PlomTextScanner reader = new PlomTextReader.PlomTextScanner(in);
     Assert.assertEquals("return", reader.lexInput());
     Assert.assertEquals("var", reader.lexInput());
@@ -39,7 +41,8 @@ public class PlomTextWriterTest extends TestCase
   {
     PlomTextWriter writer = new PlomTextWriter();
     StringBuilder out = new StringBuilder();
-    writer.writeToken(out, Token.ParameterToken.fromContents(".a hello:b:", Symbol.DotVariable, 
+    PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
+    writer.writeToken(plomOut, Token.ParameterToken.fromContents(".a hello:b:", Symbol.DotVariable, 
         new TokenContainer(
             Token.ParameterToken.fromContents("@number", Symbol.AtType),
             Token.ParameterToken.fromContents(".next", Symbol.DotVariable),
@@ -53,7 +56,7 @@ public class PlomTextWriterTest extends TestCase
                     )
                 )
             )));
-    Assert.assertEquals(".{a hello:{@{number}.{next} + 1}b:{.{sd d  a:{\"good\"}}}}", out.toString());
+    Assert.assertEquals(" . {a hello: { @ {number } . {next } + 1 }b: { . {sd d  a: {\"good\" } } } }", out.toString());
   } 
   
   @Test
@@ -92,17 +95,18 @@ public class PlomTextWriterTest extends TestCase
         );
     PlomTextWriter writer = new PlomTextWriter();
     StringBuilder out = new StringBuilder();
-    writer.writeStatementContainer(out, code);
+    writer.writeStatementContainer(new PlomCodeOutputFormatter(out), code);
 
-    Assert.assertEquals(" var.{a} :@{number}\n" + 
-        " if{}{\n" + 
-        " var.{b} :@{string}\n" + 
-        ".{b}\n" + 
-        "}\n" + 
-        " else{\n" + 
-        " //Comment\\nComment line 2\n\n" + 
-        "}\n" + 
-        " var.{c} :@{string}\n" + 
+    Assert.assertEquals(" var . {a } : @ {number }\n" + 
+        " if { } {\n" + 
+        " var . {b } : @ {string }\n" + 
+        " . {b }\n" + 
+        " }\n" + 
+        " else {\n" + 
+        " //Comment\\nComment line 2\n" + 
+        "\n" + 
+        " }\n" + 
+        " var . {c } : @ {string }\n" + 
         "", out.toString());
 
     // Check if we can read back the output
