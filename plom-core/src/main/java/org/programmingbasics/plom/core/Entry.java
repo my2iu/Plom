@@ -1,13 +1,19 @@
 package org.programmingbasics.plom.core;
 
+import java.io.IOException;
 import java.util.function.Consumer;
 
+import org.apache.jasper.tagplugins.jstl.core.Url;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomTextScanner;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -21,11 +27,15 @@ import org.programmingbasics.plom.core.view.LineForPosition;
 import com.google.gwt.core.client.EntryPoint;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
+import elemental.html.Blob;
 import elemental.html.DivElement;
+import elemental.html.FileReader;
+import elemental.html.InputElement;
 
 /*
 TODO:
@@ -81,6 +91,8 @@ public class Entry implements EntryPoint
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
     hookRun();
+    
+    hookLoadSave();
     
     hookSubject();
     
@@ -165,7 +177,68 @@ public class Entry implements EntryPoint
       }
     }, false);
   }
+  
+  void hookLoadSave()
+  {
+    Element loadEl = Browser.getDocument().querySelector("a.loadbutton");
+    loadEl.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      InputElement fileInput = Browser.getDocument().createInputElement();
+      fileInput.setType("file");
+      fileInput.getStyle().setDisplay(Display.NONE);
+      Browser.getDocument().getBody().appendChild(fileInput);
+      fileInput.setAccept(".plom");
+      fileInput.addEventListener(Event.CHANGE, (e) -> {
+        e.preventDefault();
+        if (fileInput.getFiles().length() != 0)
+        {
+          FileReader reader = Browser.getWindow().newFileReader();
+          reader.setOnload((loadedEvt) -> {
+            String read = (String)reader.getResult();
+            PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(read);
+            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+            try {
+              repository.loadModule(lexer);
+            }
+            catch (PlomReadException e1)
+            {
+              e1.printStackTrace();
+            }
+          });
+          reader.readAsText(fileInput.getFiles().item(0));
+        }
+        Browser.getDocument().getBody().removeChild(fileInput);
+      }, false);
+      fileInput.click();
+    }, false);
+    Element saveEl = Browser.getDocument().querySelector("a.savebutton");
+    saveEl.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      AnchorElement saveLink = (AnchorElement)Browser.getDocument().createElement("a");
+      try
+      {
+        StringBuilder out = new StringBuilder();
+        repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out));
+        Blob blob = createBlob(out.toString(), "text/plain");
+        saveLink.setHref(createBlobObjectURL(blob));
+        saveLink.setDownload("program.plom");
+        saveLink.click();
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+    }, false);
+  }
  
+  static native Blob createBlob(String data, String mimeType) /*-{
+    return new $wnd.Blob([data], {type: mimeType});
+  }-*/;
+
+  static native String createBlobObjectURL(Blob blob) /*-{
+    return URL.createObjectURL(blob);
+  }-*/;
+
   /** If any code is currently being displayed in the code panel, save it
    * to the repository
    */

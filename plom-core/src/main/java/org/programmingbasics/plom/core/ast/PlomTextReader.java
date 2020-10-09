@@ -8,6 +8,11 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.regexp.shared.RegExp;
+
+import elemental.client.Browser;
+
 /**
  * Reading and writing code as text
  */
@@ -92,14 +97,21 @@ public class PlomTextReader
 
   private static boolean isKeywordPatternMatch(String toMatch)
   {
-    if (!Character.isUnicodeIdentifierStart(toMatch.charAt(0)))
-      return false;
-    for (int n = 1; n < toMatch.length(); n++)
-    {
-      if (!Character.isUnicodeIdentifierPart(toMatch.charAt(n)))
-        return false;
-    }
-    return true;
+    RegExp regex;
+    if (GWT.isClient())
+      regex = RegExp.compile("^[\\p{ID_Start}][\\p{ID_Continue}]*$", "u");
+    else
+      // This regex doesn't match ID_Start and ID_Continue, but it's good enough for testing
+      regex = RegExp.compile("^[\\p{L}][\\p{L}\\p{N}]*$", "");
+    return regex.exec(toMatch) != null;
+//    if (!Character.isUnicodeIdentifierStart(toMatch.charAt(0)))
+//      return false;
+//    for (int n = 1; n < toMatch.length(); n++)
+//    {
+//      if (!Character.isUnicodeIdentifierPart(toMatch.charAt(n)))
+//        return false;
+//    }
+//    return true;
   }
   
   private static Symbol classifyTokenString(String str)
