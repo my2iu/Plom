@@ -139,16 +139,6 @@ public class ModuleCodeRepositoryTest extends TestCase
         " constructor . {new } {\n" + 
         " }\n" + 
         " }\n" + 
-        " class . { null } {\n" + 
-        " }\n" + 
-        " class . { boolean } {\n" + 
-        " }\n" + 
-        " class . { string } {\n" + 
-        " }\n" + 
-        " class . { number } {\n" + 
-        " }\n" + 
-        " class . { object } {\n" + 
-        " }\n" + 
         " class . { Test } {\n" + 
         " constructor . {new } {\n" + 
         " }\n" + 
@@ -167,6 +157,8 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" + 
         " function . {test: . { arg1 } @ {number } } @ {number } {\n" + 
         " }\n" + 
+        " class . { test class 2} {\n" + 
+        " }\n" + 
         " class . { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
@@ -181,11 +173,14 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
     ModuleCodeRepository loaded = new ModuleCodeRepository();
+    loaded.addClassAndResetIds("test class 2").setBuiltIn(true);
     loaded.loadModule(lexer);
     
     Assert.assertTrue(loaded.hasFunctionWithName("get"));
     Assert.assertTrue(loaded.getAllGlobalVars().stream().anyMatch(v -> v.name.equals("variable")));
     Assert.assertTrue(loaded.getAllGlobalVars().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
+    // If a class already exists, just augment that class, don't create a completely new class with the same name
+    Assert.assertEquals(1, loaded.getAllClasses().stream().filter(c -> c.name.equals("test class 2")).count());
   }
 }

@@ -3,7 +3,6 @@ package org.programmingbasics.plom.core;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import org.apache.jasper.tagplugins.jstl.core.Url;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
@@ -12,7 +11,6 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
-import org.programmingbasics.plom.core.ast.PlomTextReader.PlomTextScanner;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -198,7 +196,11 @@ public class Entry implements EntryPoint
             PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(read);
             PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
             try {
-              repository.loadModule(lexer);
+              ModuleCodeRepository newRepository = new ModuleCodeRepository();
+              newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+              newRepository.loadModule(lexer);
+              repository = newRepository;
+              loadGlobalsView();
             }
             catch (PlomReadException e1)
             {

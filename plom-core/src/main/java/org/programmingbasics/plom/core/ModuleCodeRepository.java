@@ -141,6 +141,7 @@ public class ModuleCodeRepository
     public String name;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
+    public boolean isBuiltIn = false;
     public List<FunctionDescription> getInstanceMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
@@ -190,6 +191,12 @@ public class ModuleCodeRepository
     {
       this.name = name;
     }
+    public ClassDescription setBuiltIn(boolean isBuiltIn) { this.isBuiltIn = isBuiltIn; return this; }
+    public boolean hasNonBuiltInMethods()
+    {
+      return !methods.stream().allMatch(fn -> fn.sig.isBuiltIn);
+    }
+
   }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();
@@ -401,7 +408,9 @@ public class ModuleCodeRepository
     for (StdLibClass clsdef: stdLibClasses)
     {
       if (classMap.containsKey(clsdef.name)) continue;
-      classMap.put(clsdef.name, addClassAndResetIds(clsdef.name));
+      ClassDescription c = addClassAndResetIds(clsdef.name)
+          .setBuiltIn(true);
+      classMap.put(clsdef.name, c);
     }
     
     for (StdLibMethod mdef: stdLibMethods)
@@ -439,7 +448,8 @@ public class ModuleCodeRepository
     // Output classes
     for (ClassDescription cls: classes)
     {
-      saveClass(out, cls);
+      if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+        saveClass(out, cls);
     }
 
     out.token("}");
@@ -559,10 +569,28 @@ public class ModuleCodeRepository
       else if ("class".equals(peek))
       {
         ClassDescription loaded = loadClass(lexer);
-        ClassDescription cls = addClassAndResetIds(loaded.name);
-        for (VariableDescription v: loaded.variables)
+        ClassDescription cls = null;
+        boolean augmentClass = false;
+        // See if we have a built-in class with the same name. If so,
+        // we'll just fill-in the extra defined methods. Otherwise, we'll
+        // actually create a new class
+        for (ClassDescription c: classes)
         {
-          cls.addVarAndResetIds(v.name, v.type);
+          if (c.isBuiltIn && c.name.equals(loaded.name))
+          {
+            cls = c;
+            augmentClass = true;
+            break;
+          }
+        }
+        if (cls == null)
+          cls = addClassAndResetIds(loaded.name);
+        if (!augmentClass)
+        {
+          for (VariableDescription v: loaded.variables)
+          {
+            cls.addVarAndResetIds(v.name, v.type);
+          }
         }
         for (FunctionDescription fn: loaded.methods)
         {
