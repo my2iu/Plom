@@ -8,6 +8,9 @@ public interface UIResources extends ClientBundle
 {
    public static final UIResources INSTANCE = GWT.create(UIResources.class);
 
+   @Source("stdlib.plom")
+   TextResource getStdLibPlom();
+   
    @Source("codepanel.html")
    TextResource getCodePanelHtml();
 

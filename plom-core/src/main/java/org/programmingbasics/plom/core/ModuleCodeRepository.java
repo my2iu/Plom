@@ -254,49 +254,49 @@ public class ModuleCodeRepository
         );
     functions.put(func.sig.getLookupName(), func);
     
-    FunctionDescription testParamFunc = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), Arrays.asList("test"), Arrays.asList("arg1"), Arrays.asList(Token.ParameterToken.fromContents("@number", Symbol.AtType)), null),
-        new StatementContainer());
-    functions.put(testParamFunc.sig.getLookupName(), testParamFunc);
-    
-    FunctionDescription printStringPrimitive = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print string:", "value", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
-        new StatementContainer(
-            new TokenContainer(
-                new Token.WideToken("// Prints a string to the screen", Symbol.DUMMY_COMMENT),
-                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
-            ));
-    functions.put(printStringPrimitive.sig.getLookupName(), printStringPrimitive);
-
-    FunctionDescription printPrimitive = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print:", "value", Token.ParameterToken.fromContents("@object", Symbol.AtType)),
-        new StatementContainer(
-            new TokenContainer(
-                new Token.WideToken("// Prints a value to the screen", Symbol.DUMMY_COMMENT),
-                Token.ParameterToken.fromContents(".print string:", Symbol.DotVariable, 
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".value", Symbol.DotVariable),
-                        Token.ParameterToken.fromContents(".to string", Symbol.DotVariable))
-                    )
-            )));
-    functions.put(printPrimitive.sig.getLookupName(), printPrimitive);
-
-    FunctionDescription inputPrimitive = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@string", Symbol.AtType), "input:", "prompt", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
-        new StatementContainer(
-            new TokenContainer(
-                new Token.WideToken("// Displays a prompt asking for input and returns the value entered by the user", Symbol.DUMMY_COMMENT),
-                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
-            ));
-    functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
-
-    addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
-    
-    ClassDescription testClass = addClassAndResetIds("Test");
-    testClass.addMethod(new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "new")
-            .setIsConstructor(true),
-        new StatementContainer()));
+//    FunctionDescription testParamFunc = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), Arrays.asList("test"), Arrays.asList("arg1"), Arrays.asList(Token.ParameterToken.fromContents("@number", Symbol.AtType)), null),
+//        new StatementContainer());
+//    functions.put(testParamFunc.sig.getLookupName(), testParamFunc);
+//    
+//    FunctionDescription printStringPrimitive = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print string:", "value", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
+//        new StatementContainer(
+//            new TokenContainer(
+//                new Token.WideToken("// Prints a string to the screen", Symbol.DUMMY_COMMENT),
+//                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
+//            ));
+//    functions.put(printStringPrimitive.sig.getLookupName(), printStringPrimitive);
+//
+//    FunctionDescription printPrimitive = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "print:", "value", Token.ParameterToken.fromContents("@object", Symbol.AtType)),
+//        new StatementContainer(
+//            new TokenContainer(
+//                new Token.WideToken("// Prints a value to the screen", Symbol.DUMMY_COMMENT),
+//                Token.ParameterToken.fromContents(".print string:", Symbol.DotVariable, 
+//                    new TokenContainer(
+//                        Token.ParameterToken.fromContents(".value", Symbol.DotVariable),
+//                        Token.ParameterToken.fromContents(".to string", Symbol.DotVariable))
+//                    )
+//            )));
+//    functions.put(printPrimitive.sig.getLookupName(), printPrimitive);
+//
+//    FunctionDescription inputPrimitive = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@string", Symbol.AtType), "input:", "prompt", Token.ParameterToken.fromContents("@string", Symbol.AtType)),
+//        new StatementContainer(
+//            new TokenContainer(
+//                new Token.WideToken("// Displays a prompt asking for input and returns the value entered by the user", Symbol.DUMMY_COMMENT),
+//                new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))
+//            ));
+//    functions.put(inputPrimitive.sig.getLookupName(), inputPrimitive);
+//
+//    addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@object", Symbol.AtType));
+//    
+//    ClassDescription testClass = addClassAndResetIds("Test");
+//    testClass.addMethod(new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "new")
+//            .setIsConstructor(true),
+//        new StatementContainer()));
   }
   
   public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)

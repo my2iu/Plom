@@ -85,6 +85,13 @@ public class Entry implements EntryPoint
     // Load in the built-in primitives of the interpreter into the 
     // code repository so that they can be browsed in the UI
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    try {
+      repository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
+    }
+    catch (PlomReadException e)
+    {
+      e.printStackTrace();
+    }
     
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
@@ -198,6 +205,13 @@ public class Entry implements EntryPoint
             try {
               ModuleCodeRepository newRepository = new ModuleCodeRepository();
               newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+              try {
+                repository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
+              }
+              catch (PlomReadException loadStdLibErr)
+              {
+                loadStdLibErr.printStackTrace();
+              }
               newRepository.loadModule(lexer);
               repository = newRepository;
               loadGlobalsView();
