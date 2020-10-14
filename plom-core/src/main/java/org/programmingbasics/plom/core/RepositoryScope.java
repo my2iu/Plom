@@ -44,6 +44,13 @@ public class RepositoryScope extends VariableScope
     {
       codeRepositoryClasses.put(cls.name, cls);
     }
+    if (repository.chainedRepository != null)
+    {
+      for (ClassDescription cls: repository.chainedRepository.classes)
+      {
+        codeRepositoryClasses.put(cls.name, cls);
+      }
+    }
     
     // Force a load of the standard built-in types (the interpreter
     // has direct access to these types, but the repository may have
@@ -70,6 +77,19 @@ public class RepositoryScope extends VariableScope
       catch (RunException e)
       {
         // Ignore errors when registering variables
+      }
+    }
+    if (repository.chainedRepository != null)
+    {
+      for (VariableDescription v: repository.chainedRepository.globalVars)
+      {
+        try {
+          addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
+        }
+        catch (RunException e)
+        {
+          // Ignore errors when registering variables
+        }
       }
     }
   }
@@ -211,6 +231,13 @@ public class RepositoryScope extends VariableScope
     for (VariableDescription v: repository.globalVars)
     {
       suggestions.add(v.name);
+    }
+    if (repository.chainedRepository != null)
+    {
+      for (VariableDescription v: repository.chainedRepository.globalVars)
+      {
+        suggestions.add(v.name);
+      }
     }
   }
 }

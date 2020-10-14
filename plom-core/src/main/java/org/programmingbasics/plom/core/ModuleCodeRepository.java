@@ -209,50 +209,50 @@ public class ModuleCodeRepository
   
   public ModuleCodeRepository()
   {
-    // Create a basic main function that can be filled in
-    FunctionDescription func = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
-        new StatementContainer(
-            new TokenContainer(
-                new Token.SimpleToken("var", Symbol.Var),
-                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                new Token.SimpleToken(":", Symbol.Colon),
-                Token.ParameterToken.fromContents("@string", Symbol.AtType)
-                ),
-            new TokenContainer(
-                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                new Token.SimpleToken(":=", Symbol.Assignment),
-                Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
-                    new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
-                ),
-            new TokenContainer(
-                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                        new Token.SimpleToken("=", Symbol.Eq),
-                        new Token.SimpleToken("\"8\"", Symbol.String)
-                        ),
-                    new StatementContainer(
-                        new TokenContainer(
-                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                                new TokenContainer(
-                                    new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
-                                    ))
-                            ))
-                    ),
-                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
-                    new StatementContainer(
-                        new TokenContainer(
-                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                                new TokenContainer(
-                                    new Token.SimpleToken("\"Incorrect\"", Symbol.String)
-                                    ))
-                            ))
-                    )
-                )
-            )
-        );
-    functions.put(func.sig.getLookupName(), func);
+//    // Create a basic main function that can be filled in
+//    FunctionDescription func = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
+//        new StatementContainer(
+//            new TokenContainer(
+//                new Token.SimpleToken("var", Symbol.Var),
+//                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                new Token.SimpleToken(":", Symbol.Colon),
+//                Token.ParameterToken.fromContents("@string", Symbol.AtType)
+//                ),
+//            new TokenContainer(
+//                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                new Token.SimpleToken(":=", Symbol.Assignment),
+//                Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
+//                    new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
+//                ),
+//            new TokenContainer(
+//                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+//                    new TokenContainer(
+//                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                        new Token.SimpleToken("=", Symbol.Eq),
+//                        new Token.SimpleToken("\"8\"", Symbol.String)
+//                        ),
+//                    new StatementContainer(
+//                        new TokenContainer(
+//                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+//                                new TokenContainer(
+//                                    new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
+//                                    ))
+//                            ))
+//                    ),
+//                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
+//                    new StatementContainer(
+//                        new TokenContainer(
+//                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+//                                new TokenContainer(
+//                                    new Token.SimpleToken("\"Incorrect\"", Symbol.String)
+//                                    ))
+//                            ))
+//                    )
+//                )
+//            )
+//        );
+//    functions.put(func.sig.getLookupName(), func);
     
 //    FunctionDescription testParamFunc = new FunctionDescription(
 //        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), Arrays.asList("test"), Arrays.asList("arg1"), Arrays.asList(Token.ParameterToken.fromContents("@number", Symbol.AtType)), null),
@@ -298,6 +298,13 @@ public class ModuleCodeRepository
 //            .setIsConstructor(true),
 //        new StatementContainer()));
   }
+
+  public void setChainedRepository(ModuleCodeRepository other)
+  {
+    chainedRepository = other;
+  }
+  
+  ModuleCodeRepository chainedRepository;
   
   public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)
   {
@@ -327,7 +334,10 @@ public class ModuleCodeRepository
 
   public FunctionDescription getFunctionDescription(String name)
   {
-    return functions.get(name);
+    FunctionDescription fn = functions.get(name);
+    if (fn == null && chainedRepository != null)
+      return chainedRepository.getFunctionDescription(name);
+    return fn;
   }
   
   public boolean hasFunctionWithName(String name)
@@ -340,9 +350,16 @@ public class ModuleCodeRepository
     functions.put(func.sig.getLookupName(), func);
   }
   
+  private void fillChainedFunctions(List<String> mergedFunctions)
+  {
+    mergedFunctions.addAll(functions.keySet());
+  }
+  
   public List<String> getAllFunctions()
   {
     List<String> names = new ArrayList<>(functions.keySet());
+    if (chainedRepository != null)
+      chainedRepository.fillChainedFunctions(names);
     names.sort(Comparator.naturalOrder());
     return names;
   }
@@ -354,9 +371,17 @@ public class ModuleCodeRepository
     functions.put(func.sig.getLookupName(), func);
   }
   
+  private void fillChainedGlobalVars(List<VariableDescription> mergedGlobalVars)
+  {
+    mergedGlobalVars.addAll(globalVars);
+  }
+  
   public List<VariableDescription> getAllGlobalVars()
   {
-    return getSortedWithIds(globalVars, Comparator.comparing((VariableDescription v) -> v.name));
+    List<VariableDescription> mergedGlobalVars = new ArrayList<>(globalVars);
+    if (chainedRepository != null)
+      chainedRepository.fillChainedGlobalVars(mergedGlobalVars);
+    return getSortedWithIds(mergedGlobalVars, Comparator.comparing((VariableDescription v) -> v.name));
   }
   
   public void addGlobalVarAndResetIds(String name, Token.ParameterToken type)
@@ -374,9 +399,17 @@ public class ModuleCodeRepository
     globalVars.set(v.id, v);
   }
   
+  private void fillChainedClasses(List<ClassDescription> mergedClassList)
+  {
+    mergedClassList.addAll(classes);
+  }
+  
   public List<ClassDescription> getAllClasses()
   {
-    return getSortedWithIds(classes, Comparator.comparing((ClassDescription v) -> v.name));
+    List<ClassDescription> mergedClassList = new ArrayList<>(classes);
+    if (chainedRepository != null)
+      chainedRepository.fillChainedClasses(mergedClassList);
+    return getSortedWithIds(mergedClassList, Comparator.comparing((ClassDescription v) -> v.name));
   }
 
   public ClassDescription addClassAndResetIds(String name)

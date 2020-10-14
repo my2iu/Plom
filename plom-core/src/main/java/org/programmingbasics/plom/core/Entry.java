@@ -14,6 +14,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
@@ -84,14 +85,52 @@ public class Entry implements EntryPoint
   {
     // Load in the built-in primitives of the interpreter into the 
     // code repository so that they can be browsed in the UI
-    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    try {
-      repository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
-    }
-    catch (PlomReadException e)
-    {
-      e.printStackTrace();
-    }
+    repository = new ModuleCodeRepository();
+    repository.setChainedRepository(makeStdLibRepository());
+    // Create a basic main function that can be filled in
+    FunctionDescription mainFunc = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("var", Symbol.Var),
+                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                new Token.SimpleToken(":", Symbol.Colon),
+                Token.ParameterToken.fromContents("@string", Symbol.AtType)
+                ),
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                new Token.SimpleToken(":=", Symbol.Assignment),
+                Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
+                    new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
+                ),
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("=", Symbol.Eq),
+                        new Token.SimpleToken("\"8\"", Symbol.String)
+                        ),
+                    new StatementContainer(
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+                                new TokenContainer(
+                                    new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
+                                    ))
+                            ))
+                    ),
+                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
+                    new StatementContainer(
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+                                new TokenContainer(
+                                    new Token.SimpleToken("\"Incorrect\"", Symbol.String)
+                                    ))
+                            ))
+                    )
+                )
+            )
+        );
+    repository.addFunction(mainFunc);
     
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
@@ -104,7 +143,7 @@ public class Entry implements EntryPoint
     loadFunctionCodeView("main");
   }
 
-  ModuleCodeRepository repository = new ModuleCodeRepository();
+  ModuleCodeRepository repository;
   
   CodePanel codePanel;
   MethodPanel methodPanel;
@@ -153,7 +192,20 @@ public class Entry implements EntryPoint
     }
     consoleEl.appendChild(msg);
   }; 
-      
+
+  static ModuleCodeRepository makeStdLibRepository()
+  {
+    ModuleCodeRepository newRepository = new ModuleCodeRepository();
+    newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    try {
+      newRepository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
+    }
+    catch (PlomReadException e)
+    {
+      e.printStackTrace();
+    }
+    return newRepository;
+  }
       
   void hookRun()
   {
@@ -203,15 +255,7 @@ public class Entry implements EntryPoint
             PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(read);
             PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
             try {
-              ModuleCodeRepository newRepository = new ModuleCodeRepository();
-              newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-              try {
-                repository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
-              }
-              catch (PlomReadException loadStdLibErr)
-              {
-                loadStdLibErr.printStackTrace();
-              }
+              ModuleCodeRepository newRepository = makeStdLibRepository();
               newRepository.loadModule(lexer);
               repository = newRepository;
               loadGlobalsView();

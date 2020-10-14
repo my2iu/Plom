@@ -102,7 +102,6 @@ public class ModuleCodeRepositoryTest extends TestCase
     repository.saveModule(out);
     Assert.assertEquals(" module .{program} {\n" + 
         " var . { var } @ {string }\n" + 
-        " var . { var } @ {object }\n" + 
         " function . {get } @ {number } {\n" + 
         " return 3\n" + 
         " }\n" + 
@@ -117,29 +116,11 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" + 
         "\n" + 
         " }\n" + 
-        " function . {test: . { arg1 } @ {number } } @ {number } {\n" + 
-        " }\n" + 
-        " function . {print: . { value } @ {object } } @ {void } {\n" + 
-        " // Prints a value to the screen\n" + 
-        " . {print string: { . {value } . {to string } } }\n" + 
-        " }\n" + 
-        " function . {print string: . { value } @ {string } } @ {void } {\n" + 
-        " // Prints a string to the screen\n" + 
-        " primitive\n" + 
-        " }\n" + 
-        " function . {input: . { prompt } @ {string } } @ {string } {\n" + 
-        " // Displays a prompt asking for input and returns the value entered by the user\n" + 
-        " primitive\n" + 
-        " }\n" + 
         " class . { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
-        " constructor . {new } {\n" + 
-        " }\n" + 
-        " }\n" + 
-        " class . { Test } {\n" + 
         " constructor . {new } {\n" + 
         " }\n" + 
         " }\n" + 
