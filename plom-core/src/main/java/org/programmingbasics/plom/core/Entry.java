@@ -60,11 +60,10 @@ TODO:
 - call constructor from instance method
 - constructors cannot return a value
 - autogeneration of getter and setters for instance data members
-- standard library core type repository
 - calls to the repository will eventually be asynchronous on iOS 
 - generics
 - js native API
-- saving and loading
+- better formatting of saved code
 - export + import projects
 - github integration
 - debugger

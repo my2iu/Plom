@@ -105,17 +105,6 @@ public class ModuleCodeRepositoryTest extends TestCase
         " function . {get } @ {number } {\n" + 
         " return 3\n" + 
         " }\n" + 
-        " function . {main } @ {void } {\n" + 
-        " var . {a } : @ {string }\n" + 
-        " . {a } := . {input: {\"Guess a number between 1 and 10\" } }\n" + 
-        " if { . {a } =\"8\" } {\n" + 
-        " . {print: {\"You guessed correctly\" } }\n" + 
-        " }\n" + 
-        " else {\n" + 
-        " . {print: {\"Incorrect\" } }\n" + 
-        " }\n" + 
-        "\n" + 
-        " }\n" + 
         " class . { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
