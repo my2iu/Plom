@@ -227,7 +227,7 @@ public class RepositoryScope extends VariableScope
   @Override
   public void lookupSuggestions(String val, List<String> suggestions)
   {
-    suggestions.addAll(repository.getAllFunctions());
+    suggestions.addAll(repository.getAllFunctionsSorted());
     for (VariableDescription v: repository.globalVars)
     {
       suggestions.add(v.name);

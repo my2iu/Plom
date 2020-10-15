@@ -128,12 +128,15 @@ public class ModuleCodeRepository
     }
     public FunctionSignature sig;
     public StatementContainer code;
+    public boolean isImported;
+    public FunctionDescription setImported(boolean isImported) { this.isImported = isImported; return this;}
   }
 
   public static class VariableDescription extends DescriptionWithId
   {
     public String name;
     public Token.ParameterToken type;
+    public boolean isImported;
   }
 
   public static class ClassDescription extends DescriptionWithId
@@ -142,6 +145,7 @@ public class ModuleCodeRepository
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
     public boolean isBuiltIn = false;
+    public boolean isImported;
     public List<FunctionDescription> getInstanceMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
@@ -196,7 +200,7 @@ public class ModuleCodeRepository
     {
       return !methods.stream().allMatch(fn -> fn.sig.isBuiltIn);
     }
-
+    public ClassDescription setImported(boolean isImported) { this.isImported = isImported; return this; }
   }
   
   private Map<String, FunctionDescription> functions = new HashMap<>();
@@ -355,7 +359,7 @@ public class ModuleCodeRepository
     mergedFunctions.addAll(functions.keySet());
   }
   
-  public List<String> getAllFunctions()
+  public List<String> getAllFunctionsSorted()
   {
     List<String> names = new ArrayList<>(functions.keySet());
     if (chainedRepository != null)
@@ -376,7 +380,7 @@ public class ModuleCodeRepository
     mergedGlobalVars.addAll(globalVars);
   }
   
-  public List<VariableDescription> getAllGlobalVars()
+  public List<VariableDescription> getAllGlobalVarsSorted()
   {
     List<VariableDescription> mergedGlobalVars = new ArrayList<>(globalVars);
     if (chainedRepository != null)
@@ -404,7 +408,7 @@ public class ModuleCodeRepository
     mergedClassList.addAll(classes);
   }
   
-  public List<ClassDescription> getAllClasses()
+  public List<ClassDescription> getAllClassesSorted()
   {
     List<ClassDescription> mergedClassList = new ArrayList<>(classes);
     if (chainedRepository != null)
@@ -431,7 +435,18 @@ public class ModuleCodeRepository
     return false;
   }
 
-  
+  /**
+   * Marks all the contents of this module as being imported
+   */
+  public void markAsImported()
+  {
+    for (ClassDescription c: classes)
+      c.setImported(true);
+    for (FunctionDescription fn: functions.values())
+      fn.setImported(true);
+    for (VariableDescription v: globalVars)
+      v.isImported = true;
+  }
   
   public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
   {

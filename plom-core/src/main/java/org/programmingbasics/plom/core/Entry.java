@@ -204,6 +204,7 @@ public class Entry implements EntryPoint
     {
       e.printStackTrace();
     }
+    newRepository.markAsImported();
     return newRepository;
   }
       

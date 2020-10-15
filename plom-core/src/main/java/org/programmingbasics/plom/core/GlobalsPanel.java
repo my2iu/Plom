@@ -62,16 +62,18 @@ public class GlobalsPanel
 
     // List of classes
     Element classListEl = mainDiv.querySelector(".classesList");
-    for (ClassDescription cls: repository.getAllClasses())
+    for (ClassDescription cls: repository.getAllClassesSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
-      a.setHref("#");
       a.setTextContent(cls.name);
+      a.setHref("#");
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         viewSwitchCallback.loadClassView(cls);
       }, false);
       DivElement div = doc.createDivElement();
+      if (cls.isImported || cls.isBuiltIn)
+        div.getClassList().add("moduleImported");
       div.appendChild(a);
       classListEl.appendChild(div);
     }
@@ -92,7 +94,7 @@ public class GlobalsPanel
     
     // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
-    for (String fnName: repository.getAllFunctions())
+    for (String fnName: repository.getAllFunctionsSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setHref("#");
@@ -102,6 +104,8 @@ public class GlobalsPanel
         viewSwitchCallback.loadFunctionCodeView(fnName);
       }, false);
       DivElement div = doc.createDivElement();
+      if (repository.getFunctionDescription(fnName).isImported)
+        div.getClassList().add("moduleImported");
       div.appendChild(a);
       functionListEl.appendChild(div);
     }
@@ -116,7 +120,7 @@ public class GlobalsPanel
     }, false);
    
     List<DivElement> globalVarDivs = new ArrayList<>();
-    for (VariableDescription v: repository.getAllGlobalVars())
+    for (VariableDescription v: repository.getAllGlobalVarsSorted())
     {
       addGlobalVarEntry(mainDiv, v, globalVarDivs);
     }
@@ -130,6 +134,9 @@ public class GlobalsPanel
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
     div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\"> <div class=\"typeEntry\">&nbsp;</div></div>");
+    if (v.isImported)
+      div.getClassList().add("moduleImported");
+
     ((InputElement)div.querySelector("input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".globalVarsList").appendChild(div);

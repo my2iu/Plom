@@ -52,7 +52,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     StringBuilder strBuilder = new StringBuilder();
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
-    ModuleCodeRepository.saveClass(out, repository.getAllClasses().stream().filter(cls -> cls.name.equals("test class")).findFirst().get());
+    ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get());
     Assert.assertEquals(" class . { test class } {\n" + 
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
@@ -158,10 +158,10 @@ public class ModuleCodeRepositoryTest extends TestCase
     loaded.loadModule(lexer);
     
     Assert.assertTrue(loaded.hasFunctionWithName("get"));
-    Assert.assertTrue(loaded.getAllGlobalVars().stream().anyMatch(v -> v.name.equals("variable")));
-    Assert.assertTrue(loaded.getAllGlobalVars().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
+    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
+    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
     // If a class already exists, just augment that class, don't create a completely new class with the same name
-    Assert.assertEquals(1, loaded.getAllClasses().stream().filter(c -> c.name.equals("test class 2")).count());
+    Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.name.equals("test class 2")).count());
   }
 }
