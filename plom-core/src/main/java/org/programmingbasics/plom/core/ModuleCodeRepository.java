@@ -151,10 +151,20 @@ public class ModuleCodeRepository
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
           .stream().filter(fn -> !fn.sig.isConstructor && !fn.sig.isStatic).collect(Collectors.toList());
     }
-    public List<FunctionDescription> getStaticAndConstructorMethods()
+//    public List<FunctionDescription> getStaticAndConstructorMethods()
+//    {
+//      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
+//          .stream().filter(fn -> fn.sig.isConstructor || fn.sig.isStatic).collect(Collectors.toList());
+//    }
+    public List<FunctionDescription> getStaticMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
-          .stream().filter(fn -> fn.sig.isConstructor || fn.sig.isStatic).collect(Collectors.toList());
+          .stream().filter(fn -> fn.sig.isStatic).collect(Collectors.toList());
+    }
+    public List<FunctionDescription> getConstructorMethods()
+    {
+      return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
+          .stream().filter(fn -> fn.sig.isConstructor).collect(Collectors.toList());
     }
     public void addMethod(FunctionDescription f)
     {
@@ -525,11 +535,16 @@ public class ModuleCodeRepository
       saveFunction(out, fn);
     }
 
-    for (FunctionDescription fn: c.getStaticAndConstructorMethods())
+    for (FunctionDescription fn: c.getConstructorMethods())
     {
       if (fn.sig.isBuiltIn) continue;
       saveFunction(out, fn);
-      
+    }
+
+    for (FunctionDescription fn: c.getStaticMethods())
+    {
+      if (fn.sig.isBuiltIn) continue;
+      saveFunction(out, fn);
     }
 
     out.token("}");

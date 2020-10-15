@@ -76,7 +76,7 @@ public class ClassPanel
     createMethodList(mainDiv.querySelector(".methodsList"), cls.getInstanceMethods());
 
     // For adding static methods
-    mainDiv.querySelectorAll(".staticMethodsHeading a").item(0).addEventListener(Event.CLICK, (e) -> {
+    mainDiv.querySelector(".staticMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
@@ -87,8 +87,9 @@ public class ClassPanel
 
       viewSwitchCallback.loadMethodSignatureView(cls, func);
     }, false);
+    
     // For adding constructor methods
-    mainDiv.querySelectorAll(".staticMethodsHeading a").item(1).addEventListener(Event.CLICK, (e) -> {
+    mainDiv.querySelector(".constructorMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
@@ -101,8 +102,11 @@ public class ClassPanel
     }, false);
     
     // List of static methods
-    createMethodList(mainDiv.querySelector(".staticMethodsList"), cls.getStaticAndConstructorMethods());
+    createMethodList(mainDiv.querySelector(".staticMethodsList"), cls.getStaticMethods());
 
+    // List of constructor methods
+    createMethodList(mainDiv.querySelector(".constructorMethodsList"), cls.getConstructorMethods());
+    
     // Variables
     Element newVarAnchor = mainDiv.querySelector(".varsHeading a");
     newVarAnchor.addEventListener(Event.CLICK, (e) -> {
@@ -126,10 +130,7 @@ public class ClassPanel
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setHref("#");
-      if (fn.sig.isConstructor)
-        a.setTextContent("(*) " + fn.sig.getLookupName());
-      else
-        a.setTextContent(fn.sig.getLookupName());
+      a.setTextContent(fn.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         viewSwitchCallback.loadMethodCodeView(cls, fn);
