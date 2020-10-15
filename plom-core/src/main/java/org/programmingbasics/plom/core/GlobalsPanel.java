@@ -83,28 +83,28 @@ public class GlobalsPanel
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       // Find a unique function name
-      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> !repository.hasFunctionWithName(name));
+      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newFunctionName),
           new StatementContainer());
-      repository.addFunction(func);
+      repository.addFunctionAndResetIds(func);
       
-      viewSwitchCallback.loadFunctionSignatureView(func.sig);
+      viewSwitchCallback.loadFunctionSignatureView(func);
     }, false);
     
     // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
-    for (String fnName: repository.getAllFunctionsSorted())
+    for (FunctionDescription fnName: repository.getAllFunctionSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setHref("#");
-      a.setTextContent(fnName);
+      a.setTextContent(fnName.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         viewSwitchCallback.loadFunctionCodeView(fnName);
       }, false);
       DivElement div = doc.createDivElement();
-      if (repository.getFunctionDescription(fnName).isImported)
+      if (fnName.isImported)
         div.getClassList().add("moduleImported");
       div.appendChild(a);
       functionListEl.appendChild(div);
@@ -161,8 +161,8 @@ public class GlobalsPanel
 
   public static interface GlobalsPanelViewSwitcher
   {
-    void loadFunctionCodeView(String fnName);
-    void loadFunctionSignatureView(FunctionSignature sig);
+    void loadFunctionCodeView(FunctionDescription fnName);
+    void loadFunctionSignatureView(FunctionDescription sig);
     void loadClassView(ClassDescription cls);
   }
 }

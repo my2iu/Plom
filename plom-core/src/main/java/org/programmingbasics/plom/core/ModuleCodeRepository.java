@@ -213,7 +213,7 @@ public class ModuleCodeRepository
     public ClassDescription setImported(boolean isImported) { this.isImported = isImported; return this; }
   }
   
-  private Map<String, FunctionDescription> functions = new HashMap<>();
+  private List <FunctionDescription> functions = new ArrayList<>();
   
   /** Lists global variables and their types */
   List<VariableDescription> globalVars = new ArrayList<>();
@@ -348,41 +348,66 @@ public class ModuleCodeRepository
 
   public FunctionDescription getFunctionDescription(String name)
   {
-    FunctionDescription fn = functions.get(name);
+    FunctionDescription fn = getFunctionWithName(name);
     if (fn == null && chainedRepository != null)
       return chainedRepository.getFunctionDescription(name);
     return fn;
   }
   
-  public boolean hasFunctionWithName(String name)
+  public FunctionDescription getFunctionWithName(String name)
   {
-    return functions.containsKey(name);
+    for (FunctionDescription fn: functions)
+    {
+      if (fn.sig.getLookupName().equals(name)) 
+        return fn;
+    }
+    return null;
   }
   
-  public void addFunction(FunctionDescription func)
+  public void addFunctionAndResetIds(FunctionDescription func)
   {
-    functions.put(func.sig.getLookupName(), func);
+    functions.add(0, func);
   }
   
-  private void fillChainedFunctions(List<String> mergedFunctions)
+  private void fillChainedFunctionNames(List<String> mergedFunctions)
   {
-    mergedFunctions.addAll(functions.keySet());
+    for (FunctionDescription fn: functions)
+      mergedFunctions.add(fn.sig.getLookupName());
   }
-  
-  public List<String> getAllFunctionsSorted()
+
+  private void fillChainedFunctions(List<FunctionDescription> mergedFunctions)
   {
-    List<String> names = new ArrayList<>(functions.keySet());
+    for (FunctionDescription fn: functions)
+      mergedFunctions.add(fn);
+  }
+
+  public List<FunctionDescription> getAllFunctionSorted()
+  {
+    List<FunctionDescription> toReturn = new ArrayList<>();
+    for (FunctionDescription fn: functions)
+      toReturn.add(fn);
     if (chainedRepository != null)
-      chainedRepository.fillChainedFunctions(names);
+      chainedRepository.fillChainedFunctions(toReturn);
+    return getSortedWithIds(toReturn, Comparator.comparing(f -> f.sig.getLookupName()));
+  }
+
+  public List<String> getAllFunctionNamesSorted()
+  {
+    List<String> names = new ArrayList<>();
+    for (FunctionDescription fn: functions)
+      names.add(fn.sig.getLookupName());
+    if (chainedRepository != null)
+      chainedRepository.fillChainedFunctionNames(names);
     names.sort(Comparator.naturalOrder());
     return names;
   }
   
-  public void changeFunctionSignature(FunctionSignature newSig, FunctionSignature oldSig)
+  public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)
   {
-    FunctionDescription func = functions.remove(oldSig.getLookupName());
-    func.sig = newSig;
-    functions.put(func.sig.getLookupName(), func);
+//    FunctionDescription func = functions.remove(oldSig.getLookupName());
+    if (oldSig.id < functions.size())
+      functions.get(oldSig.id).sig = newSig;
+//    functions.put(func.sig.getLookupName(), func);
   }
   
   private void fillChainedGlobalVars(List<VariableDescription> mergedGlobalVars)
@@ -410,7 +435,8 @@ public class ModuleCodeRepository
   
   public void updateGlobalVariable(VariableDescription v)
   {
-    globalVars.set(v.id, v);
+    if (v.id < globalVars.size())
+      globalVars.set(v.id, v);
   }
   
   private void fillChainedClasses(List<ClassDescription> mergedClassList)
@@ -452,7 +478,7 @@ public class ModuleCodeRepository
   {
     for (ClassDescription c: classes)
       c.setImported(true);
-    for (FunctionDescription fn: functions.values())
+    for (FunctionDescription fn: functions)
       fn.setImported(true);
     for (VariableDescription v: globalVars)
       v.isImported = true;
@@ -498,7 +524,7 @@ public class ModuleCodeRepository
     }
     
     // Output global functions
-    for (FunctionDescription fn: functions.values())
+    for (FunctionDescription fn: functions)
     {
       saveFunction(out, fn);
     }
@@ -627,7 +653,7 @@ public class ModuleCodeRepository
       else if ("function".equals(peek))
       {
         FunctionDescription fn = loadFunction(lexer);
-        addFunction(fn);
+        addFunctionAndResetIds(fn);
       }
       else if ("class".equals(peek))
       {

@@ -129,7 +129,7 @@ public class Entry implements EntryPoint
                 )
             )
         );
-    repository.addFunction(mainFunc);
+    repository.addFunctionAndResetIds(mainFunc);
     
     // Need to have a basic way to run code initially in order to get a better
     // feel for the design of the programming language
@@ -351,14 +351,14 @@ public class Entry implements EntryPoint
     breadcrumbEl.appendChild(a);
   }
   
-  void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionSignature sig)
+  void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionDescription sig)
   {
     fillBreadcrumbForGlobals(breadcrumbEl);
     Document doc = Browser.getDocument();
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
-    a.setTextContent("." + sig.getDisplayName() + " \u270e");
+    a.setTextContent("." + sig.sig.getDisplayName() + " \u270e");
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
@@ -419,14 +419,14 @@ public class Entry implements EntryPoint
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
     breadcrumbEl.setInnerHTML("");
-    fillBreadcrumbForFunction(breadcrumbEl, repository.getFunctionDescription(fnName).sig);
+    fillBreadcrumbForFunction(breadcrumbEl, repository.getFunctionDescription(fnName));
     
     closeCodePanelIfOpen();
     currentFunctionBeingViewed = fnName;
     showCodePanel(repository.getFunctionDescription(fnName).code);
   }
 
-  void loadFunctionSignatureView(FunctionSignature sig)
+  void loadFunctionSignatureView(FunctionDescription sig)
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
@@ -582,15 +582,15 @@ public class Entry implements EntryPoint
     
     globalsPanel = new GlobalsPanel(mainDiv, repository,
         new GlobalsPanel.GlobalsPanelViewSwitcher() {
-          @Override public void loadFunctionSignatureView(FunctionSignature sig) { Entry.this.loadFunctionSignatureView(sig); }
-          @Override public void loadFunctionCodeView(String fnName) { Entry.this.loadFunctionCodeView(fnName); }
+          @Override public void loadFunctionSignatureView(FunctionDescription sig) { Entry.this.loadFunctionSignatureView(sig); }
+          @Override public void loadFunctionCodeView(FunctionDescription fnName) { Entry.this.loadFunctionCodeView(fnName.sig.getLookupName()); }
           @Override public void loadClassView(ClassDescription cls) { Entry.this.loadClassView(cls); }
         });
   }
   
-  private void showFunctionPanel(FunctionSignature sig)
+  private void showFunctionPanel(FunctionDescription sig)
   {
-    methodPanel = new MethodPanel(getMainDiv(), repository, sig);
+    methodPanel = new MethodPanel(getMainDiv(), repository, sig.sig);
     methodPanel.setListener((newSig, isFinal) -> {
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());

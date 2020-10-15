@@ -24,7 +24,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   static {
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
-    repository.addFunction(new FunctionDescription(
+    repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "get"),
         new StatementContainer(
             new TokenContainer(
@@ -146,7 +146,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     loaded.addClassAndResetIds("test class 2").setBuiltIn(true);
     loaded.loadModule(lexer);
     
-    Assert.assertTrue(loaded.hasFunctionWithName("get"));
+    Assert.assertTrue(loaded.getFunctionWithName("get") != null);
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
