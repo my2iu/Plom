@@ -30,7 +30,7 @@ public class MachineContext
   /**
    * Provides easy access to the core types
    */
-  CoreTypeLibrary coreTypes() { return coreTypes; }
+  public CoreTypeLibrary coreTypes() { return coreTypes; }
   
   /**
    * Scope where bindings of global names and values are held

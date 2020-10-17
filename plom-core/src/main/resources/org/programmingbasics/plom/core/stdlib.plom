@@ -1,21 +1,29 @@
  module .{program} {
- var . { var } @ {object }
- function . {test: . { arg1 } @ {number } } @ {number } {
- }
- function . {print string: . { value } @ {string } } @ {void } {
- // Prints a string to the screen
- primitive
- }
- function . {print: . { value } @ {object } } @ {void } {
- // Prints a value to the screen
- . {print string: { . {value } . {to string } } }
- }
- function . {input: . { prompt } @ {string } } @ {string } {
- // Displays a prompt asking for input and returns the value entered by the user
- primitive
- }
- class . { Test } {
- constructor . {new } {
- }
- }
+ 	var . { var } @ {object }
+	 function . {test: . { arg1 } @ {number } } @ {number } {
+	 }
+	 function . {print string: . { value } @ {string } } @ {void } {
+	 // Prints a string to the screen
+	 primitive
+	 }
+	 function . {print: . { value } @ {object } } @ {void } {
+	 // Prints a value to the screen
+	 . {print string: { . {value } . {to string } } }
+	 }
+	 function . {input: . { prompt } @ {string } } @ {string } {
+	 // Displays a prompt asking for input and returns the value entered by the user
+	 primitive
+	 }
+	class .{JS object} {
+		function .{get: .{key} @{string}} @{JS object} {
+			primitive
+		}
+		classfunction .{globals} @{JS object} {
+			primitive
+		}
+	}
+	class . { Test } {
+		constructor . {new } {
+		}
+	}
  }

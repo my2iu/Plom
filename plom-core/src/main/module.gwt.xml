@@ -3,6 +3,7 @@
   "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
 <module rename-to='plomcore'>
   <inherits name='elemental.Elemental'/>
+  <inherits name="jsinterop.base.Base" />
   
   <entry-point class='org.programmingbasics.plom.core.Entry'/>
 

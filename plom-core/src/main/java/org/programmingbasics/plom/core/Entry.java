@@ -16,6 +16,8 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
+import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -35,6 +37,8 @@ import elemental.html.Blob;
 import elemental.html.DivElement;
 import elemental.html.FileReader;
 import elemental.html.InputElement;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 /*
 TODO:
@@ -75,6 +79,7 @@ TODO:
 - external images, external html
 - run in a separate browser window
 - transpile to JavaScript
+- standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)? 
  */
 
 public class Entry implements EntryPoint
@@ -226,6 +231,8 @@ public class Entry implements EntryPoint
         terp.runNoReturn((scope, coreTypes) -> {
           StandardLibrary.createGlobals(terp, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
+          
+          addPrimitives(terp, coreTypes);
         });
       } 
       catch (Exception err)
@@ -234,6 +241,27 @@ public class Entry implements EntryPoint
       }
     }, false);
   }
+
+  private void addPrimitives(SimpleInterpreter terp, CoreTypeLibrary coreTypes)
+  {
+    // Stuff for @JS object
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "get from:"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          // We just store the JavaScript pointer as the object itself
+          Object toReturn = ((JsPropertyMap<Object>)self.val).get(machine.currentScope().lookup("key").getStringValue());
+          Browser.getWindow().getConsole().log(toReturn);
+          blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
+        (blockWait, machine) -> {
+          Value v = new Value();
+          v.type = machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType));
+          v.val = Js.global();
+          blockWait.unblockAndReturn(v);
+        });
+  }
+  
   
   void hookLoadSave()
   {
