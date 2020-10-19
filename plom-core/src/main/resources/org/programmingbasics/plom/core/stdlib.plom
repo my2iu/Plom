@@ -18,6 +18,9 @@
 		function .{get: .{key} @{string}} @{JS object} {
 			primitive
 		}
+		function .{at: .{index} @{object} set: .{value} @{object}} @{void} {
+			primitive
+		}
 		classfunction .{globals} @{JS object} {
 			primitive
 		}

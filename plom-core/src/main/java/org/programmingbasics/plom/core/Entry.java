@@ -245,13 +245,21 @@ public class Entry implements EntryPoint
   private void addPrimitives(SimpleInterpreter terp, CoreTypeLibrary coreTypes)
   {
     // Stuff for @JS object
-    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "get from:"),
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "get:"),
         (blockWait, machine) -> {
           Value self = machine.currentScope().lookupThis();
           // We just store the JavaScript pointer as the object itself
           Object toReturn = ((JsPropertyMap<Object>)self.val).get(machine.currentScope().lookup("key").getStringValue());
           Browser.getWindow().getConsole().log(toReturn);
           blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
+        (blockWait, machine) -> {
+          Object index = machine.currentScope().lookup("index").val;
+          Object value = machine.currentScope().lookup("value").val;
+          Value self = machine.currentScope().lookupThis();
+          ((JsPropertyMap<Object>)self.val).set((String)index, value);
+          blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
         (blockWait, machine) -> {

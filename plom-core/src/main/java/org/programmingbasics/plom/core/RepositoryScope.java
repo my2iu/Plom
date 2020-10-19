@@ -200,6 +200,11 @@ public class RepositoryScope extends VariableScope
           // Ignore parse exceptions for now (allowing us to run
           // code that might have errors in unrelated methods)
         }
+        catch (RunException e)
+        {
+          // RunException might be generated if functions use bad types
+          // in their signatures
+        }
       }
     }
     
