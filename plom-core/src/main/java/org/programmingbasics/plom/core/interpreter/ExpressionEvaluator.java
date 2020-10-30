@@ -127,6 +127,17 @@ public class ExpressionEvaluator
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMoreForMethodPassthrough("<=:")
       )
+      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
+          (machine, node, idx) -> {
+            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+            node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
+            Type retypeType = typeInfo.type;
+            Value left = machine.popValue();
+            Value retypedValue = Value.create(left.val, retypeType);
+            machine.pushValue(retypedValue);
+            machine.ip.pop();
+          }
+      )
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, 
           (machine, node, idx) -> {
             switch(idx)
@@ -177,18 +188,14 @@ public class ExpressionEvaluator
       )
       .add(Rule.String, 
           (MachineContext machine, AstNode node, int idx) -> {
-            Value val = new Value();
-            val.type = machine.coreTypes().getStringType();
             String rawStr = ((Token.SimpleToken)node.token).contents;
-            val.val = rawStr.substring(1, rawStr.length() - 1);
+            Value val = Value.createStringValue(machine.coreTypes(), rawStr.substring(1, rawStr.length() - 1));
             machine.pushValue(val);
             machine.ip.pop();
       })
       .add(Rule.Number, 
           (MachineContext machine, AstNode node, int idx) -> {
-            Value val = new Value();
-            val.type = machine.coreTypes().getNumberType();
-            val.val = Double.parseDouble(((Token.SimpleToken)node.token).contents);
+            Value val = Value.createNumberValue(machine.coreTypes(), Double.parseDouble(((Token.SimpleToken)node.token).contents));
             machine.pushValue(val);
             machine.ip.pop();
       })
@@ -440,6 +447,7 @@ public class ExpressionEvaluator
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, lValueInvalid())
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, lValueInvalid())
       .add(Rule.AndExpressionMore_And_RelationalExpression_AndExpressionMore, lValueInvalid())
       .add(Rule.DotVariable, 

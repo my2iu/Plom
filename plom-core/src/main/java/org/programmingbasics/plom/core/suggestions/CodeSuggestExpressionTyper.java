@@ -181,6 +181,7 @@ public class CodeSuggestExpressionTyper
       })
       .add(Rule.Return, clearLastUsedType)
       .add(Rule.Assignment, clearLastUsedType)
+      .add(Rule.Retype, clearLastUsedType)
       .add(Rule.Plus, clearLastUsedType)
       .add(Rule.Minus, clearLastUsedType)
       .add(Rule.Multiply, clearLastUsedType)
@@ -223,6 +224,26 @@ public class CodeSuggestExpressionTyper
       )
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryTypeToMethodHandler("<=:")
+      )
+      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
+          (triggers, node, context, param) -> {
+            if (node.children.get(0) == null)
+              return true;
+            node.children.get(0).recursiveVisit(triggers, context, param);
+            if (node.children.get(1) == null)
+              return true;
+            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
+            Type retypeType = typeInfo.type;
+            context.popType();
+            context.pushType(retypeType);
+            context.setLastTypeUsed(retypeType);
+            if (node.children.get(2) != null)
+            {
+              node.children.get(2).recursiveVisit(triggers, context, param);
+            }              
+            return true;
+          }
       )
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore,
           (triggers, node, context, param) -> {

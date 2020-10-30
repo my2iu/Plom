@@ -79,7 +79,10 @@ TODO:
 - external images, external html
 - run in a separate browser window
 - transpile to JavaScript
-- standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)? 
+- standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)?
+- retype
+- GWT custom linker 
+- restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
  */
 
 public class Entry implements EntryPoint
@@ -250,8 +253,9 @@ public class Entry implements EntryPoint
           Value self = machine.currentScope().lookupThis();
           // We just store the JavaScript pointer as the object itself
           Object toReturn = ((JsPropertyMap<Object>)self.val).get(machine.currentScope().lookup("key").getStringValue());
+          Value returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
           Browser.getWindow().getConsole().log(toReturn);
-          blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
+          blockWait.unblockAndReturn(returnValue);
         });
     coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
         (blockWait, machine) -> {
@@ -263,9 +267,7 @@ public class Entry implements EntryPoint
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
         (blockWait, machine) -> {
-          Value v = new Value();
-          v.type = machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType));
-          v.val = Js.global();
+          Value v = Value.create(Js.global(), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
           blockWait.unblockAndReturn(v);
         });
   }

@@ -47,6 +47,7 @@ public class PlomAstGen
       rule(AndExpressionMore),
       rule(AndExpression, RelationalExpression),
       rule(RelationalExpression, AdditiveExpression, RelationalExpressionMore),
+      rule(RelationalExpressionMore, Retype, AtType, RelationalExpressionMore),
       rule(RelationalExpressionMore, Gt, AdditiveExpression, RelationalExpressionMore),
       rule(RelationalExpressionMore, Ge, AdditiveExpression, RelationalExpressionMore),
       rule(RelationalExpressionMore, Lt, AdditiveExpression, RelationalExpressionMore),

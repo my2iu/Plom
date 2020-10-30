@@ -9,10 +9,9 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
-import org.programmingbasics.plom.core.interpreter.VariableScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
@@ -65,21 +64,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
   {
     CodeCompletionContext context = new CodeCompletionContext();
     StandardLibrary.createCoreTypes(context.coreTypes());
-    context.currentScope().setParent(new VariableScope() {
-      @Override
-      public Type typeFromToken(Token typeToken) throws RunException
-      {
-        String name = ((Token.ParameterToken)typeToken).getLookupName(); 
-        switch (name)
-        {
-          case "number": return context.coreTypes().getNumberType();
-          case "string": return context.coreTypes().getStringType();
-          case "boolean": return context.coreTypes().getBooleanType();
-          case "object": return context.coreTypes().getObjectType();
-          default: return new Type(name);
-        }
-      }
-    });
+    context.currentScope().setParent(new SimpleInterpreterTest.TestScopeWithTypes(context.coreTypes()));
     if (thisTypeString != null)
     {
       Value thisValue = new Value();
@@ -453,5 +438,31 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(suggestions.contains("abs"));
     Assert.assertTrue(suggestions.contains("floor"));
     Assert.assertTrue(suggestions.contains("ceiling"));
+  }
+  
+  @Test
+  public void testRetype() throws RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("123", Symbol.Number),
+            new Token.SimpleToken("retype", Symbol.Retype),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType)
+            ));
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 2));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    List<String> suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("substring from:to:"));
+    Assert.assertTrue(suggestions.contains("to string"));
   }
 }

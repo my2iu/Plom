@@ -19,9 +19,9 @@ import junit.framework.TestCase;
 
 public class SimpleInterpreterTest extends TestCase
 {
-  static class TestScopeWithTypes extends VariableScope
+  public static class TestScopeWithTypes extends VariableScope
   {
-    TestScopeWithTypes(CoreTypeLibrary coreTypes)
+    public TestScopeWithTypes(CoreTypeLibrary coreTypes)
     {
       this.coreTypes = coreTypes;
     }
@@ -83,8 +83,6 @@ public class SimpleInterpreterTest extends TestCase
     // Set-up some variables and functions
     CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
     VariableScope scope = new VariableScope();
-    Value aVal = new Value();
-    aVal.type = Type.makePrimitiveFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
     class CaptureFunction implements PrimitiveFunction {
       Value captured;
       @Override public Value call(List<Value> args)
@@ -95,7 +93,7 @@ public class SimpleInterpreterTest extends TestCase
       }
     }
     CaptureFunction fun = new CaptureFunction();
-    aVal.val = fun;
+    Value aVal = Value.create(fun, Type.makePrimitiveFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
     scope.addVariable("a:", aVal.type, aVal);
     scope.addVariable("b", coreTypes.getStringType(), Value.createStringValue(coreTypes, "hello "));
     
@@ -491,9 +489,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 ), 
             Arrays.asList("val1", "val2"));
-        Value adderFnVal = new Value();
-        adderFnVal.val = adderFn;
-        adderFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType());
+        Value adderFnVal = Value.create(adderFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()));
         scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -527,9 +523,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 ), 
             Arrays.asList());
-        Value getFnVal = new Value();
-        getFnVal.val = getFn;
-        getFnVal.type = Type.makeFunctionType(coreTypes.getNumberType());
+        Value getFnVal = Value.create(getFn, Type.makeFunctionType(coreTypes.getNumberType()));
         scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -583,9 +577,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 ), 
             Arrays.asList("val"));
-        Value aFnVal = new Value();
-        aFnVal.val = aFn;
-        aFnVal.type = Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
+        Value aFnVal = Value.create(aFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
         scope.addVariable("a:", aFnVal.type, aFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
       coreTypes.addPrimitive(CodeUnitLocation.forFunction("a:"), fun); ;

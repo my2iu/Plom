@@ -109,9 +109,7 @@ public class ExpressionEvaluatorTest extends TestCase
   public void testVariable() throws ParseException, RunException
   {
     VariableScope scope = new VariableScope();
-    Value aVal = new Value();
-    aVal.type = coreTypes.getNumberType();
-    aVal.val = 32;
+    Value aVal = Value.createNumberValue(coreTypes, 32);
     scope.addVariable("a", coreTypes.getNumberType(), aVal);
     
     // Read a variable
@@ -120,7 +118,7 @@ public class ExpressionEvaluatorTest extends TestCase
           Token.ParameterToken.fromContents(".a", Symbol.DotVariable));
       Value val = evalTest(line, scope);
       Assert.assertEquals(coreTypes.getNumberType(), val.type);
-      Assert.assertEquals(32, val.val);
+      Assert.assertEquals(32.0, val.val);
     }
     
     // Overwrite the variable
@@ -182,14 +180,13 @@ public class ExpressionEvaluatorTest extends TestCase
   public void testNoParamFunction() throws ParseException, RunException
   {
     VariableScope scope = new VariableScope();
-    Value aVal = new Value();
-    aVal.type = Type.makePrimitiveFunctionType(coreTypes.getNumberType());
-    aVal.val = new PrimitiveFunction() {
-      @Override public Value call(List<Value> args)
-      {
-        return Value.createNumberValue(coreTypes, 32);
-      }
-    };
+    Value aVal = Value.create(
+        new PrimitiveFunction() {
+          @Override public Value call(List<Value> args)
+          {
+            return Value.createNumberValue(coreTypes, 32);
+          }
+        }, Type.makePrimitiveFunctionType(coreTypes.getNumberType()));
     scope.addVariable("a", aVal.type, aVal);
     
     // Call the function
@@ -204,8 +201,6 @@ public class ExpressionEvaluatorTest extends TestCase
   public void testOneArgFunction() throws ParseException, RunException
   {
     VariableScope scope = new VariableScope();
-    Value aVal = new Value();
-    aVal.type = Type.makePrimitiveFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
     class CaptureFunction implements PrimitiveFunction {
       Value captured;
       @Override public Value call(List<Value> args)
@@ -216,7 +211,7 @@ public class ExpressionEvaluatorTest extends TestCase
       }
     }
     CaptureFunction fun = new CaptureFunction();
-    aVal.val = fun;
+    Value aVal = Value.create(fun, Type.makePrimitiveFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
     scope.addVariable("a:", aVal.type, aVal);
     
     // Call the function
@@ -292,4 +287,16 @@ public class ExpressionEvaluatorTest extends TestCase
     Assert.assertEquals("cde", val.getStringValue());
   }
 
+  @Test
+  public void testRetype() throws ParseException, RunException
+  {
+    // Retype is just a hack needed to support JS objects easily
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("\"abcdefg\"", Symbol.String),
+        new Token.SimpleToken("retype", Symbol.Retype),
+        Token.ParameterToken.fromContents("@number", Symbol.AtType));
+    Value val = evalTest(line, new SimpleInterpreterTest.TestScopeWithTypes(coreTypes));
+    Assert.assertEquals(coreTypes.getNumberType(), val.type);
+    Assert.assertEquals("abcdefg", val.getStringValue());
+  }
 }

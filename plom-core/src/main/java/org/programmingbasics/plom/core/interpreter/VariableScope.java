@@ -76,6 +76,8 @@ public class VariableScope
   {
     if (parent != null)
       return parent.typeFromToken(typeToken);
+    if (typeToken instanceof Token.ParameterToken)
+      throw new RunException("Unknown type " + ((Token.ParameterToken)typeToken).getLookupName());
     throw new RunException();
   }
 

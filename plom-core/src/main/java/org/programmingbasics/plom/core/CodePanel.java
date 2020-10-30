@@ -133,6 +133,7 @@ public class CodePanel
         Symbol.COMPOUND_ELSEIF,
         Symbol.COMPOUND_ELSE,
         Symbol.Return,
+        Symbol.Retype,
     };
     for (int n = 0; n < symbolOrder.length; n++)
       buttonOrderPriority.put(symbolOrder[n], n);
@@ -419,6 +420,7 @@ public class CodePanel
       switch(sym)
       {
       case Assignment: text = ":="; break;
+      case Retype: text = "retype"; break;
       case Gt: text = ">"; break;
       case Ge: text = ">="; break;
       case Lt: text = "<"; break;

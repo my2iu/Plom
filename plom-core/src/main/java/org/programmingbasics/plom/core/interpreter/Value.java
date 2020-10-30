@@ -5,6 +5,7 @@ public class Value
 {
   public Type type;
   public Object val;
+  public Value() {}
   public double getNumberValue()
   {
     return ((Double)val).doubleValue();
@@ -46,6 +47,13 @@ public class Value
     Value newVal = new Value();
     newVal.type = coreTypes.getVoidType();
     newVal.val = null;
+    return newVal;
+  }
+  public static Value create(Object val, Type type)
+  {
+    Value newVal = new Value();
+    newVal.type = type;
+    newVal.val = val;
     return newVal;
   }
   public static Value createEmptyObject(CoreTypeLibrary coreTypes, Type type)

@@ -28,6 +28,7 @@ public class Rule
 	public final static List<Symbol> AndExpressionMore = Arrays.asList(Symbol.AndExpressionMore);
 	public final static List<Symbol> AndExpression_RelationalExpression = Arrays.asList(Symbol.AndExpression, Symbol.RelationalExpression);
 	public final static List<Symbol> RelationalExpression_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpression, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
+	public final static List<Symbol> RelationalExpressionMore_Retype_AtType_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Retype, Symbol.AtType, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Gt, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Ge, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Lt, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
@@ -79,6 +80,7 @@ public class Rule
 	public final static List<Symbol> Var = Arrays.asList(Symbol.Var);
 	public final static List<Symbol> Colon = Arrays.asList(Symbol.Colon);
 	public final static List<Symbol> Assignment = Arrays.asList(Symbol.Assignment);
+	public final static List<Symbol> Retype = Arrays.asList(Symbol.Retype);
 	public final static List<Symbol> Lt = Arrays.asList(Symbol.Lt);
 	public final static List<Symbol> Gt = Arrays.asList(Symbol.Gt);
 	public final static List<Symbol> Le = Arrays.asList(Symbol.Le);

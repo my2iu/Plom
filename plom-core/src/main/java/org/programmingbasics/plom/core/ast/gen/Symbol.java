@@ -46,6 +46,7 @@ public enum Symbol
 	Var,
 	Colon,
 	Assignment,
+	Retype,
 	Lt,
 	Gt,
 	Le,
@@ -87,6 +88,7 @@ public enum Symbol
 		case Var:
 		case Colon:
 		case Assignment:
+		case Retype:
 		case Lt:
 		case Gt:
 		case Le:

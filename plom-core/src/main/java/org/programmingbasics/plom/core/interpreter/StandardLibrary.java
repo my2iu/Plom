@@ -282,15 +282,9 @@ public class StandardLibrary
     coreTypes.voidType = new Type("void");
 
     // Create some literals
-    coreTypes.nullVal = new Value();
-    coreTypes.trueVal = new Value();
-    coreTypes.falseVal = new Value();
-    coreTypes.nullVal.type = coreTypes.nullType;
-    coreTypes.nullVal.val = null;
-    coreTypes.trueVal.type = coreTypes.booleanType;
-    coreTypes.trueVal.val = true;
-    coreTypes.falseVal.type = coreTypes.booleanType;
-    coreTypes.falseVal.val = false;
+    coreTypes.nullVal = Value.create(null, coreTypes.nullType);
+    coreTypes.trueVal = Value.create(true, coreTypes.booleanType);
+    coreTypes.falseVal = Value.create(false, coreTypes.booleanType);
     
     // Load up code for all the primitive objects
     try {

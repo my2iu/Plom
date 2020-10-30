@@ -41,8 +41,6 @@ public class MachineContextTest extends TestCase
     // Set-up some variables and functions
     CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
     VariableScope scope = new VariableScope();
-    Value aVal = new Value();
-    aVal.type = Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getStringType());
     class CaptureFunction implements PrimitiveBlockingFunction {
       Value captured;
       int checkedCount = 0;
@@ -60,7 +58,7 @@ public class MachineContextTest extends TestCase
       }
     }
     CaptureFunction fun = new CaptureFunction();
-    aVal.val = fun;
+    Value aVal = Value.create(fun, Type.makePrimitiveBlockingFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
     scope.addVariable("a:", aVal.type, aVal);
     scope.addVariable("b", coreTypes.getStringType(), Value.createStringValue(coreTypes, "hello "));
     scope.addVariable("c", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 2));

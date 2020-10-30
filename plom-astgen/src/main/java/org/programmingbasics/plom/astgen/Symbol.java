@@ -46,6 +46,7 @@ enum Symbol
   Var(true),
   Colon(true),
   Assignment(true),
+  Retype(true),
   Lt(true),
   Gt(true),
   Le(true),
