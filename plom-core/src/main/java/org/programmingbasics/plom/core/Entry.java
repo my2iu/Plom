@@ -252,27 +252,104 @@ public class Entry implements EntryPoint
         (blockWait, machine) -> {
           Value self = machine.currentScope().lookupThis();
           // We just store the JavaScript pointer as the object itself
-          Object toReturn = ((JsPropertyMap<Object>)self.val).get(machine.currentScope().lookup("key").getStringValue());
+          Object toReturn = Js.asPropertyMap(self.val).get(machine.currentScope().lookup("key").getStringValue());
           Value returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
-          Browser.getWindow().getConsole().log(toReturn);
           blockWait.unblockAndReturn(returnValue);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as number"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getNumberType()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as string"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getStringType()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as boolean"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getBooleanType()));
         });
     coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
         (blockWait, machine) -> {
           Object index = machine.currentScope().lookup("index").val;
           Object value = machine.currentScope().lookup("value").val;
           Value self = machine.currentScope().lookupThis();
-          ((JsPropertyMap<Object>)self.val).set((String)index, value);
+          Js.asPropertyMap(self.val).set((String)index, value);
           blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callMethod(self.val, method), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callMethod(self.val, method, param1), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callConstructor(self.val, method), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callConstructor(self.val, method, param1), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
         (blockWait, machine) -> {
           Value v = Value.create(Js.global(), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
           blockWait.unblockAndReturn(v);
         });
+    coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from number:"),
+        (blockWait, machine) -> {
+          Object val = machine.currentScope().lookup("value").val;
+          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from string:"),
+        (blockWait, machine) -> {
+          Object val = machine.currentScope().lookup("value").val;
+          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from boolean:"),
+        (blockWait, machine) -> {
+          Object val = machine.currentScope().lookup("value").val;
+          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
+          blockWait.unblockAndReturn(v);
+        });
   }
   
-  
+  private static native Object callMethod(Object self, String msg) /*-{
+    return self[msg]();
+  }-*/;
+
+  private static native Object callMethod(Object self, String msg, Object param1) /*-{
+    return self[msg](param1);
+  }-*/;
+
+  private static native Object callConstructor(Object self, String msg) /*-{
+    return new (self[msg])();
+  }-*/;
+
+  private static native Object callConstructor(Object self, String msg, Object param1) /*-{
+    return new (self[msg])(param1);
+  }-*/;
+
   void hookLoadSave()
   {
     Element loadEl = Browser.getDocument().querySelector("a.loadbutton");

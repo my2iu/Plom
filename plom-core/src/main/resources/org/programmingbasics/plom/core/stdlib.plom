@@ -15,13 +15,43 @@
 	 primitive
 	 }
 	class .{JS object} {
+		function .{as number} @{number} {
+			primitive
+		}
+		function .{as string} @{string} {
+			primitive
+		}
+		function .{as boolean} @{boolean} {
+			primitive
+		}
 		function .{get: .{key} @{string}} @{JS object} {
 			primitive
 		}
 		function .{at: .{index} @{object} set: .{value} @{object}} @{void} {
 			primitive
 		}
+		function .{call: .{method} @{string}} @{JS object} {
+			primitive
+		}
+		function .{call: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
+			primitive
+		}
+		function .{new: .{method} @{string}} @{JS object} {
+			primitive
+		}
+		function .{new: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
+			primitive
+		}
 		classfunction .{globals} @{JS object} {
+			primitive
+		}
+		classfunction .{from number: .{value} @{number}} @{JS object} {
+			primitive
+		}
+		classfunction .{from string: .{value} @{string}} @{JS object} {
+			primitive
+		}
+		classfunction .{from boolean: .{value} @{boolean}} @{JS object} {
 			primitive
 		}
 	}
