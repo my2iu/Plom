@@ -133,8 +133,15 @@ public class ExpressionEvaluator
             node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
             Type retypeType = typeInfo.type;
             Value left = machine.popValue();
-            Value retypedValue = Value.create(left.val, retypeType);
-            machine.pushValue(retypedValue);
+            if (left.isNull())
+            {
+              machine.pushValue(left);
+            }
+            else
+            {
+              Value retypedValue = Value.create(left.val, retypeType);
+              machine.pushValue(retypedValue);
+            }
             machine.ip.pop();
           }
       )

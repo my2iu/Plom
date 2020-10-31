@@ -27,7 +27,13 @@
 		function .{get: .{key} @{string}} @{JS object} {
 			primitive
 		}
-		function .{at: .{index} @{object} set: .{value} @{object}} @{void} {
+		function .{set: .{key} @{string} to:.{value} @{object}} @{void} {
+			primitive
+		}
+		function .{at: .{index} @{number}} @{JS object} {
+			primitive
+		}
+		function .{at: .{index} @{number} set: .{value} @{object}} @{void} {
 			primitive
 		}
 		function .{call: .{method} @{string}} @{JS object} {
@@ -36,10 +42,22 @@
 		function .{call: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
 			primitive
 		}
+		function .{call: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object}} @{JS object} {
+			primitive
+		}
+		function .{call: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object} and: .{param3} @{JS object}} @{JS object} {
+			primitive
+		}
 		function .{new: .{method} @{string}} @{JS object} {
 			primitive
 		}
 		function .{new: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
+			primitive
+		}
+		function .{new: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object}} @{JS object} {
+			primitive
+		}
+		function .{new: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object} and: .{param3} @{JS object}} @{JS object} {
 			primitive
 		}
 		classfunction .{globals} @{JS object} {

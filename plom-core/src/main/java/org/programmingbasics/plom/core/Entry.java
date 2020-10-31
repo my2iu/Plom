@@ -83,6 +83,7 @@ TODO:
 - retype
 - GWT custom linker 
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
+- inheritance in the UI and in saving
  */
 
 public class Entry implements EntryPoint
@@ -256,28 +257,53 @@ public class Entry implements EntryPoint
           Value returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
           blockWait.unblockAndReturn(returnValue);
         });
-    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as number"),
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "set:to:"),
         (blockWait, machine) -> {
-          Value self = machine.currentScope().lookupThis();
-          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getNumberType()));
-        });
-    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as string"),
-        (blockWait, machine) -> {
-          Value self = machine.currentScope().lookupThis();
-          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getStringType()));
-        });
-    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as boolean"),
-        (blockWait, machine) -> {
-          Value self = machine.currentScope().lookupThis();
-          blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getBooleanType()));
-        });
-    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
-        (blockWait, machine) -> {
-          Object index = machine.currentScope().lookup("index").val;
+          Object index = machine.currentScope().lookup("key").val;
           Object value = machine.currentScope().lookup("value").val;
           Value self = machine.currentScope().lookupThis();
           Js.asPropertyMap(self.val).set((String)index, value);
           blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          // We just store the JavaScript pointer as the object itself
+          Object toReturn = Js.asArrayLike(self.val).getAt((int)machine.currentScope().lookup("index").getNumberValue());
+          Value returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
+          blockWait.unblockAndReturn(returnValue);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
+        (blockWait, machine) -> {
+          Value index = machine.currentScope().lookup("index");
+          Object value = machine.currentScope().lookup("value").val;
+          Value self = machine.currentScope().lookupThis();
+          Js.asArrayLike(self.val).setAt((int)index.getNumberValue(), value);
+          blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as number"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          if (self.val == null)
+            blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
+          else
+            blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getNumberType()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as string"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          if (self.val == null)
+            blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
+          else
+            blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getStringType()));
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as boolean"),
+        (blockWait, machine) -> {
+          Value self = machine.currentScope().lookupThis();
+          if (self.val == null)
+            blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
+          else
+            blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getBooleanType()));
         });
     coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
         (blockWait, machine) -> {
@@ -292,6 +318,25 @@ public class Entry implements EntryPoint
           Object param1 = machine.currentScope().lookup("param1").val;
           Value self = machine.currentScope().lookupThis();
           Value v = Value.create(callMethod(self.val, method, param1), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Object param2 = machine.currentScope().lookup("param2").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callMethod(self.val, method, param1, param2), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Object param2 = machine.currentScope().lookup("param2").val;
+          Object param3 = machine.currentScope().lookup("param3").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callMethod(self.val, method, param1, param2, param3), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
           blockWait.unblockAndReturn(v);
         });
     coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
@@ -309,6 +354,25 @@ public class Entry implements EntryPoint
           Value v = Value.create(callConstructor(self.val, method, param1), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
           blockWait.unblockAndReturn(v);
         });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Object param2 = machine.currentScope().lookup("param2").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callConstructor(self.val, method, param1, param2), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
+    coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:"),
+        (blockWait, machine) -> {
+          String method = machine.currentScope().lookup("method").getStringValue();
+          Object param1 = machine.currentScope().lookup("param1").val;
+          Object param2 = machine.currentScope().lookup("param2").val;
+          Object param3 = machine.currentScope().lookup("param3").val;
+          Value self = machine.currentScope().lookupThis();
+          Value v = Value.create(callConstructor(self.val, method, param1, param2, param3), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType))); 
+          blockWait.unblockAndReturn(v);
+        });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
         (blockWait, machine) -> {
           Value v = Value.create(Js.global(), machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
@@ -316,21 +380,36 @@ public class Entry implements EntryPoint
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from number:"),
         (blockWait, machine) -> {
-          Object val = machine.currentScope().lookup("value").val;
-          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
-          blockWait.unblockAndReturn(v);
+          Value val = machine.currentScope().lookup("value");
+          if (val.type != machine.coreTypes().getNullType())
+          {
+            Value v = Value.create(val.val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));  
+            blockWait.unblockAndReturn(v);
+          }
+          else
+            blockWait.unblockAndReturn(val);
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from string:"),
         (blockWait, machine) -> {
-          Object val = machine.currentScope().lookup("value").val;
-          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
-          blockWait.unblockAndReturn(v);
+          Value val = machine.currentScope().lookup("value");
+          if (val.type != machine.coreTypes().getNullType())
+          {
+            Value v = Value.create(val.val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));  
+            blockWait.unblockAndReturn(v);
+          }
+          else
+            blockWait.unblockAndReturn(val);
         });
     coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from boolean:"),
         (blockWait, machine) -> {
-          Object val = machine.currentScope().lookup("value").val;
-          Value v = Value.create(val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));
-          blockWait.unblockAndReturn(v);
+          Value val = machine.currentScope().lookup("value");
+          if (val.type != machine.coreTypes().getNullType())
+          {
+            Value v = Value.create(val.val, machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@JS object", Symbol.AtType)));  
+            blockWait.unblockAndReturn(v);
+          }
+          else
+            blockWait.unblockAndReturn(val);
         });
   }
   
@@ -342,12 +421,28 @@ public class Entry implements EntryPoint
     return self[msg](param1);
   }-*/;
 
+  private static native Object callMethod(Object self, String msg, Object param1, Object param2) /*-{
+    return self[msg](param1, param2);
+  }-*/;
+
+  private static native Object callMethod(Object self, String msg, Object param1, Object param2, Object param3) /*-{
+    return self[msg](param1, param2, param3);
+  }-*/;
+
   private static native Object callConstructor(Object self, String msg) /*-{
     return new (self[msg])();
   }-*/;
 
   private static native Object callConstructor(Object self, String msg, Object param1) /*-{
     return new (self[msg])(param1);
+  }-*/;
+
+  private static native Object callConstructor(Object self, String msg, Object param1, Object param2) /*-{
+    return new (self[msg])(param1, param2);
+  }-*/;
+
+  private static native Object callConstructor(Object self, String msg, Object param1, Object param2, Object param3) /*-{
+    return new (self[msg])(param1, param2, param3);
   }-*/;
 
   void hookLoadSave()

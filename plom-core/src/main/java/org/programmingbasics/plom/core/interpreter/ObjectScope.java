@@ -1,9 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ObjectScope extends VariableScope

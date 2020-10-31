@@ -6,6 +6,10 @@ public class Value
   public Type type;
   public Object val;
   public Value() {}
+  public boolean isNull()
+  {
+    return val == null;
+  }
   public double getNumberValue()
   {
     return ((Double)val).doubleValue();
