@@ -37,6 +37,7 @@ import elemental.html.Blob;
 import elemental.html.DivElement;
 import elemental.html.FileReader;
 import elemental.html.InputElement;
+import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
@@ -86,10 +87,50 @@ TODO:
 - inheritance in the UI and in saving
  */
 
+@JsType
 public class Entry implements EntryPoint
 {
   @Override
   public void onModuleLoad()
+  {
+    checkGwtOnLoad();
+  }
+
+  private static native void checkGwtOnLoad() /*-{
+    // Check if we're fully loaded yet
+    if ($doc.readyState == 'complete')
+    {
+      // Execute any onload code
+      if ($wnd.$gwtOnLoad) {
+        $wnd.$gwtOnLoad();
+        $wnd.$gwtOnLoad = null;
+      }
+      // Change the preloader to immediately execute any code
+      $wnd.setGwtOnLoad = function(fn) {
+        fn();
+      }
+    }
+    else
+    {
+      // Wait until we're fully loaded before running any onload code
+      $doc.addEventListener('readystatechange', function(e) {
+        if ($doc.readyState == 'complete') 
+        {
+          // Execute any onload code
+          if ($wnd.$gwtOnLoad) {
+            $wnd.$gwtOnLoad();
+            $wnd.$gwtOnLoad = null;
+          }
+          // Change the preloader to immediately execute any code
+          $wnd.setGwtOnLoad = function(fn) {
+            fn();
+          }
+        }          
+      });
+    }
+  }-*/;
+
+  public void go()
   {
     // Load in the built-in primitives of the interpreter into the 
     // code repository so that they can be browsed in the UI
@@ -151,6 +192,11 @@ public class Entry implements EntryPoint
     loadFunctionCodeView("main");
   }
 
+  public static void start()
+  {
+    new Entry().go();
+  }
+  
   ModuleCodeRepository repository;
   
   CodePanel codePanel;

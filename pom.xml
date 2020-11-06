@@ -19,8 +19,9 @@
   </licenses>
   
   <modules>
-  	<module>plom-core</module>
+  	<module>plom-gwtlinker</module>
   	<module>plom-astgen</module>
+  	<module>plom-core</module>
   </modules>
 
   <properties>

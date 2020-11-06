@@ -9,5 +9,13 @@
 
   <source path='core'/>
 
-  <add-linker name="xsiframe"/>
+  <define-linker name="scripttag" class="org.programmingbasics.plom.gwtlinker.ScriptTagLinker" />
+  <!-- 
+  When debugging on Edge, it's easier to import the JS directly in a
+  script tag instead of the xsiframe.
+  -->
+  <add-linker name="scripttag"/>
+
+  <!-- <add-linker name="sso"/> -->
+  <!-- <add-linker name="xsiframe"/>  -->
 </module>

@@ -2,7 +2,14 @@
 <html>
   <head>
     <meta name = "viewport" content = "user-scalable=no, initial-scale=1">
+    <script type="text/javascript" language="javascript" src="gwtPreload.js"></script>
     <script type="text/javascript" language="javascript" src="plomcore/plomcore.nocache.js"></script>
+    <!-- <script type="text/javascript" language="javascript" src="plomcore/6474075CF5BEA620AC6EC000C8518D6A.cache.js"></script> -->
+	<script>
+		setGwtOnLoad(function() {
+			org.programmingbasics.plom.core.Entry.start();
+		});
+	</script>
     <style>
     	div.main {
     		width: calc(100vw - 2em);

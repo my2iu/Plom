@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+	  <groupId>org.programmingbasics</groupId>
+	  <artifactId>plom</artifactId>
+	  <version>0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>plom-gwtlinker</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Plom Custom GWT Linker</name>
+  <description>Hacked up version of the xsiframe linker from Google to generate scripts that are both compatible with superdevmode and that can be directly linked</description>
+  
+  <dependencies>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-dev</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  
+</project>
