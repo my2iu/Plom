@@ -8,10 +8,13 @@ import java.util.Map;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
+import jsinterop.annotations.JsType;
+
 /**
  * Tracks the variables that exist in a certain scope. A scope holds the 
  * bindings of names to values where variables can be looked up.
  */
+@JsType
 public class VariableScope
 {
   private Map<String, Value> values = new HashMap<>();

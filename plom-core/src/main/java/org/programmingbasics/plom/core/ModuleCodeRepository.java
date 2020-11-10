@@ -20,6 +20,9 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
+import jsinterop.annotations.JsType;
+
+@JsType
 public class ModuleCodeRepository
 {
   public static class FunctionSignature
@@ -119,6 +122,7 @@ public class ModuleCodeRepository
     public int id;
   }
   
+  @JsType
   public static class FunctionDescription extends DescriptionWithId
   {
     public FunctionDescription(FunctionSignature sig, StatementContainer code)

@@ -22,10 +22,13 @@ import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
+import jsinterop.annotations.JsType;
+
 /**
  * Maps a code repository so that it can be accessed in the scope stack
  * so that it can be accessed in the SimpleInterpreter 
  */
+@JsType
 public class RepositoryScope extends VariableScope
 {
   // TODO: Add caching to this

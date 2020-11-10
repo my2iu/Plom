@@ -7,7 +7,42 @@
     <!-- <script type="text/javascript" language="javascript" src="plomcore/6474075CF5BEA620AC6EC000C8518D6A.cache.js"></script> -->
 	<script>
 		setGwtOnLoad(function() {
-			org.programmingbasics.plom.core.Entry.start();
+			function hookRun()
+			{
+				var runEl = document.querySelector('a.runbutton');
+				runEl.addEventListener('click', function(evt) {
+					evt.preventDefault();
+					main.saveCodeToRepository();
+			    	// Find code to run
+			    	var fd = main.repository.getFunctionDescription("main");
+			    	if (fd == null)
+			    	{
+						main.errorLogger.accept(new org.programmingbasics.plom.core.interpreter.RunException("No main function"));
+						return;
+					}
+					var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
+					terp.setErrorLogger(main.errorLogger);
+					try {
+						terp.runNoReturn(function(scope, coreTypes) {
+	          				org.programmingbasics.plom.core.interpreter.StandardLibrary.createGlobals(terp, scope, coreTypes);
+          					scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes));
+          
+							main.addPrimitives(terp, coreTypes);
+						});
+					}
+					catch (err)
+					{
+						console.log(err);
+					}
+				});
+			}
+
+			var main = new org.programmingbasics.plom.core.Main();
+			main.go();
+    		hookRun();
+    		main.hookLoadSave();
+    		main.hookSubject();
+    		main.loadFunctionCodeView("main");
 		});
 	</script>
     <style>

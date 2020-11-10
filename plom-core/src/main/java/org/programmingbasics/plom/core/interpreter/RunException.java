@@ -2,6 +2,9 @@ package org.programmingbasics.plom.core.interpreter;
 
 import org.programmingbasics.plom.core.ast.Token;
 
+import jsinterop.annotations.JsType;
+
+@JsType
 public class RunException extends Exception
 {
   private static final long serialVersionUID = 1L;

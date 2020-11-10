@@ -9,6 +9,8 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 
+import jsinterop.annotations.JsType;
+
 /**
  * In order to work out how the language will work, I need a simple 
  * code interpreter to make things more concrete and to experiment
@@ -16,6 +18,7 @@ import org.programmingbasics.plom.core.ast.gen.Rule;
  * 
  * This just runs a simple script or code sequence.
  */
+@JsType
 public class SimpleInterpreter
 {
   public SimpleInterpreter(StatementContainer code)

@@ -15,7 +15,9 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import jsinterop.annotations.JsType;
 
+@JsType
 public class StandardLibrary
 {
   public static class StdLibClass
