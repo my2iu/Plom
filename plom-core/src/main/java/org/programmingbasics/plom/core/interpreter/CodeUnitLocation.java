@@ -1,10 +1,13 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import jsinterop.annotations.JsType;
+
 /**
  * Describes the location of a function or method (used for looking
  * up primitives and for displaying debug information in exceptions
  * etc)
  */
+@JsType
 public class CodeUnitLocation
 {
   public String className;

@@ -3,9 +3,12 @@ package org.programmingbasics.plom.core.interpreter;
 import java.util.HashMap;
 import java.util.Map;
 
+import jsinterop.annotations.JsType;
+
 /**
  * Provides easy access to the core types needed for basic operations
  */
+@JsType
 public class CoreTypeLibrary
 {
   public Type getObjectType() { return objectType; }

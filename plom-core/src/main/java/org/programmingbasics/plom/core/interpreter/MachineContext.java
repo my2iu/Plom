@@ -9,6 +9,8 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
+import jsinterop.annotations.JsType;
+
 /**
  * We want to run the interpreter in JavaScript, but JavaScript
  * has no threads. Since we may want to emulate functions that block
@@ -20,6 +22,7 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
  * because we don't compile down to a flatter bytecode but execute
  * out of the abstract syntax tree. 
  */
+@JsType
 public class MachineContext
 {
   /**
@@ -292,6 +295,7 @@ public class MachineContext
    * doesn't support that, we need to exit the interpreter loop and then
    * repeatedly poll to see when we can restart the interpreter
    */
+  @JsType
   public static class PrimitiveBlockingFunctionReturn
   {
     boolean isBlocked = true;
@@ -493,5 +497,10 @@ public class MachineContext
       }
       throw e;
     }
+  }
+  
+  public Token.ParameterToken quickTypeToken(String name)
+  {
+    return Token.ParameterToken.fromContents(name, Symbol.AtType);
   }
 }

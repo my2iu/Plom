@@ -1,6 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import jsinterop.annotations.JsType;
 
+@JsType
 public class Value
 {
   public Type type;
