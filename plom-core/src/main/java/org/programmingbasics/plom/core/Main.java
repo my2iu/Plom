@@ -8,40 +8,32 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
-import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.RunException;
-import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
-import elemental.html.Blob;
 import elemental.html.DivElement;
-import elemental.html.FileReader;
-import elemental.html.InputElement;
 import jsinterop.annotations.JsType;
-import jsinterop.base.Js;
 
 @JsType
 public class Main
 {
-  public void go()
+  @Deprecated void createSampleCode()
   {
     // Load in the built-in primitives of the interpreter into the 
     // code repository so that they can be browsed in the UI

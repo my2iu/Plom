@@ -10,7 +10,8 @@
 		setGwtOnLoad(function() {
 			setupPlomUi();
 			var main = new org.programmingbasics.plom.core.Main();
-			main.go();
+			initRepository(main);
+			//main.go();
     		hookRun(main);
     		hookLoadSave(main);
     		main.hookSubject();

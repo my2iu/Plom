@@ -1,15 +1,18 @@
 function setupPlomUi() {
+	var Main = org.programmingbasics.plom.core.Main;
+	var ModuleCodeRepository = org.programmingbasics.plom.core.ModuleCodeRepository;
+	var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
 	var CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 	var Value = org.programmingbasics.plom.core.interpreter.Value; 
-	var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
-	var Main = org.programmingbasics.plom.core.Main;
+	var StandardLibrary = org.programmingbasics.plom.core.interpreter.StandardLibrary;
+	var RunException = org.programmingbasics.plom.core.interpreter.RunException;
 	
 	function addPrimitives(interpreter, coreTypes)
 	{
 		// Stuff for @JS object
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "get:"),
 				function(blockWait, machine) {
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
 					var toReturn = self.val[machine.currentScope().lookup("key").getStringValue()];
 					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
@@ -19,13 +22,13 @@ function setupPlomUi() {
 				function(blockWait, machine) {
 					var index = machine.currentScope().lookup("key").getStringValue();
 					var value = machine.currentScope().lookup("value").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					self.val[index] = value;
 					blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:"),
 				function(blockWait, machine) {
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
 					var toReturn = self.val[machine.currentScope().lookup("index").getNumberValue()];
 					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
@@ -35,13 +38,13 @@ function setupPlomUi() {
 				function(blockWait, machine) {
 					var index = machine.currentScope().lookup("index");
 					var value = machine.currentScope().lookup("value").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					self.val[index.getNumberValue()] = value;
 					blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as number"),
 				function(blockWait, machine) {
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					if (self.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
@@ -49,7 +52,7 @@ function setupPlomUi() {
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as string"),
 				function(blockWait, machine) {
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					if (self.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
@@ -57,7 +60,7 @@ function setupPlomUi() {
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as boolean"),
 				function(blockWait, machine) {
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					if (self.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
@@ -66,7 +69,7 @@ function setupPlomUi() {
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(self.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -74,7 +77,7 @@ function setupPlomUi() {
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(self.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -83,7 +86,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(self.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -93,14 +96,14 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(self.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(new self.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -108,7 +111,7 @@ function setupPlomUi() {
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(new self.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -117,7 +120,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(new self.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -127,7 +130,7 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
-					var self = machine.currentScope().lookupThis();
+					var selfVal = machine.currentScope().lookupThis();
 					var v = Value.create(new self.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
@@ -177,14 +180,14 @@ function setupPlomUi() {
     	var fd = main.repository.getFunctionDescription("main");
     	if (fd == null)
     	{
-			main.errorLogger.accept(new org.programmingbasics.plom.core.interpreter.RunException("No main function"));
+			main.errorLogger.accept(new RunException("No main function"));
 			return;
 		}
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
 		terp.setErrorLogger(main.errorLogger);
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
-				org.programmingbasics.plom.core.interpreter.StandardLibrary.createGlobals(terp, scope, coreTypes);
+				StandardLibrary.createGlobals(terp, scope, coreTypes);
 				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes));
   
 				addPrimitives(terp, coreTypes);
@@ -194,14 +197,6 @@ function setupPlomUi() {
 		{
 			console.log(err);
 		}
-	}
-	function hookRun(main)
-	{
-		var runEl = document.querySelector('a.runbutton');
-		runEl.addEventListener('click', function(evt) {
-			evt.preventDefault();
-			doRun(main);
-		});
 	}
 	function doLoad(main)
 	{
@@ -220,7 +215,8 @@ function setupPlomUi() {
 					var inStream = new PlomTextReader.StringTextReader(readStr);
 					var lexer = new PlomTextReader.PlomTextScanner(inStream);
 					try {
-						var newRepository = Main.makeStdLibRepository();
+					    var newRepository = new ModuleCodeRepository();
+					    repository.setChainedRepository(Main.makeStdLibRepository());
 						newRepository.loadModule(lexer);
 						main.repository = newRepository;
 						main.loadGlobalsView();
@@ -233,7 +229,7 @@ function setupPlomUi() {
 				reader.readAsText(fileInput.files[0]);
 			}
 			document.body.removeChild(fileInput);
-		}, false);
+		});
 		fileInput.click();
 	}
 	function doSave(main)
@@ -251,6 +247,14 @@ function setupPlomUi() {
 			console.error(e);
 		}
 	}
+	function hookRun(main)
+	{
+		var runEl = document.querySelector('a.runbutton');
+		runEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			doRun(main);
+		});
+	}
 	function hookLoadSave(main)
 	{
 		var loadEl = document.querySelector("a.loadbutton");
@@ -264,6 +268,37 @@ function setupPlomUi() {
 			doSave(main);
 		});
 	}
+	function initRepository(main)
+	{
+	    // Load in the built-in primitives of the interpreter into the 
+	    // code repository so that they can be browsed in the UI
+	    main.repository = new ModuleCodeRepository();
+	    main.repository.setChainedRepository(Main.makeStdLibRepository());
+	    // Create a basic main function that can be filled in
+		var inStream = new PlomTextReader.StringTextReader(`module .{program} {
+				function . {main } @ {void } {
+				var . {a } : @ {string }
+				. {a } := . {input: {"Guess a number between 1 and 10" } }
+				if { . {a } ="8" } {
+				. {print: {"You guessed correctly" } }
+				}
+				else {
+				. {print: {"Incorrect" } }
+				}
+
+				}	
+			}`);
+		var lexer = new PlomTextReader.PlomTextScanner(inStream);
+		try {
+			main.repository.loadModule(lexer);
+		}
+		catch (err)
+		{
+			console.error(err);
+		}
+
+	}
 	window.hookRun = hookRun;
 	window.hookLoadSave = hookLoadSave;
+	window.initRepository = initRepository;
 }
