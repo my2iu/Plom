@@ -11,13 +11,15 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.regexp.shared.RegExp;
 
-import elemental.client.Browser;
+import jsinterop.annotations.JsType;
 
 /**
  * Reading and writing code as text
  */
+@JsType
 public class PlomTextReader
 {
+  @JsType
   public static class StringTextReader
   {
     public StringTextReader(String text) { this.text = text; }
@@ -30,7 +32,7 @@ public class PlomTextReader
         return text.charAt(pos);
       return -1;
     }
-    public int peek(int n)
+    public int peekN(int n)
     {
       // TODO: Handle code points
       if (pos + n < text.length())
@@ -124,6 +126,7 @@ public class PlomTextReader
       return reverseSymbolTokenMap.get(str);
   }
 
+  @JsType
   public static class PlomTextScanner
   {
     public PlomTextScanner(StringTextReader in)
@@ -200,9 +203,9 @@ public class PlomTextReader
       int bestMatch = -1;
       for (int peekAhead = 0;; peekAhead++)
       {
-        peek = in.peek(peekAhead);
+        peek = in.peekN(peekAhead);
         if (peek < 0) break;
-        chars = chars + (char)in.peek(peekAhead);
+        chars = chars + (char)in.peekN(peekAhead);
         String match = null;
         if (isNumberMatch(chars))
           match = chars;

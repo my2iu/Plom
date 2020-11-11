@@ -1,6 +1,8 @@
 function setupPlomUi() {
 	var CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 	var Value = org.programmingbasics.plom.core.interpreter.Value; 
+	var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
+	var Main = org.programmingbasics.plom.core.Main;
 	
 	function addPrimitives(interpreter, coreTypes)
 	{
@@ -168,35 +170,100 @@ function setupPlomUi() {
 						blockWait.unblockAndReturn(val);
 				});
 	}
-	
+	function doRun(main)
+	{
+		main.saveCodeToRepository();
+    	// Find code to run
+    	var fd = main.repository.getFunctionDescription("main");
+    	if (fd == null)
+    	{
+			main.errorLogger.accept(new org.programmingbasics.plom.core.interpreter.RunException("No main function"));
+			return;
+		}
+		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
+		terp.setErrorLogger(main.errorLogger);
+		try {
+			terp.runNoReturn(function(scope, coreTypes) {
+				org.programmingbasics.plom.core.interpreter.StandardLibrary.createGlobals(terp, scope, coreTypes);
+				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes));
+  
+				addPrimitives(terp, coreTypes);
+			});
+		}
+		catch (err)
+		{
+			console.log(err);
+		}
+	}
 	function hookRun(main)
 	{
 		var runEl = document.querySelector('a.runbutton');
 		runEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
-			main.saveCodeToRepository();
-	    	// Find code to run
-	    	var fd = main.repository.getFunctionDescription("main");
-	    	if (fd == null)
-	    	{
-				main.errorLogger.accept(new org.programmingbasics.plom.core.interpreter.RunException("No main function"));
-				return;
-			}
-			var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
-			terp.setErrorLogger(main.errorLogger);
-			try {
-				terp.runNoReturn(function(scope, coreTypes) {
-					org.programmingbasics.plom.core.interpreter.StandardLibrary.createGlobals(terp, scope, coreTypes);
-					scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes));
-	  
-					addPrimitives(terp, coreTypes);
-				});
-			}
-			catch (err)
+			doRun(main);
+		});
+	}
+	function doLoad(main)
+	{
+		var fileInput = document.createElement('input');
+		fileInput.type = "file";
+		fileInput.style.display = 'none';
+		document.body.appendChild(fileInput);
+		fileInput.accept = ".plom";
+		fileInput.addEventListener('change', function(e) {
+			e.preventDefault();
+			if (fileInput.files.length != 0)
 			{
-				console.log(err);
+				var reader = new FileReader();
+				reader.onload = function(loadedEvt) {
+					var readStr = reader.result;
+					var inStream = new PlomTextReader.StringTextReader(readStr);
+					var lexer = new PlomTextReader.PlomTextScanner(inStream);
+					try {
+						var newRepository = Main.makeStdLibRepository();
+						newRepository.loadModule(lexer);
+						main.repository = newRepository;
+						main.loadGlobalsView();
+					}
+					catch (err)
+					{
+						console.error(err);
+					}
+				};
+				reader.readAsText(fileInput.files[0]);
 			}
+			document.body.removeChild(fileInput);
+		}, false);
+		fileInput.click();
+	}
+	function doSave(main)
+	{
+		var saveLink = document.createElement("a");
+		try
+		{
+			var blob = new Blob([main.getModuleAsString()], {type:"text/plain"});
+			saveLink.href = URL.createObjectURL(blob);
+			saveLink.download = "program.plom";
+			saveLink.click();
+		}
+		catch (e)
+		{
+			console.error(e);
+		}
+	}
+	function hookLoadSave(main)
+	{
+		var loadEl = document.querySelector("a.loadbutton");
+		loadEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			doLoad(main);
+		});
+		var saveEl = document.querySelector("a.savebutton");
+		saveEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			doSave(main);
 		});
 	}
 	window.hookRun = hookRun;
+	window.hookLoadSave = hookLoadSave;
 }

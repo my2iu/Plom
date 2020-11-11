@@ -143,7 +143,7 @@ public class Main
     consoleEl.appendChild(msg);
   }; 
 
-  static ModuleCodeRepository makeStdLibRepository()
+  public static ModuleCodeRepository makeStdLibRepository()
   {
     ModuleCodeRepository newRepository = new ModuleCodeRepository();
     newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
@@ -158,70 +158,6 @@ public class Main
     return newRepository;
   }
   
-  public void hookLoadSave()
-  {
-    Element loadEl = Browser.getDocument().querySelector("a.loadbutton");
-    loadEl.addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      InputElement fileInput = Browser.getDocument().createInputElement();
-      fileInput.setType("file");
-      fileInput.getStyle().setDisplay(Display.NONE);
-      Browser.getDocument().getBody().appendChild(fileInput);
-      fileInput.setAccept(".plom");
-      fileInput.addEventListener(Event.CHANGE, (e) -> {
-        e.preventDefault();
-        if (fileInput.getFiles().length() != 0)
-        {
-          FileReader reader = Browser.getWindow().newFileReader();
-          reader.setOnload((loadedEvt) -> {
-            String read = (String)reader.getResult();
-            PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(read);
-            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
-            try {
-              ModuleCodeRepository newRepository = makeStdLibRepository();
-              newRepository.loadModule(lexer);
-              repository = newRepository;
-              loadGlobalsView();
-            }
-            catch (PlomReadException e1)
-            {
-              e1.printStackTrace();
-            }
-          });
-          reader.readAsText(fileInput.getFiles().item(0));
-        }
-        Browser.getDocument().getBody().removeChild(fileInput);
-      }, false);
-      fileInput.click();
-    }, false);
-    Element saveEl = Browser.getDocument().querySelector("a.savebutton");
-    saveEl.addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      AnchorElement saveLink = (AnchorElement)Browser.getDocument().createElement("a");
-      try
-      {
-        StringBuilder out = new StringBuilder();
-        repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out));
-        Blob blob = createBlob(out.toString(), "text/plain");
-        saveLink.setHref(createBlobObjectURL(blob));
-        saveLink.setDownload("program.plom");
-        saveLink.click();
-      }
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
-    }, false);
-  }
- 
-  static native Blob createBlob(String data, String mimeType) /*-{
-    return new $wnd.Blob([data], {type: mimeType});
-  }-*/;
-
-  static native String createBlobObjectURL(Blob blob) /*-{
-    return URL.createObjectURL(blob);
-  }-*/;
-
   /** If any code is currently being displayed in the code panel, save it
    * to the repository
    */
@@ -240,6 +176,13 @@ public class Main
         currentMethodClassBeingViewed.updateMethod(currentMethodBeingViewed);
       }
     }
+  }
+  
+  public String getModuleAsString() throws IOException 
+  {
+    StringBuilder out = new StringBuilder();
+    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out));
+    return out.toString();
   }
   
   /**
@@ -395,7 +338,7 @@ public class Main
     showMethodPanel(cls, m);
   }
 
-  void loadGlobalsView()
+  public void loadGlobalsView()
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
