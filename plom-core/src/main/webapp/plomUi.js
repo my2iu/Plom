@@ -198,6 +198,12 @@ function setupPlomUi() {
 			console.log(err);
 		}
 	}
+	function loadCodeStringIntoRepository(code, repository)
+	{
+		var inStream = new PlomTextReader.StringTextReader(code);
+		var lexer = new PlomTextReader.PlomTextScanner(inStream);
+		repository.loadModule(lexer);
+	}
 	function doLoad(main)
 	{
 		var fileInput = document.createElement('input');
@@ -212,12 +218,11 @@ function setupPlomUi() {
 				var reader = new FileReader();
 				reader.onload = function(loadedEvt) {
 					var readStr = reader.result;
-					var inStream = new PlomTextReader.StringTextReader(readStr);
-					var lexer = new PlomTextReader.PlomTextScanner(inStream);
 					try {
+						main.loadGlobalsView();  // Close the existing code view to force a save of the current code before it is overwritten
 					    var newRepository = new ModuleCodeRepository();
-					    repository.setChainedRepository(Main.makeStdLibRepository());
-						newRepository.loadModule(lexer);
+					    newRepository.setChainedRepository(Main.makeStdLibRepository());
+					    loadCodeStringIntoRepository(readStr, newRepository);
 						main.repository = newRepository;
 						main.loadGlobalsView();
 					}
@@ -275,22 +280,19 @@ function setupPlomUi() {
 	    main.repository = new ModuleCodeRepository();
 	    main.repository.setChainedRepository(Main.makeStdLibRepository());
 	    // Create a basic main function that can be filled in
-		var inStream = new PlomTextReader.StringTextReader(`module .{program} {
-				function . {main } @ {void } {
-				var . {a } : @ {string }
-				. {a } := . {input: {"Guess a number between 1 and 10" } }
-				if { . {a } ="8" } {
-				. {print: {"You guessed correctly" } }
-				}
-				else {
-				. {print: {"Incorrect" } }
-				}
-
+	    var sampleCode = `module .{program} {
+				function .{main} @{void} {
+					var .{a} : @{string}
+					.{a} := .{input: {"Guess a number between 1 and 10"} }
+					if { .{a} = "8" } {
+						.{print: {"You guessed correctly"} }
+					} else {
+						.{print: {"Incorrect"} }
+					}
 				}	
-			}`);
-		var lexer = new PlomTextReader.PlomTextScanner(inStream);
+			}`;
 		try {
-			main.repository.loadModule(lexer);
+		    loadCodeStringIntoRepository(sampleCode, main.repository);
 		}
 		catch (err)
 		{
