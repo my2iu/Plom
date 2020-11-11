@@ -173,6 +173,20 @@ function setupPlomUi() {
 						blockWait.unblockAndReturn(val);
 				});
 	}
+	function makeStdLibRepository()
+	{
+		var newRepository = new ModuleCodeRepository();
+		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+		try {
+			loadCodeStringIntoRepository(Main.getStdLibCodeText(), newRepository);
+		}
+		catch (e)
+		{
+			console.error(e);
+		}
+		newRepository.markAsImported();
+		return newRepository;
+	}
 	function doRun(main)
 	{
 		main.saveCodeToRepository();
@@ -221,7 +235,7 @@ function setupPlomUi() {
 					try {
 						main.loadGlobalsView();  // Close the existing code view to force a save of the current code before it is overwritten
 					    var newRepository = new ModuleCodeRepository();
-					    newRepository.setChainedRepository(Main.makeStdLibRepository());
+					    newRepository.setChainedRepository(makeStdLibRepository());
 					    loadCodeStringIntoRepository(readStr, newRepository);
 						main.repository = newRepository;
 						main.loadGlobalsView();
@@ -278,7 +292,7 @@ function setupPlomUi() {
 	    // Load in the built-in primitives of the interpreter into the 
 	    // code repository so that they can be browsed in the UI
 	    main.repository = new ModuleCodeRepository();
-	    main.repository.setChainedRepository(Main.makeStdLibRepository());
+	    main.repository.setChainedRepository(makeStdLibRepository());
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
 				function .{main} @{void} {

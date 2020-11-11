@@ -33,57 +33,57 @@ import jsinterop.annotations.JsType;
 @JsType
 public class Main
 {
-  @Deprecated void createSampleCode()
-  {
-    // Load in the built-in primitives of the interpreter into the 
-    // code repository so that they can be browsed in the UI
-    repository = new ModuleCodeRepository();
-    repository.setChainedRepository(makeStdLibRepository());
-    // Create a basic main function that can be filled in
-    FunctionDescription mainFunc = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
-        new StatementContainer(
-            new TokenContainer(
-                new Token.SimpleToken("var", Symbol.Var),
-                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                new Token.SimpleToken(":", Symbol.Colon),
-                Token.ParameterToken.fromContents("@string", Symbol.AtType)
-                ),
-            new TokenContainer(
-                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                new Token.SimpleToken(":=", Symbol.Assignment),
-                Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
-                    new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
-                ),
-            new TokenContainer(
-                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                        new Token.SimpleToken("=", Symbol.Eq),
-                        new Token.SimpleToken("\"8\"", Symbol.String)
-                        ),
-                    new StatementContainer(
-                        new TokenContainer(
-                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                                new TokenContainer(
-                                    new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
-                                    ))
-                            ))
-                    ),
-                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
-                    new StatementContainer(
-                        new TokenContainer(
-                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
-                                new TokenContainer(
-                                    new Token.SimpleToken("\"Incorrect\"", Symbol.String)
-                                    ))
-                            ))
-                    )
-                )
-            )
-        );
-    repository.addFunctionAndResetIds(mainFunc);
-  }
+//  @Deprecated void createSampleCode()
+//  {
+//    // Load in the built-in primitives of the interpreter into the 
+//    // code repository so that they can be browsed in the UI
+//    repository = new ModuleCodeRepository();
+//    repository.setChainedRepository(makeStdLibRepository());
+//    // Create a basic main function that can be filled in
+//    FunctionDescription mainFunc = new FunctionDescription(
+//        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "main"),
+//        new StatementContainer(
+//            new TokenContainer(
+//                new Token.SimpleToken("var", Symbol.Var),
+//                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                new Token.SimpleToken(":", Symbol.Colon),
+//                Token.ParameterToken.fromContents("@string", Symbol.AtType)
+//                ),
+//            new TokenContainer(
+//                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                new Token.SimpleToken(":=", Symbol.Assignment),
+//                Token.ParameterToken.fromContents(".input:", Symbol.DotVariable,
+//                    new TokenContainer(new Token.SimpleToken("\"Guess a number between 1 and 10\"", Symbol.String)))
+//                ),
+//            new TokenContainer(
+//                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+//                    new TokenContainer(
+//                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//                        new Token.SimpleToken("=", Symbol.Eq),
+//                        new Token.SimpleToken("\"8\"", Symbol.String)
+//                        ),
+//                    new StatementContainer(
+//                        new TokenContainer(
+//                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+//                                new TokenContainer(
+//                                    new Token.SimpleToken("\"You guessed correctly\"", Symbol.String)
+//                                    ))
+//                            ))
+//                    ),
+//                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE, 
+//                    new StatementContainer(
+//                        new TokenContainer(
+//                            Token.ParameterToken.fromContents(".print:", Symbol.DotVariable, 
+//                                new TokenContainer(
+//                                    new Token.SimpleToken("\"Incorrect\"", Symbol.String)
+//                                    ))
+//                            ))
+//                    )
+//                )
+//            )
+//        );
+//    repository.addFunctionAndResetIds(mainFunc);
+//  }
   
   public ModuleCodeRepository repository;
   
@@ -135,19 +135,9 @@ public class Main
     consoleEl.appendChild(msg);
   }; 
 
-  public static ModuleCodeRepository makeStdLibRepository()
+  public static String getStdLibCodeText()
   {
-    ModuleCodeRepository newRepository = new ModuleCodeRepository();
-    newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    try {
-      newRepository.loadModule(new PlomTextReader.PlomTextScanner(new PlomTextReader.StringTextReader(UIResources.INSTANCE.getStdLibPlom().getText())));
-    }
-    catch (PlomReadException e)
-    {
-      e.printStackTrace();
-    }
-    newRepository.markAsImported();
-    return newRepository;
+    return UIResources.INSTANCE.getStdLibPlom().getText();
   }
   
   /** If any code is currently being displayed in the code panel, save it
