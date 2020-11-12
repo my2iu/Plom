@@ -57,7 +57,19 @@ public class ClassPanel
       e.preventDefault();
       cls.setName(nameAnchor.getValue());
     }, false);
-    
+
+    // For setting the supertype
+    TypeEntryField extendsField = new TypeEntryField(cls.parent, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {});
+    extendsField.setChangeListener((newType, isFinal) -> {
+      cls.setSuperclass(newType);
+    });
+    extendsField.render();
+
     
     // For adding methods
     Element newFunctionAnchor = mainDiv.querySelector(".methodsHeading a");

@@ -14,7 +14,7 @@
 	 // Displays a prompt asking for input and returns the value entered by the user
 	 primitive
 	 }
-	class .{JS object} {
+	class .{JS object} extends @{object} {
 		function .{as number} @{number} {
 			primitive
 		}
@@ -73,7 +73,7 @@
 			primitive
 		}
 	}
-	class . { Test } {
+	class . { Test } extends @{object} {
 		constructor . {new } {
 		}
 	}

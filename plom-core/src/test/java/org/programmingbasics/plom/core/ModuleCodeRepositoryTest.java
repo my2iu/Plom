@@ -63,7 +63,28 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n", 
         strBuilder.toString());
   }
-  
+
+  @Test
+  public void testSaveClassWithSupertype() throws IOException
+  {
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+
+    ClassDescription c = repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get();
+    c.setSuperclass(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+    ModuleCodeRepository.saveClass(out, c);
+    Assert.assertEquals(" class . { test class } extends @ {object } {\n" + 
+        " var . { test var } @ {test class }\n" +
+        " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
+        " return . {x }\n" + 
+        " }\n" + 
+        " constructor . {new } {\n" + 
+        " }\n" + 
+        " }\n", 
+        strBuilder.toString());
+    c.setSuperclass(null);
+  }
+
   @Test
   public void testLoadClass() throws PlomReadException
   {
@@ -81,6 +102,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     
     ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
     Assert.assertEquals("test class", cls.name);
+    Assert.assertNull(cls.parent);
     Assert.assertEquals(1, cls.variables.size());
     Assert.assertEquals("test var", cls.variables.get(0).name);
     Assert.assertEquals("test class", cls.variables.get(0).type.getLookupName());
@@ -92,7 +114,26 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals("new", cls.methods.get(1).sig.getLookupName());
     Assert.assertEquals("void", cls.methods.get(1).sig.returnType.getLookupName());
   }
-  
+
+  @Test
+  public void testLoadClassWithSupertype() throws PlomReadException
+  {
+    String codeStr = "class .{test class} extends @{object} {\n"
+        + "  constructor . {new } {\n" 
+        + "  }\n" 
+        + "}\n";
+    
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    
+    ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
+    Assert.assertEquals("test class", cls.name);
+    Assert.assertEquals("object", cls.parent.getLookupName());
+    Assert.assertEquals(1, cls.methods.size());
+    Assert.assertEquals("new", cls.methods.get(0).sig.getLookupName());
+    Assert.assertEquals("void", cls.methods.get(0).sig.returnType.getLookupName());
+  }
+
   @Test
   public void testSaveModule() throws IOException
   {

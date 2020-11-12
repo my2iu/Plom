@@ -164,6 +164,10 @@ public class RepositoryScope extends VariableScope
     if (codeRepositoryClasses.containsKey(name))
     {
       ClassDescription cls = codeRepositoryClasses.get(name);
+      if (cls.parent != null)
+      {
+        toReturn.parent = typeFromToken(cls.parent); 
+      }
       for (VariableDescription var: cls.variables)
       {
         toReturn.addMemberVariable(var.name, typeFromToken(var.type));

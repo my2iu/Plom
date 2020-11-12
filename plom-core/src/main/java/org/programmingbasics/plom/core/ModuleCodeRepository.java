@@ -145,6 +145,7 @@ public class ModuleCodeRepository
   public static class ClassDescription extends DescriptionWithId
   {
     public String name;
+    Token.ParameterToken parent;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
     public boolean isBuiltIn = false;
@@ -207,6 +208,10 @@ public class ModuleCodeRepository
     public void setName(String name)
     {
       this.name = name;
+    }
+    public void setSuperclass(Token.ParameterToken parent)
+    {
+      this.parent = parent;
     }
     public ClassDescription setBuiltIn(boolean isBuiltIn) { this.isBuiltIn = isBuiltIn; return this; }
     public boolean hasNonBuiltInMethods()
@@ -498,6 +503,8 @@ public class ModuleCodeRepository
       ClassDescription c = addClassAndResetIds(clsdef.name)
           .setBuiltIn(true);
       classMap.put(clsdef.name, c);
+      if (clsdef.parent != null)
+        c.setSuperclass(Token.ParameterToken.fromContents("@" + clsdef.parent, Symbol.AtType));
     }
     
     for (StdLibMethod mdef: stdLibMethods)
@@ -549,6 +556,11 @@ public class ModuleCodeRepository
     out.token("{");
     out.token(c.name);
     out.token("}");
+    if (c.parent != null)
+    {
+      out.token("extends");
+      PlomTextWriter.writeToken(out, c.parent);
+    }
     
     out.token("{");
     out.newline();
@@ -679,6 +691,7 @@ public class ModuleCodeRepository
           cls = addClassAndResetIds(loaded.name);
         if (!augmentClass)
         {
+          cls.setSuperclass(loaded.parent);
           for (VariableDescription v: loaded.variables)
           {
             cls.addVarAndResetIds(v.name, v.type);
@@ -708,6 +721,12 @@ public class ModuleCodeRepository
     
     ClassDescription cls = new ClassDescription();
     cls.name = className;
+    
+    if ("extends".equals(lexer.peekLexInput()))
+    {
+      lexer.expectToken("extends");
+      cls.setSuperclass((Token.ParameterToken)PlomTextReader.readToken(lexer));
+    }
     
     lexer.expectToken("{");
     lexer.swallowOptionalNewlineToken();
