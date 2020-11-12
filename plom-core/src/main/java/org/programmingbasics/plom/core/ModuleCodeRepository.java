@@ -464,6 +464,7 @@ public class ModuleCodeRepository
   {
     ClassDescription cls = new ClassDescription();
     cls.name = name;
+    cls.parent = Token.ParameterToken.fromContents("@object", Symbol.AtType);
     classes.add(0, cls);
     cls.id = 0;
     return cls;
@@ -552,7 +553,7 @@ public class ModuleCodeRepository
   public static void saveClass(PlomTextWriter.PlomCodeOutputFormatter out, ClassDescription c) throws IOException
   {
     out.token("class");
-    out.token(".");
+    out.token("@");
     out.token("{");
     out.token(c.name);
     out.token("}");
@@ -712,7 +713,7 @@ public class ModuleCodeRepository
   public static ClassDescription loadClass(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
   {
     lexer.expectToken("class");
-    lexer.expectToken(".");
+    lexer.expectToken("@");
     lexer.expectToken("{");
     String className = lexer.lexParameterTokenPart();
     if (className == null)

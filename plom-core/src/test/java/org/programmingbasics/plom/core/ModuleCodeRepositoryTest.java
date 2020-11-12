@@ -31,6 +31,7 @@ public class ModuleCodeRepositoryTest extends TestCase
                 new Token.SimpleToken("return", Symbol.Return),
                 new Token.SimpleToken("3", Symbol.Number)))));
     ClassDescription testClass = repository.addClassAndResetIds("test class");
+    testClass.setSuperclass(null);
     testClass.addMethod(new FunctionDescription(
         FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "at x:y:",
             "x", Token.ParameterToken.fromContents("@number", Symbol.AtType),
@@ -53,7 +54,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
     ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get());
-    Assert.assertEquals(" class . { test class } {\n" + 
+    Assert.assertEquals(" class @ { test class } {\n" + 
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -73,7 +74,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     ClassDescription c = repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get();
     c.setSuperclass(Token.ParameterToken.fromContents("@object", Symbol.AtType));
     ModuleCodeRepository.saveClass(out, c);
-    Assert.assertEquals(" class . { test class } extends @ {object } {\n" + 
+    Assert.assertEquals(" class @ { test class } extends @ {object } {\n" + 
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -88,7 +89,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   @Test
   public void testLoadClass() throws PlomReadException
   {
-    String codeStr = "class .{test class} {\n"
+    String codeStr = "class @{test class} {\n"
         + "  var .{test var} @{test class}\n"
         + "  function . {at x:.{x} @{number} y: .{ y} @{number} } @{number} {\n" 
         + "    return . {x }\n" 
@@ -118,7 +119,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   @Test
   public void testLoadClassWithSupertype() throws PlomReadException
   {
-    String codeStr = "class .{test class} extends @{object} {\n"
+    String codeStr = "class @{test class} extends @{object} {\n"
         + "  constructor . {new } {\n" 
         + "  }\n" 
         + "}\n";
@@ -146,7 +147,7 @@ public class ModuleCodeRepositoryTest extends TestCase
         " function . {get } @ {number } {\n" + 
         " return 3\n" + 
         " }\n" + 
-        " class . { test class } {\n" + 
+        " class @ { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -168,9 +169,9 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" + 
         " function . {test: . { arg1 } @ {number } } @ {number } {\n" + 
         " }\n" + 
-        " class . { test class 2} {\n" + 
+        " class @ { test class 2} {\n" + 
         " }\n" + 
-        " class . { test class } {\n" + 
+        " class @ { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
