@@ -14,7 +14,7 @@ function setupPlomUi() {
 				function(blockWait, machine) {
 					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
-					var toReturn = self.val[machine.currentScope().lookup("key").getStringValue()];
+					var toReturn = selfVal.val[machine.currentScope().lookup("key").getStringValue()];
 					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
 					blockWait.unblockAndReturn(returnValue);
 				});
@@ -23,14 +23,14 @@ function setupPlomUi() {
 					var index = machine.currentScope().lookup("key").getStringValue();
 					var value = machine.currentScope().lookup("value").val;
 					var selfVal = machine.currentScope().lookupThis();
-					self.val[index] = value;
+					selfVal.val[index] = value;
 					blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:"),
 				function(blockWait, machine) {
 					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
-					var toReturn = self.val[machine.currentScope().lookup("index").getNumberValue()];
+					var toReturn = selfVal.val[machine.currentScope().lookup("index").getNumberValue()];
 					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
 					blockWait.unblockAndReturn(returnValue);
 				});
@@ -39,38 +39,38 @@ function setupPlomUi() {
 					var index = machine.currentScope().lookup("index");
 					var value = machine.currentScope().lookup("value").val;
 					var selfVal = machine.currentScope().lookupThis();
-					self.val[index.getNumberValue()] = value;
+					selfVal.val[index.getNumberValue()] = value;
 					blockWait.unblockAndReturn(Value.createVoidValue(coreTypes));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as number"),
 				function(blockWait, machine) {
 					var selfVal = machine.currentScope().lookupThis();
-					if (self.val == null)
+					if (selfVal.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
-						blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getNumberType()));
+						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getNumberType()));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as string"),
 				function(blockWait, machine) {
 					var selfVal = machine.currentScope().lookupThis();
-					if (self.val == null)
+					if (selfVal.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
-						blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getStringType()));
+						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getStringType()));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as boolean"),
 				function(blockWait, machine) {
 					var selfVal = machine.currentScope().lookupThis();
-					if (self.val == null)
+					if (selfVal.val == null)
 						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
 					else
-						blockWait.unblockAndReturn(Value.create(self.val, machine.coreTypes().getBooleanType()));
+						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getBooleanType()));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(self.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:"),
@@ -78,7 +78,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(self.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:"),
@@ -87,7 +87,7 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(self.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:"),
@@ -97,14 +97,14 @@ function setupPlomUi() {
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(self.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new self.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:"),
@@ -112,7 +112,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new self.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:"),
@@ -121,7 +121,7 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new self.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:"),
@@ -131,7 +131,7 @@ function setupPlomUi() {
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new self.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),

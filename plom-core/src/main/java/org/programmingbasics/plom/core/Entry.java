@@ -47,7 +47,7 @@ TODO:
 - retype
 - GWT custom linker 
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
-- inheritance in the UI and in saving
+- when typing a name, backspace at the start will delete the whole token
  */
 
 public class Entry implements EntryPoint
