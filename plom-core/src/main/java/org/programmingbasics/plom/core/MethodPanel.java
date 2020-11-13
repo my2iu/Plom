@@ -106,13 +106,13 @@ public class MethodPanel
     if (!argEls.isEmpty())
     {
       DivElement nameDiv = doc.createDivElement();
-      nameDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_name\"><input size=\"15\" type=\"text\">:</div>");
+      nameDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_name\"><input size=\"15\" type=\"text\" autocapitalize=\"off\">:</div>");
       ((InputElement)nameDiv.querySelector("input")).setValue(nameVal);
       nameEls.add(nameDiv);
       mainDiv.querySelector(".method_args").appendChild(nameDiv);
     }
     DivElement varDiv = doc.createDivElement();
-    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\">-</a></div>.<input size=\"15\" type=\"text\"><div class=\"typeEntry\">&nbsp;</div></div>");
+    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\">-</a></div>.<input size=\"15\" type=\"text\" autocapitalize=\"off\"><div class=\"typeEntry\">&nbsp;</div></div>");
     ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
     argEls.add(varDiv);
     mainDiv.querySelector(".method_args").appendChild(varDiv);

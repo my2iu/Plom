@@ -133,7 +133,7 @@ public class GlobalsPanel
     String name = v.name;
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
-    div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\"> <div class=\"typeEntry\">&nbsp;</div></div>");
+    div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div></div>");
     if (v.isImported)
       div.getClassList().add("moduleImported");
 
