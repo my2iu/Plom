@@ -506,6 +506,8 @@ public class ModuleCodeRepository
       classMap.put(clsdef.name, c);
       if (clsdef.parent != null)
         c.setSuperclass(Token.ParameterToken.fromContents("@" + clsdef.parent, Symbol.AtType));
+      else
+        c.setSuperclass(null);
     }
     
     for (StdLibMethod mdef: stdLibMethods)

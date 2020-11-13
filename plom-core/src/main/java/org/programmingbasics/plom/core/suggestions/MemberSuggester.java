@@ -19,10 +19,13 @@ public class MemberSuggester implements Suggester
   {
     List<String> suggestions = new ArrayList<>();
     Type type = context.lastTypeUsed;
-    while (type != null)
+    int depth = 0;
+    final int MAX_DEPTH = 10000;
+    while (type != null && depth < MAX_DEPTH)
     {
       type.lookupMethodSuggestions(val, suggestions);
       type = type.parent;
+      depth++;
     }
     return suggestions;
   }
