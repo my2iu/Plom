@@ -1,0 +1,254 @@
+div.main {
+	width: calc(100vw - 2em);
+	height: calc(100vh - 7em);
+	background-color: #eee;
+	position: relative;
+}
+
+.codemain, 
+.methodpanel, 
+.globalspanel, 
+.classpanel {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.codesidesplit, 
+.methodsidesplit, 
+.globalsidesplit, 
+.classsidesplit {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	flex-shrink: 1;
+	overflow: hidden;
+}
+
+.globaldetails, 
+.classdetails, 
+.methoddetails {
+	flex-grow: 1;
+	flex-shrink: 1;
+	overflow: auto;
+}
+
+.code {
+	background-color: #eef;
+	padding-right: 1em;
+	flex-grow: 1;
+	overflow: auto;
+	position: relative;
+}
+
+.sidechoices {
+	background-color: #eee;
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+.choices {
+	background-color: #fee;
+	flex-grow: 0;
+	flex-shrink: 0;
+	height: 50%;
+}
+
+.simpleentry {
+	background-color: #fed;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+.codemain .code .tokenline {
+	padding-left: 2em;
+	text-indent: -2em;
+}
+
+.codemain div.token, 
+.methodpanel .typeEntry div.token, 
+.globalspanel .typeEntry div.token,
+.classpanel .typeEntry div.token {
+	background-color: #ccc;
+	display: inline-block;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #aaa;
+	text-indent: 0;
+}
+
+.codemain span.token, 
+.methodpanel .typeEntry span.token, 
+.globalspanel .typeEntry span.token,
+.classpanel .typeEntry span.token {
+	background-color: #ccc;
+	display: inline;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #aaa;
+	text-indent: 0;
+}
+
+.codemain div.blocktoken, 
+.methodpanel .typeEntry div.blocktoken,
+.globalspanel .typeEntry div.blocktoken, 
+.classpanel .typeEntry div.blocktoken {
+	background-color: #ddd;
+	display: block;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #aaa;
+}
+
+.codemain .tokenError, 
+.methodpanel .typeEntry tokenError, 
+.globalspanel .typeEntry tokenError,
+.classpanel .typeEntry tokenError {
+	text-decoration: underline;
+	text-decoration: underline red;
+}
+
+.codemain .choices {
+	line-height: 2.5em;
+}
+
+.codemain .choices div.tokenchoice {
+	background-color: #ccc;
+	display: inline-block;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #aaa;
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+	line-height: 1.2em;
+}
+
+.codemain .choices div.tokenchoicedisabled {
+	color: #bbb background-color: #ddd;
+	display: inline-block;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #aaa;
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+	line-height: 1.2em;
+}
+
+.sidechoices a div {
+	padding: 0.5em;
+}
+
+.sidechoices a:link, 
+.sidechoices a:visited, 
+.sidechoices a:hover,
+.sidechoices a:active {
+	text-decoration: underline;
+	color: black;
+}
+
+.testbuttons {
+	height: 1.5em;
+}
+
+.console {
+	height: 2em;
+}
+
+a.runbutton {
+	
+}
+
+.subject {
+	display: flex;
+	min-height: 1.5em;
+}
+
+.subject .breadcrumb {
+	flex-grow: 1;
+}
+
+.subject .breadcrumb .breadcrumb-item {
+	padding-right: 1em;
+}
+
+.subject .edit {
+	min-width: 1.5em;
+	background-color: #ddd;
+	text-align: center;
+}
+
+.globalspanel .functionList>div {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding-left: 0.5em;
+}
+
+.globalspanel .functionList>div.moduleImported {
+	padding-left: 1.25em;
+	font-style: italic;
+}
+
+.globalspanel .functionsHeading {
+	margin-top: 1em;
+}
+
+.globalspanel .globalVarsList>div {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding-left: 0.5em;
+}
+
+.globalspanel .globalVarsList>div.moduleImported {
+	padding-left: 1.25em;
+	font-style: italic;
+}
+
+.globalspanel .globalVarsHeading {
+	margin-top: 1em;
+}
+
+.globalspanel .classesList>div {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding-left: 0.5em;
+}
+
+.globalspanel .classesList>div.moduleImported {
+	padding-left: 1.25em;
+	font-style: italic;
+}
+
+.globalspanel .classesHeading {
+	margin-top: 1em;
+}
+
+.classpanel .methodsList>div, 
+.classpanel .staticMethodsList>div,
+.classpanel .constructorMethodsList>div {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding-left: 0.5em;
+}
+
+.methodpanel .typeEntry, 
+.globalspanel .typeEntry, 
+.classpanel .typeEntry {
+	display: inline-block;
+	border: 1px solid black;
+	min-width: 3em;
+	padding-right: 1em;
+	position: relative;
+}
+
+.methodpanel .typeEntry .tokenline, 
+.globalspanel .typeEntry .tokenline,
+.classpanel .typeEntry .tokenline {
+	display: inline;
+}
+
+.methodpanel .typeEntry span.typeTokenSelected, 
+.globalspanel .typeEntry span.typeTokenSelected,
+.classpanel .typeEntry span.typeTokenSelected {
+	background-color: #7f7;
+}

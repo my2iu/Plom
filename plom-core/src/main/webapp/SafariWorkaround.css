@@ -1,0 +1,21 @@
+.codemain, 
+.methodpanel, 
+.globalspanel, 
+.classpanel {
+	height: auto;
+}
+
+div.main {
+	height: auto;
+}
+
+.codesidesplit, 
+.methodsidesplit, 
+.globalsidesplit, 
+.classsidesplit {
+	height: calc(50vh - 3.5em);
+}
+
+.choices {
+	height: calc(50vh - 3.5em);
+}
