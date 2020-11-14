@@ -191,8 +191,9 @@ public class RepositoryScope extends VariableScope
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.name, fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
+            // Use @void as the return type for constructors
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
-                typeFromToken(fn.sig.returnType), args);
+                coreTypes.getVoidType(), args);
           }
           else
           {
