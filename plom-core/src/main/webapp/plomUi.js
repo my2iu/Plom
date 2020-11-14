@@ -233,11 +233,11 @@ function setupPlomUi() {
 				reader.onload = function(loadedEvt) {
 					var readStr = reader.result;
 					try {
-						main.loadGlobalsView();  // Close the existing code view to force a save of the current code before it is overwritten
 					    var newRepository = new ModuleCodeRepository();
 					    newRepository.setChainedRepository(makeStdLibRepository());
 					    loadCodeStringIntoRepository(readStr, newRepository);
 						main.repository = newRepository;
+						main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
 						main.loadGlobalsView();
 					}
 					catch (err)

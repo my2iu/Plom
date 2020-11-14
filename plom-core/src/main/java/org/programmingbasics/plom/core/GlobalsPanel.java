@@ -19,6 +19,7 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import jsinterop.annotations.JsFunction;
 
 /**
  * UI code for listing global variables
@@ -29,13 +30,17 @@ public class GlobalsPanel
   SimpleEntry simpleEntry;
   ModuleCodeRepository repository;
   DivElement mainDiv;
-  GlobalsPanelViewSwitcher viewSwitchCallback;
+  LoadFunctionCodeViewCallback viewSwitchCallback;
+  LoadFunctionSigViewCallback functionSigCallback;
+  LoadClassViewCallback classViewCallback;
   
-  GlobalsPanel(DivElement mainDiv, ModuleCodeRepository repository, GlobalsPanelViewSwitcher callback)
+  GlobalsPanel(DivElement mainDiv, ModuleCodeRepository repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
     this.viewSwitchCallback = callback;
+    this.functionSigCallback = functionSigCallback;
+    this.classViewCallback = classViewCallback;
     rebuildView();
   }
   
@@ -57,7 +62,7 @@ public class GlobalsPanel
       String newClassName = ModuleCodeRepository.findUniqueName("class", (name) -> !repository.hasClassWithName(name));
       ClassDescription c = repository.addClassAndResetIds(newClassName);
       // Switch to view the class
-      viewSwitchCallback.loadClassView(c);
+      classViewCallback.load(c, true);
     }, false);
 
     // List of classes
@@ -69,7 +74,7 @@ public class GlobalsPanel
       a.setHref("#");
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-        viewSwitchCallback.loadClassView(cls);
+        classViewCallback.load(cls, false);
       }, false);
       DivElement div = doc.createDivElement();
       if (cls.isImported || cls.isBuiltIn)
@@ -89,7 +94,8 @@ public class GlobalsPanel
           new StatementContainer());
       repository.addFunctionAndResetIds(func);
       
-      viewSwitchCallback.loadFunctionSignatureView(func);
+      if (functionSigCallback != null)
+        functionSigCallback.load(func, true);
     }, false);
     
     // List of functions
@@ -101,7 +107,7 @@ public class GlobalsPanel
       a.setTextContent(fnName.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-        viewSwitchCallback.loadFunctionCodeView(fnName);
+        viewSwitchCallback.load(fnName);
       }, false);
       DivElement div = doc.createDivElement();
       if (fnName.isImported)
@@ -159,10 +165,21 @@ public class GlobalsPanel
     }, false);
   }
 
-  public static interface GlobalsPanelViewSwitcher
+  @JsFunction
+  public static interface LoadFunctionSigViewCallback
   {
-    void loadFunctionCodeView(FunctionDescription fnName);
-    void loadFunctionSignatureView(FunctionDescription sig);
-    void loadClassView(ClassDescription cls);
+    void load(FunctionDescription sig, boolean isNew);
+  }
+
+  @JsFunction
+  public static interface LoadClassViewCallback
+  {
+    void load(ClassDescription cls, boolean isNew);
+    
+  }
+  @JsFunction
+  public static interface LoadFunctionCodeViewCallback
+  {
+    void load(FunctionDescription fnName);
   }
 }

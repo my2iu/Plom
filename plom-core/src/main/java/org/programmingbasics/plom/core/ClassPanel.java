@@ -19,6 +19,7 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import jsinterop.annotations.JsFunction;
 
 /**
  * UI panel for modifying classes
@@ -30,18 +31,20 @@ public class ClassPanel
   DivElement mainDiv;
   ModuleCodeRepository repository; 
   ClassDescription cls;
-  ClassPanelViewSwitcher viewSwitchCallback;
+  LoadMethodCodeViewCallback viewSwitchCallback;
+  LoadMethodSigViewCallback methodSigViewCallback;
   
-  ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, ClassPanelViewSwitcher callback)
+  ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, boolean isNew)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
     this.cls = cls;
     this.viewSwitchCallback = callback;
-    rebuildView();
+    this.methodSigViewCallback = methodSigViewCallback;
+    rebuildView(isNew);
   }
   
-  public void rebuildView()
+  public void rebuildView(boolean isNew)
   {
     mainDiv.setInnerHTML(UIResources.INSTANCE.getClassPanelHtml().getText());
 
@@ -81,7 +84,7 @@ public class ClassPanel
           new StatementContainer());
       cls.addMethod(func);
 
-      viewSwitchCallback.loadMethodSignatureView(cls, func);
+      methodSigViewCallback.load(cls, func, true);
     }, false);
     
     // List of instance methods
@@ -97,7 +100,7 @@ public class ClassPanel
           new StatementContainer());
       cls.addMethod(func);
 
-      viewSwitchCallback.loadMethodSignatureView(cls, func);
+      methodSigViewCallback.load(cls, func, true);
     }, false);
     
     // For adding constructor methods
@@ -110,7 +113,7 @@ public class ClassPanel
           new StatementContainer());
       cls.addMethod(func);
 
-      viewSwitchCallback.loadMethodSignatureView(cls, func);
+      methodSigViewCallback.load(cls, func, true);
     }, false);
     
     // List of static methods
@@ -125,7 +128,7 @@ public class ClassPanel
       e.preventDefault();
       String newVarName = "";
       cls.addVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
-      rebuildView();
+      rebuildView(false);
     }, false);
    
     List<DivElement> varDivs = new ArrayList<>();
@@ -133,7 +136,11 @@ public class ClassPanel
     {
       addVarEntry(mainDiv, v, varDivs);
     }
-
+    
+    // When creating a new class, the name should initially be highlight, so that
+    // you can immediately set a name for the class
+    if (isNew)
+      nameAnchor.select();
   }
 
   private void createMethodList(Element methodListEl, List<FunctionDescription> fnList)
@@ -145,7 +152,7 @@ public class ClassPanel
       a.setTextContent(fn.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
-        viewSwitchCallback.loadMethodCodeView(cls, fn);
+        viewSwitchCallback.load(cls, fn);
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
@@ -183,10 +190,15 @@ public class ClassPanel
     }, false);
   }
 
-  
-  public static interface ClassPanelViewSwitcher
+  @JsFunction
+  public static interface LoadMethodSigViewCallback
   {
-    void loadMethodCodeView(ClassDescription cls, FunctionDescription method);
-    void loadMethodSignatureView(ClassDescription cls, FunctionDescription method);
+    void load(ClassDescription cls, FunctionDescription method, boolean isNew);
+  }
+  
+  @JsFunction
+  public static interface LoadMethodCodeViewCallback
+  {
+    void load(ClassDescription cls, FunctionDescription method);
   }
 }

@@ -206,7 +206,7 @@ public class Main
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      loadFunctionSignatureView(sig);
+      loadFunctionSignatureView(sig, false);
     }, false);
     breadcrumbEl.appendChild(a);
   }
@@ -222,7 +222,7 @@ public class Main
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      loadClassView(cls);
+      loadClassView(cls, false);
     }, false);
     breadcrumbEl.appendChild(a);
   }
@@ -238,7 +238,7 @@ public class Main
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      loadClassView(cls);
+      loadClassView(cls, false);
     }, false);
     breadcrumbEl.appendChild(a);
     
@@ -248,7 +248,7 @@ public class Main
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      loadMethodSignatureView(cls, m);
+      loadMethodSignatureView(cls, m, false);
     }, false);
     breadcrumbEl.appendChild(a);
   }
@@ -270,7 +270,7 @@ public class Main
     showCodePanel(repository.getFunctionDescription(fnName).code);
   }
 
-  void loadFunctionSignatureView(FunctionDescription sig)
+  void loadFunctionSignatureView(FunctionDescription sig, boolean isNew)
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
@@ -278,10 +278,10 @@ public class Main
     fillBreadcrumbForFunction(breadcrumbEl, sig);
     
     closeCodePanelIfOpen();
-    showFunctionPanel(sig);
+    showFunctionPanel(sig, isNew);
   }
 
-  void loadClassView(ClassDescription cls)
+  void loadClassView(ClassDescription cls, boolean isNew)
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
@@ -289,7 +289,7 @@ public class Main
     fillBreadcrumbForClass(breadcrumbEl, cls);
     
     closeCodePanelIfOpen();
-    showClassPanel(cls);
+    showClassPanel(cls, isNew);
   }
 
   void loadMethodCodeView(ClassDescription cls, FunctionDescription m)
@@ -305,7 +305,7 @@ public class Main
     showCodePanel(m.code);
   }
 
-  void loadMethodSignatureView(ClassDescription cls, FunctionDescription m)
+  void loadMethodSignatureView(ClassDescription cls, FunctionDescription m, boolean isNew)
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
     Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
@@ -313,7 +313,7 @@ public class Main
     fillBreadcrumbForMethod(breadcrumbEl, cls, m);
     
     closeCodePanelIfOpen();
-    showMethodPanel(cls, m);
+    showMethodPanel(cls, m, isNew);
   }
 
   public void loadGlobalsView()
@@ -327,9 +327,8 @@ public class Main
     showGlobalsPanel();
   }
   
-  private void closeCodePanelIfOpen()
+  public void closeCodePanelWithoutSavingIfOpen()
   {
-    saveCodeToRepository();
     if (codePanel != null) 
     {
       codePanel.close();
@@ -338,6 +337,12 @@ public class Main
     currentMethodBeingViewed = null;
     currentMethodClassBeingViewed = null;
     codePanel = null;
+  }
+  
+  private void closeCodePanelIfOpen()
+  {
+    saveCodeToRepository();
+    closeCodePanelWithoutSavingIfOpen();
   }
   
   private void showCodePanel(StatementContainer code)
@@ -425,25 +430,24 @@ public class Main
     DivElement mainDiv = getMainDiv();
     
     globalsPanel = new GlobalsPanel(mainDiv, repository,
-        new GlobalsPanel.GlobalsPanelViewSwitcher() {
-          @Override public void loadFunctionSignatureView(FunctionDescription sig) { Main.this.loadFunctionSignatureView(sig); }
-          @Override public void loadFunctionCodeView(FunctionDescription fnName) { Main.this.loadFunctionCodeView(fnName.sig.getLookupName()); }
-          @Override public void loadClassView(ClassDescription cls) { Main.this.loadClassView(cls); }
-        });
+        (FunctionDescription fnName) -> Main.this.loadFunctionCodeView(fnName.sig.getLookupName()),
+        (FunctionDescription sig, boolean isNew) -> loadFunctionSignatureView(sig, isNew),
+        (ClassDescription cls, boolean isNew) -> loadClassView(cls, isNew)
+        );
   }
   
-  private void showFunctionPanel(FunctionDescription sig)
+  private void showFunctionPanel(FunctionDescription sig, boolean isNew)
   {
-    methodPanel = new MethodPanel(getMainDiv(), repository, sig.sig);
+    methodPanel = new MethodPanel(getMainDiv(), repository, sig.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
       repository.changeFunctionSignature(newSig, sig);
       loadFunctionCodeView(newSig.getLookupName());
     });
   }
 
-  private void showMethodPanel(ClassDescription cls, FunctionDescription m)
+  private void showMethodPanel(ClassDescription cls, FunctionDescription m, boolean isNew)
   {
-    methodPanel = new MethodPanel(getMainDiv(), repository, m.sig);
+    methodPanel = new MethodPanel(getMainDiv(), repository, m.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
       m.sig = newSig;
       cls.updateMethod(m);
@@ -451,15 +455,12 @@ public class Main
     });
   }
 
-  private void showClassPanel(ClassDescription cls)
+  private void showClassPanel(ClassDescription cls, boolean isNew)
   {
     classPanel = new ClassPanel(getMainDiv(), repository, cls, 
-        new ClassPanel.ClassPanelViewSwitcher() {
-          @Override public void loadMethodSignatureView(ClassDescription cls, FunctionDescription method)
-            { Main.this.loadMethodSignatureView(cls, method); }
-          @Override public void loadMethodCodeView(ClassDescription cls, FunctionDescription method)
-            { Main.this.loadMethodCodeView(cls, method); }
-        });
+        (ClassDescription c, FunctionDescription method) -> loadMethodCodeView(c, method),
+        (ClassDescription c, FunctionDescription method, boolean isNewMethod) -> loadMethodSignatureView(c, method, isNewMethod),
+        isNew);
   }
 
 }

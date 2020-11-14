@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
@@ -16,7 +17,7 @@ import elemental.html.InputElement;
 
 public class MethodPanel
 {
-  MethodPanel(DivElement mainDiv, ModuleCodeRepository repository, FunctionSignature sig)
+  MethodPanel(DivElement mainDiv, ModuleCodeRepository repository, FunctionSignature sig, boolean isNew)
   {
     this.repository = repository;
 
@@ -28,13 +29,14 @@ public class MethodPanel
         (DivElement)mainDiv.querySelector("div.sidechoices"));
     simpleEntry.setVisible(false);
     
-    showMethod(mainDiv, sig);
+    showMethod(mainDiv, sig, isNew);
   }
 
   final Document doc;
   SignatureListener listener;
   ModuleCodeRepository repository;
   SimpleEntry simpleEntry;
+  TypeEntryField returnTypeField = null;
   
   public static interface SignatureListener
   {
@@ -46,12 +48,11 @@ public class MethodPanel
     this.listener = listener;
   }
   
-  public void showMethod(DivElement containerDiv, FunctionSignature sig)
+  public void showMethod(DivElement containerDiv, FunctionSignature sig, boolean isNew)
   {
     List<DivElement> nameEls = new ArrayList<>();
     List<DivElement> argEls = new ArrayList<>();
     List<TypeEntryField> argTypeFields = new ArrayList<>();
-    TypeEntryField returnTypeField;
     
     // Fill in the function name
     nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
@@ -67,13 +68,19 @@ public class MethodPanel
     }, false);
 
     // Render the return type
-    returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
-        },
-        (context) -> {});
-    returnTypeField.render();
+    if (!sig.isConstructor)
+    {
+      returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
+          (scope, coreTypes) -> {
+            StandardLibrary.createGlobals(null, scope, coreTypes);
+            scope.setParent(new RepositoryScope(repository, coreTypes));
+          },
+          (context) -> {});
+      returnTypeField.render();
+    }
+    else
+      // Constructors have no return type
+      containerDiv.querySelector(".method_return").getStyle().setDisplay(Display.NONE);      
 
     // Ok Button
     AnchorElement okButton = (AnchorElement)containerDiv.querySelector("a.done");
@@ -91,11 +98,16 @@ public class MethodPanel
         argNames.add(((InputElement)div.querySelector("input")).getValue());
       for (TypeEntryField typeField: argTypeFields)
         argTypes.add(typeField.type);
-      returnType = returnTypeField.type;
+      if (returnTypeField != null)
+        returnType = returnTypeField.type;
       FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes, sig);
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);
+    
+    // When creating a new function/method, the name should be selected so that you can immediately give it a new name 
+    if (isNew)
+      ((InputElement)nameEls.get(0).querySelector("input")).select();
   }
 
   private void addMethodPanelArg(DivElement mainDiv,
