@@ -37,6 +37,7 @@ enum Symbol
   StaticMethodCallExpression(false),
   EndStatement(true),
   This(true),
+  NullLiteral(true),
   TrueLiteral(true),
   FalseLiteral(true),
   String(true),

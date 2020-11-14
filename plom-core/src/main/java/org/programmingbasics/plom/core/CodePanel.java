@@ -110,6 +110,7 @@ public class CodePanel
         Symbol.String,
         Symbol.TrueLiteral,
         Symbol.FalseLiteral,
+        Symbol.NullLiteral,
         Symbol.This,
         Symbol.Assignment,
         Symbol.Plus,
@@ -441,6 +442,7 @@ public class CodePanel
       case This: text = "this"; break;
       case TrueLiteral: text = "true"; break;
       case FalseLiteral: text = "false"; break;
+      case NullLiteral: text = "null"; break;
       case Number: text = "123..."; break;
       case String: text = "\"...\""; break;
       case Var: text = "var"; break;

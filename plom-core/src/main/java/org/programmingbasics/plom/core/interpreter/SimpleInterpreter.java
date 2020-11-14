@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 /**
@@ -29,7 +30,7 @@ public class SimpleInterpreter
   StatementContainer code;
   AstNode parsedCode;
   MachineContext ctx;
-  Consumer<Throwable> errorLogger;
+  ErrorLogger errorLogger;
   
   // When parsing type information, we need a structure for stashing
   // that type info in order to return it
@@ -218,7 +219,13 @@ public class SimpleInterpreter
           });
   }
 
-  public SimpleInterpreter setErrorLogger(Consumer<Throwable> errorLogger)
+  @JsFunction
+  public static interface ErrorLogger
+  {
+    public void error(Object errObj);
+  }
+
+  public SimpleInterpreter setErrorLogger(ErrorLogger errorLogger)
   {
     this.errorLogger = errorLogger;
     return this;
@@ -232,7 +239,7 @@ public class SimpleInterpreter
     catch (Throwable e)
     {
       if (errorLogger != null)
-        errorLogger.accept(e);
+        errorLogger.error(e);
     }
   }
 
@@ -251,7 +258,7 @@ public class SimpleInterpreter
     catch (Throwable e)
     {
       if (errorLogger != null)
-        errorLogger.accept(e);
+        errorLogger.error(e);
       else
         throw e;
     }

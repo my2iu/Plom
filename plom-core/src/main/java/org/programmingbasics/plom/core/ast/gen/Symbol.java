@@ -37,6 +37,7 @@ public enum Symbol
 	StaticMethodCallExpression,
 	EndStatement,
 	This,
+	NullLiteral,
 	TrueLiteral,
 	FalseLiteral,
 	String,
@@ -79,6 +80,7 @@ public enum Symbol
 		case EMPTY:
 		case EndStatement:
 		case This:
+		case NullLiteral:
 		case TrueLiteral:
 		case FalseLiteral:
 		case String:

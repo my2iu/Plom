@@ -69,6 +69,7 @@ public class PlomAstGen
       rule(ParenthesisExpression, OpenParenthesis, Expression, ClosedParenthesis),
       rule(ParenthesisExpression, ValueExpression),
       rule(ValueExpression, This),
+      rule(ValueExpression, NullLiteral),
       rule(ValueExpression, TrueLiteral),
       rule(ValueExpression, FalseLiteral),
       rule(ValueExpression, Number),

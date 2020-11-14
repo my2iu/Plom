@@ -166,6 +166,11 @@ public class CodeSuggestExpressionTyper
         context.setLastTypeUsed(context.coreTypes().getBooleanType());
         return true;
       })
+      .add(Rule.NullLiteral, (triggers, node, context, param) -> {
+        context.pushType(context.coreTypes().getNullType());
+        context.setLastTypeUsed(context.coreTypes().getNullType());
+        return true;
+      })
       .add(Rule.This, (triggers, node, context, param) -> {
         Type thisType;
         try {

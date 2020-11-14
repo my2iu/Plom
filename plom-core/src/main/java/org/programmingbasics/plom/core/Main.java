@@ -13,6 +13,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
@@ -24,6 +25,8 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -91,7 +94,7 @@ public class Main
   String currentFunctionBeingViewed = null;
   ClassDescription currentMethodClassBeingViewed = null;
   FunctionDescription currentMethodBeingViewed = null;
-  Consumer<Throwable> errorLogger = (err) -> {
+  ErrorLogger errorLogger = (err) -> {
     Document doc = Browser.getDocument();
     Element consoleEl = doc.querySelector(".console");
     consoleEl.setInnerHTML("");
@@ -120,9 +123,9 @@ public class Main
       else
         msg.setTextContent(errString + " (line " + lineNo + ")");
     }
-    else if (err.getMessage() != null && !err.getMessage().isEmpty())
+    else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
     {
-      msg.setTextContent(err.getMessage());
+      msg.setTextContent(((Throwable)err).getMessage());
     }
     else
     {
@@ -131,6 +134,11 @@ public class Main
     consoleEl.appendChild(msg);
   }; 
 
+  public ErrorLogger getErrorLogger()
+  {
+    return errorLogger;
+  }
+  
   public static String getStdLibCodeText()
   {
     return UIResources.INSTANCE.getStdLibPlom().getText();

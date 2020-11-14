@@ -216,6 +216,11 @@ public class ExpressionEvaluator
             machine.pushValue(machine.coreTypes().getFalseValue());
             machine.ip.pop();
       })
+      .add(Rule.NullLiteral, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            machine.pushValue(machine.coreTypes().getNullValue());
+            machine.ip.pop();
+      })
       .add(Rule.This, 
           (MachineContext machine, AstNode node, int idx) -> {
             machine.pushValue(machine.currentScope().lookupThis());

@@ -36,6 +36,7 @@ public class PlomTextWriter
   static final Map<Symbol, String> symbolTokenMap = new HashMap<>();
   static {
     symbolTokenMap.put(Symbol.This, "this");
+    symbolTokenMap.put(Symbol.NullLiteral, "null");
     symbolTokenMap.put(Symbol.TrueLiteral, "true");
     symbolTokenMap.put(Symbol.FalseLiteral, "false");
     symbolTokenMap.put(Symbol.DotVariable, ".");
