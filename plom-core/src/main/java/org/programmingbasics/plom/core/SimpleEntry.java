@@ -5,6 +5,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 
+import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -157,11 +158,14 @@ public class SimpleEntry
       container.querySelector("span.postfix").setTextContent(postfix);
     }
     else
+    {
       container.querySelector("span.prefix").setTextContent(prompt);
+      container.querySelector("span.postfix").setTextContent("");
+    }
     setVisible(true);
     toHide.getStyle().setDisplay(Display.NONE);
     forInput.getStyle().setDisplay(Display.INLINE);
-    forInput.focus();
+    forInput.focus();  // Safari seems unreliable about grabbing focus here
     if (initialValue != null)
       ((InputElement)forInput).setValue(initialValue);
     else
@@ -174,6 +178,11 @@ public class SimpleEntry
     this.callback = (InputCallback<Token>)callback;
     refillSuggestions();
     simpleEntryInput(initialValue, false);
+    // I can't reliably grab focus for the input in Safari, so I'll
+    // try grabbing focus again after a delay
+    Browser.getWindow().setTimeout(() -> {
+      forInput.focus();
+    }, 0);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>
