@@ -140,7 +140,10 @@ public class ClassPanel
     // When creating a new class, the name should initially be highlight, so that
     // you can immediately set a name for the class
     if (isNew)
+    {
+      nameAnchor.focus();  // Documentation is unclear as to whether select() also sets focus or not
       nameAnchor.select();
+    }
   }
 
   private void createMethodList(Element methodListEl, List<FunctionDescription> fnList)

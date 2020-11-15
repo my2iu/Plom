@@ -107,7 +107,10 @@ public class MethodPanel
     
     // When creating a new function/method, the name should be selected so that you can immediately give it a new name 
     if (isNew)
+    {
+      ((InputElement)nameEls.get(0).querySelector("input")).focus();  // Documentation is unclear as to whether select() also sets focus or not
       ((InputElement)nameEls.get(0).querySelector("input")).select();
+    }
   }
 
   private void addMethodPanelArg(DivElement mainDiv,

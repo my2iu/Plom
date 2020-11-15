@@ -5,7 +5,6 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 
-import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -55,6 +54,14 @@ public class SimpleEntry
   
   void simpleEntryInput(String val, boolean isFinal)
   {
+    if (isFinal)
+    {
+      // Safari seems like it sometimes doesn't close the soft keyboard if the
+      // user hits "return"/"enter" on the soft keyboard, so we'll force a blur to close it 
+      container.querySelector("textarea").blur();
+      container.querySelector("input").blur();
+    }
+      
     if (callback != null)
     {
       callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken, isEdit);
@@ -165,11 +172,13 @@ public class SimpleEntry
     setVisible(true);
     toHide.getStyle().setDisplay(Display.NONE);
     forInput.getStyle().setDisplay(Display.INLINE);
-    forInput.focus();  // Safari seems unreliable about grabbing focus here
     if (initialValue != null)
       ((InputElement)forInput).setValue(initialValue);
     else
       ((InputElement)forInput).setValue("");
+    // In Safari, just setting focus won't cause the soft keyboard to trigger. I think a cursor also has to be placed to trigger the keyboard reliably.
+    ((InputElement)forInput).setSelectionRange(((InputElement)forInput).getValue().length(), ((InputElement)forInput).getValue().length());
+    forInput.focus();
     simpleEntryToken = token;
     this.tokenPrefix = prefix;
     this.tokenPostfix = postfix;
@@ -178,11 +187,6 @@ public class SimpleEntry
     this.callback = (InputCallback<Token>)callback;
     refillSuggestions();
     simpleEntryInput(initialValue, false);
-    // I can't reliably grab focus for the input in Safari, so I'll
-    // try grabbing focus again after a delay
-    Browser.getWindow().setTimeout(() -> {
-      forInput.focus();
-    }, 0);
   }
 
   @FunctionalInterface static interface InputCallback<T extends Token>
