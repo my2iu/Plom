@@ -13,6 +13,8 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
@@ -34,14 +36,16 @@ public class ClassPanel
   ClassDescription cls;
   LoadMethodCodeViewCallback viewSwitchCallback;
   LoadMethodSigViewCallback methodSigViewCallback;
+  ExitClassViewCallback exitCallback;
   
-  ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, boolean isNew)
+  ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, ExitClassViewCallback exitCallback, boolean isNew)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
     this.cls = cls;
     this.viewSwitchCallback = callback;
     this.methodSigViewCallback = methodSigViewCallback;
+    this.exitCallback = exitCallback;
     rebuildView(isNew);
   }
   
@@ -62,6 +66,18 @@ public class ClassPanel
       cls.setName(nameAnchor.getValue());
     }, false);
 
+    // For deleting the whole class
+    AnchorElement deleteClassAnchor = (AnchorElement)mainDiv.querySelector(".className a.delete_class");
+    deleteClassAnchor.addEventListener(Event.CLICK, (evt) -> {
+      repository.deleteClassAndResetIds(cls.module, cls.id);
+      exitCallback.exit();
+      evt.preventDefault();
+    }, false);
+    if (cls.isBuiltIn || cls.isImported)
+    {
+      deleteClassAnchor.getStyle().setDisplay(Display.NONE);
+    }
+    
     // For setting the supertype
     TypeEntryField extendsField = new TypeEntryField(cls.parent, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
@@ -168,8 +184,18 @@ public class ClassPanel
         e.preventDefault();
         viewSwitchCallback.load(cls, fn);
       }, false);
+      AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
+      deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
+      deleteAnchor.setHref("#");
+      deleteAnchor.setTextContent("X");
+      deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+        evt.preventDefault();
+        cls.deleteMethodAndResetIds(fn.id);
+        rebuildView(false);
+      }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
+      div.appendChild(deleteAnchor);
       methodListEl.appendChild(div);
     }
   }
@@ -181,7 +207,7 @@ public class ClassPanel
     String name = v.name;
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
-    div.setInnerHTML("<div class=\"class_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div></div>");
+    div.setInnerHTML("<div class=\"class_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" class=\"delete_class_var\">X</a></div>");
     ((InputElement)div.querySelector("input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".varsList").appendChild(div);
@@ -202,8 +228,21 @@ public class ClassPanel
       v.name = nameInput.getValue(); 
       cls.updateVariable(v);
     }, false);
+    
+    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_class_var");
+    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      cls.deleteVarAndResetIds(v.id);
+      rebuildView(false);
+    }, false);
   }
 
+  @JsFunction
+  public static interface ExitClassViewCallback
+  {
+    void exit();
+  }
+  
   @JsFunction
   public static interface LoadMethodSigViewCallback
   {

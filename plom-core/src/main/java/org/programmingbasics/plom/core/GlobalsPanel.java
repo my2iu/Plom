@@ -13,6 +13,8 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
@@ -113,7 +115,19 @@ public class GlobalsPanel
       DivElement div = doc.createDivElement();
       if (fnName.isImported)
         div.getClassList().add("moduleImported");
+      AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
+      deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
+      deleteAnchor.setHref("#");
+      deleteAnchor.setTextContent("X");
+      if (fnName.isImported)
+        deleteAnchor.getStyle().setDisplay(Display.NONE);
+      deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+        evt.preventDefault();
+        repository.deleteFunctionAndResetIds(fnName.module, fnName.id);
+        rebuildView();
+      }, false);
       div.appendChild(a);
+      div.appendChild(deleteAnchor);
       functionListEl.appendChild(div);
     }
     
@@ -149,7 +163,7 @@ public class GlobalsPanel
     String name = v.name;
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
-    div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div></div>");
+    div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" class=\"delete_global_var\">X</a></div>");
     if (v.isImported)
       div.getClassList().add("moduleImported");
 
@@ -172,6 +186,15 @@ public class GlobalsPanel
     nameInput.addEventListener(Event.CHANGE, (evt) -> {
       v.name = nameInput.getValue(); 
       repository.updateGlobalVariable(v);
+    }, false);
+    
+    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_global_var");
+    if (v.isImported)
+      deleteAnchor.getStyle().setDisplay(Display.NONE);
+    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+      evt.preventDefault();
+      repository.deleteGlobalVarAndResetIds(v.module, v.id);
+      rebuildView();
     }, false);
   }
 

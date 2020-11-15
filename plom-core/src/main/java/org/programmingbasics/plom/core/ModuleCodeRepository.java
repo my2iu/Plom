@@ -132,12 +132,14 @@ public class ModuleCodeRepository
     public FunctionSignature sig;
     public StatementContainer code;
     public boolean isImported;
+    public ModuleCodeRepository module;
     public FunctionDescription setImported(boolean isImported) { this.isImported = isImported; return this;}
   }
 
   public static class VariableDescription extends DescriptionWithId
   {
     public String name;
+    public ModuleCodeRepository module;
     public Token.ParameterToken type;
     public boolean isImported;
   }
@@ -150,6 +152,7 @@ public class ModuleCodeRepository
     List<VariableDescription> variables = new ArrayList<>();
     public boolean isBuiltIn = false;
     public boolean isImported;
+    ModuleCodeRepository module;
     public List<FunctionDescription> getInstanceMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
@@ -175,6 +178,10 @@ public class ModuleCodeRepository
       f.id = methods.size();
       methods.add(f);
     }
+    public void deleteMethodAndResetIds(int id)
+    {
+      methods.remove(id);
+    }
     public boolean hasMethodWithName(String name)
     {
       for (FunctionDescription m: methods)
@@ -193,6 +200,10 @@ public class ModuleCodeRepository
       v.type = type;
       variables.add(0, v);
       return 0;
+    }
+    public void deleteVarAndResetIds(int id)
+    {
+      variables.remove(id);
     }
     public List<VariableDescription> getAllVars()
     {
@@ -375,9 +386,18 @@ public class ModuleCodeRepository
   
   public void addFunctionAndResetIds(FunctionDescription func)
   {
+    func.module = this;
     functions.add(0, func);
   }
   
+  public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
+  {
+    // This only works if only the current module can delete things, and the current module's functions are inserted into the merged function list first 
+    if (module != this)
+      throw new IllegalArgumentException("Not deleting class from correct chained module");
+    functions.remove(id);
+  }
+
   private void fillChainedFunctionNames(List<String> mergedFunctions)
   {
     for (FunctionDescription fn: functions)
@@ -439,14 +459,23 @@ public class ModuleCodeRepository
     VariableDescription v = new VariableDescription();
     v.name = name;
     v.type = type;
+    v.module = this;
     globalVars.add(0, v);
     return 0;
   }
   
   public void updateGlobalVariable(VariableDescription v)
   {
-    if (v.id < globalVars.size())
+    if (v.id < globalVars.size() && v.module == this)
       globalVars.set(v.id, v);
+  }
+  
+  public void deleteGlobalVarAndResetIds(ModuleCodeRepository module, int id)
+  {
+    // This only works if only the current module can delete things, and the current module is inserted into the merged global variable list first 
+    if (module != this)
+      throw new IllegalArgumentException("Not deleting global var from correct chained module");
+    globalVars.remove(id);
   }
   
   private void fillChainedClasses(List<ClassDescription> mergedClassList)
@@ -465,11 +494,20 @@ public class ModuleCodeRepository
   public ClassDescription addClassAndResetIds(String name)
   {
     ClassDescription cls = new ClassDescription();
+    cls.module = this;
     cls.name = name;
     cls.parent = Token.ParameterToken.fromContents("@object", Symbol.AtType);
     classes.add(0, cls);
     cls.id = 0;
     return cls;
+  }
+  
+  public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
+  {
+    // This only works if only the current module can delete things, and the current module's classes are inserted into the merged class list first 
+    if (module != this)
+      throw new IllegalArgumentException("Not deleting class from correct chained module");
+    classes.remove(id);
   }
   
   public boolean hasClassWithName(String name)

@@ -468,6 +468,7 @@ public class Main
     classPanel = new ClassPanel(getMainDiv(), repository, cls, 
         (ClassDescription c, FunctionDescription method) -> loadMethodCodeView(c, method),
         (ClassDescription c, FunctionDescription method, boolean isNewMethod) -> loadMethodSignatureView(c, method, isNewMethod),
+        () -> loadGlobalsView(),
         isNew);
   }
 
