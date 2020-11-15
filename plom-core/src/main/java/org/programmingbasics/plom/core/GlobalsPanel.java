@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
@@ -121,8 +122,17 @@ public class GlobalsPanel
     newGlobalAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       String newVarName = "";
-      repository.addGlobalVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      int newId = repository.addGlobalVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
       rebuildView();
+      NodeList nodes = mainDiv.querySelectorAll("div.global_var");
+      // Assume ids are linear
+      if (newId < nodes.length())
+      {
+        Element el = (Element)nodes.item(newId);
+        el.scrollIntoView();
+        ((InputElement)el.querySelector("input")).focus();
+        ((InputElement)el.querySelector("input")).select();
+      }
     }, false);
    
     List<DivElement> globalVarDivs = new ArrayList<>();

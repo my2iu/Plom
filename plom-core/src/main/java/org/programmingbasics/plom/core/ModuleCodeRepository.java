@@ -184,7 +184,7 @@ public class ModuleCodeRepository
       }
       return false;
     }
-    public void addVarAndResetIds(String name, Token.ParameterToken type)
+    public int addVarAndResetIds(String name, Token.ParameterToken type)
     {
       // Add a new variable at the beginning of the list so that it's more likely
       // to appear near the top of the variable list
@@ -192,6 +192,7 @@ public class ModuleCodeRepository
       v.name = name;
       v.type = type;
       variables.add(0, v);
+      return 0;
     }
     public List<VariableDescription> getAllVars()
     {
@@ -431,7 +432,7 @@ public class ModuleCodeRepository
     return getSortedWithIds(mergedGlobalVars, Comparator.comparing((VariableDescription v) -> v.name));
   }
   
-  public void addGlobalVarAndResetIds(String name, Token.ParameterToken type)
+  public int addGlobalVarAndResetIds(String name, Token.ParameterToken type)
   {
     // Add a new variable at the beginning of the list so that it's more likely
     // to appear near the top of the variable list
@@ -439,6 +440,7 @@ public class ModuleCodeRepository
     v.name = name;
     v.type = type;
     globalVars.add(0, v);
+    return 0;
   }
   
   public void updateGlobalVariable(VariableDescription v)

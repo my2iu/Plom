@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
@@ -127,8 +128,18 @@ public class ClassPanel
     newVarAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       String newVarName = "";
-      cls.addVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      int newId = cls.addVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
       rebuildView(false);
+      
+      NodeList nodes = mainDiv.querySelectorAll("div.class_var");
+      // Assume ids are linear
+      if (newId < nodes.length())
+      {
+        Element el = (Element)nodes.item(newId);
+        el.scrollIntoView();
+        ((InputElement)el.querySelector("input")).focus();
+        ((InputElement)el.querySelector("input")).select();
+      }
     }, false);
    
     List<DivElement> varDivs = new ArrayList<>();
