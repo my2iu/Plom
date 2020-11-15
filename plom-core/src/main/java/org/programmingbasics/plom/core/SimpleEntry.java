@@ -5,6 +5,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 
+import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -26,6 +27,7 @@ public class SimpleEntry
   DivElement suggestionsContainer;
   Token simpleEntryToken;  // token being edited by simple entry
   InputCallback<Token> callback;
+  BackspaceAllCallback backspaceCallback;
   String tokenPrefix = "";
   String tokenPostfix = "";
   Suggester suggester;
@@ -51,16 +53,19 @@ public class SimpleEntry
       container.getStyle().setDisplay(Display.NONE);
     }
   }
+
+  private void forceSafariBlur()
+  {
+    // Safari seems like it sometimes doesn't close the soft keyboard if the
+    // user hits "return"/"enter" on the soft keyboard, so we'll force a blur to close it 
+    container.querySelector("textarea").blur();
+    container.querySelector("input").blur();
+  }
   
   void simpleEntryInput(String val, boolean isFinal)
   {
     if (isFinal)
-    {
-      // Safari seems like it sometimes doesn't close the soft keyboard if the
-      // user hits "return"/"enter" on the soft keyboard, so we'll force a blur to close it 
-      container.querySelector("textarea").blur();
-      container.querySelector("input").blur();
-    }
+      forceSafariBlur();
       
     if (callback != null)
     {
@@ -68,6 +73,17 @@ public class SimpleEntry
     }
   }
 
+  void deleteEntryInput()
+  {
+    if (backspaceCallback != null)
+    {
+      if (!backspaceCallback.bksp(isEdit))
+      {
+        forceSafariBlur();
+      }
+    }
+  }
+  
   void refillSuggestions()
   {
     suggestionsContainer.setInnerHTML("");
@@ -127,6 +143,12 @@ public class SimpleEntry
         simpleEntryInput(inputEl.getValue(), true);
         e.preventDefault();
       }
+      else if (keyEvt.getWhich() == 8)
+      {
+        // Intercept the backspace key being pressed so we can handle backspace being pressed on an empty token
+        if (inputEl.getValue().isEmpty())
+          deleteEntryInput();
+      }
     }, false);
     // For mulit-line inputs, we use a text area, which we hook the same way
     // as the input element
@@ -140,24 +162,30 @@ public class SimpleEntry
         simpleEntryInput(textAreaEl.getValue(), true);
         e.preventDefault();
       }
+      else if (keyEvt.getWhich() == 8)
+      {
+        // Intercept the backspace key being pressed so we can handle backspace being pressed on an empty token
+        if (textAreaEl.getValue().isEmpty())
+          deleteEntryInput();
+      }
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
-  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback)
+  <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, callback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, callback, bkspCallback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
@@ -185,6 +213,7 @@ public class SimpleEntry
     this.isEdit = isEdit;
     this.suggester = suggester;
     this.callback = (InputCallback<Token>)callback;
+    this.backspaceCallback = bkspCallback;
     refillSuggestions();
     simpleEntryInput(initialValue, false);
   }
@@ -192,6 +221,11 @@ public class SimpleEntry
   @FunctionalInterface static interface InputCallback<T extends Token>
   {
     void input(String val, boolean isFinal, T token, boolean isEdit);
+  }
+  @FunctionalInterface static interface BackspaceAllCallback
+  {
+    // Return false to signal the simple entry that it should close 
+    boolean bksp(boolean isEdit);
   }
   
 }

@@ -294,16 +294,16 @@ public class CodePanel
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
+      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput);
+      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -311,12 +311,12 @@ public class CodePanel
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput);
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(3);
-      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput);
+      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     default:
       return;
@@ -533,6 +533,20 @@ public class CodePanel
       simpleEntry.setVisible(false);
       showPredictedTokenInput(choicesDiv);
     }
+  }
+
+  boolean simpleEntryBackspaceAll(boolean isEdit)
+  {
+    if (isEdit) return true;
+
+    // Erase the just created token (it should be to the right of the cursor position)
+    NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+    EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
+    updateCodeView(true);
+    choicesDiv.getStyle().setDisplay(Display.BLOCK);
+    simpleEntry.setVisible(false);
+    showPredictedTokenInput(choicesDiv);
+    return false;
   }
   
   public static interface CodeOrCursorListener
