@@ -44,6 +44,7 @@ import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
 import elemental.svg.SVGCircleElement;
+import elemental.svg.SVGElement;
 import elemental.svg.SVGSVGElement;
 
 public class CodePanel
@@ -90,6 +91,16 @@ public class CodePanel
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
 
+  /**
+   * For on-screen cursor handle that user can drag to move the cursor
+   */
+  static class CursorHandle
+  {
+    double x, y;
+    double xOffset, yOffset;
+  }
+  CursorHandle cursorHandle1 = new CursorHandle();
+  final static int HANDLE_SIZE = 15;
   
   /** 
    * Allows for the configuration of what global variables/types there are
@@ -473,22 +484,91 @@ public class CodePanel
     }
   }
 
+  boolean isPointerDown;
+  double pointerStartId;
+  double pointerStartX, pointerStartY;
+  int pointerDownHandle = 0;
+  
+  // Map mouse position to be relative to the code panel 
+  private double pointerToRelativeX(MouseEvent evt, DivElement div)
+  {
+    ClientRect rect = div.getBoundingClientRect();
+    return (evt.getClientX() - rect.getLeft()) + div.getScrollLeft();
+  }
+
+  private double pointerToRelativeY(MouseEvent evt, DivElement div)
+  {
+    ClientRect rect = div.getBoundingClientRect();
+    return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
+  }
+
   void hookCodeClick(DivElement div)
   {
-    div.addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      MouseEvent mevt = (MouseEvent)evt;
-      ClientRect rect = div.getBoundingClientRect();
-      int x = (int)(mevt.getClientX() - rect.getLeft()) + div.getScrollLeft();
-      int y = (int)(mevt.getClientY() - rect.getTop()) + div.getScrollTop();
+    div.addEventListener("pointerdown", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
+      
+ 
+      if (isPointerDown)
+      {
+        // Cancel the previous pointer down
+        
+      }
+      
+      // Start tracking the new pointer down
+      isPointerDown = true;
+      pointerStartX = x;
+      pointerStartY = y;
+      pointerStartId = pevt.getPointerId();
+      
+      // See if we're over a handle
+      if (cursorPos != null && Math.abs(x - cursorHandle1.x) < HANDLE_SIZE
+          && Math.abs(y - cursorHandle1.y) < HANDLE_SIZE)
+      {
+        pointerDownHandle = 1;
+        pevt.preventDefault();
+      }
+      else
+      {
+        pointerDownHandle = 0;
+      }
+    }, false);
+    div.addEventListener("pointermove", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+    }, false);
+    div.addEventListener("pointerup", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      // Pointer events doesn't have a proper preventDefault() mechanism
+      // for allowing us to selectively pass certain events down for
+      // default processing, so we have to manually code up logic for
+      // determining whether an event is a click or not
+      if (!isPointerDown) return;
+      
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
+      final int POINTER_DRAG_SLOP = 5;
+      if (Math.abs(x - pointerStartX) < POINTER_DRAG_SLOP 
+          && Math.abs(y - pointerStartY) < POINTER_DRAG_SLOP)
+      {
+        // Mouse/pointer didn't move far from initial pointerdown, so treat it as a click
+        CodePosition newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
+        if (newPos == null)
+          newPos = new CodePosition();
+        cursorPos = newPos;
 
-      CodePosition newPos = HitDetect.renderAndHitDetect(x, y, codeDiv, codeList, cursorPos, codeErrors);
-      if (newPos == null)
-        newPos = new CodePosition();
-      cursorPos = newPos;
-
-      updateCodeView(false);
-      showPredictedTokenInput(choicesDiv);
+        updateCodeView(false);
+        showPredictedTokenInput(choicesDiv);
+      }
+      
+    }, false);
+    div.addEventListener("pointercancel", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      if (isPointerDown)
+      {
+        // Cancel the previous pointer down
+        
+      }
     }, false);
   }
 
@@ -601,14 +681,23 @@ public class CodePanel
     }
     
     // Draw a handle under the cursor
-    int handleRadius = 15;
+    cursorHandle1.x = x;
+    cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
+    cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
+    cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() / 2) - cursorHandle1.y;
+    createCursorHandleSvg(svg, cursorHandle1);
+  }
+  
+  void createCursorHandleSvg(SVGElement parent, CursorHandle handle)
+  {
     SVGCircleElement handleSvg = Browser.getDocument().createSVGCircleElement();
-    svg.appendChild(handleSvg);
-    handleSvg.setAttribute("cx", "" + x);
-    handleSvg.setAttribute("cy", "" + (y + cursorDiv.getOffsetHeight() + handleRadius));
-    handleSvg.setAttribute("r", "" + handleRadius);
+    parent.appendChild(handleSvg);
+    handleSvg.setAttribute("cx", "" + handle.x);
+    handleSvg.setAttribute("cy", "" + handle.y);
+    handleSvg.setAttribute("r", "" + HANDLE_SIZE);
     handleSvg.getStyle().setProperty("fill", "none");
     handleSvg.getStyle().setProperty("stroke", "#000");
     handleSvg.getStyle().setProperty("stroke-width", "1px");
+    
   }
 }
