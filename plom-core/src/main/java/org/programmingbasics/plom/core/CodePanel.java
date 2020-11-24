@@ -39,7 +39,10 @@ import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.events.EventListener;
+import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
+import elemental.events.TouchEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
@@ -487,66 +490,104 @@ public class CodePanel
   boolean isPointerDown;
   double pointerStartId;
   double pointerStartX, pointerStartY;
-  int pointerDownHandle = 0;
+  int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
   
-  // Map mouse position to be relative to the code panel 
-  private double pointerToRelativeX(MouseEvent evt, DivElement div)
+  // Map single touch position to be relative to the code panel 
+  private double touchToRelativeX(TouchEvent evt, DivElement div)
   {
     ClientRect rect = div.getBoundingClientRect();
-    return (evt.getClientX() - rect.getLeft()) + div.getScrollLeft();
+    if (evt.getTouches().length() < 1)
+      return (evt.getChangedTouches().item(0).getClientX() - rect.getLeft()) + div.getScrollLeft();
+    else
+      return (evt.getTouches().item(0).getClientX() - rect.getLeft()) + div.getScrollLeft();
   }
 
-  private double pointerToRelativeY(MouseEvent evt, DivElement div)
+  private double touchToRelativeY(TouchEvent evt, DivElement div)
   {
     ClientRect rect = div.getBoundingClientRect();
-    return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
+    if (evt.getTouches().length() < 1)
+      return (evt.getChangedTouches().item(0).getClientY() - rect.getTop()) + div.getScrollTop();
+    else
+      return (evt.getTouches().item(0).getClientY() - rect.getTop()) + div.getScrollTop();
   }
 
   void hookCodeClick(DivElement div)
   {
-    div.addEventListener("pointerdown", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
+    // Pointer events don't seem to let you use preventDefault()
+    // to override clicks or to override scrolling (so once you
+    // move the pointer more than a certain distance, it will
+    // register as a scroll and you'll receive a pointercancel
+    // and stop receiving events). But I do want to keep native
+    // scrolling support for when you aren't dragging a handle.
+    addActiveEventListenerTo(div, "touchstart", (evt) -> {
+      TouchEvent pevt = (TouchEvent)evt;
       
  
-      if (isPointerDown)
+      if (isPointerDown || pevt.getTouches().length() > 1)
       {
-        // Cancel the previous pointer down
+        // Cancel the previous touchstart if there is more
+        // than one touch, or if it's just unexpected
+        return;
         
       }
-      
+
+      double x = touchToRelativeX(pevt, div);
+      double y = touchToRelativeY(pevt, div);
+
       // Start tracking the new pointer down
       isPointerDown = true;
       pointerStartX = x;
       pointerStartY = y;
-      pointerStartId = pevt.getPointerId();
+      pointerStartId = pevt.getTouches().item(0).getIdentifier();
       
       // See if we're over a handle
       if (cursorPos != null && Math.abs(x - cursorHandle1.x) < HANDLE_SIZE
           && Math.abs(y - cursorHandle1.y) < HANDLE_SIZE)
       {
+        Browser.getWindow().getConsole().log("pointerstart");
         pointerDownHandle = 1;
         pevt.preventDefault();
+        pevt.stopImmediatePropagation();
       }
       else
       {
         pointerDownHandle = 0;
       }
+      if (getDefaultPrevented(evt))
+        Browser.getWindow().getConsole().log("pointerdown default prevented");
     }, false);
-    div.addEventListener("pointermove", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
+    addActiveEventListenerTo(div, "touchmove", (evt) -> {
+      TouchEvent pevt = (TouchEvent)evt;
+      double x = touchToRelativeX(pevt, div);
+      double y = touchToRelativeY(pevt, div);
+      Browser.getWindow().getConsole().log("pointermove");
+      if (isPointerDown && pointerStartId == pevt.getTouches().item(0).getIdentifier() && pointerDownHandle > 0)
+      {
+        pevt.preventDefault();
+        pevt.stopImmediatePropagation();
+        CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+        if (newPos == null)
+          newPos = new CodePosition();
+        cursorPos = newPos;
+
+        updateCodeView(false);
+        
+      }
+      if (getDefaultPrevented(evt))
+        Browser.getWindow().getConsole().log("pointermove default prevented");
     }, false);
-    div.addEventListener("pointerup", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
+    div.addEventListener("touchend", (evt) -> {
+      TouchEvent pevt = (TouchEvent)evt;
       // Pointer events doesn't have a proper preventDefault() mechanism
       // for allowing us to selectively pass certain events down for
       // default processing, so we have to manually code up logic for
       // determining whether an event is a click or not
       if (!isPointerDown) return;
+      isPointerDown = false;
+      Browser.getWindow().getConsole().log("pointerup");
       
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
+      double x = touchToRelativeX(pevt, div);
+      double y = touchToRelativeY(pevt, div);
       final int POINTER_DRAG_SLOP = 5;
       if (Math.abs(x - pointerStartX) < POINTER_DRAG_SLOP 
           && Math.abs(y - pointerStartY) < POINTER_DRAG_SLOP)
@@ -567,11 +608,23 @@ public class CodePanel
       if (isPointerDown)
       {
         // Cancel the previous pointer down
+        isPointerDown = false;
+        Browser.getWindow().getConsole().log("pointercancel");
         
       }
     }, false);
   }
 
+  private static native boolean getDefaultPrevented(Event evt) /*-{
+    return evt.defaultPrevented;
+  }-*/;
+
+  private static native void addActiveEventListenerTo(EventTarget target, String type, EventListener listener, boolean useCapture) /*-{
+    target.addEventListener(type, 
+      function(evt) { listener.@elemental.events.EventListener::handleEvent(Lelemental/events/Event;)(evt); }, 
+      {passive: false, capture: useCapture});
+  }-*/;
+  
   <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token, boolean isEdit)
   {
     boolean advanceToNext = !isEdit;

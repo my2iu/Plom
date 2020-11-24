@@ -1,3 +1,9 @@
+body {
+	/* Temporarily disable side swipes causing a page back navigation
+	 while I figure out how to control pointer events better */
+	overscroll-behavior-x: none;
+}
+
 div.main {
 	width: calc(100vw - 2em);
 	height: calc(100vh - 7em);
