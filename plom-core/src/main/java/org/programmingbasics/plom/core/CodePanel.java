@@ -34,6 +34,8 @@ import org.programmingbasics.plom.core.view.RenderedHitBox;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
+import elemental.css.CSSStyleDeclaration.Position;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -41,6 +43,8 @@ import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
+import elemental.svg.SVGCircleElement;
+import elemental.svg.SVGSVGElement;
 
 public class CodePanel
 {
@@ -85,6 +89,7 @@ public class CodePanel
   DivElement choicesDiv;
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
+
   
   /** 
    * Allows for the configuration of what global variables/types there are
@@ -566,5 +571,44 @@ public class CodePanel
       listener.onUpdate(isCodeChanged);
     codeDiv.setInnerHTML("");
     renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+    addCursorOverlay();
+  }
+  
+  void addCursorOverlay()
+  {
+    // Add an svg overlay
+    SVGSVGElement svg = Browser.getDocument().createSVGElement();
+    svg.getStyle().setLeft("0");
+    svg.getStyle().setTop("0");
+    svg.getStyle().setWidth(codeDiv.getScrollWidth(), Unit.PX);
+//    svg.getStyle().setRight("0");
+//    svg.getStyle().setBottom("0");
+    svg.getStyle().setHeight(codeDiv.getScrollHeight(), Unit.PX);
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+    svg.getStyle().setPosition(Position.ABSOLUTE);
+    svg.getStyle().setProperty("pointer-events", "none");
+    codeDiv.appendChild(svg);
+    
+    // Find where the cursor should be placed
+    DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
+    if (cursorDiv == null) return;
+    double x = 0, y = 0;
+    for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
+    {
+      x += el.getOffsetLeft();
+      y += el.getOffsetTop();
+    }
+    
+    // Draw a handle under the cursor
+    int handleRadius = 15;
+    SVGCircleElement handleSvg = Browser.getDocument().createSVGCircleElement();
+    svg.appendChild(handleSvg);
+    handleSvg.setAttribute("cx", "" + x);
+    handleSvg.setAttribute("cy", "" + (y + cursorDiv.getOffsetHeight() + handleRadius));
+    handleSvg.setAttribute("r", "" + handleRadius);
+    handleSvg.getStyle().setProperty("fill", "none");
+    handleSvg.getStyle().setProperty("stroke", "#000");
+    handleSvg.getStyle().setProperty("stroke-width", "1px");
   }
 }
