@@ -493,37 +493,71 @@ public class CodePanel
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
   
   // Map single touch position to be relative to the code panel 
-  private double touchToRelativeX(TouchEvent evt, DivElement div)
+  private double pointerToRelativeX(PointerEvent evt, DivElement div)
   {
     ClientRect rect = div.getBoundingClientRect();
-    if (evt.getTouches().length() < 1)
-      return (evt.getChangedTouches().item(0).getClientX() - rect.getLeft()) + div.getScrollLeft();
-    else
-      return (evt.getTouches().item(0).getClientX() - rect.getLeft()) + div.getScrollLeft();
+    return (evt.getClientX() - rect.getLeft()) + div.getScrollLeft();
   }
 
-  private double touchToRelativeY(TouchEvent evt, DivElement div)
+  private double pointerToRelativeY(PointerEvent evt, DivElement div)
   {
-    ClientRect rect = div.getBoundingClientRect();
-    if (evt.getTouches().length() < 1)
-      return (evt.getChangedTouches().item(0).getClientY() - rect.getTop()) + div.getScrollTop();
-    else
-      return (evt.getTouches().item(0).getClientY() - rect.getTop()) + div.getScrollTop();
+    ClientRect rect = div.getBoundingClientRect();   
+    return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
   }
 
   void hookCodeClick(DivElement div)
   {
+    div.addEventListener(Event.SCROLL, (evt) -> {
+      updateCursor();
+    }, false);
+    
+    addActiveEventListenerTo(Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle"), "pointerdown", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+//      setPointerCapture(Browser.getDocument().querySelector(".asd"),
+//          pevt.getPointerId());
+      Browser.getWindow().getConsole().log("svg down");
+      evt.preventDefault();
+      evt.stopPropagation();
+      pointerDownHandle = 1;
+    }, false);
+    addActiveEventListenerTo(Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle"), "pointermove", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      if (pointerDownHandle == 1)
+      {
+        double x = pointerToRelativeX(pevt, div);
+        double y = pointerToRelativeY(pevt, div);
+        CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+        if (newPos == null)
+          newPos = new CodePosition();
+        cursorPos = newPos;
+
+        updateCodeView(false);
+      }
+      evt.preventDefault();
+      evt.stopPropagation();
+    }, false);
+    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").addEventListener("pointerup", (evt) -> {
+      Browser.getWindow().getConsole().log("svg up");
+      evt.preventDefault();
+      evt.stopPropagation();
+      pointerDownHandle = 0;
+    }, false);
+    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").addEventListener("pointercancel", (evt) -> {
+      pointerDownHandle = 0;
+    }, false);
+    
     // Pointer events don't seem to let you use preventDefault()
     // to override clicks or to override scrolling (so once you
     // move the pointer more than a certain distance, it will
     // register as a scroll and you'll receive a pointercancel
     // and stop receiving events). But I do want to keep native
     // scrolling support for when you aren't dragging a handle.
-    addActiveEventListenerTo(div, "touchstart", (evt) -> {
-      TouchEvent pevt = (TouchEvent)evt;
+    div.addEventListener("pointerdown", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
       
+      Browser.getWindow().getConsole().log("pointerdown");
  
-      if (isPointerDown || pevt.getTouches().length() > 1)
+      if (isPointerDown)
       {
         // Cancel the previous touchstart if there is more
         // than one touch, or if it's just unexpected
@@ -531,53 +565,25 @@ public class CodePanel
         
       }
 
-      double x = touchToRelativeX(pevt, div);
-      double y = touchToRelativeY(pevt, div);
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
 
       // Start tracking the new pointer down
       isPointerDown = true;
       pointerStartX = x;
       pointerStartY = y;
-      pointerStartId = pevt.getTouches().item(0).getIdentifier();
-      
-      // See if we're over a handle
-      if (cursorPos != null && Math.abs(x - cursorHandle1.x) < HANDLE_SIZE
-          && Math.abs(y - cursorHandle1.y) < HANDLE_SIZE)
-      {
-        Browser.getWindow().getConsole().log("pointerstart");
-        pointerDownHandle = 1;
-        pevt.preventDefault();
-        pevt.stopImmediatePropagation();
-      }
-      else
-      {
-        pointerDownHandle = 0;
-      }
-      if (getDefaultPrevented(evt))
-        Browser.getWindow().getConsole().log("pointerdown default prevented");
+      pointerStartId = pevt.getPointerId();
     }, false);
-    addActiveEventListenerTo(div, "touchmove", (evt) -> {
-      TouchEvent pevt = (TouchEvent)evt;
-      double x = touchToRelativeX(pevt, div);
-      double y = touchToRelativeY(pevt, div);
+    div.addEventListener("pointermove", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
       Browser.getWindow().getConsole().log("pointermove");
-      if (isPointerDown && pointerStartId == pevt.getTouches().item(0).getIdentifier() && pointerDownHandle > 0)
-      {
-        pevt.preventDefault();
-        pevt.stopImmediatePropagation();
-        CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
-        if (newPos == null)
-          newPos = new CodePosition();
-        cursorPos = newPos;
-
-        updateCodeView(false);
-        
-      }
       if (getDefaultPrevented(evt))
         Browser.getWindow().getConsole().log("pointermove default prevented");
     }, false);
-    div.addEventListener("touchend", (evt) -> {
-      TouchEvent pevt = (TouchEvent)evt;
+    div.addEventListener("pointerup", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
       // Pointer events doesn't have a proper preventDefault() mechanism
       // for allowing us to selectively pass certain events down for
       // default processing, so we have to manually code up logic for
@@ -586,20 +592,13 @@ public class CodePanel
       isPointerDown = false;
       Browser.getWindow().getConsole().log("pointerup");
       
-      double x = touchToRelativeX(pevt, div);
-      double y = touchToRelativeY(pevt, div);
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
       final int POINTER_DRAG_SLOP = 5;
       if (Math.abs(x - pointerStartX) < POINTER_DRAG_SLOP 
           && Math.abs(y - pointerStartY) < POINTER_DRAG_SLOP)
       {
         // Mouse/pointer didn't move far from initial pointerdown, so treat it as a click
-        CodePosition newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
-        if (newPos == null)
-          newPos = new CodePosition();
-        cursorPos = newPos;
-
-        updateCodeView(false);
-        showPredictedTokenInput(choicesDiv);
       }
       
     }, false);
@@ -613,6 +612,18 @@ public class CodePanel
         
       }
     }, false);
+    div.addEventListener(Event.CLICK, (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
+      CodePosition newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
+      if (newPos == null)
+        newPos = new CodePosition();
+      cursorPos = newPos;
+
+      updateCodeView(false);
+      showPredictedTokenInput(choicesDiv);
+    }, false);
   }
 
   private static native boolean getDefaultPrevented(Event evt) /*-{
@@ -624,7 +635,11 @@ public class CodePanel
       function(evt) { listener.@elemental.events.EventListener::handleEvent(Lelemental/events/Event;)(evt); }, 
       {passive: false, capture: useCapture});
   }-*/;
-  
+
+  private static native void setPointerCapture(EventTarget target, double pointerId) /*-{
+    target.setPointerCapture(pointerId);
+  }-*/;
+
   <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token, boolean isEdit)
   {
     boolean advanceToNext = !isEdit;
@@ -734,11 +749,26 @@ public class CodePanel
     }
     
     // Draw a handle under the cursor
+    updateCursor();
+
     cursorHandle1.x = x;
     cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
     cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
     cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() / 2) - cursorHandle1.y;
-    createCursorHandleSvg(svg, cursorHandle1);
+//    createCursorHandleSvg(svg, cursorHandle1);
+  }
+
+  void updateCursor()
+  {
+    DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
+    if (cursorDiv == null) return;
+    double x = 0, y = 0;
+    for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
+    {
+      x += el.getOffsetLeft();
+      y += el.getOffsetTop();
+    }
+    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft()) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
   }
   
   void createCursorHandleSvg(SVGElement parent, CursorHandle handle)

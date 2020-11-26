@@ -21,7 +21,13 @@ div.main {
 	flex-direction: column;
 }
 
-.codesidesplit, 
+.codesidesplit {
+	flex-grow: 1;
+	flex-shrink: 1;
+	overflow: hidden;
+	position: relative;
+} 
+
 .methodsidesplit, 
 .globalsidesplit, 
 .classsidesplit {
@@ -45,7 +51,11 @@ div.main {
 	padding-right: 1em;
 	flex-grow: 1;
 	overflow: auto;
-	position: relative;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
 	touch-action: manipulation;
 }
 
@@ -53,6 +63,33 @@ div.main {
 	background-color: #eee;
 	flex-grow: 1;
 	overflow-y: auto;
+}
+
+/* code panel lays out the side choices slightly differently to account for the svg overlay */
+.codesidesplit .sidechoices {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 20%;	
+}
+
+.codesidesplit svg.cursoroverlay {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	pointer-events: none;
+	touch-action: none;
+}
+
+.codesidesplit svg.cursoroverlay circle {
+	pointer-events: auto;
+	touch-action: none;
+	fill: transparent;
+	stroke: black;
+	stroke-width: 2px;
 }
 
 .choices {
