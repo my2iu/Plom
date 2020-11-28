@@ -66,7 +66,7 @@ public class CodePanel
     
     updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
-    hookCodeClick(codeDiv);
+    hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
   }
 
   public void setCode(StatementContainer code)
@@ -490,7 +490,10 @@ public class CodePanel
   boolean isPointerDown;
   double pointerStartId;
   double pointerStartX, pointerStartY;
+  double lastPointerX, lastPointerY;
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
+  boolean isScrolling = false;
+  Element scrollingEl;
   
   // Map single touch position to be relative to the code panel 
   private double pointerToRelativeX(PointerEvent evt, DivElement div)
@@ -510,9 +513,10 @@ public class CodePanel
     div.addEventListener(Event.SCROLL, (evt) -> {
       updateCursor();
     }, false);
-    
-    addActiveEventListenerTo(Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle"), "pointerdown", (evt) -> {
+    Element cursorHandleEl = Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle");
+    addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
+      setPointerCapture(cursorHandleEl, pevt.getPointerId());
 //      setPointerCapture(Browser.getDocument().querySelector(".asd"),
 //          pevt.getPointerId());
       Browser.getWindow().getConsole().log("svg down");
@@ -520,7 +524,7 @@ public class CodePanel
       evt.stopPropagation();
       pointerDownHandle = 1;
     }, false);
-    addActiveEventListenerTo(Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle"), "pointermove", (evt) -> {
+    addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       if (pointerDownHandle == 1)
       {
@@ -536,22 +540,30 @@ public class CodePanel
       evt.preventDefault();
       evt.stopPropagation();
     }, false);
-    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").addEventListener("pointerup", (evt) -> {
+    cursorHandleEl.addEventListener("pointerup", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
       Browser.getWindow().getConsole().log("svg up");
+      releasePointerCapture(cursorHandleEl, pevt.getPointerId());
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = 0;
     }, false);
-    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").addEventListener("pointercancel", (evt) -> {
+    cursorHandleEl.addEventListener("pointercancel", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
       pointerDownHandle = 0;
+      releasePointerCapture(cursorHandleEl, pevt.getPointerId());
     }, false);
     
     // Pointer events don't seem to let you use preventDefault()
     // to override clicks or to override scrolling (so once you
     // move the pointer more than a certain distance, it will
     // register as a scroll and you'll receive a pointercancel
-    // and stop receiving events). But I do want to keep native
-    // scrolling support for when you aren't dragging a handle.
+    // and stop receiving events). And Safari doesn't handle
+    // complicated usages of touch-action and pointer-events (where
+    // the svg tag has pointer-events none, but its contents have
+    // pointer-events auto), so I'm going to have to write a
+    // custom implementation of drag scrolling (and I'll disallow
+    // pinch-zoom entirely due to excessive complexity)
     div.addEventListener("pointerdown", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       
@@ -565,22 +577,42 @@ public class CodePanel
         
       }
 
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
+      double x = pevt.getClientX();
+      double y = pevt.getClientY();
 
       // Start tracking the new pointer down
       isPointerDown = true;
       pointerStartX = x;
       pointerStartY = y;
+      isScrolling = false;
+      lastPointerX = x;
+      lastPointerY = y;
       pointerStartId = pevt.getPointerId();
     }, false);
-    div.addEventListener("pointermove", (evt) -> {
+    final double POINTER_SCROLL_TRIGGER_DIST = 5;
+    addActiveEventListenerTo(div, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
+      double x = pevt.getClientX();
+      double y = pevt.getClientY();
       Browser.getWindow().getConsole().log("pointermove");
-      if (getDefaultPrevented(evt))
-        Browser.getWindow().getConsole().log("pointermove default prevented");
+      if (!isPointerDown) return;
+      if (isPointerDown && !isScrolling
+          && (Math.abs(x - pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
+          || Math.abs(y - pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
+      {
+        isScrolling = true;
+        scrollingEl = div;
+        // TODO: Allow scrolling of parent elements if it has already scrolled 
+        // to its full extent
+        // TODO: inertial/momentum scrolling
+      }
+      if (isScrolling)
+      {
+        scrollingEl.setScrollTop(scrollingEl.getScrollTop() - (int)(y - lastPointerY));
+        scrollingEl.setScrollLeft(scrollingEl.getScrollLeft() - (int)(x - lastPointerX));
+      }
+      lastPointerX = x;
+      lastPointerY = y;
     }, false);
     div.addEventListener("pointerup", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
@@ -638,6 +670,10 @@ public class CodePanel
 
   private static native void setPointerCapture(EventTarget target, double pointerId) /*-{
     target.setPointerCapture(pointerId);
+  }-*/;
+
+  private static native void releasePointerCapture(EventTarget target, double pointerId) /*-{
+    target.releasePointerCapture(pointerId);
   }-*/;
 
   <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token, boolean isEdit)
@@ -754,7 +790,7 @@ public class CodePanel
     cursorHandle1.x = x;
     cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
     cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
-    cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() / 2) - cursorHandle1.y;
+    cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle1.y;
 //    createCursorHandleSvg(svg, cursorHandle1);
   }
 

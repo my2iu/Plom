@@ -56,7 +56,9 @@ div.main {
 	right: 0;
 	top: 0;
 	bottom: 0;
-	touch-action: manipulation;
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 .sidechoices {
