@@ -1,0 +1,22 @@
+<assembly>
+	<id>plom-website</id>
+	<formats>
+		<format>dir</format>
+	</formats>
+	<fileSets>
+		<fileSet>
+			<directory>target/generated-resources/xml/xslt</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>*</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/resources</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+	  <groupId>dev.plom</groupId>
+	  <artifactId>plom</artifactId>
+	  <version>0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>plom-website</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Plom Website</name>
+  <description>A basic website for Plom</description>
+  
+  <build>
+	<plugins>
+		<plugin>
+	        <artifactId>maven-assembly-plugin</artifactId>
+	        <version>3.3.0</version>
+	        <configuration>
+	        	<descriptors>
+	        		<descriptor>src/assembly/bin.xml</descriptor>
+	        	</descriptors>
+	        </configuration>
+	        <executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+					</goals>
+				</execution>
+			</executions>
+        </plugin>
+		<plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>xml-maven-plugin</artifactId>
+			<version>1.0.2</version>
+			<executions>
+				<execution>
+					<phase>compile</phase>
+					<goals>
+						<goal>transform</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<transformationSets>
+					<transformationSet>
+						<dir>src/main/xml</dir>
+						<stylesheet>src/main/basetemplate.xsl</stylesheet>
+						<fileMappers>
+							<fileMapper
+								implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+								<targetExtension>.html</targetExtension>
+							</fileMapper>
+						</fileMappers>
+					</transformationSet>
+				</transformationSets>
+			</configuration>
+		</plugin>
+	</plugins>
+  </build>
+  
+  <dependencies>
+  </dependencies>
+  
+</project>
