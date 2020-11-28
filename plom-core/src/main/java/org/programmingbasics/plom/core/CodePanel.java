@@ -58,6 +58,7 @@ public class CodePanel
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
+    cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
         (DivElement)mainDiv.querySelector("div.sidechoices"));
 
@@ -93,8 +94,10 @@ public class CodePanel
   StatementContainer codeList = new StatementContainer();
   DivElement codeDiv;
   DivElement choicesDiv;
+  Element cursorOverlayEl;
   SimpleEntry simpleEntry;
   CodePosition cursorPos = new CodePosition();
+  CodePosition selectionCursorPos = null;
 
   /**
    * For on-screen cursor handle that user can drag to move the cursor
@@ -105,6 +108,7 @@ public class CodePanel
     double xOffset, yOffset;
   }
   CursorHandle cursorHandle1 = new CursorHandle();
+  CursorHandle cursorHandle2 = new CursorHandle();
   final static int HANDLE_SIZE = 15;
   
   /** 
@@ -600,12 +604,8 @@ public class CodePanel
     
   }
   
-  void hookCodeClick(DivElement div)
+  void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
   {
-    div.addEventListener(Event.SCROLL, (evt) -> {
-      updateCursor();
-    }, false);
-    Element cursorHandleEl = Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle");
     addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       setPointerCapture(cursorHandleEl, pevt.getPointerId());
@@ -613,7 +613,7 @@ public class CodePanel
 //          pevt.getPointerId());
       evt.preventDefault();
       evt.stopPropagation();
-      pointerDownHandle = 1;
+      pointerDownHandle = cursorId;
     }, false);
     addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
@@ -627,6 +627,7 @@ public class CodePanel
         cursorPos = newPos;
 
         updateCodeView(false);
+        showPredictedTokenInput(choicesDiv);
       }
       evt.preventDefault();
       evt.stopPropagation();
@@ -643,6 +644,16 @@ public class CodePanel
       pointerDownHandle = 0;
       releasePointerCapture(cursorHandleEl, pevt.getPointerId());
     }, false);
+    
+  }
+  
+  void hookCodeClick(DivElement div)
+  {
+    div.addEventListener(Event.SCROLL, (evt) -> {
+      updateCursor();
+    }, false);
+    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
+    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
     
     div.addEventListener(Event.CLICK, (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
@@ -795,10 +806,6 @@ public class CodePanel
     // Draw a handle under the cursor
     updateCursor();
 
-    cursorHandle1.x = x;
-    cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
-    cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
-    cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle1.y;
 //    createCursorHandleSvg(svg, cursorHandle1);
   }
 
@@ -812,7 +819,20 @@ public class CodePanel
       x += el.getOffsetLeft();
       y += el.getOffsetTop();
     }
-    Browser.getDocument().querySelector("svg.cursoroverlay .cursorhandle").setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft()) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
+    // Main cursor
+    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft()) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
+    cursorHandle1.x = x;
+    cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
+    cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
+    cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle1.y;
+    // Secondary cursor
+    
+    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft() + 2.5 * HANDLE_SIZE) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
+    cursorHandle2.x = x + 2.5 * HANDLE_SIZE;
+    cursorHandle2.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
+    cursorHandle2.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle2.x; 
+    cursorHandle2.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle2.y;
+    
   }
   
   void createCursorHandleSvg(SVGElement parent, CursorHandle handle)

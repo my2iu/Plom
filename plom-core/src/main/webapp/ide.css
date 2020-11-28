@@ -86,7 +86,7 @@ div.main {
 	touch-action: none;
 }
 
-.codesidesplit svg.cursoroverlay circle {
+.codesidesplit svg.cursoroverlay .cursorhandle {
 	pointer-events: auto;
 	touch-action: none;
 	fill: transparent;

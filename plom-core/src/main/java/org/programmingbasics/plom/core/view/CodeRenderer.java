@@ -38,7 +38,9 @@ public class CodeRenderer
   {
     public ErrorList codeErrors;
     public CodeNestingCounter nesting;
-    public boolean renderTypeFieldStyle = false;  // When rendering type fields, we highlight entire type tokens instead of cursor positions 
+    public boolean renderTypeFieldStyle = false;  // When rendering type fields, we highlight entire type tokens instead of cursor positions
+//    public CodePosition selectionStart;
+//    public CodePosition selectionEnd;
   }
   
   public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
