@@ -75,8 +75,8 @@ public class CodePanel
     this.codeList = code;
     updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
-    hookCodeScroller(codeDiv);
-    hookCodeClick(codeDiv);
+//    hookCodeScroller(codeDiv);
+//    hookCodeClick(codeDiv);
   }
 
   public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> configurator)
@@ -533,7 +533,9 @@ public class CodePanel
       {
         // Cancel the previous touchstart if there is more
         // than one touch, or if it's just unexpected
-        return;
+        if (pevt.getPointerId() == pointer.pointerStartId)
+          releasePointerCapture(div, pointer.pointerStartId);
+
         
       }
 
@@ -548,13 +550,15 @@ public class CodePanel
       pointer.lastPointerX = x;
       pointer.lastPointerY = y;
       pointer.pointerStartId = pevt.getPointerId();
+      setPointerCapture(div, pevt.getPointerId());
     }, false);
     final double POINTER_SCROLL_TRIGGER_DIST = 5;
-    addActiveEventListenerTo(div, "pointermove", (evt) -> {
+    div.addEventListener("pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       double x = pevt.getClientX();
       double y = pevt.getClientY();
-      if (!pointer.isPointerDown && pointer.pointerStartId == pevt.getPointerId()) return;
+      if (!pointer.isPointerDown) return;
+      if (pointer.pointerStartId != pevt.getPointerId()) return;
       if (pointer.isPointerDown && !pointer.isScrolling
           && (Math.abs(x - pointer.pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
           || Math.abs(y - pointer.pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
@@ -567,8 +571,8 @@ public class CodePanel
       }
       if (pointer.isScrolling)
       {
-        pointer.scrollingEl.setScrollTop(pointer.scrollingEl.getScrollTop() - (int)(y - pointer.lastPointerY));
-        pointer.scrollingEl.setScrollLeft(pointer.scrollingEl.getScrollLeft() - (int)(x - pointer.lastPointerX));
+        pointer.scrollingEl.setScrollTop(doubleAsInt(pointer.scrollingEl.getScrollTop() - (y - pointer.lastPointerY)));
+        pointer.scrollingEl.setScrollLeft(doubleAsInt(pointer.scrollingEl.getScrollLeft() - (x - pointer.lastPointerX)));
       }
       pointer.lastPointerX = x;
       pointer.lastPointerY = y;
@@ -580,7 +584,9 @@ public class CodePanel
       // default processing, so we have to manually code up logic for
       // determining whether an event is a click or not
       if (!pointer.isPointerDown) return;
+      if (pevt.getPointerId() != pointer.pointerStartId) return;
       pointer.isPointerDown = false;
+      releasePointerCapture(div, pointer.pointerStartId);
     }, false);
     div.addEventListener("pointercancel", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
@@ -588,6 +594,7 @@ public class CodePanel
       {
         // Cancel the previous pointer down
         pointer.isPointerDown = false;
+        releasePointerCapture(div, pointer.pointerStartId);
       }
     }, false);
     
@@ -651,6 +658,14 @@ public class CodePanel
     }, false);
   }
 
+  // Some of the Elemental APIs use an int when they should use a
+  // double, but we don't want to lose precision so we pass around
+  // double as if they were ints sometimes
+  private static native int doubleAsInt(double i) /*-{
+    return i;
+  }-*/;
+
+  
   private static native boolean getDefaultPrevented(Event evt) /*-{
     return evt.defaultPrevented;
   }-*/;
