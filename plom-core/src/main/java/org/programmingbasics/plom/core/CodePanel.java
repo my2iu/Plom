@@ -66,6 +66,7 @@ public class CodePanel
     
     updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
+    hookCodeScroller(codeDiv);
     hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
   }
 
@@ -74,6 +75,7 @@ public class CodePanel
     this.codeList = code;
     updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
+    hookCodeScroller(codeDiv);
     hookCodeClick(codeDiv);
   }
 
@@ -487,13 +489,7 @@ public class CodePanel
     }
   }
 
-  boolean isPointerDown;
-  double pointerStartId;
-  double pointerStartX, pointerStartY;
-  double lastPointerX, lastPointerY;
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
-  boolean isScrolling = false;
-  Element scrollingEl;
   
   // Map single touch position to be relative to the code panel 
   private double pointerToRelativeX(PointerEvent evt, DivElement div)
@@ -508,6 +504,95 @@ public class CodePanel
     return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
   }
 
+  static void hookCodeScroller(DivElement div)
+  {
+    class PointerScrollInfo {
+      boolean isPointerDown;
+      double pointerStartId;
+      double pointerStartX, pointerStartY;
+      double lastPointerX, lastPointerY;
+      boolean isScrolling = false;
+      Element scrollingEl;
+    }
+    PointerScrollInfo pointer = new PointerScrollInfo();
+    
+    // Pointer events don't seem to let you use preventDefault()
+    // to override clicks or to override scrolling (so once you
+    // move the pointer more than a certain distance, it will
+    // register as a scroll and you'll receive a pointercancel
+    // and stop receiving events). And Safari doesn't handle
+    // complicated usages of touch-action and pointer-events (where
+    // the svg tag has pointer-events none, but its contents have
+    // pointer-events auto), so I'm going to have to write a
+    // custom implementation of drag scrolling (and I'll disallow
+    // pinch-zoom entirely due to excessive complexity)
+    div.addEventListener("pointerdown", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      
+      if (pointer.isPointerDown)
+      {
+        // Cancel the previous touchstart if there is more
+        // than one touch, or if it's just unexpected
+        return;
+        
+      }
+
+      double x = pevt.getClientX();
+      double y = pevt.getClientY();
+
+      // Start tracking the new pointer down
+      pointer.isPointerDown = true;
+      pointer.pointerStartX = x;
+      pointer.pointerStartY = y;
+      pointer.isScrolling = false;
+      pointer.lastPointerX = x;
+      pointer.lastPointerY = y;
+      pointer.pointerStartId = pevt.getPointerId();
+    }, false);
+    final double POINTER_SCROLL_TRIGGER_DIST = 5;
+    addActiveEventListenerTo(div, "pointermove", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      double x = pevt.getClientX();
+      double y = pevt.getClientY();
+      if (!pointer.isPointerDown && pointer.pointerStartId == pevt.getPointerId()) return;
+      if (pointer.isPointerDown && !pointer.isScrolling
+          && (Math.abs(x - pointer.pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
+          || Math.abs(y - pointer.pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
+      {
+        pointer.isScrolling = true;
+        pointer.scrollingEl = div;
+        // TODO: Allow scrolling of parent elements if it has already scrolled 
+        // to its full extent
+        // TODO: inertial/momentum scrolling
+      }
+      if (pointer.isScrolling)
+      {
+        pointer.scrollingEl.setScrollTop(pointer.scrollingEl.getScrollTop() - (int)(y - pointer.lastPointerY));
+        pointer.scrollingEl.setScrollLeft(pointer.scrollingEl.getScrollLeft() - (int)(x - pointer.lastPointerX));
+      }
+      pointer.lastPointerX = x;
+      pointer.lastPointerY = y;
+    }, false);
+    div.addEventListener("pointerup", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      // Pointer events doesn't have a proper preventDefault() mechanism
+      // for allowing us to selectively pass certain events down for
+      // default processing, so we have to manually code up logic for
+      // determining whether an event is a click or not
+      if (!pointer.isPointerDown) return;
+      pointer.isPointerDown = false;
+    }, false);
+    div.addEventListener("pointercancel", (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      if (pointer.isPointerDown)
+      {
+        // Cancel the previous pointer down
+        pointer.isPointerDown = false;
+      }
+    }, false);
+    
+  }
+  
   void hookCodeClick(DivElement div)
   {
     div.addEventListener(Event.SCROLL, (evt) -> {
@@ -519,7 +604,6 @@ public class CodePanel
       setPointerCapture(cursorHandleEl, pevt.getPointerId());
 //      setPointerCapture(Browser.getDocument().querySelector(".asd"),
 //          pevt.getPointerId());
-      Browser.getWindow().getConsole().log("svg down");
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = 1;
@@ -542,7 +626,6 @@ public class CodePanel
     }, false);
     cursorHandleEl.addEventListener("pointerup", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
-      Browser.getWindow().getConsole().log("svg up");
       releasePointerCapture(cursorHandleEl, pevt.getPointerId());
       evt.preventDefault();
       evt.stopPropagation();
@@ -554,96 +637,6 @@ public class CodePanel
       releasePointerCapture(cursorHandleEl, pevt.getPointerId());
     }, false);
     
-    // Pointer events don't seem to let you use preventDefault()
-    // to override clicks or to override scrolling (so once you
-    // move the pointer more than a certain distance, it will
-    // register as a scroll and you'll receive a pointercancel
-    // and stop receiving events). And Safari doesn't handle
-    // complicated usages of touch-action and pointer-events (where
-    // the svg tag has pointer-events none, but its contents have
-    // pointer-events auto), so I'm going to have to write a
-    // custom implementation of drag scrolling (and I'll disallow
-    // pinch-zoom entirely due to excessive complexity)
-    div.addEventListener("pointerdown", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      
-      Browser.getWindow().getConsole().log("pointerdown");
- 
-      if (isPointerDown)
-      {
-        // Cancel the previous touchstart if there is more
-        // than one touch, or if it's just unexpected
-        return;
-        
-      }
-
-      double x = pevt.getClientX();
-      double y = pevt.getClientY();
-
-      // Start tracking the new pointer down
-      isPointerDown = true;
-      pointerStartX = x;
-      pointerStartY = y;
-      isScrolling = false;
-      lastPointerX = x;
-      lastPointerY = y;
-      pointerStartId = pevt.getPointerId();
-    }, false);
-    final double POINTER_SCROLL_TRIGGER_DIST = 5;
-    addActiveEventListenerTo(div, "pointermove", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      double x = pevt.getClientX();
-      double y = pevt.getClientY();
-      Browser.getWindow().getConsole().log("pointermove");
-      if (!isPointerDown) return;
-      if (isPointerDown && !isScrolling
-          && (Math.abs(x - pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
-          || Math.abs(y - pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
-      {
-        isScrolling = true;
-        scrollingEl = div;
-        // TODO: Allow scrolling of parent elements if it has already scrolled 
-        // to its full extent
-        // TODO: inertial/momentum scrolling
-      }
-      if (isScrolling)
-      {
-        scrollingEl.setScrollTop(scrollingEl.getScrollTop() - (int)(y - lastPointerY));
-        scrollingEl.setScrollLeft(scrollingEl.getScrollLeft() - (int)(x - lastPointerX));
-      }
-      lastPointerX = x;
-      lastPointerY = y;
-    }, false);
-    div.addEventListener("pointerup", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      // Pointer events doesn't have a proper preventDefault() mechanism
-      // for allowing us to selectively pass certain events down for
-      // default processing, so we have to manually code up logic for
-      // determining whether an event is a click or not
-      if (!isPointerDown) return;
-      isPointerDown = false;
-      Browser.getWindow().getConsole().log("pointerup");
-      
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
-      final int POINTER_DRAG_SLOP = 5;
-      if (Math.abs(x - pointerStartX) < POINTER_DRAG_SLOP 
-          && Math.abs(y - pointerStartY) < POINTER_DRAG_SLOP)
-      {
-        // Mouse/pointer didn't move far from initial pointerdown, so treat it as a click
-      }
-      
-    }, false);
-    div.addEventListener("pointercancel", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      if (isPointerDown)
-      {
-        // Cancel the previous pointer down
-        isPointerDown = false;
-        Browser.getWindow().getConsole().log("pointercancel");
-        
-      }
-    }, false);
     div.addEventListener(Event.CLICK, (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       double x = pointerToRelativeX(pevt, div);

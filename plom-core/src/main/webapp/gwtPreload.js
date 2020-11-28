@@ -1,5 +1,5 @@
-var $gwtOnLoad;
-function setGwtOnLoad(fn)
+var $gwtOnLoad = [];
+function addGwtOnLoad(fn)
 {
-	$gwtOnLoad = fn;
+	$gwtOnLoad.push(fn);
 }

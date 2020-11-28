@@ -94,50 +94,54 @@ public class Main
   String currentFunctionBeingViewed = null;
   ClassDescription currentMethodClassBeingViewed = null;
   FunctionDescription currentMethodBeingViewed = null;
-  ErrorLogger errorLogger = (err) -> {
-    Document doc = Browser.getDocument();
-    Element consoleEl = doc.querySelector(".console");
-    consoleEl.setInnerHTML("");
-    DivElement msg = doc.createDivElement();
-    if (err instanceof ParseException)
-    {
-      ParseException parseErr = (ParseException)err;
-      int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
-      if (lineNo == 0)
-        msg.setTextContent("Syntax Error");
-      else
-        msg.setTextContent("Syntax Error (line " + lineNo + ")");
-    }
-    else if (err instanceof RunException)
-    {
-      RunException runErr = (RunException)err;
-      Token errTok = runErr.getErrorTokenSource();
-      int lineNo = 0;
-      String errString = "Run Error";
-      if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
-        errString = runErr.getMessage();
-      if (errTok != null) 
-        lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
-      if (lineNo == 0)
-        msg.setTextContent(errString);
-      else
-        msg.setTextContent(errString + " (line " + lineNo + ")");
-    }
-    else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
-    {
-      msg.setTextContent(((Throwable)err).getMessage());
-    }
-    else
-    {
-      msg.setTextContent(err.toString());
-    }
-    consoleEl.appendChild(msg);
-  }; 
+//  private ErrorLogger errorLogger = createErrorLoggerForConsole(Browser.getDocument().querySelector(".console"));
 
-  public ErrorLogger getErrorLogger()
+  public ErrorLogger createErrorLoggerForConsole(Element consoleEl)
   {
-    return errorLogger;
+    return (err) -> {
+      Document doc = Browser.getDocument();
+      consoleEl.setInnerHTML("");
+      DivElement msg = doc.createDivElement();
+      if (err instanceof ParseException)
+      {
+        ParseException parseErr = (ParseException)err;
+        int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
+        if (lineNo == 0)
+          msg.setTextContent("Syntax Error");
+        else
+          msg.setTextContent("Syntax Error (line " + lineNo + ")");
+      }
+      else if (err instanceof RunException)
+      {
+        RunException runErr = (RunException)err;
+        Token errTok = runErr.getErrorTokenSource();
+        int lineNo = 0;
+        String errString = "Run Error";
+        if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
+          errString = runErr.getMessage();
+        if (errTok != null) 
+          lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
+        if (lineNo == 0)
+          msg.setTextContent(errString);
+        else
+          msg.setTextContent(errString + " (line " + lineNo + ")");
+      }
+      else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
+      {
+        msg.setTextContent(((Throwable)err).getMessage());
+      }
+      else
+      {
+        msg.setTextContent(err.toString());
+      }
+      consoleEl.appendChild(msg);
+    };
   }
+
+//  public ErrorLogger getErrorLogger()
+//  {
+//    return errorLogger;
+//  }
   
   public static String getStdLibCodeText()
   {

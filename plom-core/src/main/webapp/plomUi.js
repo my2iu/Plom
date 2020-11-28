@@ -189,16 +189,17 @@ function setupPlomUi() {
 	}
 	function doRun(main)
 	{
+		var errorLogger = main.createErrorLoggerForConsole(document.querySelector('.console'));
 		main.saveCodeToRepository();
     	// Find code to run
     	var fd = main.repository.getFunctionDescription("main");
     	if (fd == null)
     	{
-			main.getErrorLogger().error(new RunException("No main function"));
+			errorLogger(new RunException("No main function"));
 			return;
 		}
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
-		terp.setErrorLogger(main.getErrorLogger());
+		terp.setErrorLogger(errorLogger);
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
@@ -210,7 +211,7 @@ function setupPlomUi() {
 		catch (err)
 		{
 			console.log(err);
-			main.getErrorLogger().error(err);
+			errorLogger(err);
 		}
 	}
 	function loadCodeStringIntoRepository(code, repository)

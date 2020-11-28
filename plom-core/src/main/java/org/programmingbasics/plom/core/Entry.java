@@ -45,9 +45,8 @@ TODO:
 - transpile to JavaScript
 - standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)?
 - retype
-- GWT custom linker 
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
-- when typing a name, backspace at the start will delete the whole token
+- selection
  */
 
 public class Entry implements EntryPoint
@@ -59,18 +58,26 @@ public class Entry implements EntryPoint
   }
 
   private static native void checkGwtOnLoad() /*-{
+    function executeOnLoadCode()
+    {
+      if ($wnd.$gwtOnLoad) {
+        for (var n = 0; n < $wnd.$gwtOnLoad.length; n++)
+        {
+          $wnd.$gwtOnLoad[n]();
+        }
+        $wnd.$gwtOnLoad = [];
+      }
+      // Change the preloader to immediately execute any code
+      $wnd.addGwtOnLoad = function(fn) {
+        fn();
+      }
+    }
+    
     // Check if we're fully loaded yet
     if ($doc.readyState == 'complete')
     {
       // Execute any onload code
-      if ($wnd.$gwtOnLoad) {
-        $wnd.$gwtOnLoad();
-        $wnd.$gwtOnLoad = null;
-      }
-      // Change the preloader to immediately execute any code
-      $wnd.setGwtOnLoad = function(fn) {
-        fn();
-      }
+      executeOnLoadCode();
     }
     else
     {
@@ -79,14 +86,7 @@ public class Entry implements EntryPoint
         if ($doc.readyState == 'complete') 
         {
           // Execute any onload code
-          if ($wnd.$gwtOnLoad) {
-            $wnd.$gwtOnLoad();
-            $wnd.$gwtOnLoad = null;
-          }
-          // Change the preloader to immediately execute any code
-          $wnd.setGwtOnLoad = function(fn) {
-            fn();
-          }
+          executeOnLoadCode();
         }          
       });
     }
