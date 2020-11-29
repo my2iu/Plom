@@ -148,6 +148,12 @@ div.main {
 	border: 1px solid #aaa;
 }
 
+.codemain div.blocktoken.tokenselected,
+.codemain span.token.tokenselected,
+.codemain div.token.tokenselected {
+	background-color: #587de6;
+}
+
 .codemain .tokenError, 
 .methodpanel .typeEntry tokenError, 
 .globalspanel .typeEntry tokenError,

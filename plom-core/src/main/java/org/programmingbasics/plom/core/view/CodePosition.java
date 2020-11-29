@@ -42,6 +42,41 @@ public class CodePosition
       for (int n = level; n < offsets.size(); n++)
          offsets.set(n, -1);
    }
+   
+   public boolean isBefore(CodePosition other)
+   {
+     for (int level = 0; ; level++)
+     {
+       boolean hasNext = hasOffset(level);
+       boolean otherHasNext = other.hasOffset(level);
+       if (!hasNext && !otherHasNext) return false;
+       if (otherHasNext && !hasNext) return true;
+       if (hasNext && !otherHasNext) return false;
+       if (getOffset(level) < other.getOffset(level)) return true;
+       if (getOffset(level) > other.getOffset(level)) return false;
+     }
+   }
+
+   // Checks if this position is between two positions (returns false
+   // if either of the positions is null)
+   public boolean isBetweenNullable(CodePosition pos1, CodePosition pos2)
+   {
+     if (pos1 == null || pos2 == null) 
+       return false;
+     CodePosition startPos, endPos;
+     if (pos1.isBefore(pos2))
+     {
+       startPos = pos1;
+       endPos = pos2;
+     }
+     else
+     {
+       startPos = pos2;
+       endPos = pos1;
+     }
+     return !this.isBefore(startPos) && this.isBefore(endPos);
+   }
+   
 //   int line;
 //   int token;
   @Override

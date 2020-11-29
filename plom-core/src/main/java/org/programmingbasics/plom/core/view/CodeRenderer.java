@@ -39,8 +39,8 @@ public class CodeRenderer
     public ErrorList codeErrors;
     public CodeNestingCounter nesting;
     public boolean renderTypeFieldStyle = false;  // When rendering type fields, we highlight entire type tokens instead of cursor positions
-//    public CodePosition selectionStart;
-//    public CodePosition selectionEnd;
+    public CodePosition selectionStart = null;
+    public CodePosition selectionEnd = null;
   }
   
   public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
@@ -49,7 +49,7 @@ public class CodeRenderer
     supplement.codeErrors = codeErrors;
     supplement.nesting = new CodeNestingCounter();
     supplement.nesting.calculateNestingForStatements(codeList);
-    renderStatementContainer(codeDiv, codeList, pos, 0, renderedHitBoxes, supplement);
+    renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
   }
 
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
@@ -63,8 +63,11 @@ public class CodeRenderer
     CodeRenderer.TokenRenderer renderer = new CodeRenderer.TokenRenderer(Browser.getDocument(), supplement);
     if (type != null)
     {
-      CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn(); 
-      type.visit(renderer, returnedRenderedToken, pos, 1, hitBox);
+      CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn();
+      CodePosition currentTokenPos = new CodePosition();
+      currentTokenPos.setOffset(0, 0);
+      type.visit(renderer, returnedRenderedToken, pos, 1, currentTokenPos, hitBox);
+      currentTokenPos.setMaxOffset(1);
       Element el = returnedRenderedToken.el;
       div.setInnerHTML("");
       div.appendChild(el);
@@ -95,7 +98,7 @@ public class CodeRenderer
     public Element beforeInsertionPoint;
   }
   
-  static class TokenRenderer implements Token.TokenVisitor4<Void, TokenRendererReturn, CodePosition, Integer, RenderedHitBox>
+  static class TokenRenderer implements Token.TokenVisitor5<Void, TokenRendererReturn, CodePosition, Integer, CodePosition, RenderedHitBox>
   {
     Document doc;
     RenderSupplementalInfo supplement;
@@ -113,10 +116,12 @@ public class CodeRenderer
       el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
     }
     @Override
-    public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
       DivElement div = doc.createDivElement();
       div.setClassName("token");
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        div.getClassList().add("tokenselected");
       adjustTokenHeightForDepth(div, token);
       div.setTextContent(token.contents);
       if (hitBox != null)
@@ -128,10 +133,12 @@ public class CodeRenderer
       return null;
     }
     @Override
-    public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
       Element span = doc.createSpanElement();
       span.setClassName("token");
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        span.getClassList().add("tokenselected");
       adjustTokenHeightForDepth(span, token);
       RenderedHitBox textHitBoxes = null;
       RenderedHitBox exprHitBoxes = null;
@@ -167,7 +174,10 @@ public class CodeRenderer
           textHitBoxes.children.add(textHitBox);
         }
         boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
-        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, exprSpan, false, this, exprHitBox, supplement);
+        currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
+        currentTokenPos.setOffset(level + 1, n);
+        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, currentTokenPos, exprSpan, false, this, exprHitBox, supplement);
+        currentTokenPos.setMaxOffset(level + 1);
       }
       // Handle any postfix for the token
       SpanElement endSpan = doc.createSpanElement();
@@ -191,9 +201,9 @@ public class CodeRenderer
       return null;
     }
     @Override
-    public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+    public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
-      createWideToken(token, token.contents, null, null, toReturn, pos, level, hitBox);
+      createWideToken(token, token.contents, null, null, toReturn, pos, level, currentTokenPos, hitBox);
       if (token.type == Symbol.DUMMY_COMMENT)
       {
         toReturn.el.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
@@ -203,25 +213,27 @@ public class CodeRenderer
     }
     @Override
     public Void visitOneBlockToken(OneBlockToken token,
-        TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+        TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
-      createWideToken(token, token.contents, null, token.block, toReturn, pos, level, hitBox);
+      createWideToken(token, token.contents, null, token.block, toReturn, pos, level, currentTokenPos, hitBox);
       return null;
     }
     @Override
     public Void visitOneExpressionOneBlockToken(
-        OneExpressionOneBlockToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, RenderedHitBox hitBox)
+        OneExpressionOneBlockToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
-      createWideToken(token, token.contents, token.expression, token.block, toReturn, pos, level, hitBox);
+      createWideToken(token, token.contents, token.expression, token.block, toReturn, pos, level, currentTokenPos, hitBox);
       return null;
     }
     private void createWideToken(Token token, String tokenText, TokenContainer exprContainer,
         StatementContainer blockContainer,
-        TokenRendererReturn toReturn, CodePosition pos, int level,
+        TokenRendererReturn toReturn, CodePosition pos, int level, CodePosition currentTokenPos,
         RenderedHitBox hitBox)
     {
       DivElement div = doc.createDivElement();
       div.setClassName("blocktoken");
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        div.getClassList().add("tokenselected");
 
       RenderedHitBox startTokenHitBox = null;
       if (hitBox != null)
@@ -248,7 +260,9 @@ public class CodeRenderer
         start.setTextContent(tokenText + " (");
         SpanElement expression = doc.createSpanElement();
         RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, expression, false, this, exprHitBox, supplement);
+        currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
+        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, currentTokenPos, expression, false, this, exprHitBox, supplement);
+        currentTokenPos.setMaxOffset(level + 1);
         SpanElement middle = doc.createSpanElement();
         if (blockContainer == null)
           middle.setTextContent(")");
@@ -277,7 +291,9 @@ public class CodeRenderer
         DivElement block = doc.createDivElement();
         block.getStyle().setPaddingLeft(1, Unit.EM);
         RenderedHitBox blockHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, blockHitBox, supplement);
+        currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
+        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, currentTokenPos, blockHitBox, supplement);
+        currentTokenPos.setMaxOffset(level + 1);
         if (hitBox != null)
         {
           blockHitBox.el = block;
@@ -300,7 +316,7 @@ public class CodeRenderer
     }
   }
 
-  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, CodePosition pos, int level, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
+  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, CodePosition pos, int level, CodePosition currentTokenPos, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
   {
     Document doc = codeDiv.getOwnerDocument();
 
@@ -316,8 +332,10 @@ public class CodeRenderer
         lineHitBox.children = new ArrayList<>();
         renderedHitBoxes.children.add(lineHitBox);
       }
-      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, div, true, renderer, lineHitBox, supplement);
-
+      currentTokenPos.setOffset(level, lineno);
+      renderLine(line, pos != null && lineno == pos.getOffset(level) ? pos : null, level + 1, currentTokenPos, div, true, renderer, lineHitBox, supplement);
+      currentTokenPos.setMaxOffset(level + 1);
+      
       codeDiv.appendChild(div);
       lineno++;
     }
@@ -336,7 +354,7 @@ public class CodeRenderer
     }
   }
 
-  static void renderLine(TokenContainer line, CodePosition pos, int level, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
+  static void renderLine(TokenContainer line, CodePosition pos, int level, CodePosition currentTokenPos, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
   {
     // Check if the line contains some wide tokens
     boolean hasWideTokens = false;
@@ -363,7 +381,9 @@ public class CodeRenderer
       RenderedHitBox hitBox = null;
       if (lineHitBox != null)
         hitBox = new RenderedHitBox();
-      tok.visit(renderer, returnedRenderedToken, pos != null && pos.getOffset(level) == tokenno && pos.hasOffset(level + 1) ? pos : null, level + 1, hitBox);
+      currentTokenPos.setOffset(level, tokenno);
+      tok.visit(renderer, returnedRenderedToken, pos != null && pos.getOffset(level) == tokenno && pos.hasOffset(level + 1) ? pos : null, level + 1, currentTokenPos, hitBox);
+      currentTokenPos.setMaxOffset(level + 1);
       Element el = returnedRenderedToken.el;
       if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
         el.getClassList().add("typeTokenSelected");
