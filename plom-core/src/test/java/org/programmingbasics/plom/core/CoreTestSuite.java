@@ -18,6 +18,7 @@ import org.programmingbasics.plom.core.view.InsertTokenTest;
 import org.programmingbasics.plom.core.view.LineForPositionTest;
 import org.programmingbasics.plom.core.view.NextPositionTest;
 import org.programmingbasics.plom.core.view.ParseContextTest;
+import org.programmingbasics.plom.core.view.RenderedCursorPositionTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -47,6 +48,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(CodeNestingCounterTest.class);
       suite.addTestSuite(LineForPositionTest.class);
       suite.addTestSuite(CodePositionTest.class);
+      suite.addTestSuite(RenderedCursorPositionTest.class);
       return suite;
    }
 

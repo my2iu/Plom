@@ -15,7 +15,7 @@ import junit.framework.TestCase;
 
 public class HitDetectTest extends TestCase
 {
-  class MockHitBox extends RenderedHitBox
+  public static class MockHitBox extends RenderedHitBox
   {
     int left, top, width, height;
     List<Rect> rects;

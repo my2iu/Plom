@@ -30,6 +30,8 @@ import org.programmingbasics.plom.core.view.InsertNewLine;
 import org.programmingbasics.plom.core.view.InsertToken;
 import org.programmingbasics.plom.core.view.NextPosition;
 import org.programmingbasics.plom.core.view.ParseContext;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 
 import elemental.client.Browser;
@@ -168,12 +170,12 @@ public class CodePanel
   /**
    * Returns a mapping of divs for each line and their line numbers
    */
-  static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
+  static RenderedHitBox renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos, ErrorList codeErrors)
   {
     if (selectionPos != null)
-      CodeRenderer.render(codeDiv, codeList, pos, pos, selectionPos, renderedHitBoxes, codeErrors);
+      return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
     else
-      CodeRenderer.render(codeDiv, codeList, pos, null, null, renderedHitBoxes, codeErrors);
+      return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
   }
 
   Element makeButton(String text, boolean enabled, Runnable onclick)
@@ -667,7 +669,7 @@ public class CodePanel
   void hookCodeClick(DivElement div)
   {
     div.addEventListener(Event.SCROLL, (evt) -> {
-      updateCursor();
+      cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
     }, false);
     hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
     hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
@@ -791,8 +793,9 @@ public class CodePanel
     if (listener != null)
       listener.onUpdate(isCodeChanged);
     codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, selectionCursorPos, null, codeErrors);
-    addCursorOverlay();
+    RenderedHitBox renderedHitBoxes = renderTokens(codeDiv, codeList, cursorPos, selectionCursorPos, codeErrors);
+    updateCursor(renderedHitBoxes);
+//    addCursorOverlay();
   }
   
   void addCursorOverlay()
@@ -822,12 +825,15 @@ public class CodePanel
     }
     
     // Draw a handle under the cursor
-    updateCursor();
+//    updateCursor();
 
 //    createCursorHandleSvg(svg, cursorHandle1);
   }
 
-  void updateCursor()
+  
+  // We need the renderedhitboxes of the code to figure out where
+  // the cursor is
+  void updateCursor(RenderedHitBox renderedHitBoxes)
   {
     DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
     if (cursorDiv == null) return;
@@ -837,20 +843,53 @@ public class CodePanel
       x += el.getOffsetLeft();
       y += el.getOffsetTop();
     }
+    // Handle scrolling
+    cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
+
     // Main cursor
-    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft()) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
+    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE) + ")");
     cursorHandle1.x = x;
     cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
     cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
     cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle1.y;
     // Secondary cursor
-    
-    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x - codeDiv.getScrollLeft() + 2.5 * HANDLE_SIZE) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE - codeDiv.getScrollTop()) + ")");
-    cursorHandle2.x = x + 2.5 * HANDLE_SIZE;
-    cursorHandle2.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
-    cursorHandle2.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle2.x; 
-    cursorHandle2.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle2.y;
-    
+    CursorRect selectionCursorRect = null;
+    if (selectionCursorPos != null)
+    {
+      selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
+    }
+    // Draw caret for the secondary cursor
+    Element caretCursor = cursorOverlayEl.querySelector(".cursorcaret"); 
+    if (selectionCursorRect != null)
+    {
+      caretCursor.getStyle().clearDisplay();
+      caretCursor.setAttribute("x1", "" + selectionCursorRect.left);
+      caretCursor.setAttribute("x2", "" + selectionCursorRect.left);
+      caretCursor.setAttribute("y1", "" + selectionCursorRect.top);
+      caretCursor.setAttribute("y2", "" + selectionCursorRect.bottom);
+    }
+    else
+      caretCursor.getStyle().setDisplay(Display.NONE);
+    // Secondary cursor handle
+    if (selectionCursorRect == null)
+    {
+      selectionCursorRect = new CursorRect(x, y, y + cursorDiv.getOffsetHeight());
+    }
+    x = selectionCursorRect.left;
+    y = selectionCursorRect.top;
+    if (selectionCursorPos != null)
+    {
+      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+      cursorHandle2.x = x;
+    }
+    else
+    {
+      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+      cursorHandle2.x = x + 2.5 * HANDLE_SIZE;
+    }
+    cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
+    cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
+    cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
   }
   
   void createCursorHandleSvg(SVGElement parent, CursorHandle handle)

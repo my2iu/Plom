@@ -12,7 +12,7 @@ public class RenderedHitBox
    Element el;
    RenderedHitBox() {} 
 
-   RenderedHitBox(Element el) 
+   public RenderedHitBox(Element el) 
    {
       this.el = el;
    }
@@ -102,5 +102,5 @@ public class RenderedHitBox
 //   int y;
 //   int w;
 //   int h;
-   List<RenderedHitBox> children;
+   public List<RenderedHitBox> children;
 }

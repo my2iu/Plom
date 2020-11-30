@@ -94,6 +94,14 @@ div.main {
 	stroke-width: 2px;
 }
 
+.codesidesplit svg.cursoroverlay .cursorcaret {
+	pointer-events: auto;
+	touch-action: none;
+	fill: transparent;
+	stroke: red;
+	stroke-width: 3px;
+}
+
 .choices {
 	background-color: #fee;
 	flex-grow: 0;

@@ -8,15 +8,9 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+/** Gets the token at the given cursor position */ 
 public class GetToken
 {
-  
-  // Gets the token at the given cursor position 
-  public static class ParseContextForCursor
-  {
-    public Symbol baseContext;
-    public List<Token> tokens = new ArrayList<>();
-  }
   
   public static Token inStatements(StatementContainer statements, CodePosition pos, int level)
   {

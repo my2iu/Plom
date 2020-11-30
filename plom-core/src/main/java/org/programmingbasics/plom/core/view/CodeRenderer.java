@@ -54,6 +54,13 @@ public class CodeRenderer
     renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
   }
 
+  public static RenderedHitBox renderWithHitBoxes(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors)
+  {
+    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
+    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
+    return renderedHitBoxes;
+  }
+
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
   {
     RenderedHitBox hitBox = new RenderedHitBox(null);
@@ -344,6 +351,13 @@ public class CodeRenderer
     if (codeList.statements.isEmpty()) 
     {
       DivElement div = doc.createDivElement();
+      if (renderedHitBoxes != null)
+      {
+        // Insert an empty hitbox for a blank line even though there's no corresponding tokencontainer
+        RenderedHitBox lineHitBox = new RenderedHitBox(div);
+        lineHitBox.children = new ArrayList<>();
+        renderedHitBoxes.children.add(lineHitBox);
+      }
       if (pos != null)
       {
         DivElement toInsert = doc.createDivElement();
