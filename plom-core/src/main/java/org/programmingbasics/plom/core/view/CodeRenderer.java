@@ -442,6 +442,8 @@ public class CodeRenderer
     {
       subdiv = doc.createDivElement();
       div.appendChild(subdiv);
+      if (lineHitBox != null)
+        lineHitBox.children.add(new RenderedHitBox(subdiv));
     }
     // Special handling for cursor at the end, or if line is empty with no cursor, put some blank content there
     if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 

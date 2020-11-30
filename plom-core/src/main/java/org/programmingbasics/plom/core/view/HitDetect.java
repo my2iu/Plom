@@ -64,7 +64,7 @@ public class HitDetect
       newPos.setOffset(level, 0);
       return newPos;
     }
-    for (int n = 0; n < renderedLineHitBoxes.children.size(); n++)
+    for (int n = 0; n < tokens.tokens.size(); n++)
     {
       Token token = tokens.tokens.get(n);
       TokenHitLocation loc = token.visit(isClickedOnTokenOrLater, x, y, renderedLineHitBoxes.children.get(n));

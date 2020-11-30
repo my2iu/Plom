@@ -92,7 +92,10 @@ public class RenderedHitBox
        for (RenderedHitBox child: children)
        {
          toReturn += ", ";
-         toReturn += child.getTestData();
+         if (child == null)
+           toReturn += "null";
+         else
+           toReturn += child.getTestData();
        }
      }
      toReturn += ")";

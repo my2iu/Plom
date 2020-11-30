@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.view;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /**
@@ -62,19 +63,34 @@ public class RenderedCursorPosition
   {
     if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
     {
-      return line.tokens.get(pos.getOffset(level)).visit(new TokenAtCursor(), pos, level + 1, hitBox);
+      return line.tokens.get(pos.getOffset(level)).visit(new TokenAtCursor(), pos, level + 1, hitBox.children.get(pos.getOffset(level)));
     }
     if (pos.getOffset(level) < line.tokens.size())
     {
       // Determine cursor size based on the token to the right
       RenderedHitBox tokenHitBox = hitBox.children.get(pos.getOffset(level));
+      // Special handling for wide/block tokens
+      if (line.tokens.get(pos.getOffset(level)).isWide())
+      {
+        if (hitBox.children.get(pos.getOffset(level)).children.get(CodeRenderer.EXPRBLOCK_POS_START) != null)
+          tokenHitBox = hitBox.children.get(pos.getOffset(level)).children.get(CodeRenderer.EXPRBLOCK_POS_START);
+      }
       return CursorRect.fromHitBoxLeft(tokenHitBox);
     }
     else if (pos.getOffset(level) > 0)
     {
       // Determine cursor size based on the token to the left
-      RenderedHitBox tokenHitBox = hitBox.children.get(pos.getOffset(level) - 1);
-      return CursorRect.fromHitBoxRight(tokenHitBox);
+      if (!line.tokens.get(pos.getOffset(level) - 1).isWide())
+      {
+        RenderedHitBox tokenHitBox = hitBox.children.get(pos.getOffset(level) - 1);
+        return CursorRect.fromHitBoxRight(tokenHitBox);
+      }
+      else
+      {
+        // If the last token is a wide token, we insert an extra hit box for the empty line at the end
+        RenderedHitBox tokenHitBox = hitBox.children.get(pos.getOffset(level));
+        return CursorRect.fromHitBoxLeft(tokenHitBox);
+      }
     }
     else
     {
@@ -86,16 +102,27 @@ public class RenderedCursorPosition
   static class TokenAtCursor extends RecurseIntoCompoundToken<CursorRect, RenderedHitBox>
   {
     @Override
+    public CursorRect visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
+        RenderedHitBox hitBox)
+    {
+      if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+      {
+        return inLine(token.parameters.get(pos.getOffset(level + 1)), Symbol.ExpressionOnly, pos, level + 2, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).children.get(pos.getOffset(level + 1)));
+      }
+      throw new IllegalArgumentException();
+    }
+    
+    @Override
     CursorRect handleExpression(Token originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, RenderedHitBox hitBox)
     {
-      return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox);
+      return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
     }
     @Override
     CursorRect handleStatementContainer(Token originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, RenderedHitBox hitBox)
     {
-      return inStatements(blockContainer, pos, level, hitBox);
+      return inStatements(blockContainer, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK));
     }
   }
 }

@@ -122,69 +122,27 @@ public class RenderedCursorPositionTest extends TestCase
             ),
             new MockHitBox(0, 106, 202, 27,
                 new MockHitBox(4, 110, 45, 17),  // Comment
-                null, null)
+                null, null),
+            new MockHitBox(0, 133, 202, 26)   // Empty line added after a wide token
         ));
 
     // Before a wide token on second line
     CursorRect cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(1, 0), 0, hitBoxes);
     assertCursorRectEquals(new CursorRect(4, 35, 35 + 17), cursor);
 
+    // Expression of the if
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(1, 0, 1, 0), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(23, 31, 31 + 26), cursor);
+    
+    // In the block of the if
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(1, 0, 2, 0, 1), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(37, 57, 57 + 26), cursor);
+    
     // After a wide token with nothing afterwards
     cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(1, 2), 0, hitBoxes);
-    assertCursorRectEquals(new CursorRect(4, 35, 35 + 17), cursor);
+    assertCursorRectEquals(new CursorRect(0, 133, 133 + 26), cursor);
     
-    // Clicking before the "if"
-//    CodePosition newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(-1, 30, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(1));
-//    Assert.assertFalse(newPos.hasOffset(2));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(0, newPos.getOffset(1));
-//
-//    // Clicking on front part of the "if"
-//    newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(10, 30, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(1));
-//    Assert.assertFalse(newPos.hasOffset(2));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(0, newPos.getOffset(1));
-//    
-//    // Clicking on expression part of "if"
-//    newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(25, 30, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(3));
-//    Assert.assertFalse(newPos.hasOffset(4));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(0, newPos.getOffset(1));
-//    Assert.assertEquals(1, newPos.getOffset(2));
-//    Assert.assertEquals(0, newPos.getOffset(3));
-//    
-//    // Clicking inside the block part of "if"
-//    newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(40, 60, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(4));
-//    Assert.assertFalse(newPos.hasOffset(5));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(0, newPos.getOffset(1));
-//    Assert.assertEquals(2, newPos.getOffset(2));
-//    Assert.assertEquals(0, newPos.getOffset(3));
-//    Assert.assertEquals(1, newPos.getOffset(4));
-//
-//    // Clicking on the statement following the "if"
-//    newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(3, 120, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(1));
-//    Assert.assertFalse(newPos.hasOffset(2));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(1, newPos.getOffset(1));
-//    
-//    // Clicking after the statement following the "if"
-//    newPos = new CodePosition();
-//    newPos = HitDetect.hitDetectStatementContainer(3, 140, container, hitBoxes, newPos, 0);
-//    Assert.assertTrue(newPos.hasOffset(1));
-//    Assert.assertFalse(newPos.hasOffset(2));
-//    Assert.assertEquals(1, newPos.getOffset(0));
-//    Assert.assertEquals(2, newPos.getOffset(1));
+    // TODO: test multi-line expressions inside the if
   }
   
   @Test
@@ -212,30 +170,23 @@ public class RenderedCursorPositionTest extends TestCase
                     new MockHitBox(132, 8, 0, 17), 
                     new MockHitBox(148, 8, 25, 17, 
                         new MockHitBox(148, 4, 25, 27)))))); 
-    // Click on the beginning of parameter token
-    CodePosition newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(3, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0), newPos);
-    // Click on first token of first parameter
-    newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(50, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), newPos);
-    // Click on after first parameter
-    newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(103, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), newPos);
-    // Click on after second parameter that is empty
-    newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(133, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), newPos);
-    // Click on postfix
-    newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(175, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1), newPos);
-    // Click after end of token
-    newPos = new CodePosition();
-    newPos = HitDetect.hitDetectStatementContainer(205, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 1), newPos);
+    // Before a parameter token
+    CursorRect cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(0, 4, 4 + 26), cursor);
+
+    // start of first parameter
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(43, 4, 4 + 27), cursor);
+
+    // after first parameter
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(43 + 57, 4, 4 + 27), cursor);
+    
+    // second parameter that is empty
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), 0, hitBoxes);
+    assertCursorRectEquals(new CursorRect(132, 8, 8 + 17), cursor);
+
+    // TODO: Before/after a multi-line parameter token
   }
   
   // TODO: Write hit detect test for multi-line parameter token
