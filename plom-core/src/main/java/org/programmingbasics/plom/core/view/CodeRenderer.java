@@ -43,12 +43,14 @@ public class CodeRenderer
     public CodePosition selectionEnd = null;
   }
   
-  public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
+  public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
   {
     RenderSupplementalInfo supplement = new RenderSupplementalInfo();
     supplement.codeErrors = codeErrors;
     supplement.nesting = new CodeNestingCounter();
     supplement.nesting.calculateNestingForStatements(codeList);
+    supplement.selectionStart = selectionPos1;
+    supplement.selectionEnd = selectionPos2;
     renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
   }
 

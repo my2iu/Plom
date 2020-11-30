@@ -168,9 +168,12 @@ public class CodePanel
   /**
    * Returns a mapping of divs for each line and their line numbers
    */
-  static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
+  static void renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
   {
-    CodeRenderer.render(codeDiv, codeList, pos, renderedHitBoxes, codeErrors);
+    if (selectionPos != null)
+      CodeRenderer.render(codeDiv, codeList, pos, pos, selectionPos, renderedHitBoxes, codeErrors);
+    else
+      CodeRenderer.render(codeDiv, codeList, pos, null, null, renderedHitBoxes, codeErrors);
   }
 
   Element makeButton(String text, boolean enabled, Runnable onclick)
@@ -354,6 +357,8 @@ public class CodePanel
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
 
+    if (selectionCursorPos != null) return;
+    
     // We have some buttons that float to the right, but on wide displays, those
     // buttons are too far to the right and get lost, so we put everything into
     // a separate inline-block div whose width is just the width of the content,
@@ -617,15 +622,27 @@ public class CodePanel
     }, false);
     addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
-      if (pointerDownHandle == 1)
+      if (pointerDownHandle != 0)
       {
         double x = pointerToRelativeX(pevt, div);
         double y = pointerToRelativeY(pevt, div);
-        CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
-        if (newPos == null)
-          newPos = new CodePosition();
-        cursorPos = newPos;
-
+        if (pointerDownHandle == 1)
+        {
+          CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+          if (newPos == null)
+            newPos = new CodePosition();
+          cursorPos = newPos;
+        }
+        else if (pointerDownHandle == 2)
+        {
+          CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+          if (newPos == null)
+            newPos = new CodePosition();
+          if (newPos.equals(cursorPos))
+            selectionCursorPos = null;
+          else
+            selectionCursorPos = newPos;
+        }
         updateCodeView(false);
         showPredictedTokenInput(choicesDiv);
       }
@@ -663,6 +680,7 @@ public class CodePanel
       if (newPos == null)
         newPos = new CodePosition();
       cursorPos = newPos;
+      selectionCursorPos = null;
 
       updateCodeView(false);
       showPredictedTokenInput(choicesDiv);
@@ -773,7 +791,7 @@ public class CodePanel
     if (listener != null)
       listener.onUpdate(isCodeChanged);
     codeDiv.setInnerHTML("");
-    renderTokens(codeDiv, codeList, cursorPos, null, codeErrors);
+    renderTokens(codeDiv, codeList, cursorPos, selectionCursorPos, null, codeErrors);
     addCursorOverlay();
   }
   

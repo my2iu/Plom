@@ -56,7 +56,7 @@ div.main {
 	right: 0;
 	top: 0;
 	bottom: 0;
-	touch-action: none;
+	touch-action: none;  /* this could be pinch-zoom, but on Safari, after zooming, single touches no longer go to the code area until you do a single click to give it focus again, which can be confusing */
 	user-select: none;
 	-webkit-user-select: none;
 }

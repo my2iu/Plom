@@ -21,7 +21,7 @@ public class HitDetect
     RenderedHitBox renderedHitBoxes = new RenderedHitBox(null);
     renderedHitBoxes.children = new ArrayList<>();
     codeDiv.setInnerHTML("");
-    CodeRenderer.render(codeDiv, codeList, oldPos, renderedHitBoxes, codeErrors);
+    CodeRenderer.render(codeDiv, codeList, oldPos, null, null, renderedHitBoxes, codeErrors);
     CodePosition pos = new CodePosition();
     return hitDetectStatementContainer(x, y, codeList, renderedHitBoxes, pos, 0);
   }
