@@ -43,8 +43,6 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.events.EventTarget;
-import elemental.events.MouseEvent;
-import elemental.events.TouchEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
@@ -501,6 +499,8 @@ public class CodePanel
   }
 
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
+  double pointerDownX = 0;
+  double pointerDownY = 0;
   
   // Map single touch position to be relative to the code panel 
   private double pointerToRelativeX(PointerEvent evt, DivElement div)
@@ -621,6 +621,10 @@ public class CodePanel
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = cursorId;
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
+      pointerDownX = x;
+      pointerDownY = y;
     }, false);
     addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
@@ -628,12 +632,16 @@ public class CodePanel
       {
         double x = pointerToRelativeX(pevt, div);
         double y = pointerToRelativeY(pevt, div);
+        pointerDownX = x;
+        pointerDownY = y;
         if (pointerDownHandle == 1)
         {
           CodePosition newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
           if (newPos == null)
             newPos = new CodePosition();
           cursorPos = newPos;
+          if (cursorPos.equals(selectionCursorPos))
+            selectionCursorPos = null;
         }
         else if (pointerDownHandle == 2)
         {
@@ -646,7 +654,7 @@ public class CodePanel
             selectionCursorPos = newPos;
         }
         updateCodeView(false);
-        showPredictedTokenInput(choicesDiv);
+//        showPredictedTokenInput(choicesDiv);
       }
       evt.preventDefault();
       evt.stopPropagation();
@@ -657,11 +665,15 @@ public class CodePanel
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = 0;
+      updateCodeView(false);
+      showPredictedTokenInput(choicesDiv);
     }, false);
     cursorHandleEl.addEventListener("pointercancel", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       pointerDownHandle = 0;
       releasePointerCapture(cursorHandleEl, pevt.getPointerId());
+      updateCodeView(false);
+      showPredictedTokenInput(choicesDiv);
     }, false);
     
   }
@@ -798,37 +810,37 @@ public class CodePanel
 //    addCursorOverlay();
   }
   
-  void addCursorOverlay()
-  {
-    // Add an svg overlay
-    SVGSVGElement svg = Browser.getDocument().createSVGElement();
-    svg.getStyle().setLeft("0");
-    svg.getStyle().setTop("0");
-    svg.getStyle().setWidth(codeDiv.getScrollWidth(), Unit.PX);
-//    svg.getStyle().setRight("0");
-//    svg.getStyle().setBottom("0");
-    svg.getStyle().setHeight(codeDiv.getScrollHeight(), Unit.PX);
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", "100%");
-    svg.getStyle().setPosition(Position.ABSOLUTE);
-    svg.getStyle().setProperty("pointer-events", "none");
-    codeDiv.appendChild(svg);
-    
-    // Find where the cursor should be placed
-    DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
-    if (cursorDiv == null) return;
-    double x = 0, y = 0;
-    for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
-    {
-      x += el.getOffsetLeft();
-      y += el.getOffsetTop();
-    }
-    
-    // Draw a handle under the cursor
-//    updateCursor();
-
-//    createCursorHandleSvg(svg, cursorHandle1);
-  }
+//  void addCursorOverlay()
+//  {
+//    // Add an svg overlay
+//    SVGSVGElement svg = Browser.getDocument().createSVGElement();
+//    svg.getStyle().setLeft("0");
+//    svg.getStyle().setTop("0");
+//    svg.getStyle().setWidth(codeDiv.getScrollWidth(), Unit.PX);
+////    svg.getStyle().setRight("0");
+////    svg.getStyle().setBottom("0");
+//    svg.getStyle().setHeight(codeDiv.getScrollHeight(), Unit.PX);
+//    svg.setAttribute("width", "100%");
+//    svg.setAttribute("height", "100%");
+//    svg.getStyle().setPosition(Position.ABSOLUTE);
+//    svg.getStyle().setProperty("pointer-events", "none");
+//    codeDiv.appendChild(svg);
+//    
+//    // Find where the cursor should be placed
+//    DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
+//    if (cursorDiv == null) return;
+//    double x = 0, y = 0;
+//    for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
+//    {
+//      x += el.getOffsetLeft();
+//      y += el.getOffsetTop();
+//    }
+//    
+//    // Draw a handle under the cursor
+////    updateCursor();
+//
+////    createCursorHandleSvg(svg, cursorHandle1);
+//  }
 
   
   // We need the renderedhitboxes of the code to figure out where
@@ -847,7 +859,14 @@ public class CodePanel
     cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
 
     // Main cursor
-    ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE) + ")");
+    if (pointerDownHandle == 1)
+    {
+      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
+    }
+    else
+    {
+      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE) + ")");
+    }
     cursorHandle1.x = x;
     cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
     cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
@@ -873,35 +892,45 @@ public class CodePanel
     // Secondary cursor handle
     if (selectionCursorRect == null)
     {
+      // If there is no secondary cursor to draw a handle around, draw
+      // the handle relative to the main cursor instead  
       selectionCursorRect = new CursorRect(x, y, y + cursorDiv.getOffsetHeight());
     }
     x = selectionCursorRect.left;
     y = selectionCursorRect.top;
-    if (selectionCursorPos != null)
+    if (pointerDownHandle == 2)
     {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      cursorHandle2.x = x;
+      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
+//      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
+//      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
     }
     else
     {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      cursorHandle2.x = x + 2.5 * HANDLE_SIZE;
+      if (selectionCursorPos != null)
+      {
+        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+      }
+      else
+      {
+        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+      }
+      cursorHandle2.x = x;
+      cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
+      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
+      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
     }
-    cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
-    cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
-    cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
   }
   
-  void createCursorHandleSvg(SVGElement parent, CursorHandle handle)
-  {
-    SVGCircleElement handleSvg = Browser.getDocument().createSVGCircleElement();
-    parent.appendChild(handleSvg);
-    handleSvg.setAttribute("cx", "" + handle.x);
-    handleSvg.setAttribute("cy", "" + handle.y);
-    handleSvg.setAttribute("r", "" + HANDLE_SIZE);
-    handleSvg.getStyle().setProperty("fill", "none");
-    handleSvg.getStyle().setProperty("stroke", "#000");
-    handleSvg.getStyle().setProperty("stroke-width", "1px");
-    
-  }
+//  void createCursorHandleSvg(SVGElement parent, CursorHandle handle)
+//  {
+//    SVGCircleElement handleSvg = Browser.getDocument().createSVGCircleElement();
+//    parent.appendChild(handleSvg);
+//    handleSvg.setAttribute("cx", "" + handle.x);
+//    handleSvg.setAttribute("cy", "" + handle.y);
+//    handleSvg.setAttribute("r", "" + HANDLE_SIZE);
+//    handleSvg.getStyle().setProperty("fill", "none");
+//    handleSvg.getStyle().setProperty("stroke", "#000");
+//    handleSvg.getStyle().setProperty("stroke-width", "1px");
+//    
+//  }
 }
