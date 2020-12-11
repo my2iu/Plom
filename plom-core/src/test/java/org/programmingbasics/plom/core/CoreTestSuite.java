@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.PlomTextWriterTest;
 import org.programmingbasics.plom.core.interpreter.ExpressionEvaluatorTest;
 import org.programmingbasics.plom.core.interpreter.MachineContextTest;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
+import org.programmingbasics.plom.core.view.CodeFragmentExtractorTest;
 import org.programmingbasics.plom.core.view.CodeNestingCounterTest;
 import org.programmingbasics.plom.core.view.CodePositionTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
@@ -49,6 +50,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(LineForPositionTest.class);
       suite.addTestSuite(CodePositionTest.class);
       suite.addTestSuite(RenderedCursorPositionTest.class);
+      suite.addTestSuite(CodeFragmentExtractorTest.class);
       return suite;
    }
 

@@ -357,8 +357,6 @@ public class CodePanel
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
 
-    if (selectionCursorPos != null) return;
-    
     // We have some buttons that float to the right, but on wide displays, those
     // buttons are too far to the right and get lost, so we put everything into
     // a separate inline-block div whose width is just the width of the content,
@@ -372,6 +370,14 @@ public class CodePanel
     // around now. I'll just clamp the width of the keyboard area.
     contentDiv.getStyle().setDisplay(Display.BLOCK);
     contentDiv.getStyle().setProperty("max-width", "35em");
+
+    if (selectionCursorPos != null) 
+    {
+      contentDiv.appendChild(makeButton("Copy", true, () -> {
+        
+      }));
+      return;
+    }
     
     // Parse the current statement up to the cursor position
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
