@@ -43,7 +43,7 @@ public class ParseContext
     return toReturn;
   }
   
-  static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void>
+  static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void, RuntimeException>
   {
     @Override
     ParseContextForCursor handleExpression(Token originalToken, TokenContainer exprContainer,

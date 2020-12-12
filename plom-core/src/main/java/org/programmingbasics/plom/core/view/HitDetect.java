@@ -182,7 +182,7 @@ public class HitDetect
   
   // Does hit detection for compound tokens (tokens that contain expressions
   // and statements inside them)
-  static class TokenInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam>
+  static class TokenInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam, RuntimeException>
   {
     @Override
     public Void visitSimpleToken(SimpleToken token, CodePosition pos,
@@ -304,7 +304,7 @@ public class HitDetect
     return newPos;
   }
 
-  static class TypeInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam>
+  static class TypeInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam, RuntimeException>
   {
     @Override
     public Void visitSimpleToken(SimpleToken token, CodePosition pos,

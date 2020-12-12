@@ -55,7 +55,7 @@ public class NextPosition
   /** Returns true iff parent should move to next position */
   static boolean nextPositionInsideToken(Token token, CodePosition pos, int level)
   {
-    return token.visit(new RecurseIntoCompoundToken<Boolean, Void>() {
+    return token.visit(new RecurseIntoCompoundToken<Boolean, Void, RuntimeException>() {
       @Override
       public Boolean visitSimpleToken(SimpleToken token, CodePosition pos, Integer level, 
           Void param)

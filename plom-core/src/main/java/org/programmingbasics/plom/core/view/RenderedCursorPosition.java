@@ -99,7 +99,7 @@ public class RenderedCursorPosition
     }
   }
   
-  static class TokenAtCursor extends RecurseIntoCompoundToken<CursorRect, RenderedHitBox>
+  static class TokenAtCursor extends RecurseIntoCompoundToken<CursorRect, RenderedHitBox, RuntimeException>
   {
     @Override
     public CursorRect visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 

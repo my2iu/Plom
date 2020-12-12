@@ -1,8 +1,5 @@
 package org.programmingbasics.plom.core.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -33,7 +30,7 @@ public class GetToken
     return null;
   }
   
-  static class TokenAtCursor extends RecurseIntoCompoundToken<Token, Void>
+  static class TokenAtCursor extends RecurseIntoCompoundToken<Token, Void, RuntimeException>
   {
     @Override
     Token handleExpression(Token originalToken, TokenContainer exprContainer,

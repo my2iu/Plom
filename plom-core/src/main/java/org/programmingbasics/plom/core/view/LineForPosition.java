@@ -39,7 +39,7 @@ public class LineForPosition
       return lineTracker.containerLine.get(line);
   }
   
-  static class TokenAtCursor extends RecurseIntoCompoundToken<Integer, LineNumberTracker>
+  static class TokenAtCursor extends RecurseIntoCompoundToken<Integer, LineNumberTracker, RuntimeException>
   {
     @Override
     Integer handleExpression(Token originalToken, TokenContainer exprContainer,

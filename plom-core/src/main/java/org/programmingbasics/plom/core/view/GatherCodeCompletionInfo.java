@@ -8,9 +8,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
-import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper;
 import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper.GatheredTypeInfo;
@@ -77,7 +75,7 @@ public class GatherCodeCompletionInfo
       // We're inside another token that might contain statements, so we'll
       // need to recurse into there.
       Token token = line.tokens.get(pos.getOffset(level));
-      token.visit(new RecurseIntoCompoundToken<Void, CodeCompletionContext>() {
+      token.visit(new RecurseIntoCompoundToken<Void, CodeCompletionContext, RuntimeException>() {
         @Override Void handleExpression(Token originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, CodeCompletionContext context)
         {

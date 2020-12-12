@@ -20,7 +20,7 @@ public class InsertNewLine
     if (pos.hasOffset(level + 2))
     {
       Token token = line.tokens.get(pos.getOffset(level + 1));
-      token.visit(new RecurseIntoCompoundToken<Void, Void>() {
+      token.visit(new RecurseIntoCompoundToken<Void, Void, RuntimeException>() {
         @Override
         Void handleExpression(Token originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, Void param)

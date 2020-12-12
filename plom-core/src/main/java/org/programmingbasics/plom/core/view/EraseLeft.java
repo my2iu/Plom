@@ -70,7 +70,7 @@ public class EraseLeft
   {
     if (pos.getOffset(level) < line.tokens.size() && pos.hasOffset(level + 1))
     {
-      AfterAction after = line.tokens.get(pos.getOffset(level)).visit(new RecurseIntoCompoundToken<AfterAction, Void>() {
+      AfterAction after = line.tokens.get(pos.getOffset(level)).visit(new RecurseIntoCompoundToken<AfterAction, Void, RuntimeException>() {
         @Override
         public AfterAction visitParameterToken(ParameterToken token,
             CodePosition pos, Integer level, Void param)

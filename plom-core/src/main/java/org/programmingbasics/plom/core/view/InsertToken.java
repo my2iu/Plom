@@ -41,7 +41,7 @@ public class InsertToken
     if (pos.hasOffset(level + 1))
     {
       Token token = line.tokens.get(pos.getOffset(level));
-      token.visit(new RecurseIntoCompoundToken<Void, Token>() {
+      token.visit(new RecurseIntoCompoundToken<Void, Token, RuntimeException>() {
         @Override
         Void handleExpression(Token originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, Token newToken)

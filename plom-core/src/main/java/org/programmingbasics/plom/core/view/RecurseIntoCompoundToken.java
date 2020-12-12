@@ -2,27 +2,27 @@ package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
-import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
+import org.programmingbasics.plom.core.ast.Token.TokenVisitor3Err;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 
-public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosition, Integer, U>
+public class RecurseIntoCompoundToken<T, U, E extends Throwable> implements TokenVisitor3Err<T, CodePosition, Integer, U, E>
 {
 
   @Override
   public T visitSimpleToken(SimpleToken token, CodePosition pos, Integer level, 
-      U param)
+      U param) throws E
   {
     throw new IllegalArgumentException();
   }
 
   @Override
   public T visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
-      U param)
+      U param) throws E
   {
     if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
     {
@@ -33,27 +33,27 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
   
   @Override
   public T visitWideToken(WideToken token, CodePosition pos, Integer level,
-      U param)
+      U param) throws E
   {
     return handleWideToken(token, null, null, pos, level, param);
   }
 
   @Override
   public T visitOneBlockToken(OneBlockToken token, CodePosition pos,
-      Integer level, U param)
+      Integer level, U param) throws E
   {
     return handleWideToken(token, null, token.block, pos, level, param);
   }
 
   @Override
   public T visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token,
-      CodePosition pos, Integer level, U param)
+      CodePosition pos, Integer level, U param) throws E
   {
     return handleWideToken(token, token.expression, token.block, pos, level, param);
   }
 
   T handleWideToken(WideToken originalToken, TokenContainer exprContainer,
-      StatementContainer blockContainer, CodePosition pos, int level, U param)
+      StatementContainer blockContainer, CodePosition pos, int level, U param) throws E
   {
     if (exprContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
     {
@@ -66,12 +66,12 @@ public class RecurseIntoCompoundToken<T, U> implements TokenVisitor3<T, CodePosi
     throw new IllegalArgumentException();
   }
   
-  T handleExpression(Token originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param)
+  T handleExpression(Token originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param) throws E
   {
     return null;
   }
   
-  T handleStatementContainer(Token originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param)
+  T handleStatementContainer(Token originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param) throws E
   {
     return null;
   }
