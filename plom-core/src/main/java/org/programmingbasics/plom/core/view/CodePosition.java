@@ -77,6 +77,16 @@ public class CodePosition
      return !this.isBefore(startPos) && this.isBefore(endPos);
    }
    
+   public boolean equalUpToLevel(CodePosition other, int level)
+   {
+     for (int n = 0; n <= level; n++)
+     {
+       if (getOffset(n) != other.getOffset(n))
+         return false;
+     }
+     return true;
+   }
+   
 //   int line;
 //   int token;
   @Override
