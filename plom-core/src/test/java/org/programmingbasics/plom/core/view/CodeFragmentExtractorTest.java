@@ -242,7 +242,59 @@ public class CodeFragmentExtractorTest extends TestCase
   @Test
   public void testExtractAfterBefore()
   {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable, 
+                            new TokenContainer(
+                                new Token.SimpleToken("1", Symbol.Number),
+                                new Token.SimpleToken("+", Symbol.Plus),
+                                new Token.SimpleToken("2", Symbol.Number)
+                                ),
+                            new TokenContainer(
+                                new Token.SimpleToken("3", Symbol.Number),
+                                new Token.SimpleToken("+", Symbol.Plus),
+                                new Token.SimpleToken("4", Symbol.Number)
+                                ),
+                            new TokenContainer(
+                                new Token.SimpleToken("5", Symbol.Number),
+                                new Token.SimpleToken("+", Symbol.Plus),
+                                new Token.SimpleToken("6", Symbol.Number)
+                                ))
+                        )
+                    )
+                ),
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+                    new TokenContainer(
+                        new Token.SimpleToken("7", Symbol.Number),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("8", Symbol.Number)
+                        ),
+                    new StatementContainer(
+                        new TokenContainer(
+                            new Token.SimpleToken("9", Symbol.Number),
+                            new Token.SimpleToken("+", Symbol.Plus),
+                            new Token.SimpleToken("0", Symbol.Number)
+                            )
+                        )),
+                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+                    new StatementContainer(
+                        new TokenContainer(
+                            new Token.SimpleToken("11", Symbol.Number),
+                            new Token.SimpleToken("+", Symbol.Plus),
+                            new Token.SimpleToken("12", Symbol.Number)
+                            )
+                        ))
+                )
+            );
     // Extract between the end of one parameter in a parameter token and the beginning of another parameter
-    
+    Assert.assertEquals(" 2\n 3 + 4\n 5", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1)));
+    // Extract between an if expression and an if block
+    Assert.assertEquals(" 8\n 9 +", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2)));
+    // Extract between an if block and an else block
+    Assert.assertEquals(" 0\n\n else {\n 11\n }\n", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2), CodePosition.fromOffsets(1, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1)));
   }
 }

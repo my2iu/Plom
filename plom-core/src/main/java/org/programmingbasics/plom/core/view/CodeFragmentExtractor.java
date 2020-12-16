@@ -69,7 +69,20 @@ public class CodeFragmentExtractor
         {
           if (start.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
           {
-            return handleExpression(token, token.parameters.get(start.getOffset(level + 1)), start, level + 2, end);
+            if (start.getOffset(level + 1) == end.getOffset(level + 1))
+            {
+              handleExpression(token, token.parameters.get(start.getOffset(level + 1)), start, level + 2, end);
+              return null;
+            }
+            extractAfterFromLine(token.parameters.get(start.getOffset(level + 1)), start, level + 2, out);
+            out.newline();
+            for (int n = start.getOffset(level + 1) + 1; n < end.getOffset(level + 1); n++)
+            {
+              PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
+              out.newline();
+            }
+            extractBeforeFromLine(token.parameters.get(end.getOffset(level + 1)), end, level + 2, out);
+            return null;
           }
           else if (start.getOffset(level) == 0)
           {
