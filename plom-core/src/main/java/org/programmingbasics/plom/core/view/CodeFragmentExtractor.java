@@ -64,6 +64,21 @@ public class CodeFragmentExtractor
       // Recurse deeper
       Token tok = line.tokens.get(start.getOffset(level));
       tok.visit(new RecurseIntoCompoundToken<Void, CodePosition, IOException>() {
+        @Override public Void visitParameterToken(ParameterToken token, CodePosition start,
+            Integer level, CodePosition end) throws IOException
+        {
+          if (start.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+          {
+            return handleExpression(token, token.parameters.get(start.getOffset(level + 1)), start, level + 2, end);
+          }
+          else if (start.getOffset(level) == 0)
+          {
+            // Start is before the current token
+            token.visit(new ExtractBefore(), end, level, out);
+            return null;
+          }
+          throw new IllegalArgumentException();
+        }
         @Override Void handleWideToken(WideToken originalToken,
             TokenContainer exprContainer, StatementContainer blockContainer,
             CodePosition start, int level, CodePosition end) throws IOException
@@ -85,6 +100,12 @@ public class CodeFragmentExtractor
             extractAfterFromLine(exprContainer, start, level + 1, out);
             out.newline();
             extractBeforeFromStatements(blockContainer, end, level + 1, out);
+            return null;
+          }
+          else if (start.getOffset(level) == 0)
+          {
+            // Start is before the current token
+            originalToken.visit(new ExtractBefore(), end, level, out);
             return null;
           }
           throw new IllegalArgumentException();
@@ -121,7 +142,8 @@ public class CodeFragmentExtractor
     {
       PlomTextWriter.writeToken(out, line.tokens.get(idx));
     }
-
+    if (end.hasOffset(level + 1))
+      line.tokens.get(end.getOffset(level)).visit(new ExtractBefore(), end, level + 1, out);
     return;
   }
   
@@ -221,9 +243,20 @@ public class CodeFragmentExtractor
 
   
   // Extracts code that comes before a code position
-  public static void extractBeforeFromStatements(StatementContainer code, CodePosition pos, int level, PlomCodeOutputFormatter out) throws IOException
+  public static void extractBeforeFromStatements(StatementContainer code, CodePosition end, int level, PlomCodeOutputFormatter out) throws IOException
   {
-    return;
+    // Extract in-between stuff
+    for (int n = 0; n < end.getOffset(level); n++)
+    {
+      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
+      out.newline();
+    }
+
+    // Extract the last bit
+    if (end.hasOffset(level + 1))
+    {
+      extractBeforeFromLine(code.statements.get(end.getOffset(level)), end, level + 1, out);
+    }
   }
 
   public static void extractBeforeFromLine(TokenContainer line, CodePosition end, int level, PlomCodeOutputFormatter out) throws IOException
@@ -233,6 +266,61 @@ public class CodeFragmentExtractor
     if (end.hasOffset(level + 1))
     {
       // Recurse deeper
+      Token tok = line.tokens.get(end.getOffset(level));
+      tok.visit(new ExtractBefore(), end, level + 1, out);
+    }
+  }
+
+  static class ExtractBefore extends RecurseIntoCompoundToken<Void, PlomCodeOutputFormatter, IOException>
+  {
+    @Override
+    public Void visitParameterToken(ParameterToken token, CodePosition end,
+        Integer level, PlomCodeOutputFormatter out) throws IOException
+    {
+      // Start is before the current token
+      PlomTextWriter.writeParameterTokenStart(out, token);
+      for (int n = 0; n < token.contents.size(); n++)
+      {
+        PlomTextWriter.writeParameterTokenParamStart(out, token, n);
+        if (n < end.getOffset(level + 1))
+          PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
+        else if (n == end.getOffset(level + 1) && end.hasOffset(level + 2))
+          extractBeforeFromLine(token.parameters.get(n), end, level + 2, out);
+        PlomTextWriter.writeParameterTokenParamEnd(out);
+      }
+      PlomTextWriter.writeParameterTokenEnd(out, token);
+      return null;
+    }
+    @Override
+    Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
+        StatementContainer blockContainer, CodePosition end, int level,
+        PlomCodeOutputFormatter out) throws IOException
+    {
+      if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+      {
+        PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
+        extractBeforeFromLine(exprContainer, end, level + 1, out);
+        if (blockContainer != null)
+          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
+        PlomTextWriter.writeBlockTokenEnd(out);
+        return null;
+      }
+      else if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+      {
+        if (exprContainer != null)
+        {
+          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
+          PlomTextWriter.writeTokenContainer(out, exprContainer);
+          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
+        }
+        else
+          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, true);
+        extractBeforeFromStatements(blockContainer, end, level + 1, out);
+        out.newline();
+        PlomTextWriter.writeBlockTokenEnd(out);
+        return null;
+      }
+      return null;
     }
   }
 

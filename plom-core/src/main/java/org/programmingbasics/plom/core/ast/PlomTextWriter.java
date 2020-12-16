@@ -138,34 +138,14 @@ public class PlomTextWriter
 
       @Override public Void visitParameterToken(ParameterToken token) throws IOException
       {
-        switch(token.getType())
-        {
-        case AtType:
-          out.token("@");
-          out.token("{");
-          break;
-        case DotVariable:
-          out.token(".");
-          out.token("{");
-          break;
-        default:
-          throw new IllegalArgumentException("Unknown token type");
-        }
+        writeParameterTokenStart(out, token);
         for (int n = 0; n < token.contents.size(); n++)
         {
-          if (n == 0)
-            out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
-          else
-            out.append(escapeParameterTokenPart(token.contents.get(n)));
-          out.token("{");
+          writeParameterTokenParamStart(out, token, n);
           writeTokenContainer(out, token.parameters.get(n));
-          out.token("}");
+          writeParameterTokenParamEnd(out);
         }
-        if (token.contents.isEmpty())
-          out.append(escapeParameterTokenPart(token.postfix.substring(1)));
-        else
-          out.append(escapeParameterTokenPart(token.postfix));
-        out.token("}");
+        writeParameterTokenEnd(out, token);
         return null;
       }
 
@@ -181,28 +161,86 @@ public class PlomTextWriter
 
       @Override public Void visitOneBlockToken(OneBlockToken token) throws IOException
       {
-        out.token(symbolTokenMap.get(token.getType()));
-        out.token("{");
-        out.newline();
+        writeBlockTokenFirstLine(out, token, true);
         writeStatementContainer(out, token.block);
-        out.token("}");
-        out.newline();
+        writeBlockTokenEnd(out);
         return null;
       }
 
       @Override public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws IOException
       {
-        out.token(symbolTokenMap.get(token.getType()));
-        out.token("{");
+        writeBlockTokenFirstLine(out, token, false);
         writeTokenContainer(out, token.expression);
-        out.token("}");
-        out.token("{");
-        out.newline();
+        writeBlockTokenExpressionToBlock(out);
         writeStatementContainer(out, token.block);
-        out.token("}");
-        out.newline();
+        writeBlockTokenEnd(out);
         return null;
       }});
+  }
+
+  public static void writeParameterTokenStart(PlomCodeOutputFormatter out,
+      ParameterToken token)
+  {
+    switch(token.getType())
+    {
+    case AtType:
+      out.token("@");
+      out.token("{");
+      break;
+    case DotVariable:
+      out.token(".");
+      out.token("{");
+      break;
+    default:
+      throw new IllegalArgumentException("Unknown token type");
+    }
+  }
+  
+  public static void writeParameterTokenEnd(PlomCodeOutputFormatter out,
+      ParameterToken token)
+  {
+    if (token.contents.isEmpty())
+      out.append(escapeParameterTokenPart(token.postfix.substring(1)));
+    else
+      out.append(escapeParameterTokenPart(token.postfix));
+    out.token("}");
+  }
+
+  public static void writeParameterTokenParamStart(PlomCodeOutputFormatter out,
+      ParameterToken token, int n)
+  {
+    if (n == 0)
+      out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
+    else
+      out.append(escapeParameterTokenPart(token.contents.get(n)));
+    out.token("{");
+  }
+
+  public static void writeParameterTokenParamEnd(
+      PlomCodeOutputFormatter out)
+  {
+    out.token("}");
+  }
+
+  public static void writeBlockTokenFirstLine(PlomCodeOutputFormatter out, Token.TokenWithSymbol token, boolean nextIsBlock) throws IOException
+  {
+    out.token(symbolTokenMap.get(token.getType()));
+    out.token("{");
+    if (nextIsBlock)
+      out.newline();
+  }
+
+  public static void writeBlockTokenExpressionToBlock(PlomCodeOutputFormatter out)
+  {
+    out.token("}");
+    out.token("{");
+    out.newline();
+  }
+  
+  public static void writeBlockTokenEnd(PlomCodeOutputFormatter out) throws IOException
+  {
+    out.token("}");
+    out.newline();
   }
 
   public static void writeTokenContainer(PlomCodeOutputFormatter out, TokenContainer tokens) throws IOException
@@ -212,7 +250,7 @@ public class PlomTextWriter
       writeToken(out, tok);
     }
   }
-  
+
   public static void writeStatementContainer(PlomCodeOutputFormatter out, StatementContainer container) throws IOException
   {
     for (TokenContainer tokens: container.statements)

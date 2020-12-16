@@ -179,10 +179,70 @@ public class CodeFragmentExtractorTest extends TestCase
         + " 5 + 6\n"
         + " 0\n\n"
         + " . {a: { 2 + 3 }b: { 4 + 5 } } +", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 3)));
-    
-    
-    
-    // Extract between the end of one parameter in a parameter token and the beginning of another parameter
   }
 
+  @Test
+  public void testExtractBefore()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                new Token.WideToken("// comment", Symbol.DUMMY_COMMENT),
+                new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+                    new StatementContainer(
+                        new TokenContainer(
+                            new Token.SimpleToken("1", Symbol.Number),
+                            new Token.SimpleToken("+", Symbol.Plus),
+                            new Token.SimpleToken("2", Symbol.Number)),
+                        new TokenContainer(Token.ParameterToken.fromContents(".a:b:", Symbol.DotVariable, 
+                            new TokenContainer(
+                                new Token.SimpleToken("3", Symbol.Number),
+                                new Token.SimpleToken("+", Symbol.Plus),
+                                new Token.SimpleToken("4", Symbol.Number)
+                                ),
+                            new TokenContainer(
+                                new Token.SimpleToken("5", Symbol.Number),
+                                new Token.SimpleToken("+", Symbol.Plus),
+                                new Token.SimpleToken("6", Symbol.Number)
+                                )
+                            ))
+                        )
+                    ),
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF,
+                    new TokenContainer(
+                        new Token.SimpleToken("7", Symbol.Number),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("8", Symbol.Number)),
+                    new StatementContainer(
+                        new TokenContainer(
+                            new Token.SimpleToken("9", Symbol.Number),
+                            new Token.SimpleToken("+", Symbol.Plus),
+                            new Token.SimpleToken("0", Symbol.Number))
+                        ))
+                )
+            );
+    // Extract the first part of a parameter token
+    Assert.assertEquals(" . {a: { 3 }b: { } }", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1)));
+    // Extract part of the 2nd parameter of a parameter token
+    Assert.assertEquals(" . {a: { 3 + 4 }b: { 5 + } }", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 2)));
+    // Extract the beginning of an else token (including the else)
+    Assert.assertEquals(" else {\n 1 +\n }\n", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2)));
+    // Extract the beginning of an expression of an if token (including the if)
+    Assert.assertEquals(" if { 7 + } {\n }\n", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodeRenderer.EXPRBLOCK_POS_EXPR, 2)));
+    // Extract the beginning of the block of an if token (including the if)
+    Assert.assertEquals(" if { 7 + 8 } {\n 9\n }\n", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1)));
+    // Extract through multiple levels
+    Assert.assertEquals(" // comment\n"
+        + " else {\n"
+        + " 1 + 2\n"
+        + " . {a: { 3 }b: { } }\n"
+        + " }\n", CodeFragmentExtractor.extractFromStatements(container, CodePosition.fromOffsets(0, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1)));
+  }
+  
+  @Test
+  public void testExtractAfterBefore()
+  {
+    // Extract between the end of one parameter in a parameter token and the beginning of another parameter
+    
+  }
 }
