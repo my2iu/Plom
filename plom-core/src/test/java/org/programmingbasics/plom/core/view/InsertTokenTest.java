@@ -17,7 +17,7 @@ public class InsertTokenTest extends TestCase
   {
     StatementContainer container = new StatementContainer();
     CodePosition pos = new CodePosition();
-    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("1", Symbol.Number), pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("1", Symbol.Number), pos, 0, false);
     Assert.assertEquals(
         new StatementContainer(
           new TokenContainer(new Token.SimpleToken("1", Symbol.Number))
@@ -34,7 +34,7 @@ public class InsertTokenTest extends TestCase
           new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number))
       );
     CodePosition pos = CodePosition.fromOffsets(0, 3);
-    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
     Assert.assertEquals(
         new StatementContainer(
           new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number), new Token.SimpleToken("A", Symbol.Number))
@@ -51,7 +51,7 @@ public class InsertTokenTest extends TestCase
             new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number))
         );
       CodePosition pos = CodePosition.fromOffsets(0, 2);
-      InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0);
+      InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
       Assert.assertEquals(
           new StatementContainer(
             new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("A", Symbol.Number), new Token.SimpleToken("3", Symbol.Number))
@@ -75,7 +75,7 @@ public class InsertTokenTest extends TestCase
             )
         );
     CodePosition pos = CodePosition.fromOffsets(0, 0);
-    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
@@ -106,7 +106,7 @@ public class InsertTokenTest extends TestCase
                 )
             );
     CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
-    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(

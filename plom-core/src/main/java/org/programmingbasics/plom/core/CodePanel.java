@@ -10,8 +10,11 @@ import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
@@ -20,6 +23,7 @@ import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
+import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
@@ -36,8 +40,6 @@ import org.programmingbasics.plom.core.view.RenderedHitBox;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
-import elemental.css.CSSStyleDeclaration.Position;
-import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -46,9 +48,6 @@ import elemental.events.EventTarget;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
-import elemental.svg.SVGCircleElement;
-import elemental.svg.SVGElement;
-import elemental.svg.SVGSVGElement;
 
 public class CodePanel
 {
@@ -248,7 +247,7 @@ public class CodePanel
         newToken = new Token.SimpleToken(tokenText, tokenType);
       break;
     }
-    InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0);
+    InsertToken.insertTokenIntoStatementContainer(codeList, newToken, pos, 0, false);
     switch (tokenType)
     {
     case AtType:
@@ -294,6 +293,44 @@ public class CodePanel
       break;
     }
     updateCodeView(true);
+  }
+
+  private void doPaste()
+  {
+    String fragmentStr = Clipboard.instance.getCodeFragment();
+    if (fragmentStr == null) return;
+    
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly); 
+    try {
+      PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
+      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(strReader); 
+      StatementContainer container = PlomTextReader.readStatementContainer(lexer);
+      boolean isFirst = true;
+      for (TokenContainer tokens: container.statements)
+      {
+        if (!isFirst)
+        {
+          if (!canAcceptNewlinesAndWideTokens)
+            break;
+          InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
+        }
+        isFirst = false;
+        for (Token tok: tokens.tokens)
+        {
+          if (tok.isWide() && !canAcceptNewlinesAndWideTokens)
+            break;
+          InsertToken.insertTokenIntoStatementContainer(codeList, tok, cursorPos, 0, true);
+        }
+      }
+      showPredictedTokenInput(choicesDiv);
+      updateCodeView(true);
+    }
+    catch (PlomReadException e)
+    {
+      // Do nothing if parsing goes wrong
+      Browser.getWindow().getConsole().log(e);
+    }
   }
 
   static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos, ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> variableContextConfigurator)
@@ -371,10 +408,25 @@ public class CodePanel
     contentDiv.getStyle().setDisplay(Display.BLOCK);
     contentDiv.getStyle().setProperty("max-width", "35em");
 
+    // If the user has selected some code, we'll show options
+    // specific to working with selections 
     if (selectionCursorPos != null) 
     {
       contentDiv.appendChild(makeButton("Copy", true, () -> {
-        
+        CodePosition start;
+        CodePosition end;
+        if (cursorPos.isBefore(selectionCursorPos))
+        {
+          start = cursorPos;
+          end = selectionCursorPos;
+        }
+        else
+        {
+          start = selectionCursorPos;
+          end = cursorPos;
+        }
+        String fragment = CodeFragmentExtractor.extractFromStatements(codeList, start, end);
+        Clipboard.instance.putCodeFragment(fragment);
       }));
       return;
     }
@@ -502,6 +554,11 @@ public class CodePanel
       else
         contentDiv.appendChild(makeButton(tokenText, false, () -> {  }));
     }
+    
+    // Show a paste button
+    contentDiv.appendChild(makeButton("\uD83D\uDCCB Paste", true, () -> {
+      doPaste();
+    }));
   }
 
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
@@ -606,7 +663,7 @@ public class CodePanel
       releasePointerCapture(div, pointer.pointerStartId);
     }, false);
     div.addEventListener("pointercancel", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
+//      PointerEvent pevt = (PointerEvent)evt;
       if (pointer.isPointerDown)
       {
         // Cancel the previous pointer down

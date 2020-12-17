@@ -8,7 +8,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 
 public class InsertToken
 {
-  public static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level)
+  public static void insertTokenIntoStatementContainer(StatementContainer stmtContainer, Token newToken, CodePosition pos, int level, boolean advanceCursorPos)
   {
     if (stmtContainer.statements.isEmpty()) 
     {
@@ -29,14 +29,14 @@ public class InsertToken
       TokenContainer newline = new TokenContainer(line.tokens.subList(pos.getOffset(level + 1), line.tokens.size()));
       for (int n = line.tokens.size() - 1; n >= pos.getOffset(level + 1); n--)
          line.tokens.remove(n);
-      insertTokenIntoLine(line, newToken, pos, level + 1);
+      insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
       stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
     }
     else
-      insertTokenIntoLine(line, newToken, pos, level + 1);
+      insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
   }
   
-  static void insertTokenIntoLine(TokenContainer line, Token newToken, CodePosition pos, int level)
+  static void insertTokenIntoLine(TokenContainer line, Token newToken, CodePosition pos, int level, boolean advanceCursorPos)
   {
     if (pos.hasOffset(level + 1))
     {
@@ -46,20 +46,25 @@ public class InsertToken
         Void handleExpression(Token originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, Token newToken)
         {
-          insertTokenIntoLine(exprContainer, newToken, pos, level);
+          insertTokenIntoLine(exprContainer, newToken, pos, level, advanceCursorPos);
           return null;
         }
         @Override
         Void handleStatementContainer(Token originalToken,
             StatementContainer blockContainer, CodePosition pos, int level, Token newToken)
         {
-          insertTokenIntoStatementContainer(blockContainer, newToken, pos, level);
+          insertTokenIntoStatementContainer(blockContainer, newToken, pos, level, advanceCursorPos);
           return null;
         }
       }, pos, level + 1, newToken);
       return;
     }
     line.tokens.add(pos.getOffset(level), newToken);
+    if (advanceCursorPos)
+    {
+      pos.setOffset(level, pos.getOffset(level) + 1);
+      pos.setMaxOffset(level + 1);
+    }
   }
 
 }
