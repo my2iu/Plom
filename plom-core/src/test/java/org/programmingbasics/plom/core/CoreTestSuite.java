@@ -12,6 +12,7 @@ import org.programmingbasics.plom.core.view.CodeFragmentExtractorTest;
 import org.programmingbasics.plom.core.view.CodeNestingCounterTest;
 import org.programmingbasics.plom.core.view.CodePositionTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
+import org.programmingbasics.plom.core.view.EraseSelectionTest;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfoTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;
@@ -51,6 +52,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(CodePositionTest.class);
       suite.addTestSuite(RenderedCursorPositionTest.class);
       suite.addTestSuite(CodeFragmentExtractorTest.class);
+      suite.addTestSuite(EraseSelectionTest.class);
       return suite;
    }
 
