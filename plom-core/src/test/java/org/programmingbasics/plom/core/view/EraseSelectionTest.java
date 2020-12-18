@@ -135,23 +135,41 @@ public class EraseSelectionTest extends TestCase
     // Extract part of a line
     StatementContainer container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(2, 1));
-    Assert.assertEquals(" := 1 + 1\n" + 
-        " . {print: { 2 + 3 } }\n" + 
-        " . {b }", toString(container));
+    Assert.assertEquals(" . {a } := . {a }\n" + 
+        " else {\n" +
+        " 5 + 6\n" +
+        " 7 + 8\n" +
+        " }\n\n", toString(container));
     // Extract part of a line (and positions specify a line but not a position within that line
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(2));
-    Assert.assertEquals(" := 1 + 1\n" + 
-        " . {print: { 2 + 3 } }\n", toString(container));
+    Assert.assertEquals(" . {a }\n" + 
+        " . {b } := . {a }\n" + 
+        " else {\n" + 
+        " 5 + 6\n" + 
+        " 7 + 8\n" + 
+        " }\n" + 
+        "\n", toString(container));
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1), CodePosition.fromOffsets(2, 1));
-    Assert.assertEquals(" . {print: { 2 + 3 } }\n" + 
-        " . {b }", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " := . {a }\n" + 
+        " else {\n" + 
+        " 5 + 6\n" + 
+        " 7 + 8\n" + 
+        " }\n" + 
+        "\n", toString(container));
     // Extract part of a line from within a block
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(3, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(3, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 1));
-    Assert.assertEquals(" + 6\n" + 
-        " 7", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " . {print: { 2 + 3 } }\n" + 
+        " . {b } := . {a }\n" + 
+        " else {\n" + 
+        " 5 + 8\n" + 
+        " }\n" + 
+        "\n" + 
+        "", toString(container));
   }
 
   @Test
@@ -214,32 +232,64 @@ public class EraseSelectionTest extends TestCase
     // Extract the end of a parameter token
     StatementContainer container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
-    Assert.assertEquals(" 3\n\n", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { . {print: { 2 + } } } {\n" + 
+        " 5 + 6\n" + 
+        " 0\n" + 
+        " }\n" + 
+        " . {a: { 2 + 3 }b: { 4 + 5 } } + 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
     // Extract the end of a parameter token and the rest of a parameter list
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), CodePosition.fromOffsets(1, 2));
-    Assert.assertEquals(" + 3\n 4 + 5\n\n", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { . {print: { 2 + 3 } } } {\n" + 
+        " 5 + 6\n" + 
+        " 0\n" + 
+        " }\n" + 
+        " . {a: { 2 }b: { } } + 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
     // Extract end of a block in an if
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(1, 2));
-    Assert.assertEquals(" + 6\n 0\n\n . {a: { 2 + 3 }b: { 4 + 5 } }", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { . {print: { 2 + 3 } } } {\n" + 
+        " 5\n" + 
+        " }\n" + 
+        " + 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
     // Extract end of the expression in an if
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0));
-    Assert.assertEquals(" . {print: { 2 + 3 } }\n", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { } {\n" + 
+        " 5 + 6\n" + 
+        " 0\n" + 
+        " }\n" + 
+        " . {a: { 2 + 3 }b: { 4 + 5 } } + 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
     // Extract end of the expression and block in an if
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 1));
-    Assert.assertEquals(" . {print: { 2 + 3 } }\n"
-        + " 5 + 6\n"
-        + " 0\n\n", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { } {\n" + 
+        " }\n" + 
+        " . {a: { 2 + 3 }b: { 4 + 5 } } + 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
     // Extract end of a block in an if, plus some of the successive tokens in the same token container as the if
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 3));
-    Assert.assertEquals(" . {print: { 2 + 3 } }\n"
-        + " 5 + 6\n"
-        + " 0\n\n"
-        + " . {a: { 2 + 3 }b: { 4 + 5 } } +", toString(container));
+    Assert.assertEquals(" . {a } := 1 + 1\n" + 
+        " if { } {\n" + 
+        " }\n" + 
+        " 7\n" + 
+        " . {print: { 8 + 9 } }\n" + 
+        " . {b } := . {a }\n", toString(container));
   }
 
   @Test
@@ -285,11 +335,27 @@ public class EraseSelectionTest extends TestCase
     // Extract the first part of a parameter token
     StatementContainer container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
-    Assert.assertEquals(" . {a: { 3 }b: { } }", toString(container));
+    Assert.assertEquals(" // comment\n" + 
+        " else {\n" + 
+        " 1 + 2\n" + 
+        " + 4 5 + 6\n" + 
+        " }\n" + 
+        " if { 7 + 8 } {\n" + 
+        " 9 + 0\n" + 
+        " }\n" + 
+        "\n", toString(container));
     // Extract part of the 2nd parameter of a parameter token
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 2));
-    Assert.assertEquals(" . {a: { 3 + 4 }b: { 5 + } }", toString(container));
+    Assert.assertEquals(" // comment\n" + 
+        " else {\n" + 
+        " 1 + 2\n" + 
+        " 6\n" + 
+        " }\n" + 
+        " if { 7 + 8 } {\n" + 
+        " 9 + 0\n" + 
+        " }\n" + 
+        "\n", toString(container));
     // Extract the beginning of an else token (including the else)
     container = supplier.get();
     EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2));

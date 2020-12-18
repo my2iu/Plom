@@ -40,17 +40,31 @@ public class EraseSelection
     }
     // Extract in-between stuff
     // Temporarily, just copy tokens between the two levels
-    for (int n = wholeCopyStart; n < end.getOffset(level); n++)
-    {
-      code.statements.remove(wholeCopyStart);
-//      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
-//      out.newline();
-    }
+    code.statements.subList(wholeCopyStart, end.getOffset(level)).clear();
 
     // Extract the last bit
     if (end.hasOffset(level + 1))
     {
-      eraseBeforeFromLine(code.statements.get(end.getOffset(level)), end, level + 1, out);
+      StatementContainer choppedOut = new StatementContainer();
+      eraseBeforeFromLine(code.statements.get(wholeCopyStart), end, level + 1, choppedOut);
+      code.statements.remove(wholeCopyStart);
+      // Append the leftover bits of the next line to the current line
+      if (start.hasOffset(level + 1) && !choppedOut.statements.isEmpty())
+      {
+        TokenContainer prev = code.statements.get(start.getOffset(level));
+        TokenContainer toMerge = choppedOut.statements.get(0);
+        if (!prev.tokens.isEmpty() && prev.endWithNonWideToken()
+            && !toMerge.tokens.isEmpty() && toMerge.tokens.get(0).isWide())
+        {
+          // Can't add wide tokens to a line with non-wide tokens
+        }
+        else
+        {
+          prev.tokens.addAll(toMerge.tokens);
+          choppedOut.statements.remove(0);
+        }
+      }
+      code.statements.addAll(wholeCopyStart, choppedOut.statements);
     }
 
     return;
@@ -63,6 +77,8 @@ public class EraseSelection
     {
       // Recurse deeper
       Token tok = line.tokens.get(start.getOffset(level));
+      final int parentLevel = level;
+      final TokenContainer parentLine = line;
       tok.visit(new RecurseIntoCompoundToken<Void, CodePosition, IOException>() {
         @Override public Void visitParameterToken(ParameterToken token, CodePosition start,
             Integer level, CodePosition end) throws IOException
@@ -81,13 +97,37 @@ public class EraseSelection
               PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
               out.newline();
             }
-            eraseBeforeFromLine(token.parameters.get(end.getOffset(level + 1)), end, level + 2, out);
-            return null;
+            StatementContainer choppedOut = new StatementContainer();
+            eraseBeforeFromLine(token.parameters.get(end.getOffset(level + 1)), end, level + 2, choppedOut);
+            throw new IllegalArgumentException();
+//            return null;
           }
           else if (start.getOffset(level) == 0)
           {
             // Start is before the current token
-            token.visit(new EraseBefore(), end, level, out);
+            StatementContainer choppedOut = new StatementContainer();
+            token.visit(new EraseBefore(), end, level, choppedOut);
+            // Parameter token is not a wide token, so we can add in other non-wide tokens to replace it
+            int insertionPoint = start.getOffset(parentLevel);
+            parentLine.tokens.remove(insertionPoint);
+            for (TokenContainer line: choppedOut.statements)
+            {
+              boolean earlyOut = false;
+              // Flatten all the lines together into a single line
+              for (Token tok: line.tokens)
+              {
+                if (tok.isWide())
+                {
+                  earlyOut = true;
+                  break;
+                }
+                parentLine.tokens.add(insertionPoint, tok);
+                insertionPoint++;
+              }
+              if (earlyOut) break;
+            }
+
+//            throw new IllegalArgumentException();
             return null;
           }
           throw new IllegalArgumentException();
@@ -111,15 +151,20 @@ public class EraseSelection
           if (start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
           {
             eraseAfterFromLine(exprContainer, start, level + 1, out);
-            out.newline();
-            eraseBeforeFromStatements(blockContainer, end, level + 1, out);
+//            out.newline();
+            StatementContainer choppedOut = new StatementContainer();
+            eraseBeforeFromStatements(blockContainer, end, level + 1, choppedOut);
+            blockContainer.statements.clear();
+            blockContainer.statements.addAll(choppedOut.statements);
             return null;
           }
           else if (start.getOffset(level) == 0)
           {
             // Start is before the current token
-            originalToken.visit(new EraseBefore(), end, level, out);
-            return null;
+            StatementContainer choppedOut = new StatementContainer();
+            originalToken.visit(new EraseBefore(), end, level, choppedOut);
+            throw new IllegalArgumentException();
+//            return null;
           }
           throw new IllegalArgumentException();
         }
@@ -146,17 +191,17 @@ public class EraseSelection
     if (start.hasOffset(level + 1))
     {
       Token tok = line.tokens.get(start.getOffset(level));
-      tok.visit(new EraseAfter(), start, level + 1, out);
-      out.newline();
+      tok.visit(new EraseAfter(), start, level + 1, null);
       wholeCopyStart++;
     }
     // Temporarily, just copy tokens between the two levels
-    for (int idx = wholeCopyStart; idx < end.getOffset(level); idx++)
-    {
-      line.tokens.remove(wholeCopyStart);
-    }
+    line.tokens.subList(wholeCopyStart, end.getOffset(level)).clear();
     if (end.hasOffset(level + 1))
-      line.tokens.get(end.getOffset(level)).visit(new EraseBefore(), end, level + 1, out);
+    {
+      StatementContainer choppedOut = new StatementContainer();
+      line.tokens.get(wholeCopyStart).visit(new EraseBefore(), end, level + 1, choppedOut);
+      throw new IllegalArgumentException();
+    }
     return;
   }
   
@@ -170,16 +215,12 @@ public class EraseSelection
     if (start.hasOffset(level + 1))
     {
       eraseAfterFromLine(code.statements.get(start.getOffset(level)), start, level + 1, out);
-      out.newline();
+//      out.newline();
       wholeCopyStart++;
     }
     // Extract in-between stuff
     // Temporarily, just copy tokens between the two levels
-    for (int n = wholeCopyStart; n < code.statements.size(); n++)
-    {
-      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
-      out.newline();
-    }
+    code.statements.subList(wholeCopyStart, code.statements.size()).clear();
   }
 
   public static void eraseAfterFromLine(TokenContainer line, CodePosition start, int level, PlomCodeOutputFormatter out) throws IOException
@@ -190,31 +231,29 @@ public class EraseSelection
     {
       // Recurse deeper
       Token tok = line.tokens.get(start.getOffset(level));
-      tok.visit(new EraseAfter(), start, level + 1, out);
+      tok.visit(new EraseAfter(), start, level + 1, null);
 //      extractAfterFromLine(code.statements.get(start.getOffset(level)), start, level + 1);
       wholeCopyStart++;
     }
     // Extract in-between stuff
-    for (int idx = wholeCopyStart; idx < line.tokens.size(); idx++)
-    {
-      line.tokens.remove(wholeCopyStart);
-//      PlomTextWriter.writeToken(out, line.tokens.get(idx));
-    }
+    line.tokens.subList(wholeCopyStart, line.tokens.size()).clear();
   }
-  static class EraseAfter extends RecurseIntoCompoundToken<Void, PlomCodeOutputFormatter, IOException>
+  static class EraseAfter extends RecurseIntoCompoundToken<Void, Void, IOException>
   {
     @Override
     public Void visitParameterToken(ParameterToken token, CodePosition pos,
-        Integer level, PlomCodeOutputFormatter out) throws IOException
+        Integer level, Void param) throws IOException
     {
+      PlomCodeOutputFormatter out = null;
       if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
       {
-        handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, out);
-        out.newline();
+        handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, null);
+//        out.newline();
         for (int n = pos.getOffset(level + 1) + 1; n < token.parameters.size(); n++)
         {
-          PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
-          out.newline();
+          token.parameters.get(n).tokens.clear();
+//          PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
+//          out.newline();
         }
           
         return null;
@@ -224,32 +263,36 @@ public class EraseSelection
     @Override
     Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
         StatementContainer blockContainer, CodePosition start, int level,
-        PlomCodeOutputFormatter out) throws IOException
+        Void param) throws IOException
     {
+      PlomCodeOutputFormatter out = null;
       if (exprContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
       {
-        handleExpression(originalToken, exprContainer, start, level + 1, out);
-        out.newline();
+        handleExpression(originalToken, exprContainer, start, level + 1, param);
+//        out.newline();
         if (blockContainer != null)
-          PlomTextWriter.writeStatementContainer(out, blockContainer);
+          blockContainer.statements.clear();
+//          PlomTextWriter.writeStatementContainer(out, blockContainer);
       }
       else if (blockContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
       {
-        handleStatementContainer(originalToken, blockContainer, start, level + 1, out);
+        handleStatementContainer(originalToken, blockContainer, start, level + 1, param);
       }
       return null;
     }
     @Override Void handleExpression(Token originalToken,
         TokenContainer exprContainer, CodePosition start, int level,
-        PlomCodeOutputFormatter out) throws IOException
+        Void param) throws IOException
     {
+      PlomCodeOutputFormatter out = null;
       eraseAfterFromLine(exprContainer, start, level, out);
       return null;
     }
     @Override Void handleStatementContainer(Token originalToken,
         StatementContainer blockContainer, CodePosition start, int level,
-        PlomCodeOutputFormatter out) throws IOException
+        Void param) throws IOException
     {
+      PlomCodeOutputFormatter out = null;
       eraseAfterFromStatements(blockContainer, start, level, out);
       return null;
     }
@@ -257,82 +300,96 @@ public class EraseSelection
 
   
   // Erase code that comes before a code position
-  public static void eraseBeforeFromStatements(StatementContainer code, CodePosition end, int level, PlomCodeOutputFormatter out) throws IOException
+  public static void eraseBeforeFromStatements(StatementContainer code, CodePosition end, int level, StatementContainer out) throws IOException
   {
     // Extract in-between stuff
-    for (int n = 0; n < end.getOffset(level); n++)
-    {
-      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
-      out.newline();
-    }
+//    for (int n = 0; n < end.getOffset(level); n++)
+//    {
+//      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
+//      out.newline();
+//    }
 
     // Extract the last bit
+    int wholeCopyStart = end.getOffset(level);
     if (end.hasOffset(level + 1))
     {
       eraseBeforeFromLine(code.statements.get(end.getOffset(level)), end, level + 1, out);
+      wholeCopyStart++;
     }
+    out.statements.addAll(code.statements.subList(wholeCopyStart, code.statements.size()));
+//    for (int n = end.getOffset(level) + 1; n < code.statements.size(); n++)
+//    {
+//      out.statements.add(code.statements.get(n));
+//    }
   }
 
-  public static void eraseBeforeFromLine(TokenContainer line, CodePosition end, int level, PlomCodeOutputFormatter out) throws IOException
+  public static void eraseBeforeFromLine(TokenContainer line, CodePosition end, int level, StatementContainer out) throws IOException
   {
-    for (int n = 0; n < end.getOffset(level); n++)
-      line.tokens.remove(n);
+//    for (int n = 0; n < end.getOffset(level); n++)
+//      line.tokens.remove(n);
 //      PlomTextWriter.writeToken(out, line.tokens.get(n));
+    int wholeCopyStart = end.getOffset(level);
     if (end.hasOffset(level + 1))
     {
       // Recurse deeper
       Token tok = line.tokens.get(end.getOffset(level));
       tok.visit(new EraseBefore(), end, level + 1, out);
+      wholeCopyStart++;
+    }
+    if (wholeCopyStart < line.tokens.size())
+    {
+      out.statements.add(new TokenContainer(line.tokens.subList(wholeCopyStart, line.tokens.size())));
     }
   }
 
-  static class EraseBefore extends RecurseIntoCompoundToken<Void, PlomCodeOutputFormatter, IOException>
+  static class EraseBefore extends RecurseIntoCompoundToken<Void, StatementContainer, IOException>
   {
     @Override
     public Void visitParameterToken(ParameterToken token, CodePosition end,
-        Integer level, PlomCodeOutputFormatter out) throws IOException
+        Integer level, StatementContainer out) throws IOException
     {
       // Start is before the current token
-      PlomTextWriter.writeParameterTokenStart(out, token);
+//      PlomTextWriter.writeParameterTokenStart(out, token);
       for (int n = 0; n < token.contents.size(); n++)
       {
-        PlomTextWriter.writeParameterTokenParamStart(out, token, n);
-        if (n < end.getOffset(level + 1))
-          PlomTextWriter.writeTokenContainer(out, token.parameters.get(n));
+//        PlomTextWriter.writeParameterTokenParamStart(out, token, n);
+        if (n > end.getOffset(level + 1))
+          out.statements.add(token.parameters.get(n));
         else if (n == end.getOffset(level + 1) && end.hasOffset(level + 2))
           eraseBeforeFromLine(token.parameters.get(n), end, level + 2, out);
-        PlomTextWriter.writeParameterTokenParamEnd(out);
+//        PlomTextWriter.writeParameterTokenParamEnd(out);
       }
-      PlomTextWriter.writeParameterTokenEnd(out, token);
+//      PlomTextWriter.writeParameterTokenEnd(out, token);
       return null;
     }
     @Override
     Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
         StatementContainer blockContainer, CodePosition end, int level,
-        PlomCodeOutputFormatter out) throws IOException
+        StatementContainer out) throws IOException
     {
       if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
       {
-        PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
+//        PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
         eraseBeforeFromLine(exprContainer, end, level + 1, out);
         if (blockContainer != null)
-          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
-        PlomTextWriter.writeBlockTokenEnd(out);
+          out.statements.addAll(blockContainer.statements);
+//          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
+//        PlomTextWriter.writeBlockTokenEnd(out);
         return null;
       }
       else if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
       {
-        if (exprContainer != null)
-        {
-          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
-          PlomTextWriter.writeTokenContainer(out, exprContainer);
-          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
-        }
-        else
-          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, true);
+//        if (exprContainer != null)
+//        {
+//          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
+//          PlomTextWriter.writeTokenContainer(out, exprContainer);
+//          PlomTextWriter.writeBlockTokenExpressionToBlock(out);
+//        }
+//        else
+//          PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, true);
         eraseBeforeFromStatements(blockContainer, end, level + 1, out);
-        out.newline();
-        PlomTextWriter.writeBlockTokenEnd(out);
+//        out.newline();
+//        PlomTextWriter.writeBlockTokenEnd(out);
         return null;
       }
       return null;

@@ -436,7 +436,7 @@ public class CodeRenderer
     // If the last token is a wide token, there should be an empty line afterwards
     // where additional content can go
     boolean needEmptyLineAtEnd = false;
-    if (!line.tokens.isEmpty() && line.tokens.get(line.tokens.size() - 1).isWide())
+    if (!line.tokens.isEmpty() && line.endsWithWideToken())
       needEmptyLineAtEnd = true;
     if (needEmptyLineAtEnd)
     {

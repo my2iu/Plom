@@ -23,6 +23,18 @@ public class TokenContainer
        tokens.add(tok);
    }
 
+   public boolean endsWithWideToken()
+   {
+     if (tokens.isEmpty()) return false;
+     return tokens.get(tokens.size() - 1).isWide();
+   }
+
+   public boolean endWithNonWideToken()
+   {
+     if (tokens.isEmpty()) return false;
+     return !tokens.get(tokens.size() - 1).isWide();
+   }
+   
   @Override
   public int hashCode()
   {

@@ -41,7 +41,7 @@ public class EraseLeft
           int newLinePos = prevLine.tokens.size();
           // We can't have a wide token appearing after a normal token on the same line
           if (line.tokens.size() > 0 && line.tokens.get(0).isWide()
-              && prevLine.tokens.size() > 0 && !prevLine.tokens.get(prevLine.tokens.size() - 1).isWide())
+              && prevLine.tokens.size() > 0 && !prevLine.endsWithWideToken())
           {
             // I could delete a token from the end of the previous line, but that
             // might be confusing. Instead, I'll just move the cursor to the end of the
