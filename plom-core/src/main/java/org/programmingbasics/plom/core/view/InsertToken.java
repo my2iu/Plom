@@ -32,6 +32,19 @@ public class InsertToken
       insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
       stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
     }
+    else if (!pos.hasOffset(level + 2) && newToken.isWide() 
+        && pos.getOffset(level + 1) - 1 < line.tokens.size() 
+        && !line.tokens.get(pos.getOffset(level + 1) - 1).isWide())
+    {
+      // Make sure we aren't inserting a wide token after a non-wide token
+      TokenContainer newline = new TokenContainer(line.tokens.subList(pos.getOffset(level + 1), line.tokens.size()));
+      for (int n = line.tokens.size() - 1; n >= pos.getOffset(level + 1); n--)
+        line.tokens.remove(n);
+      stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
+      pos.setOffset(level, pos.getOffset(level) + 1);
+      pos.setOffset(level + 1, 0);
+      insertTokenIntoLine(newline, newToken, pos, level + 1, advanceCursorPos);
+    }
     else
       insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
   }

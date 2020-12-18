@@ -75,7 +75,8 @@ public class InsertTokenTest extends TestCase
             )
         );
     CodePosition pos = CodePosition.fromOffsets(0, 0);
-    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, true);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 1), pos);
     Assert.assertEquals(
         new StatementContainer(
             new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
@@ -119,5 +120,25 @@ public class InsertTokenTest extends TestCase
             ),
         container);
 //    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2), pos);
+  }
+  
+  public void testInsertWideTokenAfterSimpleToken()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number))
+        );
+    CodePosition pos = CodePosition.fromOffsets(0, 1);
+    InsertToken.insertTokenIntoStatementContainer(container, new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF), pos, 0, true);
+    Assert.assertEquals(CodePosition.fromOffsets(1, 1), pos);
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(new Token.SimpleToken("1", Symbol.Number)),
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF),
+                new Token.SimpleToken("2", Symbol.Number), new Token.SimpleToken("3", Symbol.Number)
+                )
+            ),
+        container);
   }
 }
