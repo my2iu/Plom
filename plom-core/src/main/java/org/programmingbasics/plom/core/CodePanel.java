@@ -109,7 +109,7 @@ public class CodePanel
   }
   CursorHandle cursorHandle1 = new CursorHandle();
   CursorHandle cursorHandle2 = new CursorHandle();
-  final static int HANDLE_SIZE = 15;
+  final static int HANDLE_SIZE = 20;
   
   /** 
    * Allows for the configuration of what global variables/types there are
