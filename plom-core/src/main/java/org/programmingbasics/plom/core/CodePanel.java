@@ -27,6 +27,7 @@ import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
+import org.programmingbasics.plom.core.view.EraseSelection;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
@@ -427,6 +428,25 @@ public class CodePanel
         }
         String fragment = CodeFragmentExtractor.extractFromStatements(codeList, start, end);
         Clipboard.instance.putCodeFragment(fragment);
+      }));
+      contentDiv.appendChild(makeButton("Erase", true, () -> {
+        CodePosition start;
+        CodePosition end;
+        if (cursorPos.isBefore(selectionCursorPos))
+        {
+          start = cursorPos;
+          end = selectionCursorPos;
+        }
+        else
+        {
+          start = selectionCursorPos;
+          end = cursorPos;
+        }
+        EraseSelection.fromStatements(codeList, start, end);
+        cursorPos = start;
+        selectionCursorPos = null;
+        showPredictedTokenInput(choicesDiv);
+        updateCodeView(true);
       }));
       return;
     }

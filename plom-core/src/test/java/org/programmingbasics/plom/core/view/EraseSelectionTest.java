@@ -480,5 +480,13 @@ public class EraseSelectionTest extends TestCase
         " }\n" + 
         " + 12\n" + 
         "\n", toString(container));
+    // Erase from a non-wide token to inside the start of a wide token that comes before another wide token
+    container = supplier.get();
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1));
+    Assert.assertEquals(" . {a: { . {a: { 1 + 2 }b: { 3 + 4 }c: { 5 } } } } + 0\n" + 
+        " else {\n" + 
+        " 11 + 12\n" + 
+        " }\n" + 
+        "\n", toString(container));
   }
 }

@@ -43,11 +43,11 @@ public class EraseSelection
 //      out.newline();
       wholeCopyStart++;
     }
-    // Extract in-between stuff
+    // Erase in-between stuff
     // Temporarily, just copy tokens between the two levels
     code.statements.subList(wholeCopyStart, end.getOffset(level)).clear();
 
-    // Extract the last bit
+    // Erase the last bit
     if (end.hasOffset(level + 1))
     {
       StatementContainer choppedOut = new StatementContainer();
@@ -226,7 +226,7 @@ public class EraseSelection
   
   
   
-  // Extracts code between a code position and anything afterwards
+  // Erases code between a code position and anything afterwards
   public static void eraseAfterFromStatements(StatementContainer code, CodePosition start, int level) 
   {
     int wholeCopyStart = start.getOffset(level);
@@ -237,8 +237,7 @@ public class EraseSelection
 //      out.newline();
       wholeCopyStart++;
     }
-    // Extract in-between stuff
-    // Temporarily, just copy tokens between the two levels
+    // Erase in-between stuff
     code.statements.subList(wholeCopyStart, code.statements.size()).clear();
   }
 
@@ -254,7 +253,7 @@ public class EraseSelection
 //      extractAfterFromLine(code.statements.get(start.getOffset(level)), start, level + 1);
       wholeCopyStart++;
     }
-    // Extract in-between stuff
+    // Erase in-between stuff
     line.tokens.subList(wholeCopyStart, line.tokens.size()).clear();
   }
   static class EraseAfter extends RecurseIntoCompoundToken<Void, Void, RuntimeException>
@@ -317,14 +316,14 @@ public class EraseSelection
   // Erase code that comes before a code position
   public static void eraseBeforeFromStatements(StatementContainer code, CodePosition end, int level, StatementContainer out)
   {
-    // Extract in-between stuff
+    // Erase in-between stuff
 //    for (int n = 0; n < end.getOffset(level); n++)
 //    {
 //      PlomTextWriter.writeTokenContainer(out, code.statements.get(n));
 //      out.newline();
 //    }
 
-    // Extract the last bit
+    // Erase the last bit
     int wholeCopyStart = end.getOffset(level);
     if (end.hasOffset(level + 1))
     {
