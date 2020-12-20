@@ -34,7 +34,7 @@ public class InsertToken
     }
     else if (!pos.hasOffset(level + 2) && newToken.isWide() 
         && pos.getOffset(level + 1) - 1 < line.tokens.size()
-        && pos.getOffset(level + 1) - 1 > 0
+        && pos.getOffset(level + 1) - 1 >= 0
         && !line.tokens.get(pos.getOffset(level + 1) - 1).isWide())
     {
       // Make sure we aren't inserting a wide token after a non-wide token
