@@ -14,7 +14,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.programmingbasics</groupId>
+      <groupId>dev.plom</groupId>
       <artifactId>plom-gwtlinker</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>compile</scope>
