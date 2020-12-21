@@ -313,3 +313,15 @@ a.runbutton {
 .classpanel .typeEntry span.typeTokenSelected {
 	background-color: #7f7;
 }
+
+.plomToast {
+	position: fixed;
+    bottom: 20vh;
+    text-align: center;
+    left: 25%;
+    right: 25%;
+    background-color: #fafad2;
+    padding: 0.3em;
+    border: 1px solid #ddddba;
+    border-radius: 0.3em;
+}

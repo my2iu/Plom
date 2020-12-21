@@ -414,6 +414,16 @@ public class CodePanel
     if (selectionCursorPos != null) 
     {
       contentDiv.appendChild(makeButton("Copy", true, () -> {
+        // There's some weird bug in ios14 that I can't figure out
+        // where after the pointer events for dragging some handles to
+        // make a selection, if I then create a new anchor element
+        // (i.e. a Copy button), then the first touch afterwards will
+        // not result in any click events. This can be confusing because
+        // the "Copy" button will not do anything the first time you
+        // press it (only the second time). With all other buttons, that's
+        // obvious, since they give feedback, but the copy button doesn't
+        // so I need to show a message as feedback that a copy did happen.
+        showToast("Copied.");
         CodePosition start;
         CodePosition end;
         if (cursorPos.isBefore(selectionCursorPos))
@@ -810,6 +820,18 @@ public class CodePanel
     target.releasePointerCapture(pointerId);
   }-*/;
 
+  static void showToast(String message)
+  {
+    Document doc = Browser.getDocument();
+    DivElement div = doc.createDivElement();
+    div.setTextContent(message);
+    div.setClassName("plomToast");
+    doc.getBody().appendChild(div);
+    Browser.getWindow().setTimeout(() -> {
+      div.getParentElement().removeChild(div);
+    }, 2000);
+  }
+  
   <U extends Token> void simpleEntryInput(String val, boolean isFinal, U token, boolean isEdit)
   {
     boolean advanceToNext = !isEdit;
