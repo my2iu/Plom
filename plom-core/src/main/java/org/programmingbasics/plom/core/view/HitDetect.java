@@ -47,6 +47,11 @@ public class HitDetect
     if (lineno >= 0)
     {
       newPos.setOffset(level, lineno);
+      if (lineno >= statements.statements.size())
+      {
+        newPos.setMaxOffset(level + 1);
+        return newPos;
+      }
       return hitDetectTokens(x, y, statements.statements.get(lineno), renderedHitBoxes.children.get(lineno), newPos, level + 1);
     }
     return null;
