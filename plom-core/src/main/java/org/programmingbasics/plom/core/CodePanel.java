@@ -38,6 +38,7 @@ import org.programmingbasics.plom.core.view.ParseContext;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
+import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -69,6 +70,8 @@ public class CodePanel
     showPredictedTokenInput(choicesDiv);
     hookCodeScroller(codeDiv);
     hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
+    
+    SvgCodeRenderer.test();
   }
 
   public void setCode(StatementContainer code)
@@ -171,9 +174,9 @@ public class CodePanel
   static RenderedHitBox renderTokens(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos, ErrorList codeErrors)
   {
     if (selectionPos != null)
-      return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
+      return SvgCodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
     else
-      return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
+      return SvgCodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
   }
 
   Element makeButton(String text, boolean enabled, Runnable onclick)

@@ -21,6 +21,7 @@ import org.programmingbasics.plom.core.view.LineForPositionTest;
 import org.programmingbasics.plom.core.view.NextPositionTest;
 import org.programmingbasics.plom.core.view.ParseContextTest;
 import org.programmingbasics.plom.core.view.RenderedCursorPositionTest;
+import org.programmingbasics.plom.core.view.SvgCodeRendererTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -53,6 +54,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(RenderedCursorPositionTest.class);
       suite.addTestSuite(CodeFragmentExtractorTest.class);
       suite.addTestSuite(EraseSelectionTest.class);
+      suite.addTestSuite(SvgCodeRendererTest.class);
       return suite;
    }
 

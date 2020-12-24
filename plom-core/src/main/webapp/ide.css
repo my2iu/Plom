@@ -325,3 +325,12 @@ a.runbutton {
     border: 1px solid #ddddba;
     border-radius: 0.3em;
 }
+
+svg rect.codetoken {
+	fill: none;
+	stroke: black;
+}
+
+svg text.codetoken {
+	font-size: 15px;
+}
