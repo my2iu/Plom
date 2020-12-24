@@ -120,6 +120,8 @@ public class SvgCodeRenderer
     public Element beforeInsertionPoint;
     public String svgString;
     public double width;
+    public double height;
+    public RenderedHitBox hitBox;
   }
   
   static class TokenRendererPositioning
@@ -179,21 +181,26 @@ public class SvgCodeRenderer
     @Override
     public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
+      String classList = "codetoken";
+      if (supplement.codeErrors.containsToken(token))
+        classList += " tokenError";
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        classList += " tokenselected";
       String text = token.contents;
-      toReturn.svgString = "<rect width='" + (widthCalculator.calculateWidth(text) + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='codetoken'/>"
-          + "<text x='" + horzPadding + "' y='" + (textHeight + vertPadding) + "' class='codetoken'>" + text + "</text>";
+      double textWidth = widthCalculator.calculateWidth(text);
+      toReturn.svgString = "<rect width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
+          + "<text x='" + horzPadding + "' y='" + (textHeight + vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      toReturn.width = horzPadding * 2 + textWidth;
+      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.hitBox = RenderedHitBox.forRectangle(0, 0, toReturn.width, toReturn.height);
 //      DivElement div = doc.createDivElement();
 //      div.setClassName("token");
-//      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
-//        div.getClassList().add("tokenselected");
 //      adjustTokenHeightForDepth(div, token);
 //      div.setTextContent(token.contents);
 //      if (hitBox != null)
 //        hitBox.el = div;
 //      toReturn.el = div;
 //      toReturn.beforeInsertionPoint = div;
-//      if (supplement.codeErrors.containsToken(token))
-//        div.getClassList().add("tokenError");
       return null;
     }
     @Override
@@ -525,4 +532,106 @@ public class SvgCodeRenderer
     else if (needEmptyLineAtEnd)
       subdiv.setTextContent("\u00a0");
   }
+  
+  static void renderLine(TokenContainer line, TokenRendererReturn toReturn, CodePosition pos, int level, CodePosition currentTokenPos, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
+  {
+    // Check if the line contains some wide tokens
+    boolean hasWideTokens = false;
+    for (Token tok: line.tokens) 
+    {
+      if (tok.isWide())
+      {
+        hasWideTokens = true;
+        break;
+      }
+    }
+
+    // Mark the parent container if it only contains non-wide tokens
+    if (!hasWideTokens && isStatement)
+      div.getClassList().add("tokenline");
+    
+    // Actually render the line
+    DivElement subdiv = null;
+    Document doc = div.getOwnerDocument();
+    int tokenno = 0;
+    TokenRendererReturn returnedRenderedToken = new TokenRendererReturn(); 
+    for (Token tok: line.tokens)
+    {
+      RenderedHitBox hitBox = null;
+      if (lineHitBox != null)
+        hitBox = new RenderedHitBox();
+      currentTokenPos.setOffset(level, tokenno);
+      TokenRendererPositioning positioning = null;
+      tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, hitBox);
+      currentTokenPos.setMaxOffset(level + 1);
+      Element el = returnedRenderedToken.el;
+      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
+        el.getClassList().add("typeTokenSelected");
+      // Put non-wide tokens in a div line
+      if (hasWideTokens && !tok.isWide())
+      {
+        if (subdiv == null)
+        {
+          subdiv = doc.createDivElement();
+          subdiv.getClassList().add("tokenline");
+          div.appendChild(subdiv);
+        }
+        subdiv.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
+        subdiv.appendChild(el);
+      }
+      else
+      {
+        // No zero-width space between wide tokens
+        div.appendChild(el);
+        subdiv = null;
+      }
+      if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
+      {
+        DivElement toInsert = doc.createDivElement();
+        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+        Element beforePoint = returnedRenderedToken.beforeInsertionPoint;
+        beforePoint.getParentElement().insertBefore(toInsert.querySelector("div"), beforePoint);
+      }
+      if (lineHitBox != null)
+        lineHitBox.children.add(hitBox);
+      tokenno++;
+    }
+    // If the last token is a wide token, there should be an empty line afterwards
+    // where additional content can go
+    boolean needEmptyLineAtEnd = false;
+    if (!line.tokens.isEmpty() && line.endsWithWideToken())
+      needEmptyLineAtEnd = true;
+    if (needEmptyLineAtEnd)
+    {
+      subdiv = doc.createDivElement();
+      div.appendChild(subdiv);
+      if (lineHitBox != null)
+        lineHitBox.children.add(new RenderedHitBox(subdiv));
+    }
+    // Special handling for cursor at the end, or if line is empty with no cursor, put some blank content there
+    if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 
+    {
+      DivElement toInsert = doc.createDivElement();
+      toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+      if (!line.tokens.isEmpty())
+      {
+        if (!needEmptyLineAtEnd)
+        {
+          if (subdiv == null)
+            div.appendChild(toInsert.querySelector("div"));
+          else
+            subdiv.appendChild(toInsert.querySelector("div"));
+        }
+        else
+          subdiv.appendChild(toInsert.querySelector("div"));
+      }
+      else
+        div.appendChild(toInsert.querySelector("div"));
+    }
+    else if (line.tokens.isEmpty())
+        div.setTextContent("\u00A0");
+    else if (needEmptyLineAtEnd)
+      subdiv.setTextContent("\u00a0");
+  }
+
 }

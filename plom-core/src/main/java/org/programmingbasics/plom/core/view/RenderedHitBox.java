@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import elemental.dom.Element;
@@ -78,6 +79,20 @@ public class RenderedHitBox
      RenderedHitBox toReturn = RenderedHitBox.withChildren();
      toReturn.el = el;
      return toReturn;
+   }
+   
+   public static RenderedHitBox forRectangle(double x, double y, double width, double height)
+   {
+     List<Rect> rects = Arrays.asList(
+         new Rect(x, y, width, height)
+         );
+     return new RenderedHitBox() {
+       @Override public int getOffsetLeft() { return (int)x; }
+       @Override public int getOffsetTop() { return (int)y; }
+       @Override public int getOffsetWidth() { return (int)width; }
+       @Override public int getOffsetHeight() { return (int)height; }
+       @Override public List<Rect> getClientRects() { return rects; }
+     };
    }
 
    public String getTestData()
