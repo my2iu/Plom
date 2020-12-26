@@ -47,18 +47,24 @@ public class SvgCodeRenderer
     
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 15, widthCalculator);
-    TokenContainer line = new TokenContainer(Arrays.asList(
-        new Token.SimpleToken("22 adf df", Symbol.Number),
-        new Token.SimpleToken("+", Symbol.Plus),
-        new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
-        ));
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("22 adf df", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("55", Symbol.Number)
+            )
+        );
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
+    SvgCodeRenderer.renderStatementContainer(null, codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+//    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
 //    tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
     
     svgEl.setInnerHTML(returned.svgString);
@@ -144,6 +150,8 @@ public class SvgCodeRenderer
     double lineStart = 0;
     double lineEnd = 50;
     double lineTop = 0;
+    double lineBottom = 0;
+    double fontSize = 15;
     double x = 0;
   }
   
@@ -554,8 +562,61 @@ public class SvgCodeRenderer
     else if (needEmptyLineAtEnd)
       subdiv.setTextContent("\u00a0");
   }
-  
-  static void renderLine(TokenContainer line, TokenRendererReturn toReturn, CodePosition pos, int level, CodePosition currentTokenPos, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
+
+  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, TokenRendererReturn toReturn, TokenRendererPositioning positioning, CodePosition pos, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
+  {
+//    Document doc = codeDiv.getOwnerDocument();
+
+    int lineno = 0;
+    String svgString = "";
+    for (TokenContainer line: codeList.statements)
+    {
+      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + positioning.fontSize);
+//      DivElement div = doc.createDivElement();
+//      RenderedHitBox lineHitBox = null;
+//      if (renderedHitBoxes != null)
+//      {
+//        lineHitBox = new RenderedHitBox(div);
+//        lineHitBox.children = new ArrayList<>();
+//        renderedHitBoxes.children.add(lineHitBox);
+//      }
+      currentTokenPos.setOffset(level, lineno);
+      toReturn.reset();
+      SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), 0, currentTokenPos, null, false, renderer, null, supplement);
+      svgString += toReturn.svgString;
+      currentTokenPos.setMaxOffset(level + 1);
+      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + positioning.fontSize);
+      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + toReturn.height);
+      positioning.lineTop = positioning.lineBottom;
+      positioning.x = positioning.lineStart;
+//      codeDiv.appendChild(div);
+      lineno++;
+    }
+//    if (codeList.statements.isEmpty()) 
+//    {
+//      DivElement div = doc.createDivElement();
+//      if (renderedHitBoxes != null)
+//      {
+//        // Insert an empty hitbox for a blank line even though there's no corresponding tokencontainer
+//        RenderedHitBox lineHitBox = new RenderedHitBox(div);
+//        lineHitBox.children = new ArrayList<>();
+//        renderedHitBoxes.children.add(lineHitBox);
+//      }
+//      if (pos != null)
+//      {
+//        DivElement toInsert = doc.createDivElement();
+//        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+//        div.appendChild(toInsert.querySelector("div"));
+//      }
+//      else
+//        div.setTextContent("\u00A0");
+//      codeDiv.appendChild(div);
+//    }
+    toReturn.reset();
+    toReturn.svgString = svgString;
+  }
+
+  static void renderLine(TokenContainer line, TokenRendererReturn toReturn, TokenRendererPositioning positioning, CodePosition pos, int level, CodePosition currentTokenPos, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
   {
     // Check if the line contains some wide tokens
     boolean hasWideTokens = false;
@@ -579,7 +640,6 @@ public class SvgCodeRenderer
     toReturn.reset();
     int tokenno = 0;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
-    TokenRendererPositioning positioning = new TokenRendererPositioning();
     for (Token tok: line.tokens)
     {
 //      RenderedHitBox hitBox = null;
@@ -588,6 +648,7 @@ public class SvgCodeRenderer
       currentTokenPos.setOffset(level, tokenno);
       tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, null);
       toReturn.svgString += returnedRenderedToken.svgString + "\n";
+      toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
 //      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
