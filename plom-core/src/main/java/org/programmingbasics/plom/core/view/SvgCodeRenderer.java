@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -45,13 +46,20 @@ public class SvgCodeRenderer
     doc.getBody().appendChild(svgEl);
     
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
     SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 15, widthCalculator);
-    Token tok = new Token.SimpleToken("22 adf df", Symbol.Number);
+    TokenContainer line = new TokenContainer(Arrays.asList(
+        new Token.SimpleToken("22 adf df", Symbol.Number),
+        new Token.SimpleToken("+", Symbol.Plus),
+        new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+        ));
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    tok.visit(tokenRenderer, returned, positioning, 0, null, hitBox);
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
+//    tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
     
     svgEl.setInnerHTML(returned.svgString);
   }
@@ -122,11 +130,21 @@ public class SvgCodeRenderer
     public double width;
     public double height;
     public RenderedHitBox hitBox;
+    public void reset()
+    {
+      svgString = "";
+      width = 0;
+      height = 0;
+      hitBox = null;
+    }
   }
   
   static class TokenRendererPositioning
   {
-    
+    double lineStart = 0;
+    double lineEnd = 50;
+    double lineTop = 0;
+    double x = 0;
   }
   
   static interface TextWidthCalculator
@@ -188,11 +206,15 @@ public class SvgCodeRenderer
         classList += " tokenselected";
       String text = token.contents;
       double textWidth = widthCalculator.calculateWidth(text);
-      toReturn.svgString = "<rect width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
-          + "<text x='" + horzPadding + "' y='" + (textHeight + vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      toReturn.reset();
+      double x = positioning.x;
+      double y = positioning.lineTop;
+      toReturn.svgString = "<rect x='" + x + "' y='" + y + "' width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
+          + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + text + "</text>";
       toReturn.width = horzPadding * 2 + textWidth;
       toReturn.height = textHeight + descenderHeight + vertPadding * 2;
-      toReturn.hitBox = RenderedHitBox.forRectangle(0, 0, toReturn.width, toReturn.height);
+      toReturn.hitBox = RenderedHitBox.forRectangle(x, y, toReturn.width, toReturn.height);
+      positioning.x += toReturn.width; 
 //      DivElement div = doc.createDivElement();
 //      div.setClassName("token");
 //      adjustTokenHeightForDepth(div, token);
@@ -546,92 +568,95 @@ public class SvgCodeRenderer
       }
     }
 
-    // Mark the parent container if it only contains non-wide tokens
-    if (!hasWideTokens && isStatement)
-      div.getClassList().add("tokenline");
+    
+//    // Mark the parent container if it only contains non-wide tokens
+//    if (!hasWideTokens && isStatement)
+//      div.getClassList().add("tokenline");
     
     // Actually render the line
-    DivElement subdiv = null;
-    Document doc = div.getOwnerDocument();
+//    DivElement subdiv = null;
+//    Document doc = div.getOwnerDocument();
+    toReturn.reset();
     int tokenno = 0;
-    TokenRendererReturn returnedRenderedToken = new TokenRendererReturn(); 
+    TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
+    TokenRendererPositioning positioning = new TokenRendererPositioning();
     for (Token tok: line.tokens)
     {
-      RenderedHitBox hitBox = null;
-      if (lineHitBox != null)
-        hitBox = new RenderedHitBox();
+//      RenderedHitBox hitBox = null;
+//      if (lineHitBox != null)
+//        hitBox = new RenderedHitBox();
       currentTokenPos.setOffset(level, tokenno);
-      TokenRendererPositioning positioning = null;
-      tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, hitBox);
+      tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, null);
+      toReturn.svgString += returnedRenderedToken.svgString + "\n";
       currentTokenPos.setMaxOffset(level + 1);
-      Element el = returnedRenderedToken.el;
-      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
-        el.getClassList().add("typeTokenSelected");
-      // Put non-wide tokens in a div line
-      if (hasWideTokens && !tok.isWide())
-      {
-        if (subdiv == null)
-        {
-          subdiv = doc.createDivElement();
-          subdiv.getClassList().add("tokenline");
-          div.appendChild(subdiv);
-        }
-        subdiv.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
-        subdiv.appendChild(el);
-      }
-      else
-      {
-        // No zero-width space between wide tokens
-        div.appendChild(el);
-        subdiv = null;
-      }
-      if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
-      {
-        DivElement toInsert = doc.createDivElement();
-        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-        Element beforePoint = returnedRenderedToken.beforeInsertionPoint;
-        beforePoint.getParentElement().insertBefore(toInsert.querySelector("div"), beforePoint);
-      }
-      if (lineHitBox != null)
-        lineHitBox.children.add(hitBox);
+//      Element el = returnedRenderedToken.el;
+//      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
+//        el.getClassList().add("typeTokenSelected");
+//      // Put non-wide tokens in a div line
+//      if (hasWideTokens && !tok.isWide())
+//      {
+//        if (subdiv == null)
+//        {
+//          subdiv = doc.createDivElement();
+//          subdiv.getClassList().add("tokenline");
+//          div.appendChild(subdiv);
+//        }
+//        subdiv.appendChild(doc.createTextNode("\u200B"));  // Need a zero-width space afterwards so that the line will wrap between tokens
+//        subdiv.appendChild(el);
+//      }
+//      else
+//      {
+//        // No zero-width space between wide tokens
+//        div.appendChild(el);
+//        subdiv = null;
+//      }
+//      if (pos != null && !pos.hasOffset(level + 1) && tokenno == pos.getOffset(level))
+//      {
+//        DivElement toInsert = doc.createDivElement();
+//        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+//        Element beforePoint = returnedRenderedToken.beforeInsertionPoint;
+//        beforePoint.getParentElement().insertBefore(toInsert.querySelector("div"), beforePoint);
+//      }
+//      if (lineHitBox != null)
+//        lineHitBox.children.add(hitBox);
       tokenno++;
     }
-    // If the last token is a wide token, there should be an empty line afterwards
-    // where additional content can go
-    boolean needEmptyLineAtEnd = false;
-    if (!line.tokens.isEmpty() && line.endsWithWideToken())
-      needEmptyLineAtEnd = true;
-    if (needEmptyLineAtEnd)
-    {
-      subdiv = doc.createDivElement();
-      div.appendChild(subdiv);
-      if (lineHitBox != null)
-        lineHitBox.children.add(new RenderedHitBox(subdiv));
-    }
-    // Special handling for cursor at the end, or if line is empty with no cursor, put some blank content there
-    if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 
-    {
-      DivElement toInsert = doc.createDivElement();
-      toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-      if (!line.tokens.isEmpty())
-      {
-        if (!needEmptyLineAtEnd)
-        {
-          if (subdiv == null)
-            div.appendChild(toInsert.querySelector("div"));
-          else
-            subdiv.appendChild(toInsert.querySelector("div"));
-        }
-        else
-          subdiv.appendChild(toInsert.querySelector("div"));
-      }
-      else
-        div.appendChild(toInsert.querySelector("div"));
-    }
-    else if (line.tokens.isEmpty())
-        div.setTextContent("\u00A0");
-    else if (needEmptyLineAtEnd)
-      subdiv.setTextContent("\u00a0");
+//    // If the last token is a wide token, there should be an empty line afterwards
+//    // where additional content can go
+//    boolean needEmptyLineAtEnd = false;
+//    if (!line.tokens.isEmpty() && line.endsWithWideToken())
+//      needEmptyLineAtEnd = true;
+//    if (needEmptyLineAtEnd)
+//    {
+//      subdiv = doc.createDivElement();
+//      div.appendChild(subdiv);
+//      if (lineHitBox != null)
+//        lineHitBox.children.add(new RenderedHitBox(subdiv));
+//    }
+//    // Special handling for cursor at the end, or if line is empty with no cursor, put some blank content there
+//    if (pos != null && !pos.hasOffset(level + 1) && pos.getOffset(level) == line.tokens.size()) 
+//    {
+//      DivElement toInsert = doc.createDivElement();
+//      toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+//      if (!line.tokens.isEmpty())
+//      {
+//        if (!needEmptyLineAtEnd)
+//        {
+//          if (subdiv == null)
+//            div.appendChild(toInsert.querySelector("div"));
+//          else
+//            subdiv.appendChild(toInsert.querySelector("div"));
+//        }
+//        else
+//          subdiv.appendChild(toInsert.querySelector("div"));
+//      }
+//      else
+//        div.appendChild(toInsert.querySelector("div"));
+//    }
+//    else if (line.tokens.isEmpty())
+//        div.setTextContent("\u00A0");
+//    else if (needEmptyLineAtEnd)
+//      subdiv.setTextContent("\u00a0");
   }
 
 }

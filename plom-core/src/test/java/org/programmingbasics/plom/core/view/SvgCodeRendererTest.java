@@ -32,7 +32,7 @@ public class SvgCodeRendererTest extends TestCase
     RenderedHitBox hitBox = new RenderedHitBox();
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     tok.visit(tokenRenderer, returned, positioning, 0, new CodePosition(), hitBox);
-    Assert.assertEquals("<rect width='30.0' height='18' class='codetoken'/><text x='5' y='13' class='codetoken'>22</text>", returned.svgString);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>22</text>", returned.svgString);
     Assert.assertEquals(30, returned.width, 0.001);
     Assert.assertEquals(18, returned.height, 0.002);
   }
@@ -48,7 +48,8 @@ public class SvgCodeRendererTest extends TestCase
     supplement.codeErrors = new ErrorList();
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplement, 10, new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, null, null, false, tokenRenderer, null, supplement);
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplement);
     Assert.assertEquals("<rect width='30.0' height='18' class='codetoken'/><text x='5' y='13' class='codetoken'>22</text>", returned.svgString);
   }
 }
