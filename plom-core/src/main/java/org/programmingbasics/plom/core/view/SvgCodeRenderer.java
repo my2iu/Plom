@@ -52,7 +52,17 @@ public class SvgCodeRenderer
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
-            new Token.SimpleToken("22 adf df", Symbol.Number),
+            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+            Token.ParameterToken.fromContents("@Type", Symbol.AtType),
+            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
+                new TokenContainer()),
+            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".d:", Symbol.DotVariable, 
+                        new TokenContainer(new Token.SimpleToken("12", Symbol.Number)))),
+                new TokenContainer(),
+                new TokenContainer(new Token.SimpleToken("32", Symbol.Number))
+                ),
             new Token.SimpleToken("+", Symbol.Plus),
             new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
             ),
@@ -148,11 +158,31 @@ public class SvgCodeRenderer
   static class TokenRendererPositioning
   {
     double lineStart = 0;
-    double lineEnd = 50;
+    double lineEnd = 100;
     double lineTop = 0;
     double lineBottom = 0;
     double fontSize = 15;
     double x = 0;
+    void maxBottom(double lineHeight)
+    {
+      lineBottom = Math.max(lineBottom, lineTop + lineHeight);
+    }
+    void newline()
+    {
+      x = lineStart;
+      lineTop = lineBottom;
+    }
+    TokenRendererPositioning copy()
+    {
+      TokenRendererPositioning copy = new TokenRendererPositioning();
+      copy.lineStart = lineStart;
+      copy.lineEnd = lineEnd;
+      copy.lineTop = lineTop;
+      copy.lineBottom = lineBottom;
+      copy.fontSize = fontSize;
+      copy.x = x;
+      return copy;
+    }
   }
   
   static interface TextWidthCalculator
@@ -236,6 +266,17 @@ public class SvgCodeRenderer
     @Override
     public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
+      String classList = "codetoken";
+      if (supplement.codeErrors.containsToken(token))
+        classList += " tokenError";
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        classList += " tokenselected";
+      String text = token.getTextContent();
+      toReturn.reset();
+      double startX = positioning.x;
+      double y = positioning.lineTop;
+      double nextX = startX + horzPadding;
+
 //      Element span = doc.createSpanElement();
 //      span.setClassName("token");
 //      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
@@ -255,10 +296,16 @@ public class SvgCodeRenderer
 //        hitBox.el = span;
 //      }
 //
-//      // Render out each parameter
-//      for (int n = 0; n < token.contents.size(); n++)
-//      {
+      // Render out each parameter
+      TokenRendererReturn returned = new TokenRendererReturn();
+      for (int n = 0; n < token.contents.size(); n++)
+      {
 //        SpanElement textSpan = doc.createSpanElement();
+        if (n > 0) nextX += horzPadding;
+        toReturn.svgString += 
+            "<text x='" + (nextX) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + token.contents.get(n) + "</text>";
+        nextX += widthCalculator.calculateWidth(token.contents.get(n));
+        nextX += horzPadding;
 //        textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n) + "\u00a0");
 //        if (supplement.codeErrors.containsToken(token))
 //          textSpan.getClassList().add("tokenError");
@@ -275,19 +322,25 @@ public class SvgCodeRenderer
 //          textHitBoxes.children.add(textHitBox);
 //        }
 //        boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
-//        currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
-//        currentTokenPos.setOffset(level + 1, n);
-//        renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, currentTokenPos, exprSpan, false, this, exprHitBox, supplement);
-//        currentTokenPos.setMaxOffset(level + 1);
-//      }
-//      // Handle any postfix for the token
+        currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
+        currentTokenPos.setOffset(level + 1, n);
+        positioning.x = nextX;
+        renderLine(token.parameters.get(n), returned, positioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
+        toReturn.svgString += returned.svgString;
+        nextX = positioning.x;
+        currentTokenPos.setMaxOffset(level + 1);
+      }
+      // Handle any postfix for the token
 //      SpanElement endSpan = doc.createSpanElement();
-//      if (token.postfix != null && !token.postfix.isEmpty())
-//      {
+      if (token.postfix != null && !token.postfix.isEmpty())
+      {
+        toReturn.svgString += 
+            "<text x='" + (nextX) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + token.postfix + "</text>";
+        nextX += widthCalculator.calculateWidth(token.postfix);
 //        endSpan.setTextContent(token.postfix);
 //        if (supplement.codeErrors.containsToken(token))
 //          endSpan.getClassList().add("tokenError");
-//      }
+      }
 //      else
 //        endSpan.setTextContent("\u00a0\u00a0");
 //      span.appendChild(endSpan);
@@ -299,17 +352,43 @@ public class SvgCodeRenderer
 //
 //      toReturn.el = span;
 //      toReturn.beforeInsertionPoint = span;
+      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (nextX - startX + horzPadding)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
+          + toReturn.svgString;
+      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.hitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
+      toReturn.width = nextX + horzPadding - startX;
+      positioning.x = startX + toReturn.width; 
       return null;
     }
     @Override
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
-      createWideToken(token, token.contents, null, null, toReturn, positioning, level, currentTokenPos, hitBox);
+      String classList = "codetoken";
+      if (supplement.codeErrors.containsToken(token))
+        classList += " tokenError";
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        classList += " tokenselected";
+      String textClassList = classList;
       if (token.type == Symbol.DUMMY_COMMENT)
-      {
-        toReturn.el.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-        toReturn.el.getStyle().setFontStyle(FontStyle.ITALIC);
-      }
+        textClassList += " tokencomment";
+      toReturn.reset();
+      double x = positioning.x;
+      double y = positioning.lineTop;
+      double width = positioning.lineEnd - positioning.lineStart;
+      String text = token.contents;
+      toReturn.svgString = "<rect x='" + x + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>";
+      toReturn.svgString += "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + vertPadding) + "' class='" + textClassList + "'>" + text + "</text>";
+      toReturn.width = width;
+      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.hitBox = RenderedHitBox.forRectangle(x, y, toReturn.width, toReturn.height);
+      positioning.maxBottom(toReturn.height);
+      positioning.newline();
+//      createWideToken(token, token.contents, null, null, toReturn, positioning, level, currentTokenPos, hitBox);
+//      if (token.type == Symbol.DUMMY_COMMENT)
+//      {
+//        toReturn.el.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+//        toReturn.el.getStyle().setFontStyle(FontStyle.ITALIC);
+//      }
       return null;
     }
     @Override
@@ -571,7 +650,7 @@ public class SvgCodeRenderer
     String svgString = "";
     for (TokenContainer line: codeList.statements)
     {
-      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + positioning.fontSize);
+      positioning.maxBottom(positioning.fontSize);
 //      DivElement div = doc.createDivElement();
 //      RenderedHitBox lineHitBox = null;
 //      if (renderedHitBoxes != null)
@@ -585,10 +664,9 @@ public class SvgCodeRenderer
       SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), 0, currentTokenPos, null, false, renderer, null, supplement);
       svgString += toReturn.svgString;
       currentTokenPos.setMaxOffset(level + 1);
-      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + positioning.fontSize);
-      positioning.lineBottom = Math.max(positioning.lineBottom, positioning.lineTop + toReturn.height);
-      positioning.lineTop = positioning.lineBottom;
-      positioning.x = positioning.lineStart;
+      positioning.maxBottom(positioning.fontSize);
+      positioning.maxBottom(toReturn.height);
+      positioning.newline();
 //      codeDiv.appendChild(div);
       lineno++;
     }

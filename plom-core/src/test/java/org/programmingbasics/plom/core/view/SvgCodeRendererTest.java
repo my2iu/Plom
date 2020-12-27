@@ -90,4 +90,115 @@ public class SvgCodeRendererTest extends TestCase
         "", returned.svgString);
     Assert.assertEquals(36, positioning.lineTop, 0.001);
   }
+
+  @Test
+  public void testSimpleWideToken()
+  {
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+            new Token.SimpleToken("22 adf df", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("55", Symbol.Number)
+            )
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    RenderedHitBox hitBox = new RenderedHitBox();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(null, codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+        "<rect x='0.0' y='18.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>22 adf df</text>\n" + 
+        "<rect x='100.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='31.0' class='codetoken'>+</text>\n" + 
+        "<rect x='120.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='0.0' y='36.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='49.0' class='codetoken'>55</text>\n" + 
+        "", returned.svgString);
+    Assert.assertEquals(54, positioning.lineTop, 0.001);
+  }
+  
+  @Test
+  public void testParameterToken()
+  {
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+            Token.ParameterToken.fromContents("@Type", Symbol.AtType),
+            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
+                new TokenContainer()),
+            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".d:", Symbol.DotVariable, 
+                        new TokenContainer(new Token.SimpleToken("12", Symbol.Number)))),
+                new TokenContainer(),
+                new TokenContainer(new Token.SimpleToken("32", Symbol.Number))
+                ),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("55", Symbol.Number)
+            )
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    RenderedHitBox hitBox = new RenderedHitBox();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(null, codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+        "<rect x='0.0' y='18.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>22 adf df</text>\n" + 
+        "<rect x='100.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='31.0' class='codetoken'>+</text>\n" + 
+        "<rect x='120.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='0.0' y='36.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='49.0' class='codetoken'>55</text>\n" + 
+        "", returned.svgString);
+    Assert.assertEquals(54, positioning.lineTop, 0.001);
+    
+  }
+
+  @Test
+  public void testWideToken()
+  {
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(
+                    new Token.SimpleToken("true", Symbol.TrueLiteral)),
+                new StatementContainer(
+                    new TokenContainer())),
+            new Token.SimpleToken("22 adf df", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("55", Symbol.Number)
+            )
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    RenderedHitBox hitBox = new RenderedHitBox();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(null, codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>22 adf df</text>\n" + 
+        "<rect x='100.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='13.0' class='codetoken'>+</text>\n" + 
+        "<rect x='120.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='0.0' y='18.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>55</text>\n" + 
+        "", returned.svgString);
+    Assert.assertEquals(36, positioning.lineTop, 0.001);
+    
+  }
 }
