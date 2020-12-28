@@ -48,6 +48,8 @@ public class SvgCodeRendererTest extends TestCase
         new Token.SimpleToken("2", Symbol.Number)));
     SvgCodeRenderer.RenderSupplementalInfo supplement = new SvgCodeRenderer.RenderSupplementalInfo();
     supplement.codeErrors = new ErrorList();
+    supplement.nesting = new CodeNestingCounter();
+    supplement.nesting.calculateNestingForLine(line);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplement, 10, new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     CodePosition currentTokenPos = new CodePosition();
@@ -64,11 +66,6 @@ public class SvgCodeRendererTest extends TestCase
   @Test
   public void testStatementContainerOfLinesOfSimpleTokens()
   {
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
             new Token.SimpleToken("22 adf df", Symbol.Number),
@@ -79,6 +76,13 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(codeList);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
@@ -94,11 +98,6 @@ public class SvgCodeRendererTest extends TestCase
   @Test
   public void testSimpleWideToken()
   {
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
             new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
@@ -110,6 +109,13 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(codeList);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
@@ -126,11 +132,6 @@ public class SvgCodeRendererTest extends TestCase
   @Test
   public void testParameterToken()
   {
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
             new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
@@ -151,6 +152,13 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(codeList);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
@@ -168,11 +176,6 @@ public class SvgCodeRendererTest extends TestCase
   @Test
   public void testWideToken()
   {
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
             new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
@@ -189,6 +192,13 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(codeList);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();

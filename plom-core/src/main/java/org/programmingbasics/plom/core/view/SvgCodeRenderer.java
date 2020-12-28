@@ -45,11 +45,6 @@ public class SvgCodeRenderer
     SVGSVGElement svgEl = doc.createSVGElement();
     doc.getBody().appendChild(svgEl);
     
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
             new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
@@ -70,6 +65,13 @@ public class SvgCodeRenderer
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(codeList);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
@@ -271,7 +273,6 @@ public class SvgCodeRenderer
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
-      String text = token.getTextContent();
       toReturn.reset();
       double startX = positioning.x;
       double y = positioning.lineTop;
