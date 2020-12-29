@@ -55,6 +55,9 @@ public class SvgCodeRendererTest extends TestCase
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     positioning.fontSize = 10;
+    supplement.nesting.calculateNestingForLine(line);
+    positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
+    positioning.currentNestingInLine = 0;
     SvgCodeRenderer.renderLine(line, returned, positioning, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplement);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
         "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
@@ -79,7 +82,6 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    supplementalInfo.nesting.calculateNestingForStatements(codeList);
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
@@ -112,7 +114,6 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    supplementalInfo.nesting.calculateNestingForStatements(codeList);
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
@@ -155,7 +156,6 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    supplementalInfo.nesting.calculateNestingForStatements(codeList);
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
@@ -195,7 +195,6 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    supplementalInfo.nesting.calculateNestingForStatements(codeList);
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());

@@ -68,7 +68,6 @@ public class SvgCodeRenderer
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    supplementalInfo.nesting.calculateNestingForStatements(codeList);
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
@@ -165,6 +164,8 @@ public class SvgCodeRenderer
     double lineBottom = 0;
     double fontSize = 15;
     double x = 0;
+    int maxNestingForLine = 0;
+    int currentNestingInLine = 0;
     void maxBottom(double lineHeight)
     {
       lineBottom = Math.max(lineBottom, lineTop + lineHeight);
@@ -183,6 +184,8 @@ public class SvgCodeRenderer
       copy.lineBottom = lineBottom;
       copy.fontSize = fontSize;
       copy.x = x;
+      copy.maxNestingForLine = maxNestingForLine;
+      copy.currentNestingInLine = currentNestingInLine;
       return copy;
     }
   }
@@ -249,10 +252,11 @@ public class SvgCodeRenderer
       toReturn.reset();
       double x = positioning.x;
       double y = positioning.lineTop;
-      toReturn.svgString = "<rect x='" + x + "' y='" + y + "' width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
-          + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      int totalVertPadding = (positioning.maxNestingForLine - positioning.currentNestingInLine) * vertPadding;
+      toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
+          + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>";
       toReturn.width = horzPadding * 2 + textWidth;
-      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangle(x, y, toReturn.width, toReturn.height);
       positioning.x += toReturn.width; 
 //      DivElement div = doc.createDivElement();
@@ -277,6 +281,7 @@ public class SvgCodeRenderer
       double startX = positioning.x;
       double y = positioning.lineTop;
       double nextX = startX + horzPadding;
+      int totalVertPadding = (positioning.maxNestingForLine - positioning.currentNestingInLine) * vertPadding;
 
 //      Element span = doc.createSpanElement();
 //      span.setClassName("token");
@@ -304,7 +309,7 @@ public class SvgCodeRenderer
 //        SpanElement textSpan = doc.createSpanElement();
         if (n > 0) nextX += horzPadding;
         toReturn.svgString += 
-            "<text x='" + (nextX) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + token.contents.get(n) + "</text>";
+            "<text x='" + (nextX) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + token.contents.get(n) + "</text>";
         nextX += widthCalculator.calculateWidth(token.contents.get(n));
         nextX += horzPadding;
 //        textSpan.setTextContent((n > 0 ? " " : "") + token.contents.get(n) + "\u00a0");
@@ -326,7 +331,12 @@ public class SvgCodeRenderer
         currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
         currentTokenPos.setOffset(level + 1, n);
         positioning.x = nextX;
-        renderLine(token.parameters.get(n), returned, positioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
+        TokenContainer line = token.parameters.get(n); 
+//        supplement.nesting.calculateNestingForLine(line);
+//        positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
+        positioning.currentNestingInLine++;
+        renderLine(line, returned, positioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
+        positioning.currentNestingInLine--;
         toReturn.svgString += returned.svgString;
         nextX = positioning.x;
         currentTokenPos.setMaxOffset(level + 1);
@@ -336,7 +346,7 @@ public class SvgCodeRenderer
       if (token.postfix != null && !token.postfix.isEmpty())
       {
         toReturn.svgString += 
-            "<text x='" + (nextX) + "' y='" + (y + textHeight + vertPadding) + "' class='" + classList + "'>" + token.postfix + "</text>";
+            "<text x='" + (nextX) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + token.postfix + "</text>";
         nextX += widthCalculator.calculateWidth(token.postfix);
 //        endSpan.setTextContent(token.postfix);
 //        if (supplement.codeErrors.containsToken(token))
@@ -353,9 +363,9 @@ public class SvgCodeRenderer
 //
 //      toReturn.el = span;
 //      toReturn.beforeInsertionPoint = span;
-      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (nextX - startX + horzPadding)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>"
+      toReturn.svgString = "<rect x='" + startX + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (nextX - startX + horzPadding)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
           + toReturn.svgString;
-      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
       toReturn.width = nextX + horzPadding - startX;
       positioning.x = startX + toReturn.width; 
@@ -661,7 +671,9 @@ public class SvgCodeRenderer
 //        renderedHitBoxes.children.add(lineHitBox);
 //      }
       currentTokenPos.setOffset(level, lineno);
-      toReturn.reset();
+      supplement.nesting.calculateNestingForLine(line);
+      positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
+      positioning.currentNestingInLine = 0;
       SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), 0, currentTokenPos, null, false, renderer, null, supplement);
       svgString += toReturn.svgString;
       currentTokenPos.setMaxOffset(level + 1);
