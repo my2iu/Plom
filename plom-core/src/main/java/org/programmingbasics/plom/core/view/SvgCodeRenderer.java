@@ -302,13 +302,15 @@ public class SvgCodeRenderer
 //        hitBox.el = span;
 //      }
 //
+      String tokenText = "";
+      String paramsSvg = "";
       // Render out each parameter
       TokenRendererReturn returned = new TokenRendererReturn();
       for (int n = 0; n < token.contents.size(); n++)
       {
 //        SpanElement textSpan = doc.createSpanElement();
         if (n > 0) nextX += horzPadding;
-        toReturn.svgString += 
+        tokenText += 
             "<text x='" + (nextX) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + token.contents.get(n) + "</text>";
         nextX += widthCalculator.calculateWidth(token.contents.get(n));
         nextX += horzPadding;
@@ -337,7 +339,7 @@ public class SvgCodeRenderer
         positioning.currentNestingInLine++;
         renderLine(line, returned, positioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
         positioning.currentNestingInLine--;
-        toReturn.svgString += returned.svgString;
+        paramsSvg += returned.svgString;
         nextX = positioning.x;
         currentTokenPos.setMaxOffset(level + 1);
       }
@@ -345,7 +347,7 @@ public class SvgCodeRenderer
 //      SpanElement endSpan = doc.createSpanElement();
       if (token.postfix != null && !token.postfix.isEmpty())
       {
-        toReturn.svgString += 
+        tokenText += 
             "<text x='" + (nextX) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + token.postfix + "</text>";
         nextX += widthCalculator.calculateWidth(token.postfix);
 //        endSpan.setTextContent(token.postfix);
@@ -364,7 +366,8 @@ public class SvgCodeRenderer
 //      toReturn.el = span;
 //      toReturn.beforeInsertionPoint = span;
       toReturn.svgString = "<rect x='" + startX + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (nextX - startX + horzPadding)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
-          + toReturn.svgString;
+          + tokenText + "\n";
+      toReturn.svgString += paramsSvg;
       toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
       toReturn.width = nextX + horzPadding - startX;
@@ -738,7 +741,13 @@ public class SvgCodeRenderer
 //        hitBox = new RenderedHitBox();
       currentTokenPos.setOffset(level, tokenno);
       tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, null);
-      toReturn.svgString += returnedRenderedToken.svgString + "\n";
+      if (!returnedRenderedToken.svgString.isEmpty())
+      {
+        if (!returnedRenderedToken.svgString.endsWith("\n"))
+          toReturn.svgString += returnedRenderedToken.svgString + "\n";
+        else
+          toReturn.svgString += returnedRenderedToken.svgString;
+      }
       toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
