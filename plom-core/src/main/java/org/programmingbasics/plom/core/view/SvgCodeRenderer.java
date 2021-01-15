@@ -62,6 +62,10 @@ public class SvgCodeRenderer
             new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
             ),
         new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
+                new StatementContainer(
+                    new TokenContainer(new Token.SimpleToken("64", Symbol.Number)))),
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
@@ -741,7 +745,7 @@ public class SvgCodeRenderer
 //        hitBox = new RenderedHitBox();
       currentTokenPos.setOffset(level, tokenno);
       tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, null);
-      if (!returnedRenderedToken.svgString.isEmpty())
+      if (returnedRenderedToken.svgString != null && !returnedRenderedToken.svgString.isEmpty())
       {
         if (!returnedRenderedToken.svgString.endsWith("\n"))
           toReturn.svgString += returnedRenderedToken.svgString + "\n";
