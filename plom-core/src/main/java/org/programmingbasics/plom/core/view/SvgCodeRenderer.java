@@ -63,7 +63,10 @@ public class SvgCodeRenderer
             ),
         new TokenContainer(
             new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
-                new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
+                new TokenContainer(
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    Token.ParameterToken.fromContents(".and:", Symbol.DotVariable, 
+                        new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)))), 
                 new StatementContainer(
                     new TokenContainer(new Token.SimpleToken("64", Symbol.Number)))),
             new Token.SimpleToken("55", Symbol.Number)
@@ -78,7 +81,7 @@ public class SvgCodeRenderer
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(null, codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
 //    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
 //    tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
     
@@ -428,6 +431,72 @@ public class SvgCodeRenderer
         TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos,
         RenderedHitBox hitBox)
     {
+      final double INDENT = 10;
+      String classList = "codetoken";
+      if (supplement.codeErrors.containsToken(token))
+        classList += " tokenError";
+      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+        classList += " tokenselected";
+
+      double startX = positioning.x;
+      double y = positioning.lineTop;
+      double nextX = startX + horzPadding;
+      String wideSvg = "";
+      
+      String text = tokenText;
+      double textWidth = widthCalculator.calculateWidth(text);
+      nextX += textWidth + horzPadding;
+      int maxNesting = 1;
+      
+      if (exprContainer != null)
+      {
+        positioning.x = nextX;
+        toReturn.reset();
+        TokenRendererPositioning subPositioning = positioning.copy();
+        subPositioning.lineTop += vertPadding;
+        subPositioning.maxNestingForLine = supplement.nesting.expressionNesting.get(exprContainer);
+        subPositioning.currentNestingInLine = 0;
+        maxNesting = subPositioning.maxNestingForLine + 1;
+        currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
+        renderLine(exprContainer, toReturn, subPositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
+        currentTokenPos.setMaxOffset(level + 1);
+        positioning.maxBottom(toReturn.height);
+        wideSvg += toReturn.svgString;
+        nextX = subPositioning.x;
+      }
+
+      int totalVertPadding = maxNesting * vertPadding;
+      double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
+      positioning.maxBottom(firstLineHeight);
+      
+      if (blockContainer != null)
+      {
+        positioning.newline();
+        toReturn.reset();
+//        TokenRendererPositioning subPositioning = positioning.copy();
+        double oldLineStart = positioning.lineStart; 
+        positioning.x = positioning.lineStart = positioning.lineStart + INDENT;
+        currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
+        renderStatementContainer(blockContainer, toReturn, positioning, new CodePosition(), level + 2, currentTokenPos, this, null, supplement);
+        currentTokenPos.setMaxOffset(level + 1);
+        wideSvg += toReturn.svgString;
+        positioning.lineStart = positioning.x = oldLineStart;
+//        positioning.maxBottom(toReturn.height);
+//        positioning.newline();
+      }
+      
+      
+      toReturn.reset();
+      double width = nextX + horzPadding - startX;
+      toReturn.svgString = "<path d=\'M" + startX + " " + y + " l " + width + " 0 l 0 "+  (textHeight + descenderHeight + totalVertPadding * 2) + " l -" + (width - startX - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
+//      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>";
+      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>" + text + "</text>";
+      toReturn.svgString += wideSvg;
+      toReturn.width = width;
+      toReturn.height = firstLineHeight;
+      toReturn.hitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
+//      positioning.newline();
+
 //      DivElement div = doc.createDivElement();
 //      div.setClassName("blocktoken");
 //      if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
@@ -660,7 +729,7 @@ public class SvgCodeRenderer
       subdiv.setTextContent("\u00a0");
   }
 
-  static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, TokenRendererReturn toReturn, TokenRendererPositioning positioning, CodePosition pos, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
+  static void renderStatementContainer(StatementContainer codeList, TokenRendererReturn toReturn, TokenRendererPositioning positioning, CodePosition pos, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
   {
 //    Document doc = codeDiv.getOwnerDocument();
 
