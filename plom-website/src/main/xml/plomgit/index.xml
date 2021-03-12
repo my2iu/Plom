@@ -12,6 +12,10 @@
 		
 		<p>The source code for PlomGit is available on <a href="https://github.com/my2iu/PlomGit">GitHub</a>.</p>
 		
+		<a id="downloads"><h2>Downloads</h2></a>
+		
+		<p>PlomGit is currently available to download as an <a href="plomgit.apk">apk for Android</a>. It will hopefully be made available in the Apple App Store and Google Play Store soon.</p>
+		
 		<a id="privacy"><h2>Privacy Policy</h2></a>
 		
 		<p>Storing user data properly and securely is a heavy responsibility, and I do not want to take on that burden. As such, the app does not intentionally gather information about users.</p>
