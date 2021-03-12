@@ -1,6 +1,12 @@
 <html>
+	<head>
+		<title>Plom</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
 	<body>
-		<a href="ide/">Test</a>
-		<hr/>
+		<h1>Plom</h1>
+		<p><a href="ide/">Plom</a> is an in-development programming language that's designed specifically for programming on cellphones. It is not yet usable, but the <a href="https://github.com/my2iu/Plom">source code is available</a>.</p>
+		<p>In the course of developing Plom, a basic mobile git client was also developed called <a href="plomgit/">PlomGit</a></p>
+		
 	</body>
 </html>

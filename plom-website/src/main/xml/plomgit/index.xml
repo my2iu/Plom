@@ -1,0 +1,24 @@
+<html>
+	<head>
+		<title>PlomGit</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body>
+		<h1>PlomGit</h1>
+		
+		<p>PlomGit is a basic, open source git client. Although it only supports a limited number of features, it should be sufficient for version controlling personal files.</p>
+		
+		<p>It is programmed using Flutter and uses the <a href="https://libgit2.org/">libgit2 library</a>.</p>
+		
+		<p>The source code for PlomGit is available on <a href="https://github.com/my2iu/PlomGit">GitHub</a>.</p>
+		
+		<a id="privacy"><h2>Privacy Policy</h2></a>
+		
+		<p>Storing user data properly and securely is a heavy responsibility, and I do not want to take on that burden. As such, the app does not intentionally gather information about users.</p>
+		
+		<a id="support"><h2>Support</h2></a>
+		
+		<p>If you need support, you can <a href="https://github.com/my2iu/PlomGit/issues">file an issue</a>, or you can send an email to plomgit AT plom.dev.</p>
+		
+	</body>
+</html>
