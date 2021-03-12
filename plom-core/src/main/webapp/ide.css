@@ -331,6 +331,11 @@ svg rect.codetoken {
 	stroke: black;
 }
 
+svg path.codetoken {
+	fill: none;
+	stroke: black;
+}
+
 svg text.codetoken {
 	font-size: 15px;
 }
