@@ -176,7 +176,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='335.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='340.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
-    Assert.assertEquals(54, positioning.lineTop, 0.001);
+    Assert.assertEquals(66, positioning.lineTop, 0.001);
   }
 
   @Test

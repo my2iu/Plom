@@ -1,7 +1,6 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -16,8 +15,6 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.FontStyle;
-import elemental.css.CSSStyleDeclaration.WhiteSpace;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -43,6 +40,8 @@ public class SvgCodeRenderer
   {
     SVGDocument doc = (SVGDocument)Browser.getDocument();
     SVGSVGElement svgEl = doc.createSVGElement();
+    svgEl.getStyle().setWidth("500px");
+    svgEl.getStyle().setHeight("1000px");
     doc.getBody().appendChild(svgEl);
     
     StatementContainer codeList = new StatementContainer(
@@ -69,6 +68,15 @@ public class SvgCodeRenderer
                         new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)))), 
                 new StatementContainer(
                     new TokenContainer(new Token.SimpleToken("64", Symbol.Number)))),
+            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+                            new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("3", Symbol.Number)
+                                    )))))),
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
@@ -230,6 +238,7 @@ public class SvgCodeRenderer
     final int vertPadding = 3;
     final int descenderHeight;
     final TextWidthCalculator widthCalculator;
+    final double INDENT_SIZE;
     TokenRenderer(Document doc, RenderSupplementalInfo supplement, int textHeight, TextWidthCalculator widthCalculator)
     {
       this.doc = doc;
@@ -237,15 +246,16 @@ public class SvgCodeRenderer
       this.textHeight = textHeight;
       this.descenderHeight = (int)Math.ceil(textHeight * 0.2);
       this.widthCalculator = widthCalculator;
+      this.INDENT_SIZE = 2 * horzPadding + Math.max(widthCalculator.calculateWidth("}"), widthCalculator.calculateWidth("{"));
     }
-    private void adjustTokenHeightForDepth(Element el, Token token)
-    {
-      int nesting = supplement.nesting.tokenNesting.getOrDefault(token, 1) - 1;
-      if (nesting < 0) nesting = 0;
-      el.getStyle().setProperty("line-height", (1.3 + nesting * 0.5) + "em");
-      el.getStyle().setPaddingTop((nesting * 0.25) + "em");
-      el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
-    }
+//    private void adjustTokenHeightForDepth(Element el, Token token)
+//    {
+//      int nesting = supplement.nesting.tokenNesting.getOrDefault(token, 1) - 1;
+//      if (nesting < 0) nesting = 0;
+//      el.getStyle().setProperty("line-height", (1.3 + nesting * 0.5) + "em");
+//      el.getStyle().setPaddingTop((nesting * 0.25) + "em");
+//      el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
+//    }
     @Override
     public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
@@ -431,7 +441,7 @@ public class SvgCodeRenderer
         TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos,
         RenderedHitBox hitBox)
     {
-      final double INDENT = 10;
+      final double INDENT = INDENT_SIZE;
       String classList = "codetoken";
       if (supplement.codeErrors.containsToken(token))
         classList += " tokenError";
@@ -447,7 +457,9 @@ public class SvgCodeRenderer
       double textWidth = widthCalculator.calculateWidth(text);
       nextX += textWidth + horzPadding;
       int maxNesting = 1;
+      int totalVertPadding = maxNesting * vertPadding;
       
+      String startBracketSvg = "";
       if (exprContainer != null)
       {
         positioning.x = nextX;
@@ -457,18 +469,25 @@ public class SvgCodeRenderer
         subPositioning.maxNestingForLine = supplement.nesting.expressionNesting.get(exprContainer);
         subPositioning.currentNestingInLine = 0;
         maxNesting = subPositioning.maxNestingForLine + 1;
+        totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
         renderLine(exprContainer, toReturn, subPositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement);
         currentTokenPos.setMaxOffset(level + 1);
         positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
         nextX = subPositioning.x;
+        
+        if (blockContainer != null)
+        {
+          startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
+          nextX += horzPadding + widthCalculator.calculateWidth("{");
+        }
       }
 
-      int totalVertPadding = maxNesting * vertPadding;
       double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
       positioning.maxBottom(firstLineHeight);
       
+      String endBracketSvg = "";
       if (blockContainer != null)
       {
         positioning.newline();
@@ -482,19 +501,28 @@ public class SvgCodeRenderer
         wideSvg += toReturn.svgString;
         positioning.lineStart = positioning.x = oldLineStart;
 //        positioning.maxBottom(toReturn.height);
-//        positioning.newline();
+        
+        // Add space for a '}' at the end
+        positioning.newline();
+        double endBracketY = positioning.lineTop + vertPadding + textHeight; 
+        positioning.maxBottom(textHeight + descenderHeight + vertPadding * 2);
+        endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "'>}</text>"; 
+        positioning.newline();
       }
       
       
       toReturn.reset();
       double width = nextX + horzPadding - startX;
-      toReturn.svgString = "<path d=\'M" + startX + " " + y + " l " + width + " 0 l 0 "+  (textHeight + descenderHeight + totalVertPadding * 2) + " l -" + (width - startX - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
+      toReturn.svgString = "<path d=\'M" + startX + " " + y + " l " + width + " 0 l 0 "+  (textHeight + descenderHeight + totalVertPadding * 2) + " l -" + (width - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
 //      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>";
       toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>" + text + "</text>";
+      toReturn.svgString += startBracketSvg;
       toReturn.svgString += wideSvg;
+      toReturn.svgString += endBracketSvg;
       toReturn.width = width;
       toReturn.height = firstLineHeight;
       toReturn.hitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
+      
 //      positioning.newline();
 
 //      DivElement div = doc.createDivElement();
