@@ -13,8 +13,10 @@ import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -36,13 +38,29 @@ public class SvgCodeRenderer
     
   }
   
+  static SVGSVGElement testSvgEl;
+  static SVGSVGElement testSvgCursorOverlay;
+  static SVGDocument testDoc; 
   public static void test()
   {
     SVGDocument doc = (SVGDocument)Browser.getDocument();
-    SVGSVGElement svgEl = doc.createSVGElement();
-    svgEl.getStyle().setWidth("500px");
-    svgEl.getStyle().setHeight("1000px");
-    doc.getBody().appendChild(svgEl);
+    DivElement newDiv = doc.createDivElement();
+    newDiv.setClassName("codesidesplit");
+    doc.getBody().appendChild(newDiv);
+    newDiv.setInnerHTML("<svg style=\"width: 500px; height: 1000px;\"></svg><svg style=\"width: 500px; height: 1000px;\" class=\"cursoroverlay\">" + 
+        "<g class=\"cursorscrolltransform\">" + 
+        "<circle class=\"cursorhandle\" cx=\"0\" cy=\"0\" r=\"20\"/>" + 
+        "<path class=\"cursorhandle\" d=\"M-20,-20 L 20, 0 L -20 20 z\"/>" + 
+        "<line class=\"cursorcaret\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"0\"/>" + 
+        "</g>" + 
+        "</svg>");
+    SVGSVGElement svgEl = (SVGSVGElement)newDiv.querySelectorAll("svg").item(0);
+//    svgEl.getStyle().setWidth("500px");
+//    svgEl.getStyle().setHeight("1000px");
+//    doc.getBody().appendChild(svgEl);
+    testSvgEl = svgEl;
+    testDoc = doc;
+    testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
     
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
@@ -105,6 +123,41 @@ public class SvgCodeRenderer
     supplement.selectionStart = selectionPos1;
     supplement.selectionEnd = selectionPos2;
     renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
+    
+    if (testSvgEl != null)
+    {
+      SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+      supplementalInfo.codeErrors = new ErrorList();
+      supplementalInfo.nesting = new CodeNestingCounter();
+      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+      SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(testDoc);
+      SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+      SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+      CodePosition currentTokenPos = new CodePosition();
+      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+//      SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
+//      tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
+      
+      testSvgEl.setInnerHTML(returned.svgString);
+      RenderedHitBox hitBox = returned.hitBox;
+      
+      
+      if (pos != null)
+      {
+        CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, pos, 0, hitBox);
+        // Draw caret for the secondary cursor
+        Element caretCursor = testSvgCursorOverlay.querySelector(".cursorcaret"); 
+        if (cursorRect != null)
+        {
+          caretCursor.getStyle().clearDisplay();
+          caretCursor.setAttribute("x1", "" + cursorRect.left);
+          caretCursor.setAttribute("x2", "" + cursorRect.left);
+          caretCursor.setAttribute("y1", "" + cursorRect.top);
+          caretCursor.setAttribute("y2", "" + cursorRect.bottom);
+        }
+      }
+
+    }
   }
 
   public static RenderedHitBox renderWithHitBoxes(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors)
@@ -455,14 +508,14 @@ public class SvgCodeRenderer
       
       String text = tokenText;
       double textWidth = widthCalculator.calculateWidth(text);
-      nextX += textWidth + horzPadding;
+      nextX += textWidth;
       int maxNesting = 1;
       int totalVertPadding = maxNesting * vertPadding;
       
       String startBracketSvg = "";
       if (exprContainer != null)
       {
-        positioning.x = nextX;
+        positioning.x = nextX + horzPadding;
         toReturn.reset();
         TokenRendererPositioning subPositioning = positioning.copy();
         subPositioning.lineTop += vertPadding;
@@ -476,12 +529,11 @@ public class SvgCodeRenderer
         positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
         nextX = subPositioning.x;
-        
-        if (blockContainer != null)
-        {
-          startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
-          nextX += horzPadding + widthCalculator.calculateWidth("{");
-        }
+      }
+      if (blockContainer != null)
+      {
+        startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
+        nextX += horzPadding + widthCalculator.calculateWidth("{");
       }
 
       double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
@@ -763,15 +815,16 @@ public class SvgCodeRenderer
 
     int lineno = 0;
     String svgString = "";
+    RenderedHitBox hitBox = RenderedHitBox.withChildren();
     for (TokenContainer line: codeList.statements)
     {
-      positioning.maxBottom(positioning.fontSize);
+      positioning.maxBottom(positioning.fontSize + renderer.vertPadding * 2 + renderer.descenderHeight);
 //      DivElement div = doc.createDivElement();
 //      RenderedHitBox lineHitBox = null;
 //      if (renderedHitBoxes != null)
 //      {
-//        lineHitBox = new RenderedHitBox(div);
-//        lineHitBox.children = new ArrayList<>();
+////        lineHitBox = new RenderedHitBox(div);
+//        lineHitBox = RenderedHitBox.withChildren();
 //        renderedHitBoxes.children.add(lineHitBox);
 //      }
       currentTokenPos.setOffset(level, lineno);
@@ -780,6 +833,7 @@ public class SvgCodeRenderer
       positioning.currentNestingInLine = 0;
       SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), 0, currentTokenPos, null, false, renderer, null, supplement);
       svgString += toReturn.svgString;
+      hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
       positioning.maxBottom(positioning.fontSize);
       positioning.maxBottom(toReturn.height);
@@ -809,6 +863,7 @@ public class SvgCodeRenderer
 //    }
     toReturn.reset();
     toReturn.svgString = svgString;
+    toReturn.hitBox = hitBox;
   }
 
   static void renderLine(TokenContainer line, TokenRendererReturn toReturn, TokenRendererPositioning positioning, CodePosition pos, int level, CodePosition currentTokenPos, Element div, boolean isStatement, TokenRenderer renderer, RenderedHitBox lineHitBox, RenderSupplementalInfo supplement)
@@ -833,13 +888,11 @@ public class SvgCodeRenderer
 //    DivElement subdiv = null;
 //    Document doc = div.getOwnerDocument();
     toReturn.reset();
+    toReturn.hitBox = RenderedHitBox.withChildren();
     int tokenno = 0;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
     for (Token tok: line.tokens)
     {
-//      RenderedHitBox hitBox = null;
-//      if (lineHitBox != null)
-//        hitBox = new RenderedHitBox();
       currentTokenPos.setOffset(level, tokenno);
       tok.visit(renderer, returnedRenderedToken, positioning, level + 1, currentTokenPos, null);
       if (returnedRenderedToken.svgString != null && !returnedRenderedToken.svgString.isEmpty())
@@ -850,6 +903,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
       toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
+      toReturn.hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
 //      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
@@ -879,8 +933,6 @@ public class SvgCodeRenderer
 //        Element beforePoint = returnedRenderedToken.beforeInsertionPoint;
 //        beforePoint.getParentElement().insertBefore(toInsert.querySelector("div"), beforePoint);
 //      }
-//      if (lineHitBox != null)
-//        lineHitBox.children.add(hitBox);
       tokenno++;
     }
 //    // If the last token is a wide token, there should be an empty line afterwards
