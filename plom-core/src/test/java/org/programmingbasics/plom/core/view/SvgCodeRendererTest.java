@@ -9,7 +9,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.SvgCodeRenderer.SvgTextWidthCalculator;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 
 import junit.framework.TestCase;
 
@@ -60,7 +60,7 @@ public class SvgCodeRendererTest extends TestCase
     supplement.nesting.calculateNestingForLine(line);
     positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
     positioning.currentNestingInLine = 0;
-    SvgCodeRenderer.renderLine(line, returned, positioning, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplement);
+    SvgCodeRenderer.renderLine(line, returned, positioning, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplement, 0);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
         "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
         "<rect x='40.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>2</text>\n" + 
@@ -215,5 +215,161 @@ public class SvgCodeRendererTest extends TestCase
         "", returned.svgString);
     Assert.assertEquals(36, positioning.lineTop, 0.001);
     
+  }
+  
+  @Test
+  public void testHitBoxRenderedCursorPosition()
+  {
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("32", Symbol.Number)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".a:b:", Symbol.DotVariable,
+                new TokenContainer(new Token.SimpleToken("3", Symbol.Number)),
+                new TokenContainer())
+            ),
+        new TokenContainer(),
+        new TokenContainer(
+            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+            Token.ParameterToken.fromContents("@Type", Symbol.AtType),
+            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
+                new TokenContainer()),
+            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".d:", Symbol.DotVariable, 
+                        new TokenContainer(new Token.SimpleToken("12", Symbol.Number)))),
+                new TokenContainer(),
+                new TokenContainer(new Token.SimpleToken("32", Symbol.Number))
+                ),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    Token.ParameterToken.fromContents(".and:", Symbol.DotVariable, 
+                        new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)))), 
+                new StatementContainer(
+                    new TokenContainer(new Token.SimpleToken("64", Symbol.Number)),
+                    new TokenContainer(new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF)))),
+            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+                            new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("3", Symbol.Number)
+                                    ))))))
+            )
+        );
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 10, new SimpleWidthCalculator());
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    RenderedHitBox hitBox = returned.hitBox;
+    
+    // Check if we can find cursor positions
+    CursorRect cursorRect = null;
+    
+    // Start of a line of simple tokens
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(0, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 0, 18}, cursorRect.getTestDimensions(), 0.001);
+
+    // Middle of a line of simple tokens
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(0, 2), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {60, 0, 18}, cursorRect.getTestDimensions(), 0.001);
+
+    // End of a line
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(0, 3), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {90, 0, 18}, cursorRect.getTestDimensions(), 0.001);
+    
+    // Middle of 2nd line before a parameter token
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(1, 2), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {60, 18, 42}, cursorRect.getTestDimensions(), 0.001);
+    
+    // End of a 2nd line of non-wide tokens (after parameter token)
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(1, 3), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {155, 18, 42}, cursorRect.getTestDimensions(), 0.001);
+
+    // Inside a parameter token
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(1, 2, SvgCodeRenderer.PARAMTOK_POS_EXPRS, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {100, 21, 39}, cursorRect.getTestDimensions(), 0.001);
+
+    // Empty parameter token expression
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(1, 2, SvgCodeRenderer.PARAMTOK_POS_EXPRS, 1), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {150, 21, 39}, cursorRect.getTestDimensions(), 0.001);
+
+    // Empty line
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(2, 0, SvgCodeRenderer.EXPRBLOCK_POS_EXPR), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 42, 60}, cursorRect.getTestDimensions(), 0.001);
+    
+    // Start of a line with a simple wide token
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(3, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 60, 78}, cursorRect.getTestDimensions(), 0.001);
+
+    // After a simple wide token
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(3, 1), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 78, 108}, cursorRect.getTestDimensions(), 0.001);
+  
+    // Before an "if" block
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(4, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 108, 138}, cursorRect.getTestDimensions(), 0.001);
+
+    // Inside the expression of an if block
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(4, 0, SvgCodeRenderer.EXPRBLOCK_POS_EXPR, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {30, 111, 135}, cursorRect.getTestDimensions(), 0.001);
+
+    // Inside the block of a block nested inside another block
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(4, 1, SvgCodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0, SvgCodeRenderer.EXPRBLOCK_POS_BLOCK, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {40, 288, 306}, cursorRect.getTestDimensions(), 0.001);
+
+    // After a wide token with nothing there
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(4, 2), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {0, 366, 396}, cursorRect.getTestDimensions(), 0.001);
+    
+    // Inside an empty block
+    cursorRect = RenderedCursorPosition.inStatements(codeList, 
+        CodePosition.fromOffsets(4, 0, SvgCodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, SvgCodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0), 
+        0, hitBox);
+    Assert.assertArrayEquals(new double[] {40, 174, 192}, cursorRect.getTestDimensions(), 0.001);
   }
 }

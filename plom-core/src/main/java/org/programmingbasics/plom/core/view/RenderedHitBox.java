@@ -81,18 +81,16 @@ public class RenderedHitBox
      return toReturn;
    }
    
-   public static RenderedHitBox forRectangle(double x, double y, double width, double height)
+   public static RectangleRenderedHitBox forRectangle(double x, double y, double width, double height)
    {
-     List<Rect> rects = Arrays.asList(
-         new Rect(x, y, width, height)
-         );
-     return new RenderedHitBox() {
-       @Override public int getOffsetLeft() { return (int)x; }
-       @Override public int getOffsetTop() { return (int)y; }
-       @Override public int getOffsetWidth() { return (int)width; }
-       @Override public int getOffsetHeight() { return (int)height; }
-       @Override public List<Rect> getClientRects() { return rects; }
-     };
+     return new RectangleRenderedHitBox(x, y, width, height);
+   }
+
+   public static RectangleRenderedHitBox forRectangleWithChildren(double x, double y, double width, double height)
+   {
+     RectangleRenderedHitBox toReturn = new RectangleRenderedHitBox(x, y, width, height);
+     toReturn.children = new ArrayList<>();
+     return toReturn;
    }
 
    public String getTestData()
@@ -121,4 +119,32 @@ public class RenderedHitBox
 //   int w;
 //   int h;
    public List<RenderedHitBox> children;
+   
+   public static class RectangleRenderedHitBox extends RenderedHitBox
+   {
+     public RectangleRenderedHitBox() { }
+     public RectangleRenderedHitBox(double x, double y, double width, double height) { 
+       this.x = x;
+       this.y = y;
+       this.width = width;
+       this.height = height;
+     }
+     double x;
+     double y;
+     double width;
+     double height;
+     List<Rect> rects;
+     @Override public int getOffsetLeft() { return (int)x; }
+     @Override public int getOffsetTop() { return (int)y; }
+     @Override public int getOffsetWidth() { return (int)width; }
+     @Override public int getOffsetHeight() { return (int)height; }
+     @Override public List<Rect> getClientRects() 
+     {
+       if (rects == null)
+         rects = Arrays.asList(
+             new Rect(x, y, width, height)
+             );
+       return rects; 
+     }
+   }
 }

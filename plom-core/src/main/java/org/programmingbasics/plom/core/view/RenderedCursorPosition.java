@@ -22,6 +22,10 @@ public class RenderedCursorPosition
       this.top = top;
       this.bottom = bottom;
     }
+    public double[] getTestDimensions() 
+    {
+      return new double[] { left, top, bottom};
+    }
     public static CursorRect fromHitBoxLeft(RenderedHitBox hitBox)
     {
       return new CursorRect(hitBox.getOffsetLeft(), hitBox.getOffsetTop(), hitBox.getOffsetTop() + hitBox.getOffsetHeight());
