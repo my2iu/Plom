@@ -72,6 +72,7 @@ public class CodePanel
     hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
     
     SvgCodeRenderer.test();
+    hookTestCodeClick();
   }
 
   public void setCode(StatementContainer code)
@@ -787,6 +788,32 @@ public class CodePanel
       double x = pointerToRelativeX(pevt, div);
       double y = pointerToRelativeY(pevt, div);
       CodePosition newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
+      if (newPos == null)
+        newPos = new CodePosition();
+      cursorPos = newPos;
+      selectionCursorPos = null;
+
+      updateCodeView(false);
+      showPredictedTokenInput(choicesDiv);
+    }, false);
+  }
+
+  void hookTestCodeClick()
+  {
+//    div.addEventListener(Event.SCROLL, (evt) -> {
+//      cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
+//    }, false);
+//    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
+//    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
+    
+    DivElement div = SvgCodeRenderer.testDiv; 
+    
+    div.addEventListener(Event.CLICK, (evt) -> {
+      PointerEvent pevt = (PointerEvent)evt;
+      double x = pointerToRelativeX(pevt, div);
+      double y = pointerToRelativeY(pevt, div);
+      CodePosition newPos = 
+          HitDetect.testHitDetect(x, y, codeList, SvgCodeRenderer.testHitBox, 0);
       if (newPos == null)
         newPos = new CodePosition();
       cursorPos = newPos;

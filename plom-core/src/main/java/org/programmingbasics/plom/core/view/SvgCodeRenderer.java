@@ -17,7 +17,6 @@ import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitBox;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -41,7 +40,9 @@ public class SvgCodeRenderer
   
   static SVGSVGElement testSvgEl;
   static SVGSVGElement testSvgCursorOverlay;
-  static SVGDocument testDoc; 
+  static SVGDocument testDoc;
+  public static DivElement testDiv;
+  public static RenderedHitBox testHitBox;
   public static void test()
   {
     SVGDocument doc = (SVGDocument)Browser.getDocument();
@@ -62,6 +63,7 @@ public class SvgCodeRenderer
     testSvgEl = svgEl;
     testDoc = doc;
     testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
+    testDiv = newDiv;
     
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
@@ -157,7 +159,7 @@ public class SvgCodeRenderer
           caretCursor.setAttribute("y2", "" + cursorRect.bottom);
         }
       }
-
+      testHitBox = hitBox;
     }
   }
 
@@ -847,7 +849,7 @@ public class SvgCodeRenderer
 
     int lineno = 0;
     String svgString = "";
-    RenderedHitBox hitBox = RenderedHitBox.withChildren();
+    RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.lineStart, positioning.lineTop, 0, 0);
     for (TokenContainer line: codeList.statements)
     {
       positioning.maxBottom(renderer.textHeight + renderer.vertPadding * 2 + renderer.descenderHeight);
@@ -892,6 +894,8 @@ public class SvgCodeRenderer
 //      codeDiv.appendChild(div);
       positioning.newline();
     }
+    // TODO: hitBox.width is not set
+    hitBox.height = positioning.lineBottom - hitBox.y;
     toReturn.reset();
     toReturn.svgString = svgString;
     toReturn.hitBox = hitBox;
