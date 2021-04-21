@@ -41,6 +41,7 @@ public class SvgCodeRenderer
   static SVGSVGElement testSvgEl;
   static SVGSVGElement testSvgCursorOverlay;
   static SVGDocument testDoc;
+  static SvgCodeRenderer.TextWidthCalculator testWidthCalculator;
   public static DivElement testDiv;
   public static RenderedHitBox testHitBox;
   public static void test()
@@ -63,6 +64,7 @@ public class SvgCodeRenderer
     testSvgEl = svgEl;
     testDoc = doc;
     testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
+    testWidthCalculator = new SvgTextWidthCalculator(doc);
     testDiv = newDiv;
     
     StatementContainer codeList = new StatementContainer(
@@ -105,7 +107,7 @@ public class SvgCodeRenderer
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(doc);
+    SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
@@ -133,7 +135,7 @@ public class SvgCodeRenderer
       supplementalInfo.codeErrors = new ErrorList();
       supplementalInfo.nesting = new CodeNestingCounter();
       SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
-      SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgTextWidthCalculator(testDoc);
+      SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
       SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
       SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
       CodePosition currentTokenPos = new CodePosition();
@@ -163,6 +165,25 @@ public class SvgCodeRenderer
     }
   }
 
+  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator)
+  {
+//    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
+//    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
+    
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    
+    svgEl.setInnerHTML(returned.svgString);
+    RenderedHitBox hitBox = returned.hitBox;
+    return hitBox;
+  }
+  
   public static RenderedHitBox renderWithHitBoxes(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors)
   {
     RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
@@ -269,16 +290,16 @@ public class SvgCodeRenderer
     }
   }
   
-  static interface TextWidthCalculator
+  public static interface TextWidthCalculator
   {
     public double calculateWidth(String text);
   }
   
-  static class SvgTextWidthCalculator implements TextWidthCalculator
+  public static class SvgTextWidthCalculator implements TextWidthCalculator
   {
     SVGDocument doc;
     SVGTextElement textEl;
-    SvgTextWidthCalculator(SVGDocument doc)
+    public SvgTextWidthCalculator(SVGDocument doc)
     {
       SVGSVGElement svgEl = doc.createSVGElement();
       textEl = doc.createSVGTextElement();

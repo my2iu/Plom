@@ -359,7 +359,7 @@ public class Main
   
   private void showCodePanel(StatementContainer code)
   {
-    codePanel = new CodePanel(getMainDiv());
+    codePanel = new CodePanel(getMainDiv(), false);
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);

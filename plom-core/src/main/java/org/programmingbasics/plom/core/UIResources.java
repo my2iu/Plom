@@ -14,6 +14,9 @@ public interface UIResources extends ClientBundle
    @Source("codepanel.html")
    TextResource getCodePanelHtml();
 
+   @Source("svgcodepanel.html")
+   TextResource getSvgCodePanelHtml();
+
    @Source("cursor.html")
    TextResource getCursorHtml();
 
