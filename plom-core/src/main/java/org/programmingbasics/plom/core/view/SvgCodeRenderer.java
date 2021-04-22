@@ -134,6 +134,8 @@ public class SvgCodeRenderer
       SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
       supplementalInfo.codeErrors = new ErrorList();
       supplementalInfo.nesting = new CodeNestingCounter();
+      supplementalInfo.selectionStart = selectionPos1;
+      supplementalInfo.selectionEnd = selectionPos2;
       SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
       SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
       SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
@@ -173,6 +175,8 @@ public class SvgCodeRenderer
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.selectionStart = selectionPos1;
+    supplementalInfo.selectionEnd = selectionPos2;
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -567,7 +571,7 @@ public class SvgCodeRenderer
         maxNesting = subPositioning.maxNestingForLine + 1;
         totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
-        renderLine(exprContainer, toReturn, subPositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement, 0);
+        renderLine(exprContainer, toReturn, subPositioning, null, level + 1, currentTokenPos, null, false, this, null, supplement, 0);
         currentTokenPos.setMaxOffset(level + 1);
         positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
@@ -592,7 +596,7 @@ public class SvgCodeRenderer
         double oldLineStart = positioning.lineStart; 
         positioning.x = positioning.lineStart = positioning.lineStart + INDENT;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
-        renderStatementContainer(blockContainer, toReturn, positioning, new CodePosition(), level + 2, currentTokenPos, this, null, supplement);
+        renderStatementContainer(blockContainer, toReturn, positioning, new CodePosition(), level + 1, currentTokenPos, this, null, supplement);
         currentTokenPos.setMaxOffset(level + 1);
         wideSvg += toReturn.svgString;
         positioning.lineStart = positioning.x = oldLineStart;
@@ -886,7 +890,7 @@ public class SvgCodeRenderer
       supplement.nesting.calculateNestingForLine(line);
       positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
       positioning.currentNestingInLine = 0;
-      SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), 0, currentTokenPos, null, false, renderer, null, supplement, 1);
+      SvgCodeRenderer.renderLine(line, toReturn, positioning, new CodePosition(), level + 1, currentTokenPos, null, false, renderer, null, supplement, 1);
       svgString += toReturn.svgString;
       hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);

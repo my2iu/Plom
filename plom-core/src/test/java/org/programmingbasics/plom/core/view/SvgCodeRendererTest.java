@@ -67,7 +67,33 @@ public class SvgCodeRendererTest extends TestCase
         "", returned.svgString);
     Assert.assertEquals(18, returned.height, 0.001);
   }
-  
+
+  @Test
+  public void testLineOfSimpleTokenWithSelection()
+  {
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("2", Symbol.Number)));
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.selectionStart = CodePosition.fromOffsets(0, 1);
+    supplementalInfo.selectionEnd = CodePosition.fromOffsets(0, 2);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    RenderedHitBox hitBox = new RenderedHitBox();
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
+        "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken tokenselected'/><text x='25.0' y='13.0' class='codetoken tokenselected'>+</text>\n" + 
+        "<rect x='40.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>2</text>\n" + 
+        "", returned.svgString);
+  }
+
   @Test
   public void testStatementContainerOfLinesOfSimpleTokens()
   {

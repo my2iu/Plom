@@ -102,6 +102,14 @@ div.main {
 	stroke-width: 3px;
 }
 
+.codesidesplit svg.cursoroverlay .maincursorcaret {
+	pointer-events: auto;
+	touch-action: none;
+	fill: transparent;
+	stroke: black;
+	stroke-width: 3px;
+}
+
 .choices {
 	background-color: #fee;
 	flex-grow: 0;
@@ -327,15 +335,20 @@ a.runbutton {
 }
 
 svg rect.codetoken {
-	fill: none;
-	stroke: black;
+	fill: #eee;
+	stroke: #aaa;
 }
 
 svg path.codetoken {
-	fill: none;
-	stroke: black;
+	fill: #eee;
+	stroke: #aaa;
 }
 
 svg text.codetoken {
 	font-size: 15px;
+}
+
+svg rect.tokenselected,
+svg path.tokenselected {
+	fill: #587de6;
 }

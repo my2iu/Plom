@@ -1028,7 +1028,7 @@ public class CodePanel
     {
       CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, cursorPos, 0, renderedHitBoxes);
       // Draw caret for the secondary cursor
-      Element caretCursor = cursorOverlayEl.querySelector(".cursorcaret"); 
+      Element caretCursor = cursorOverlayEl.querySelector(".maincursorcaret"); 
       if (cursorRect != null)
       {
         caretCursor.getStyle().clearDisplay();
@@ -1097,7 +1097,6 @@ public class CodePanel
     }
     else
     {
-      if (!useSvg)
         caretCursor.getStyle().setDisplay(Display.NONE);
     }
     // Secondary cursor handle
