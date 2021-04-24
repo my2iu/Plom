@@ -352,3 +352,9 @@ svg rect.tokenselected,
 svg path.tokenselected {
 	fill: #587de6;
 }
+
+svg text.tokenError {
+	text-decoration: underline;
+	text-decoration: underline red;
+	fill: red;
+}

@@ -174,7 +174,7 @@ public class SvgCodeRenderer
 //    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
     
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.codeErrors = codeErrors;
     supplementalInfo.nesting = new CodeNestingCounter();
     supplementalInfo.selectionStart = selectionPos1;
     supplementalInfo.selectionEnd = selectionPos2;
@@ -558,6 +558,8 @@ public class SvgCodeRenderer
       nextX += textWidth;
       int maxNesting = 1;
       int totalVertPadding = maxNesting * vertPadding;
+      double xFirstLineExtent = nextX + horzPadding;
+      double xBlockExtent = startX;
       
       RenderedHitBox exprHitBox = null;
       RenderedHitBox blockHitBox = null;
@@ -578,6 +580,7 @@ public class SvgCodeRenderer
         currentTokenPos.setMaxOffset(level + 1);
         positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
+        xFirstLineExtent = Math.max(xFirstLineExtent, startX + toReturn.width);
         nextX = subPositioning.x;
         exprHitBox = toReturn.hitBox;
       }
@@ -585,6 +588,7 @@ public class SvgCodeRenderer
       {
         startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
         nextX += horzPadding + widthCalculator.calculateWidth("{");
+        xFirstLineExtent = Math.max(xFirstLineExtent, nextX);
       }
 
       double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
@@ -596,13 +600,15 @@ public class SvgCodeRenderer
         positioning.newline();
         toReturn.reset();
 //        TokenRendererPositioning subPositioning = positioning.copy();
-        double oldLineStart = positioning.lineStart; 
-        positioning.x = positioning.lineStart = positioning.lineStart + INDENT;
+        double oldLineStart = positioning.lineStart;
+        double indentedLineStart = positioning.lineStart + INDENT;
+        positioning.x = positioning.lineStart = indentedLineStart;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
         renderStatementContainer(blockContainer, toReturn, positioning, new CodePosition(), level + 1, currentTokenPos, this, null, supplement);
         currentTokenPos.setMaxOffset(level + 1);
         wideSvg += toReturn.svgString;
         positioning.lineStart = positioning.x = oldLineStart;
+        xBlockExtent = Math.max(xBlockExtent, indentedLineStart + toReturn.width);
 //        positioning.maxBottom(toReturn.height);
         
         // Add space for a '}' at the end
@@ -624,6 +630,8 @@ public class SvgCodeRenderer
       toReturn.svgString += wideSvg;
       toReturn.svgString += endBracketSvg;
       toReturn.width = width;
+      toReturn.width = Math.max(toReturn.width, xFirstLineExtent - startX);
+      toReturn.width = Math.max(toReturn.width, xBlockExtent - startX);
       toReturn.height = firstLineHeight;
       RectangleRenderedHitBox startTokenHitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
       RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(startX, y, toReturn.width, positioning.lineBottom - y);
@@ -981,6 +989,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
       toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
+      toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
       toReturn.width = Math.max(toReturn.width, positioning.x - positioning.lineStart);
       hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
