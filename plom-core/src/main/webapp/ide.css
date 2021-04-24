@@ -358,3 +358,12 @@ svg text.tokenError {
 	text-decoration: underline red;
 	fill: red;
 }
+
+svg.widthCalculator {
+	width: 0px;
+    height: 0px;
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    top: 0;
+}

@@ -1,6 +1,8 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -300,6 +302,13 @@ public class SvgCodeRenderer
   public static interface TextWidthCalculator
   {
     public double calculateWidth(String text);
+
+    public default List<String> breakLines(String contents, double maxWidth)
+    {
+      List<String> toReturn = new ArrayList<>();
+      toReturn.addAll(Arrays.asList(contents.split("\\n")));
+      return toReturn;
+    }
   }
   
   public static class SvgTextWidthCalculator implements TextWidthCalculator
@@ -312,6 +321,7 @@ public class SvgCodeRenderer
       textEl = doc.createSVGTextElement();
       textEl.getClassList().add("codetoken");
       svgEl.appendChild(textEl);
+      svgEl.getClassList().add("widthCalculator");
       doc.getBody().appendChild(svgEl);
     }
     @Override public double calculateWidth(String text)
@@ -331,6 +341,7 @@ public class SvgCodeRenderer
     final int descenderHeight;
     final TextWidthCalculator widthCalculator;
     final double INDENT_SIZE;
+    public double minLineHeight() { return textHeight + descenderHeight + 2 * vertPadding; }
     TokenRenderer(Document doc, RenderSupplementalInfo supplement, int textHeight, TextWidthCalculator widthCalculator)
     {
       this.doc = doc;
@@ -503,11 +514,16 @@ public class SvgCodeRenderer
       double x = positioning.x;
       double y = positioning.lineTop;
       double width = positioning.lineEnd - positioning.lineStart;
-      String text = token.contents;
-      toReturn.svgString = "<rect x='" + x + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + vertPadding * 2) + "' class='" + classList + "'/>";
-      toReturn.svgString += "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + vertPadding) + "' class='" + textClassList + "'>" + text + "</text>";
+      List<String> textLines = widthCalculator.breakLines(token.contents, positioning.lineEnd - positioning.lineStart - 2 * horzPadding);
+      toReturn.svgString = "<rect x='" + x + "' y='" + y + "' width='" + (width)+ "' height='" + (textLines.size() * (textHeight + descenderHeight) + vertPadding * 2) + "' class='" + classList + "'/>";
+      double lineY = y;
+      for (String text: textLines)
+      {
+        toReturn.svgString += "<text x='" + (x + horzPadding) + "' y='" + (lineY + textHeight + vertPadding) + "' class='" + textClassList + "'>" + text + "</text>";
+        lineY += textHeight + descenderHeight;
+      }
       toReturn.width = width;
-      toReturn.height = textHeight + descenderHeight + vertPadding * 2;
+      toReturn.height = textLines.size() * (textHeight + descenderHeight) + vertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangleWithChildren(x, y, toReturn.width, toReturn.height);
       toReturn.hitBox.children.add(null);
       toReturn.hitBox.children.add(null);
@@ -907,7 +923,6 @@ public class SvgCodeRenderer
       hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
       xExtent = Math.max(xExtent, toReturn.width + positioning.lineStart);
-      positioning.maxBottom(toReturn.height);
       positioning.newline();
 //      codeDiv.appendChild(div);
       lineno++;
@@ -966,7 +981,7 @@ public class SvgCodeRenderer
     RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.x, positioning.lineTop + positioning.currentNestingInLine * renderer.vertPadding, 0, 0);  
     toReturn.hitBox = hitBox;
     toReturn.height = positioning.fontSize;  // Minimum height for a line
-    double y = positioning.lineTop;
+    double startY = positioning.lineTop;
     int paddingNesting = positioning.maxNestingForLine - positioning.currentNestingInLine;
     if (paddingNesting < minPaddingNesting)
       paddingNesting = minPaddingNesting;
@@ -988,7 +1003,8 @@ public class SvgCodeRenderer
         else
           toReturn.svgString += returnedRenderedToken.svgString;
       }
-      toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
+      if (!tok.isWide())
+        positioning.maxBottom(returnedRenderedToken.height);
       toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
       toReturn.width = Math.max(toReturn.width, positioning.x - positioning.lineStart);
       hitBox.children.add(returnedRenderedToken.hitBox);
@@ -1024,6 +1040,7 @@ public class SvgCodeRenderer
       tokenno++;
     }
 
+    toReturn.height = positioning.lineBottom - startY;
     hitBox.height = toReturn.height;
 
     // If the last token is a wide token, there should be an empty line afterwards
@@ -1035,7 +1052,7 @@ public class SvgCodeRenderer
     {
       hitBox.children.add(RenderedHitBox.forRectangle(
           positioning.lineStart, positioning.lineTop, 
-          0, Math.max(positioning.lineBottom - positioning.lineTop, toReturn.height)));
+          0, Math.max(positioning.lineBottom - positioning.lineTop, renderer.minLineHeight())));
 //      subdiv = doc.createDivElement();
 //      div.appendChild(subdiv);
 //      if (lineHitBox != null)
