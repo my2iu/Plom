@@ -17,6 +17,7 @@ import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitBox;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.html.DivElement;
@@ -184,6 +185,8 @@ public class SvgCodeRenderer
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
     
     svgEl.setInnerHTML(returned.svgString);
+    svgEl.getStyle().setHeight(returned.height, Unit.PX);
+    svgEl.getStyle().setWidth(returned.width + 0.5, Unit.PX);  // Slightly larger to accommodate width of lines 
     RenderedHitBox hitBox = returned.hitBox;
     return hitBox;
   }
@@ -874,6 +877,7 @@ public class SvgCodeRenderer
 
     int lineno = 0;
     String svgString = "";
+    double xExtent = positioning.lineStart;
     RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.lineStart, positioning.lineTop, 0, 0);
     for (TokenContainer line: codeList.statements)
     {
@@ -894,6 +898,7 @@ public class SvgCodeRenderer
       svgString += toReturn.svgString;
       hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
+      xExtent = Math.max(xExtent, toReturn.width + positioning.lineStart);
       positioning.maxBottom(toReturn.height);
       positioning.newline();
 //      codeDiv.appendChild(div);
@@ -923,6 +928,8 @@ public class SvgCodeRenderer
     hitBox.height = positioning.lineBottom - hitBox.y;
     toReturn.reset();
     toReturn.svgString = svgString;
+    toReturn.height = hitBox.height;
+    toReturn.width = xExtent - positioning.lineStart;
     toReturn.hitBox = hitBox;
   }
 
@@ -959,6 +966,7 @@ public class SvgCodeRenderer
 //     "' y='" + (y + positioning.currentNestingInLine * vertPadding) 
 //        + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) 
     toReturn.height = renderer.textHeight + renderer.descenderHeight + totalVertPadding * 2;
+    toReturn.width = 0;
     int tokenno = 0;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
     for (Token tok: line.tokens)
@@ -973,6 +981,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
       toReturn.height = Math.max(toReturn.height, returnedRenderedToken.height);
+      toReturn.width = Math.max(toReturn.width, positioning.x - positioning.lineStart);
       hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
