@@ -346,6 +346,7 @@ svg path.codetoken {
 
 svg text.codetoken {
 	font-size: 15px;
+	white-space: pre;
 }
 
 svg rect.tokenselected,
@@ -366,4 +367,8 @@ svg.widthCalculator {
     position: absolute;
     left: 0;
     top: 0;
+}
+
+svg.widthCalculator text {
+	white-space: pre;
 }

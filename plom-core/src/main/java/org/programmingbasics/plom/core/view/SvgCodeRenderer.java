@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -17,6 +18,9 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitBox;
+
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Unit;
@@ -306,7 +310,52 @@ public class SvgCodeRenderer
     public default List<String> breakLines(String contents, double maxWidth)
     {
       List<String> toReturn = new ArrayList<>();
-      toReturn.addAll(Arrays.asList(contents.split("\\n")));
+      RegExp beforeWhitespace = RegExp.compile("^\\s*\\S*");
+      RegExp skipWhitespace = RegExp.compile("^\\s*(.*)");
+      for (String line: contents.split("\\n", -1))
+      {
+        // Go through each explicit line
+        MatchResult match = beforeWhitespace.exec(line);
+        
+        // Special case handling of empty lines
+        if (line.isEmpty()) toReturn.add("");
+        while (!line.isEmpty()) 
+        {
+          String truncatedLine = "";
+          // Keep removing words and adding it until we exceed the max width
+          while (calculateWidth(truncatedLine + match.getGroup(0)) < maxWidth && !line.isEmpty())
+          {
+            truncatedLine += match.getGroup(0);
+            line = line.substring(match.getGroup(0).length());
+            match = beforeWhitespace.exec(line);
+          }
+          // If the first word is longer than maxWidth
+          if (truncatedLine.isEmpty()) 
+          {
+            // We'll just arbitrarily split the word at maxWidth (useful for
+            // languages where there might not be any spaces, but not optimal
+            // for English)
+            char[] codePointChars = new char[2];
+            
+            // Add at least one character, so that don't get stuck in an infinite loop
+            int numChars = Character.toChars(line.codePointAt(0), codePointChars, 0);
+            truncatedLine = truncatedLine + String.valueOf(codePointChars, 0, numChars);
+            line = line.substring(numChars);
+            
+            // Advance one code point at a time (ideally, should work at the grapheme level) 
+            numChars = Character.toChars(line.codePointAt(0), codePointChars, 0);
+            while(calculateWidth(truncatedLine + String.valueOf(codePointChars, 0, numChars)) < maxWidth && !line.isEmpty())
+            {
+              truncatedLine = truncatedLine + String.valueOf(codePointChars, 0, numChars);
+              line = line.substring(numChars);
+              numChars = Character.toChars(line.codePointAt(0), codePointChars, 0);
+            }
+          }
+          toReturn.add(truncatedLine);
+          line = skipWhitespace.exec(line).getGroup(1); 
+          match = beforeWhitespace.exec(line);
+        }
+      }
       return toReturn;
     }
   }
