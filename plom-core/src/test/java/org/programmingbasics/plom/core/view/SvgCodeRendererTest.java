@@ -152,7 +152,7 @@ public class SvgCodeRendererTest extends TestCase
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='31.0' class='codetoken'>+</text>\n" + 
         "<rect x='120.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
@@ -194,7 +194,7 @@ public class SvgCodeRendererTest extends TestCase
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='60.0' height='30' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
         "<rect x='60.0' y='18.0' width='45.0' height='30' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='105.0' y='18.0' width='210.0' height='30' class='codetoken'/><text x='110.0' y='37.0' class='codetoken'>.a:</text><text x='225.0' y='37.0' class='codetoken'>b:</text><text x='255.0' y='37.0' class='codetoken'>c:</text>\n" + 
@@ -393,7 +393,7 @@ public class SvgCodeRendererTest extends TestCase
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
         CodePosition.fromOffsets(4, 2), 
         0, hitBox);
-    Assert.assertArrayEquals(new double[] {0, 366, 396}, cursorRect.getTestDimensions(), 0.001);
+    Assert.assertArrayEquals(new double[] {0, 360, 378}, cursorRect.getTestDimensions(), 0.001);
     
     // Inside an empty block
     cursorRect = RenderedCursorPosition.inStatements(codeList, 

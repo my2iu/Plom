@@ -517,9 +517,11 @@ public class SvgCodeRenderer
         TokenContainer line = token.parameters.get(n); 
 //        supplement.nesting.calculateNestingForLine(line);
 //        positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
-        positioning.currentNestingInLine++;
-        renderLine(line, returned, positioning, null, level + 2, currentTokenPos, null, false, this, null, supplement, 0);
-        positioning.currentNestingInLine--;
+        TokenRendererPositioning subpositioning = positioning.copy();
+        subpositioning.currentNestingInLine++;
+        subpositioning.lineBottom = subpositioning.lineTop;
+        renderLine(line, returned, subpositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement, 0);
+        positioning.x = subpositioning.x;
         paramsSvg += returned.svgString;
         nextX = positioning.x;
         currentTokenPos.setMaxOffset(level + 1);
@@ -690,7 +692,7 @@ public class SvgCodeRenderer
         // Add space for a '}' at the end
         positioning.newline();
         double endBracketY = positioning.lineTop + vertPadding + textHeight; 
-        positioning.maxBottom(textHeight + descenderHeight + vertPadding * 2);
+        positioning.maxBottom(minLineHeight());
         endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "'>}</text>"; 
         positioning.newline();
         blockHitBox = toReturn.hitBox;
@@ -965,7 +967,7 @@ public class SvgCodeRenderer
     RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.lineStart, positioning.lineTop, 0, 0);
     for (TokenContainer line: codeList.statements)
     {
-      positioning.maxBottom(renderer.textHeight + renderer.vertPadding * 2 + renderer.descenderHeight);
+      positioning.maxBottom(renderer.minLineHeight());
 //      DivElement div = doc.createDivElement();
 //      RenderedHitBox lineHitBox = null;
 //      if (renderedHitBoxes != null)
@@ -990,7 +992,7 @@ public class SvgCodeRenderer
     if (codeList.statements.isEmpty()) 
     {
 //      DivElement div = doc.createDivElement();
-      positioning.maxBottom(renderer.textHeight + renderer.vertPadding * 2 + renderer.descenderHeight);
+      positioning.maxBottom(renderer.minLineHeight());
       
       // Insert an empty hitbox for a blank line even though there's no corresponding tokencontainer
       RenderedHitBox lineHitBox = RenderedHitBox.forRectangleWithChildren(positioning.lineStart, positioning.lineTop, 0, positioning.lineBottom - positioning.lineTop);
@@ -1040,7 +1042,7 @@ public class SvgCodeRenderer
     toReturn.reset();
     RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.x, positioning.lineTop + positioning.currentNestingInLine * renderer.vertPadding, 0, 0);  
     toReturn.hitBox = hitBox;
-    toReturn.height = positioning.fontSize;  // Minimum height for a line
+//    toReturn.height = positioning.fontSize;  // Minimum height for a line
     double startY = positioning.lineTop;
     int paddingNesting = positioning.maxNestingForLine - positioning.currentNestingInLine;
     if (paddingNesting < minPaddingNesting)
@@ -1048,7 +1050,7 @@ public class SvgCodeRenderer
     int totalVertPadding = paddingNesting * renderer.vertPadding;
 //     "' y='" + (y + positioning.currentNestingInLine * vertPadding) 
 //        + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) 
-    toReturn.height = renderer.textHeight + renderer.descenderHeight + totalVertPadding * 2;
+    double tokenHeight = renderer.textHeight + renderer.descenderHeight + totalVertPadding * 2;
     toReturn.width = 0;
     int tokenno = 0;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
@@ -1100,8 +1102,7 @@ public class SvgCodeRenderer
       tokenno++;
     }
 
-    toReturn.height = positioning.lineBottom - startY;
-    hitBox.height = toReturn.height;
+    positioning.maxBottom(tokenHeight);
 
     // If the last token is a wide token, there should be an empty line afterwards
     // where additional content can go
@@ -1110,9 +1111,10 @@ public class SvgCodeRenderer
       needEmptyLineAtEnd = true;
     if (needEmptyLineAtEnd)
     {
+//      positioning.maxBottom(renderer.minLineHeight());
       hitBox.children.add(RenderedHitBox.forRectangle(
           positioning.lineStart, positioning.lineTop, 
-          0, Math.max(positioning.lineBottom - positioning.lineTop, renderer.minLineHeight())));
+          0, positioning.lineBottom - positioning.lineTop));
 //      subdiv = doc.createDivElement();
 //      div.appendChild(subdiv);
 //      if (lineHitBox != null)
@@ -1142,6 +1144,10 @@ public class SvgCodeRenderer
 //        div.setTextContent("\u00A0");
 //    else if (needEmptyLineAtEnd)
 //      subdiv.setTextContent("\u00a0");
+    
+    toReturn.height = positioning.lineBottom - startY;
+    hitBox.height = toReturn.height;
+
   }
 
 }

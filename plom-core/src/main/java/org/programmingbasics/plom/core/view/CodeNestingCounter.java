@@ -57,6 +57,8 @@ public class CodeNestingCounter
     @Override public Integer visitParameterToken(ParameterToken token)
     {
       int nesting = 0;
+      if (!token.parameters.isEmpty())
+        nesting = 1;
       for (TokenContainer expr: token.parameters)
       {
         nesting = Math.max(nesting, nestingCounter.calculateNestingForLine(expr));
