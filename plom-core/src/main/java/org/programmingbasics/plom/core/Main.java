@@ -176,6 +176,16 @@ public class Main
   }
   
   /**
+   * Call this to adjust the layout/dimensions of things after a resize
+   */
+  public void updateAfterResize()
+  {
+    if (codePanel != null)
+      codePanel.updateAfterResize();
+  }
+  
+  
+  /**
    * Basic UI for changing the class/method/function
    */
   public void hookSubject()
@@ -359,7 +369,7 @@ public class Main
   
   private void showCodePanel(StatementContainer code)
   {
-    codePanel = new CodePanel(getMainDiv(), false);
+    codePanel = new CodePanel(getMainDiv(), true);
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);

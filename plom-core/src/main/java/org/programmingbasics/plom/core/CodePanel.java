@@ -191,10 +191,11 @@ public class CodePanel
   {
     if (codeSvg != null)
     {
+      double clientWidth = codeDiv.getClientWidth();
       if (selectionPos != null)
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, pos, selectionPos, codeErrors, widthCalculator);
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, selectionPos, codeErrors, widthCalculator, clientWidth);
       else
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, null, null, codeErrors, widthCalculator);
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, null, codeErrors, widthCalculator, clientWidth);
     }
     else
     {
@@ -1146,4 +1147,9 @@ public class CodePanel
 //    handleSvg.getStyle().setProperty("stroke-width", "1px");
 //    
 //  }
+  
+  public void updateAfterResize()
+  {
+    updateCodeView(false);
+  }
 }

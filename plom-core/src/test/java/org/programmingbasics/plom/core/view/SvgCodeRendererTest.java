@@ -15,6 +15,7 @@ import junit.framework.TestCase;
 
 public class SvgCodeRendererTest extends TestCase
 {
+  static final double DEFAULT_CANVAS_WIDTH = 500;
   static class SimpleWidthCalculator implements SvgCodeRenderer.TextWidthCalculator
   {
     @Override public double calculateWidth(String text)
@@ -32,7 +33,7 @@ public class SvgCodeRendererTest extends TestCase
     Token tok = new Token.SimpleToken("22", Symbol.Number);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     RenderedHitBox hitBox = new RenderedHitBox();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.maxNestingForLine = 1;
     positioning.currentNestingInLine = 0;
     tok.visit(tokenRenderer, returned, positioning, 0, new CodePosition(), hitBox);
@@ -55,7 +56,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplement, 10, new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     supplement.nesting.calculateNestingForLine(line);
     positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
@@ -81,7 +82,7 @@ public class SvgCodeRendererTest extends TestCase
     supplementalInfo.nesting = new CodeNestingCounter();
     supplementalInfo.selectionStart = CodePosition.fromOffsets(0, 1);
     supplementalInfo.selectionEnd = CodePosition.fromOffsets(0, 2);
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -110,7 +111,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -144,7 +145,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -186,7 +187,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -229,7 +230,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     positioning.fontSize = 10;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -300,7 +301,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 10, new SimpleWidthCalculator());
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     CodePosition currentTokenPos = new CodePosition();

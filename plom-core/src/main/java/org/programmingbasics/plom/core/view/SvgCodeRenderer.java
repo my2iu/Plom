@@ -51,6 +51,7 @@ public class SvgCodeRenderer
   static SvgCodeRenderer.TextWidthCalculator testWidthCalculator;
   public static DivElement testDiv;
   public static RenderedHitBox testHitBox;
+  public static double testClientWidth;
   public static void test()
   {
     SVGDocument doc = (SVGDocument)Browser.getDocument();
@@ -73,6 +74,7 @@ public class SvgCodeRenderer
     testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
     testWidthCalculator = new SvgTextWidthCalculator(doc);
     testDiv = newDiv;
+    testClientWidth = newDiv.getClientWidth();
     
     StatementContainer codeList = new StatementContainer(
         new TokenContainer(
@@ -113,7 +115,7 @@ public class SvgCodeRenderer
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = new ErrorList();
     supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
     SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -143,7 +145,7 @@ public class SvgCodeRenderer
       supplementalInfo.nesting = new CodeNestingCounter();
       supplementalInfo.selectionStart = selectionPos1;
       supplementalInfo.selectionEnd = selectionPos2;
-      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
       SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
       SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
       SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -174,17 +176,19 @@ public class SvgCodeRenderer
     }
   }
 
-  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator)
+  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth)
   {
 //    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
 //    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
+    
+    final double extraWidth = 0.5; // Slightly larger to accommodate width of lines 
     
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = codeErrors;
     supplementalInfo.nesting = new CodeNestingCounter();
     supplementalInfo.selectionStart = selectionPos1;
     supplementalInfo.selectionEnd = selectionPos2;
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     CodePosition currentTokenPos = new CodePosition();
@@ -192,7 +196,7 @@ public class SvgCodeRenderer
     
     svgEl.setInnerHTML(returned.svgString);
     svgEl.getStyle().setHeight(returned.height, Unit.PX);
-    svgEl.getStyle().setWidth(returned.width + 0.5, Unit.PX);  // Slightly larger to accommodate width of lines 
+    svgEl.getStyle().setWidth(returned.width + extraWidth, Unit.PX);   
     RenderedHitBox hitBox = returned.hitBox;
     return hitBox;
   }
@@ -267,10 +271,17 @@ public class SvgCodeRenderer
     double lineEnd = 100;
     double lineTop = 0;
     double lineBottom = 0;
+    double canvasWidth = 0;
     double fontSize = 15;
     double x = 0;
     int maxNestingForLine = 0;
     int currentNestingInLine = 0;
+    
+    TokenRendererPositioning(double width)
+    {
+      this.canvasWidth = width;
+      this.lineEnd = this.canvasWidth;
+    }
     void maxBottom(double lineHeight)
     {
       lineBottom = Math.max(lineBottom, lineTop + lineHeight);
@@ -290,7 +301,7 @@ public class SvgCodeRenderer
 //    }
     TokenRendererPositioning copy()
     {
-      TokenRendererPositioning copy = new TokenRendererPositioning();
+      TokenRendererPositioning copy = new TokenRendererPositioning(canvasWidth);
       copy.lineStart = lineStart;
       copy.lineEnd = lineEnd;
       copy.lineTop = lineTop;

@@ -33,6 +33,9 @@
     		hookRun(main);
     		hookLoadSave(main);
     		main.hookSubject();
+    		window.addEventListener('resize', function() {
+    			main.updateAfterResize();
+    		});
     		main.loadFunctionCodeView("main");
 		});
 	</script>

@@ -61,6 +61,15 @@ div.main {
 	-webkit-user-select: none;
 }
 
+.codesvg {
+	padding: 0;
+	
+	/* Helps prevent jank from the scrollbar appearing and disappearing, which
+	can trigger a need to layout the svg again. But if the code section never
+	scrolls, then this isn't necessary */
+	overflow-y: scroll;  
+}
+
 .sidechoices {
 	background-color: #eee;
 	flex-grow: 1;
