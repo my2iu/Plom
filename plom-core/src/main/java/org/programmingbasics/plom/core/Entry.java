@@ -46,6 +46,10 @@ TODO:
 - standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)?
 - retype
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
+- svg render word wrap
+- svg render extra space at end of parameter tokens
+- svg render underline nesting levels
+- svg render have an empty space at parameters of parameter tokens
  */
 
 public class Entry implements EntryPoint
