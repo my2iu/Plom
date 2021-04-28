@@ -397,6 +397,7 @@ public class SvgCodeRenderer
     RenderSupplementalInfo supplement;
     final int textHeight;
     final int horzPadding = 5;
+    final int horzEndParamPadding = 12;
     final int vertPadding = 3;
     final int descenderHeight;
     final TextWidthCalculator widthCalculator;
@@ -538,8 +539,14 @@ public class SvgCodeRenderer
 //        if (supplement.codeErrors.containsToken(token))
 //          endSpan.getClassList().add("tokenError");
       }
-//      else
-//        endSpan.setTextContent("\u00a0\u00a0");
+      else
+      {
+         // Add some extra space at the end to make it easier to put
+         // the cursor at the end of the last parameter
+         nextX += horzEndParamPadding;
+//         endSpan.setTextContent("\u00a0\u00a0");
+         
+      }
 //      span.appendChild(endSpan);
 //      if (hitBox != null)
 //      {
