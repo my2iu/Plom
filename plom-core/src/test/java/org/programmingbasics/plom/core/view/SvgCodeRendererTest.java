@@ -195,16 +195,18 @@ public class SvgCodeRendererTest extends TestCase
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
-          "<rect x='0.0' y='18.0' width='60.0' height='30' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
-          "<rect x='60.0' y='18.0' width='57.0' height='30' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
-          "<rect x='117.0' y='18.0' width='234.0' height='30' class='codetoken'/><text x='122.0' y='37.0' class='codetoken'>.a:</text><text x='249.0' y='37.0' class='codetoken'>b:</text><text x='279.0' y='37.0' class='codetoken'>c:</text>\n" + 
-          "<rect x='157.0' y='21.0' width='87.0' height='24' class='codetoken'/><text x='162.0' y='37.0' class='codetoken'>.d:</text>\n" + 
-          "<rect x='197.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='202.0' y='37.0' class='codetoken'>12</text>\n" + 
-          "<rect x='304.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='309.0' y='37.0' class='codetoken'>32</text>\n" + 
-          "<rect x='351.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='356.0' y='37.0' class='codetoken'>+</text>\n" + 
-          "<rect x='371.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='376.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-          "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
-          "", returned.svgString);
+        "<rect x='0.0' y='18.0' width='60.0' height='30' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
+        "<rect x='60.0' y='18.0' width='87.0' height='30' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<rect x='147.0' y='18.0' width='264.0' height='30' class='codetoken'/><text x='152.0' y='37.0' class='codetoken'>.a:</text><text x='279.0' y='37.0' class='codetoken'>b:</text><text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='187.0' y='21.0' width='87.0' height='24' class='codetoken'/><text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
+        "<rect x='227.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='232.0' y='37.0' class='codetoken'>12</text>\n" + 
+        "<rect x='304.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<rect x='364.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='369.0' y='37.0' class='codetoken'>32</text>\n" + 
+        "<rect x='411.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='416.0' y='37.0' class='codetoken'>+</text>\n" + 
+        "<rect x='431.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='436.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
+        "", returned.svgString);
     Assert.assertEquals(66, positioning.lineTop, 0.001);
   }
 
@@ -339,7 +341,7 @@ public class SvgCodeRendererTest extends TestCase
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
         CodePosition.fromOffsets(1, 3), 
         0, hitBox);
-    Assert.assertArrayEquals(new double[] {167, 18, 42}, cursorRect.getTestDimensions(), 0.001);
+    Assert.assertArrayEquals(new double[] {197, 18, 42}, cursorRect.getTestDimensions(), 0.001);
 
     // Inside a parameter token
     cursorRect = RenderedCursorPosition.inStatements(codeList, 

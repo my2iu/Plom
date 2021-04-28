@@ -521,7 +521,10 @@ public class SvgCodeRenderer
         TokenRendererPositioning subpositioning = positioning.copy();
         subpositioning.currentNestingInLine++;
         subpositioning.lineBottom = subpositioning.lineTop;
-        renderLine(line, returned, subpositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement, 0);
+        if (!line.tokens.isEmpty())
+           renderLine(line, returned, subpositioning, null, level + 2, currentTokenPos, null, false, this, null, supplement, 0);
+        else
+           renderEmptyFillIn(returned, subpositioning, level + 2, currentTokenPos, this, supplement, 0);
         positioning.x = subpositioning.x;
         paramsSvg += returned.svgString;
         nextX = positioning.x;
@@ -661,7 +664,10 @@ public class SvgCodeRenderer
         maxNesting = subPositioning.maxNestingForLine + 1;
         totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
-        renderLine(exprContainer, toReturn, subPositioning, null, level + 1, currentTokenPos, null, false, this, null, supplement, 0);
+        if (!exprContainer.tokens.isEmpty())
+          renderLine(exprContainer, toReturn, subPositioning, null, level + 1, currentTokenPos, null, false, this, null, supplement, 0);
+        else
+          renderEmptyFillIn(toReturn, subPositioning, level + 1, currentTokenPos, this, supplement, 0);
         currentTokenPos.setMaxOffset(level + 1);
         positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
@@ -816,6 +822,51 @@ public class SvgCodeRenderer
 //      toReturn.el = div;
 //      toReturn.beforeInsertionPoint = start;
     }
+    
+    
+    void renderEmptyFillIn(TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderSupplementalInfo supplement, int minPaddingNesting)
+    {
+       toReturn.reset();
+       RenderedHitBox.RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(positioning.x, positioning.lineTop + positioning.currentNestingInLine * renderer.vertPadding, 0, 0);  
+       toReturn.hitBox = hitBox;
+
+       final int FILL_IN_WIDTH = 20; 
+
+       
+      double startY = positioning.lineTop;
+      int paddingNesting = positioning.maxNestingForLine - positioning.currentNestingInLine;
+      if (paddingNesting < minPaddingNesting)
+        paddingNesting = minPaddingNesting;
+      int totalVertPadding = paddingNesting * renderer.vertPadding;
+//      double tokenHeight = renderer.textHeight + renderer.descenderHeight + totalVertPadding * 2;
+//      toReturn.width = 0;
+//      int tokenno = 0;
+//      TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
+        currentTokenPos.setOffset(level, 0);
+        
+        String classList = "fillinblank";
+//        if (supplement.codeErrors.containsToken(token))
+//          classList += " tokenError";
+        if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
+          classList += " tokenselected";
+        double x = positioning.x;
+        double y = positioning.lineTop;
+        toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (FILL_IN_WIDTH + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>\n";
+        toReturn.width = horzPadding * 2 + FILL_IN_WIDTH;
+        toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
+        hitBox.children.add(RenderedHitBox.forRectangleWithChildren(x, y + positioning.currentNestingInLine * vertPadding, toReturn.width, toReturn.height));
+        positioning.x += toReturn.width; 
+        positioning.maxBottom(toReturn.height);
+        
+        currentTokenPos.setMaxOffset(level + 1);
+
+//      positioning.maxBottom(tokenHeight);
+
+      
+//      toReturn.height = positioning.lineBottom - startY;
+      hitBox.height = toReturn.height;
+    }
+
   }
 
   static void renderStatementContainer(DivElement codeDiv, StatementContainer codeList, CodePosition pos, int level, CodePosition currentTokenPos, RenderedHitBox renderedHitBoxes, RenderSupplementalInfo supplement)
@@ -1156,5 +1207,6 @@ public class SvgCodeRenderer
     hitBox.height = toReturn.height;
 
   }
+
 
 }
