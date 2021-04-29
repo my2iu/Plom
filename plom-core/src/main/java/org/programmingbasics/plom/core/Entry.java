@@ -47,9 +47,7 @@ TODO:
 - retype
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
 - svg render word wrap
-- svg render extra space at end of parameter tokens
 - svg render underline nesting levels
-- svg render have an empty space at parameters of parameter tokens
 - svg render top of parameter in parameter token should extend to top of line
  */
 

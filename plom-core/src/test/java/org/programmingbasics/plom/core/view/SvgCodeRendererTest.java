@@ -239,12 +239,15 @@ public class SvgCodeRendererTest extends TestCase
     RenderedHitBox hitBox = new RenderedHitBox();
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>22 adf df</text>\n" + 
-        "<rect x='100.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='13.0' class='codetoken'>+</text>\n" + 
-        "<rect x='120.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<rect x='0.0' y='18.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>55</text>\n" + 
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+        "<path d='M0.0 18.0 l 100.0 0 l 0 24 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text>\n" + 
+        "<text x='5.0' y='73.0'>}</text>\n" + 
+        "<rect x='0.0' y='78.0' width='100.0' height='12' class='codetoken'/><text x='5.0' y='88.0' class='codetoken'>22 adf df</text>\n" + 
+        "<rect x='100.0' y='78.0' width='20.0' height='12' class='codetoken'/><text x='105.0' y='88.0' class='codetoken'>+</text>\n" + 
+        "<rect x='120.0' y='78.0' width='130.0' height='12' class='codetoken'/><text x='125.0' y='88.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='0.0' y='96.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='109.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
-    Assert.assertEquals(36, positioning.lineTop, 0.001);
+    Assert.assertEquals(114, positioning.lineTop, 0.001);
     
   }
   

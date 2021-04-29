@@ -85,6 +85,8 @@ public class CodeSuggestExpressionTyper
     lastTypeHandlers
       .add(Rule.DotVariable, (triggers, node, context, param) -> {
         Type t = context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName());
+        if (t == null)
+          t = context.coreTypes().getVoidType();
         context.pushType(t);
         context.setLastTypeUsed(t);
         return true;
