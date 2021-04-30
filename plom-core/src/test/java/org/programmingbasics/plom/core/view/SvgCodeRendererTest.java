@@ -15,7 +15,8 @@ import junit.framework.TestCase;
 
 public class SvgCodeRendererTest extends TestCase
 {
-  static final double DEFAULT_CANVAS_WIDTH = 500;
+  static final double DEFAULT_CANVAS_WIDTH = 1000;
+  static final double THIN_CANVAS_WIDTH = 300;
   static class SimpleWidthCalculator implements SvgCodeRenderer.TextWidthCalculator
   {
     @Override public double calculateWidth(String text)
@@ -108,21 +109,13 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    RenderedHitBox hitBox = new RenderedHitBox();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='13.0' class='codetoken'>+</text>\n" + 
         "<rect x='120.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='18.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
+    SvgCodeRenderer.TokenRendererPositioning positioning = renderPlainForPositioning(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals(36, positioning.lineTop, 0.001);
     Assert.assertEquals(36, returned.height, 0.001);
     Assert.assertEquals(250, returned.width, 0.001);
@@ -142,22 +135,14 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    RenderedHitBox hitBox = new RenderedHitBox();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='100.0' height='18' class='codetoken'/><text x='5.0' y='31.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='105.0' y='31.0' class='codetoken'>+</text>\n" + 
         "<rect x='120.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='125.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='36.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='49.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
+    SvgCodeRenderer.TokenRendererPositioning positioning = renderPlainForPositioning(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals(54, positioning.lineTop, 0.001);
   }
   
@@ -184,17 +169,8 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    RenderedHitBox hitBox = new RenderedHitBox();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='60.0' height='30' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
         "<rect x='60.0' y='18.0' width='87.0' height='30' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
@@ -207,6 +183,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='431.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='436.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
+    SvgCodeRenderer.TokenRendererPositioning positioning = renderPlainForPositioning(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals(66, positioning.lineTop, 0.001);
   }
 
@@ -229,26 +206,17 @@ public class SvgCodeRendererTest extends TestCase
             new Token.SimpleToken("55", Symbol.Number)
             )
         );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
-    positioning.fontSize = 10;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    RenderedHitBox hitBox = new RenderedHitBox();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='500.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
-        "<path d='M0.0 18.0 l 100.0 0 l 0 24 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text>\n" + 
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
+        "<path d='M0.0 18.0 l 100.0 0 l 0 24.0 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text>\n" + 
         "<text x='5.0' y='73.0'>}</text>\n" + 
         "<rect x='0.0' y='78.0' width='100.0' height='12' class='codetoken'/><text x='5.0' y='88.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='78.0' width='20.0' height='12' class='codetoken'/><text x='105.0' y='88.0' class='codetoken'>+</text>\n" + 
         "<rect x='120.0' y='78.0' width='130.0' height='12' class='codetoken'/><text x='125.0' y='88.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='96.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='109.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
+    SvgCodeRenderer.TokenRendererPositioning positioning = renderPlainForPositioning(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals(114, positioning.lineTop, 0.001);
-    
   }
   
   @Test
@@ -303,14 +271,7 @@ public class SvgCodeRendererTest extends TestCase
                                     ))))))
             )
         );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH);
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 10, new SimpleWidthCalculator());
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     RenderedHitBox hitBox = returned.hitBox;
     
     // Check if we can find cursor positions
@@ -380,7 +341,7 @@ public class SvgCodeRendererTest extends TestCase
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
         CodePosition.fromOffsets(4, 0), 
         0, hitBox);
-    Assert.assertArrayEquals(new double[] {0, 108, 138}, cursorRect.getTestDimensions(), 0.001);
+    Assert.assertArrayEquals(new double[] {0, 108, 126}, cursorRect.getTestDimensions(), 0.001);
 
     // Inside the expression of an if block
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
@@ -406,4 +367,104 @@ public class SvgCodeRendererTest extends TestCase
         0, hitBox);
     Assert.assertArrayEquals(new double[] {40, 174, 192}, cursorRect.getTestDimensions(), 0.001);
   }
+  
+  private SvgCodeRenderer.TokenRendererPositioning renderPlainForPositioning(StatementContainer codeList, double canvasWidth)
+  {
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(canvasWidth);
+    positioning.fontSize = 10;
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    renderPlain(codeList, positioning, returned);
+    return positioning;
+  }
+  
+  private SvgCodeRenderer.TokenRendererReturn renderPlain(StatementContainer codeList, double canvasWidth)
+  {
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(canvasWidth);
+    positioning.fontSize = 10;
+    positioning.wrapLineStart = 25;
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    renderPlain(codeList, positioning, returned);
+    return returned;
+  }
+
+  private void renderPlain(StatementContainer codeList, SvgCodeRenderer.TokenRendererPositioning positioning, SvgCodeRenderer.TokenRendererReturn returned)
+  {
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), new SimpleWidthCalculator());
+    CodePosition currentTokenPos = new CodePosition();
+    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+  }
+  
+  @Test
+  public void testWrappingSimpleTokens()
+  {
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+            ),
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                new TokenContainer(
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    new Token.SimpleToken("AND", Symbol.And),
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    new Token.SimpleToken("AND", Symbol.And),
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    new Token.SimpleToken("AND", Symbol.And),
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    new Token.SimpleToken("AND", Symbol.And),
+                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+                    new Token.SimpleToken("AND", Symbol.And),
+                    new Token.SimpleToken("true", Symbol.TrueLiteral)
+                    ), 
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("1", Symbol.Number),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+                        )
+                    )))
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
+        "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
+        "<rect x='40.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='170.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='13.0' class='codetoken'>+</text>\n" + 
+        "<rect x='25.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='155.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='160.0' y='31.0' class='codetoken'>+</text>\n" + 
+        "<rect x='25.0' y='36.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='49.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='210.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='215.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='25.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='30.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='65.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='70.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='115.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='120.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='155.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='160.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='205.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='210.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='245.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='250.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='20.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='127.0' class='codetoken'>1</text>\n" + 
+        "<rect x='40.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='127.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='114.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='127.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='190.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='127.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='132.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='145.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='190.0' y='132.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='145.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='150.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='163.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<text x='5.0' y='181.0'>}</text>\n" + 
+        "", returned.svgString);
+  }
+
 }

@@ -49,6 +49,8 @@ TODO:
 - svg render word wrap
 - svg render underline nesting levels
 - svg render top of parameter in parameter token should extend to top of line
+- svg render have an "active" token (not the same as selection) so you know you can edit it
+- svg render for type fields
  */
 
 public class Entry implements EntryPoint

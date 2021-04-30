@@ -650,18 +650,21 @@ public class SvgCodeRenderer
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
 
-      double startX = positioning.x;
-      double y = positioning.lineTop;
-      double nextX = startX + horzPadding;
+      final double startX = positioning.x;
+      final double startY = positioning.lineTop;
+      positioning.x += horzPadding;
       String wideSvg = "";
       
       String text = tokenText;
       double textWidth = widthCalculator.calculateWidth(text);
-      nextX += textWidth;
+      positioning.x += textWidth;
       int maxNesting = 1;
       int totalVertPadding = maxNesting * vertPadding;
-      double xFirstLineExtent = nextX + horzPadding;
+      double xFirstLineExtent = positioning.x + horzPadding;
       double xBlockExtent = startX;
+      double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
+      double expressionHeight = firstLineHeight;
+      double expressionWidth = positioning.x - startX;
       
       RenderedHitBox exprHitBox = null;
       RenderedHitBox blockHitBox = null;
@@ -669,10 +672,11 @@ public class SvgCodeRenderer
       String startBracketSvg = "";
       if (exprContainer != null)
       {
-        positioning.x = nextX + horzPadding;
+        positioning.x += horzPadding;
         toReturn.reset();
         TokenRendererPositioning subPositioning = positioning.copy();
         subPositioning.lineTop += vertPadding;
+        subPositioning.lineEnd -= horzPadding;
         subPositioning.maxNestingForLine = supplement.nesting.expressionNesting.get(exprContainer);
         subPositioning.currentNestingInLine = 0;
         maxNesting = subPositioning.maxNestingForLine + 1;
@@ -682,22 +686,34 @@ public class SvgCodeRenderer
           renderLine(exprContainer, toReturn, subPositioning, null, level + 1, currentTokenPos, null, false, this, null, supplement, 0);
         else
           renderEmptyFillIn(toReturn, subPositioning, level + 1, currentTokenPos, this, supplement, 0);
+        positioning.copyFrom(subPositioning);
         currentTokenPos.setMaxOffset(level + 1);
-        positioning.maxBottom(toReturn.height);
         wideSvg += toReturn.svgString;
         xFirstLineExtent = Math.max(xFirstLineExtent, startX + toReturn.width);
-        nextX = subPositioning.x;
+//        expressionWidth = Math.max(expressionWidth, nextX - startX);
+        expressionWidth = Math.max(expressionWidth, toReturn.width);
         exprHitBox = toReturn.hitBox;
+        expressionHeight = Math.max(expressionHeight, (toReturn.height + 2 * vertPadding));
       }
       if (blockContainer != null)
       {
-        startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
-        nextX += horzPadding + widthCalculator.calculateWidth("{");
+//        startBracketSvg += "<text x='" + (nextX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>{</text>";
+        if (positioning.x + horzPadding + widthCalculator.calculateWidth("{") > positioning.lineEnd)
+        {
+          positioning.newline();
+          positioning.maxBottom(textHeight + descenderHeight + 2 * totalVertPadding - 2 * vertPadding);
+          positioning.x = positioning.wrapLineStart - horzPadding;
+          expressionHeight += textHeight + descenderHeight + 2 * totalVertPadding - 2 * vertPadding;
+        }
+        double braceY = positioning.lineTop + textHeight + totalVertPadding;
+        if (exprContainer != null)
+          braceY -= vertPadding; 
+        startBracketSvg += "<text x='" + (positioning.x + horzPadding) + "' y='" + (braceY) + "'>{</text>";
+        double nextX = positioning.x + horzPadding + widthCalculator.calculateWidth("{");
+        expressionWidth = Math.max(expressionWidth, nextX - startX);
         xFirstLineExtent = Math.max(xFirstLineExtent, nextX);
       }
-
-      double firstLineHeight = textHeight + descenderHeight + totalVertPadding * 2;
-      positioning.maxBottom(firstLineHeight);
+      positioning.lineBottom = startY + expressionHeight;
       
       String endBracketSvg = "";
       if (blockContainer != null)
@@ -729,10 +745,10 @@ public class SvgCodeRenderer
       
       
       toReturn.reset();
-      double width = nextX + horzPadding - startX;
-      toReturn.svgString = "<path d=\'M" + startX + " " + y + " l " + width + " 0 l 0 "+  (textHeight + descenderHeight + totalVertPadding * 2) + " l -" + (width - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
+      double width = expressionWidth + horzPadding;
+      toReturn.svgString = "<path d=\'M" + startX + " " + startY + " l " + width + " 0 l 0 "+  (expressionHeight) + " l -" + (width - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
 //      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>";
-      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (y + textHeight + totalVertPadding) + "'>" + text + "</text>";
+      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (startY + textHeight + totalVertPadding) + "'>" + text + "</text>";
       toReturn.svgString += startBracketSvg;
       toReturn.svgString += wideSvg;
       toReturn.svgString += endBracketSvg;
@@ -740,8 +756,8 @@ public class SvgCodeRenderer
       toReturn.width = Math.max(toReturn.width, xFirstLineExtent - startX);
       toReturn.width = Math.max(toReturn.width, xBlockExtent - startX);
       toReturn.height = firstLineHeight;
-      RectangleRenderedHitBox startTokenHitBox = RenderedHitBox.forRectangle(startX, y, toReturn.width, toReturn.height);
-      RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(startX, y, toReturn.width, positioning.lineBottom - y);
+      RectangleRenderedHitBox startTokenHitBox = RenderedHitBox.forRectangle(startX, startY, toReturn.width, toReturn.height);
+      RectangleRenderedHitBox hitBox = RenderedHitBox.forRectangleWithChildren(startX, startY, toReturn.width, positioning.lineBottom - startY);
       toReturn.hitBox = hitBox;
       hitBox.children.add(null);
       hitBox.children.add(null);
