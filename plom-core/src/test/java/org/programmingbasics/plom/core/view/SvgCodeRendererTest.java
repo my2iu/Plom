@@ -62,7 +62,7 @@ public class SvgCodeRendererTest extends TestCase
     supplement.nesting.calculateNestingForLine(line);
     positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
     positioning.currentNestingInLine = 0;
-    SvgCodeRenderer.renderLine(line, returned, positioning, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplement, 0);
+    SvgCodeRenderer.renderLine(line, returned, positioning, 0, currentTokenPos, false, tokenRenderer, supplement, 0);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
         "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
         "<rect x='40.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>2</text>\n" + 
@@ -171,10 +171,10 @@ public class SvgCodeRendererTest extends TestCase
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
-        "<rect x='0.0' y='18.0' width='60.0' height='30' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
-        "<rect x='60.0' y='18.0' width='87.0' height='30' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='0.0' y='18.0' width='60.0' height='30.0' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
+        "<rect x='60.0' y='18.0' width='87.0' height='30.0' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
-        "<rect x='147.0' y='18.0' width='264.0' height='30' class='codetoken'/><text x='152.0' y='37.0' class='codetoken'>.a:</text><text x='279.0' y='37.0' class='codetoken'>b:</text><text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='147.0' y='18.0' width='264.0' height='30.0' class='codetoken'/><text x='152.0' y='37.0' class='codetoken'>.a:</text><text x='279.0' y='37.0' class='codetoken'>b:</text><text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
         "<rect x='187.0' y='21.0' width='87.0' height='24' class='codetoken'/><text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
         "<rect x='227.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='232.0' y='37.0' class='codetoken'>12</text>\n" + 
         "<rect x='304.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
@@ -436,6 +436,69 @@ public class SvgCodeRendererTest extends TestCase
                         new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
                         )
                     )))
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
+        "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
+        "<rect x='40.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='170.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='13.0' class='codetoken'>+</text>\n" + 
+        "<rect x='25.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='155.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='160.0' y='31.0' class='codetoken'>+</text>\n" + 
+        "<rect x='25.0' y='36.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='49.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='210.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='215.0' y='70.0' class='codetoken'>true</text>\n" + 
+        "<rect x='25.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='30.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='65.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='70.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='115.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='120.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='155.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='160.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='205.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='210.0' y='88.0' class='codetoken'>AND</text>\n" + 
+        "<rect x='245.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='250.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<rect x='20.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='127.0' class='codetoken'>1</text>\n" + 
+        "<rect x='40.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='127.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='114.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='127.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='190.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='127.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='132.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='145.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='190.0' y='132.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='145.0' class='codetoken'>+</text>\n" + 
+        "<rect x='60.0' y='150.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='163.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<text x='5.0' y='181.0'>}</text>\n" + 
+        "", returned.svgString);
+  }
+  
+  @Test
+  public void testSimpleWrappingParameterToken()
+  {
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents("a:b:c:d:e:", Symbol.DotVariable, 
+                new TokenContainer(
+                    new Token.SimpleToken("2", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("3", Symbol.Number)
+                    ),
+                new TokenContainer(
+                    new Token.SimpleToken("5", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("6", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("\"longer string\"", Symbol.String)
+                    ),
+                new TokenContainer(),
+                new TokenContainer(
+                    new Token.SimpleToken("8", Symbol.Number)
+                    ),
+                new TokenContainer()
+                )
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number)
+            )
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
