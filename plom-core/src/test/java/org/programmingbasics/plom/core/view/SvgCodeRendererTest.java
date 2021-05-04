@@ -175,7 +175,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='60.0' y='18.0' width='87.0' height='30.0' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
         "<rect x='147.0' y='18.0' width='264.0' height='30.0' class='codetoken'/><text x='152.0' y='37.0' class='codetoken'>.a:</text><text x='279.0' y='37.0' class='codetoken'>b:</text><text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
-        "<rect x='187.0' y='21.0' width='87.0' height='24' class='codetoken'/><text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
+        "<rect x='187.0' y='21.0' width='87.0' height='24.0' class='codetoken'/><text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
         "<rect x='227.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='232.0' y='37.0' class='codetoken'>12</text>\n" + 
         "<rect x='304.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
         "<rect x='364.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='369.0' y='37.0' class='codetoken'>32</text>\n" + 
