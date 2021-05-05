@@ -172,12 +172,17 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='60.0' height='30.0' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
-        "<rect x='60.0' y='18.0' width='87.0' height='30.0' class='codetoken'/><text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='60.0' y='18.0' width='87.0' height='30.0' class='codetoken'/>\n" + 
+        "<text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
-        "<rect x='147.0' y='18.0' width='264.0' height='30.0' class='codetoken'/><text x='152.0' y='37.0' class='codetoken'>.a:</text><text x='279.0' y='37.0' class='codetoken'>b:</text><text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
-        "<rect x='187.0' y='21.0' width='87.0' height='24.0' class='codetoken'/><text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
+        "<rect x='147.0' y='18.0' width='264.0' height='30.0' class='codetoken'/>\n" + 
+        "<text x='152.0' y='37.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='187.0' y='21.0' width='87.0' height='24.0' class='codetoken'/>\n" + 
+        "<text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
         "<rect x='227.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='232.0' y='37.0' class='codetoken'>12</text>\n" + 
+        "<text x='279.0' y='37.0' class='codetoken'>b:</text>\n" + 
         "<rect x='304.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
         "<rect x='364.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='369.0' y='37.0' class='codetoken'>32</text>\n" + 
         "<rect x='411.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='416.0' y='37.0' class='codetoken'>+</text>\n" + 
         "<rect x='431.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='436.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
@@ -501,32 +506,26 @@ public class SvgCodeRendererTest extends TestCase
             )
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
-        "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
-        "<rect x='40.0' y='0.0' width='130.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<rect x='170.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='13.0' class='codetoken'>+</text>\n" + 
-        "<rect x='25.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<rect x='155.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='160.0' y='31.0' class='codetoken'>+</text>\n" + 
-        "<rect x='25.0' y='36.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='49.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='210.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='215.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='25.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='30.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='65.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='70.0' y='88.0' class='codetoken'>true</text>\n" + 
-        "<rect x='115.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='120.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='155.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='160.0' y='88.0' class='codetoken'>true</text>\n" + 
-        "<rect x='205.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='210.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='245.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='250.0' y='88.0' class='codetoken'>true</text>\n" + 
-        "<rect x='20.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='127.0' class='codetoken'>1</text>\n" + 
-        "<rect x='40.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='127.0' class='codetoken'>+</text>\n" + 
-        "<rect x='60.0' y='114.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='127.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<rect x='190.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='127.0' class='codetoken'>+</text>\n" + 
-        "<rect x='60.0' y='132.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='145.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<rect x='190.0' y='132.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='145.0' class='codetoken'>+</text>\n" + 
-        "<rect x='60.0' y='150.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='163.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<text x='5.0' y='181.0'>}</text>\n" + 
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='40.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>var</text>\n" + 
+        "<rect x='40.0' y='0.0' width='30.0' height='18.0' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>.a</text>\n" + 
+        "<rect x='0.0' y='18.0' width='275.0' height='66.0' class='codetoken'/>\n" + 
+        "<text x='5.0' y='34.0' class='codetoken'>a:</text>\n" + 
+        "<rect x='30.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>2</text>\n" + 
+        "<rect x='50.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='34.0' class='codetoken'>+</text>\n" + 
+        "<rect x='70.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='34.0' class='codetoken'>3</text>\n" + 
+        "<text x='5.0' y='55.0' class='codetoken'>b:</text>\n" + 
+        "<rect x='30.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='55.0' class='codetoken'>5</text>\n" + 
+        "<rect x='50.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='55.0' class='codetoken'>+</text>\n" + 
+        "<rect x='70.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='55.0' class='codetoken'>6</text>\n" + 
+        "<rect x='90.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='55.0' class='codetoken'>+</text>\n" + 
+        "<rect x='110.0' y='42.0' width='160.0' height='18' class='codetoken'/><text x='115.0' y='55.0' class='codetoken'>\"longer string\"</text>\n" + 
+        "<text x='5.0' y='76.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='30.0' y='63.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<text x='65.0' y='76.0' class='codetoken'>d:</text>\n" + 
+        "<rect x='90.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='76.0' class='codetoken'>8</text>\n" + 
+        "<text x='115.0' y='76.0' class='codetoken'>e:</text>\n" + 
+        "<rect x='140.0' y='63.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<rect x='0.0' y='84.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='97.0' class='codetoken'>1</text>\n" + 
         "", returned.svgString);
   }
 

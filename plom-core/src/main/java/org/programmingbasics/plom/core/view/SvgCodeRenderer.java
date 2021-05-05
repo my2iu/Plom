@@ -516,46 +516,70 @@ public class SvgCodeRenderer
       double maxX = positioning.x;
       for (int n = 0; n < token.contents.size(); n++)
       {
-        double nextX = positioning.x;
-//        SpanElement textSpan = doc.createSpanElement();
-        if (!isFirstParameterNameOnLine) nextX += horzPadding;
-        positioning.maxBottom(textHeight + descenderHeight + (positioning.maxNestingForLine * 2 - 1) * vertPadding);
-        tokenText += 
-            "<text x='" + (nextX) + "' y='" + (positioning.lineTop + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + token.contents.get(n) + "</text>";
-        nextX += widthCalculator.calculateWidth(token.contents.get(n));
-        nextX += horzPadding;
-        currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
-        currentTokenPos.setOffset(level + 1, n);
-        TokenContainer line = token.parameters.get(n); 
+        boolean isParameterExpressionOnNewLine = false;
+        double startParamX = positioning.x;
         TokenRendererPositioning subpositioning = positioning.copy();
-        subpositioning.x = nextX;
-        subpositioning.currentNestingInLine++;
-//        subpositioning.lineBottom = subpositioning.lineTop;
-        if (!line.tokens.isEmpty())
-           renderLine(line, returned, subpositioning, level + 2, currentTokenPos, false, this, supplement, 0);
-        else
-           renderEmptyFillIn(returned, subpositioning, level + 2, currentTokenPos, this, supplement, 0);
-        subpositioning.currentNestingInLine--;
-        if (returned.wraps)
-          toReturn.wraps = true;
-        positioning.copyFrom(subpositioning);
-//        positioning.x = subpositioning.x;
-        paramsSvg += returned.svgString;
-        nextX = positioning.x;
-        currentTokenPos.setMaxOffset(level + 1);
-        exprHitBoxes.children.add(returned.hitBox);
+        TokenRendererPositioning paramNamePositioning = positioning.copy();
+
+        // Try rendering three different ways
         
-        // Check for wrapping
-        maxX = Math.max(maxX, positioning.x);
-        if (positioning.x > positioning.lineEnd || returned.wraps)
+        // First placing the parameter to the end of the line
+        if (!isFirstParameterNameOnLine)
         {
-          positioning.newline();
+          paramNamePositioning.copyFrom(positioning);
+          layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+          if (returned.wraps)
+          {
+            // Move the parameter name to the start of the next line
+            positioning.newline();
+            startParamX = positioning.x;
+            isFirstParameterNameOnLine = true;
+          }
+        }
+
+        // Then try placing the parameter at the start of a new line
+        if (isFirstParameterNameOnLine)
+        {
+          paramNamePositioning.copyFrom(positioning);
+          layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+          if (returned.wraps)
+          {
+            // It's too wide to put the parameter name and expression on the same line
+            isParameterExpressionOnNewLine = true;
+          }
+        }
+        
+        // Put the parameter name on one line and the parameter expression on another line
+        if (isFirstParameterNameOnLine && isParameterExpressionOnNewLine)
+        {
+          paramNamePositioning.copyFrom(positioning);
+          layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+        }
+
+        maxX = Math.max(maxX, subpositioning.x);
+        maxX = Math.max(maxX, startParamX + returned.width);
+        
+        // Do any wrapping needed for the next line
+        if (returned.wraps)
+        {
+          subpositioning.newline();
           isFirstParameterNameOnLine = true;
         }
         else
         {
           isFirstParameterNameOnLine = false;
         }
+        
+        // Now that we've worked out where everything goes, we can actually
+        // commit and add the finalized layouts for the parameters
+        positioning.copyFrom(subpositioning);
+        paramsSvg += returned.svgString;
+        exprHitBoxes.children.add(returned.hitBox);
+        if (returned.wraps)
+          toReturn.wraps = true;
       }
       // Handle any postfix for the token
 //      SpanElement endSpan = doc.createSpanElement();
@@ -605,6 +629,60 @@ public class SvgCodeRenderer
       externalPositioning.lineBottom = Math.max(positioning.lineBottom, externalPositioning.lineBottom);
       return null;
     }
+    private void layoutParameterTokenParameter(ParameterToken token, Integer level, CodePosition currentTokenPos,
+        String classList, TokenRendererReturn returned, boolean isFirstParameterNameOnLine, int paramIdx,
+        TokenRendererPositioning paramNamePositioning, TokenRendererPositioning subpositioning, boolean isParameterExpressionOnNewLine) {
+      
+      // Layout the name part of the parameter
+      double startNameX = paramNamePositioning.x;
+      String nameText = layoutParameterTokenParameterName(token.contents.get(paramIdx), paramNamePositioning, isFirstParameterNameOnLine,
+          classList);
+      double nameMaxX = paramNamePositioning.x;
+      
+      // Start a newline between name and expression of parameter if expected
+      subpositioning.copyFrom(paramNamePositioning);
+      if (isParameterExpressionOnNewLine)
+        subpositioning.newline();
+        
+      // Layout the expression part of the parameter
+      double startExprX = subpositioning.x;
+      layoutParameterTokenParameterExpression(token.parameters.get(paramIdx), subpositioning, currentTokenPos, level, paramIdx, returned);
+      returned.svgString = nameText + returned.svgString;
+      
+      // Set a width for the parameter
+      double maxX = Math.max(subpositioning.x, nameMaxX);
+      maxX = Math.max(maxX, returned.width + startExprX);
+      returned.width = maxX - startNameX;
+      
+      // Check if we've overflown and should have wrapped
+      if (subpositioning.x > subpositioning.lineEnd)
+        returned.wraps = true; 
+    }
+
+    private String layoutParameterTokenParameterName(String text, 
+        TokenRendererPositioning paramNamePositioning, boolean isFirstParameterNameOnLine, String classList) {
+      if (!isFirstParameterNameOnLine) paramNamePositioning.x += horzPadding;
+      paramNamePositioning.maxBottom(textHeight + descenderHeight + (paramNamePositioning.maxNestingForLine * 2 - 1) * vertPadding);
+      String nameText = "<text x='" + (paramNamePositioning.x) + "' y='" + (paramNamePositioning.lineTop + textHeight + paramNamePositioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>\n";
+      paramNamePositioning.x += widthCalculator.calculateWidth(text);
+      paramNamePositioning.x += horzPadding;
+      return nameText;
+    }
+
+    private void layoutParameterTokenParameterExpression(TokenContainer line, TokenRendererPositioning subpositioning,
+        CodePosition currentTokenPos, Integer level, int paramIdx, TokenRendererReturn returned) {
+      currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
+      currentTokenPos.setOffset(level + 1, paramIdx);
+      subpositioning.currentNestingInLine++;
+//        subpositioning.lineBottom = subpositioning.lineTop;
+      if (!line.tokens.isEmpty())
+         renderLine(line, returned, subpositioning, level + 2, currentTokenPos, false, this, supplement, 0);
+      else
+         renderEmptyFillIn(returned, subpositioning, level + 2, currentTokenPos, this, supplement, 0);
+      subpositioning.currentNestingInLine--;
+      currentTokenPos.setMaxOffset(level + 1);
+    }
+
     @Override
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
     {
@@ -1165,6 +1243,7 @@ public class SvgCodeRenderer
     double tokenHeight = renderer.textHeight + renderer.descenderHeight + totalVertPadding * 2;
     toReturn.width = 0;
     int tokenno = 0;
+    double minX = positioning.x;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
     boolean isStartOfLine = true;
     for (Token tok: line.tokens)
@@ -1180,6 +1259,7 @@ public class SvgCodeRenderer
         {
           // Start a new line and lay out the token again
           positioning.newline();
+          minX = Math.min(minX, positioning.x);
           positioning.x = positioning.wrapLineStart;
           subpositioning.copyFrom(positioning);
           toReturn.wraps = true;
@@ -1198,7 +1278,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
       toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
-      toReturn.width = Math.max(toReturn.width, positioning.x - positioning.lineStart);
+      toReturn.width = Math.max(toReturn.width, positioning.x - minX);
       hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;

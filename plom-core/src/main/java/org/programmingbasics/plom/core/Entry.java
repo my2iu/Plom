@@ -46,6 +46,7 @@ TODO:
 - standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)?
 - retype
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
+- fix problem with typing a boolean expression with a mix of AND and OR
 - svg render word wrap
 - svg render underline nesting levels
 - svg render top of parameter in parameter token should extend to top of line
