@@ -529,4 +529,60 @@ public class SvgCodeRendererTest extends TestCase
         "", returned.svgString);
   }
 
+  @Test
+  public void testWrappingParameterToken()
+  {
+    // multiple parameters on a line, a later one wraps (but name and expression fit on a line)
+    // name and expression of a parameter don't fit on a single line
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("a:b:nameExprOneLine:c:exprSeparateFromName:e:", Symbol.DotVariable, 
+                new TokenContainer(
+                    new Token.SimpleToken("3", Symbol.Number)
+                    ),
+                new TokenContainer(),
+                new TokenContainer(
+                    new Token.SimpleToken("8", Symbol.Number)
+                    ),
+                new TokenContainer(),
+                new TokenContainer(
+                    new Token.SimpleToken("\"longer string\"", Symbol.String),
+                    new Token.SimpleToken("5", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("6", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("\"longer string\"", Symbol.String)
+                    ),
+                new TokenContainer()
+                )
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number)
+            )
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='290.0' height='123.0' class='codetoken'/>\n" + 
+        "<text x='5.0' y='16.0' class='codetoken'>a:</text>\n" + 
+        "<rect x='30.0' y='3.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='16.0' class='codetoken'>3</text>\n" + 
+        "<text x='55.0' y='16.0' class='codetoken'>b:</text>\n" + 
+        "<rect x='80.0' y='3.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<text x='5.0' y='37.0' class='codetoken'>nameExprOneLine:</text>\n" + 
+        "<rect x='170.0' y='24.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='37.0' class='codetoken'>8</text>\n" + 
+        "<text x='195.0' y='37.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='220.0' y='24.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<text x='5.0' y='58.0' class='codetoken'>exprSeparateFromName:</text>\n" + 
+        "<rect x='45.0' y='63.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='76.0' class='codetoken'>\"longer string\"</text>\n" + 
+        "<rect x='205.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='210.0' y='76.0' class='codetoken'>5</text>\n" + 
+        "<rect x='225.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='230.0' y='76.0' class='codetoken'>+</text>\n" + 
+        "<rect x='245.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='250.0' y='76.0' class='codetoken'>6</text>\n" + 
+        "<rect x='265.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='270.0' y='76.0' class='codetoken'>+</text>\n" + 
+        "<rect x='45.0' y='81.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='94.0' class='codetoken'>\"longer string\"</text>\n" + 
+        "<text x='5.0' y='115.0' class='codetoken'>e:</text>\n" + 
+        "<rect x='30.0' y='102.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<rect x='0.0' y='123.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='136.0' class='codetoken'>1</text>\n" + 
+        "", returned.svgString);
+    // To test:
+    //   nested parameter token
+    //   wrapping parameter token with another token after it (should start a new line)
+  }
 }
