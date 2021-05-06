@@ -62,7 +62,7 @@ public class SvgCodeRendererTest extends TestCase
     supplement.nesting.calculateNestingForLine(line);
     positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
     positioning.currentNestingInLine = 0;
-    SvgCodeRenderer.renderLine(line, returned, positioning, 0, currentTokenPos, false, tokenRenderer, supplement, 0);
+    SvgCodeRenderer.renderLine(line, returned, positioning, 0, currentTokenPos, false, tokenRenderer, supplement, 0, false);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>1</text>\n" + 
         "<rect x='20.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='13.0' class='codetoken'>+</text>\n" + 
         "<rect x='40.0' y='0.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>2</text>\n" + 
@@ -172,20 +172,20 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
         "<rect x='0.0' y='18.0' width='60.0' height='30.0' class='codetoken'/><text x='5.0' y='37.0' class='codetoken'>@Type</text>\n" + 
-        "<rect x='60.0' y='18.0' width='87.0' height='30.0' class='codetoken'/>\n" + 
+        "<rect x='60.0' y='18.0' width='75.0' height='30.0' class='codetoken'/>\n" + 
         "<text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
-        "<rect x='147.0' y='18.0' width='264.0' height='30.0' class='codetoken'/>\n" + 
-        "<text x='152.0' y='37.0' class='codetoken'>.a:</text>\n" + 
-        "<rect x='187.0' y='21.0' width='87.0' height='24.0' class='codetoken'/>\n" + 
-        "<text x='192.0' y='37.0' class='codetoken'>.d:</text>\n" + 
-        "<rect x='227.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='232.0' y='37.0' class='codetoken'>12</text>\n" + 
-        "<text x='279.0' y='37.0' class='codetoken'>b:</text>\n" + 
-        "<rect x='304.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
-        "<text x='339.0' y='37.0' class='codetoken'>c:</text>\n" + 
-        "<rect x='364.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='369.0' y='37.0' class='codetoken'>32</text>\n" + 
-        "<rect x='411.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='416.0' y='37.0' class='codetoken'>+</text>\n" + 
-        "<rect x='431.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='436.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
+        "<rect x='135.0' y='18.0' width='264.0' height='30.0' class='codetoken'/>\n" + 
+        "<text x='140.0' y='37.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='175.0' y='21.0' width='87.0' height='24.0' class='codetoken'/>\n" + 
+        "<text x='180.0' y='37.0' class='codetoken'>.d:</text>\n" + 
+        "<rect x='215.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='220.0' y='37.0' class='codetoken'>12</text>\n" + 
+        "<text x='267.0' y='37.0' class='codetoken'>b:</text>\n" + 
+        "<rect x='292.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<text x='327.0' y='37.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='352.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='357.0' y='37.0' class='codetoken'>32</text>\n" + 
+        "<rect x='399.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='404.0' y='37.0' class='codetoken'>+</text>\n" + 
+        "<rect x='419.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='424.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
         "", returned.svgString);
     SvgCodeRenderer.TokenRendererPositioning positioning = renderPlainForPositioning(codeList, DEFAULT_CANVAS_WIDTH);
@@ -310,7 +310,7 @@ public class SvgCodeRendererTest extends TestCase
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
         CodePosition.fromOffsets(1, 3), 
         0, hitBox);
-    Assert.assertArrayEquals(new double[] {197, 18, 42}, cursorRect.getTestDimensions(), 0.001);
+    Assert.assertArrayEquals(new double[] {185, 18, 42}, cursorRect.getTestDimensions(), 0.001);
 
     // Inside a parameter token
     cursorRect = RenderedCursorPosition.inStatements(codeList, 
@@ -584,5 +584,7 @@ public class SvgCodeRendererTest extends TestCase
     // To test:
     //   nested parameter token
     //   wrapping parameter token with another token after it (should start a new line)
+    //   parameter name is longest thing and should extend size of parameter token rectangle
+    //   placement of extra space after last parameter expression
   }
 }

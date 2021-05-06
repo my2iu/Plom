@@ -256,7 +256,7 @@ public class SvgCodeRenderer
     public String svgString;
     public double width;
     public double height;
-    public RenderedHitBox hitBox;
+    public RenderedHitBox.RectangleRenderedHitBox hitBox;
     public boolean wraps = false;
     public void reset()
     {
@@ -525,6 +525,11 @@ public class SvgCodeRenderer
         TokenRendererPositioning subpositioning = positioning.copy();
         TokenRendererPositioning paramNamePositioning = positioning.copy();
 
+        // Add some extra space at the end to make it easier to put
+        // the cursor at the end of the last parameter
+        boolean addSpaceToEnd = (n == token.contents.size() - 1)
+            && (token.postfix == null || token.postfix.isEmpty());
+        
         // Try rendering three different ways
         
         // First placing the parameter to the end of the line
@@ -532,7 +537,7 @@ public class SvgCodeRenderer
         {
           paramNamePositioning.copyFrom(positioning);
           layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
-              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine, addSpaceToEnd);
           if (returned.wraps)
           {
             // Move the parameter name to the start of the next line
@@ -548,7 +553,7 @@ public class SvgCodeRenderer
         {
           paramNamePositioning.copyFrom(positioning);
           layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
-              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine, addSpaceToEnd);
           if (returned.wraps)
           {
             // It's too wide to put the parameter name and expression on the same line
@@ -561,7 +566,7 @@ public class SvgCodeRenderer
         {
           paramNamePositioning.copyFrom(positioning);
           layoutParameterTokenParameter(token, level, currentTokenPos, classList, returned, isFirstParameterNameOnLine, n,
-              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine);
+              paramNamePositioning, subpositioning, isParameterExpressionOnNewLine, addSpaceToEnd);
         }
 
         maxX = Math.max(maxX, subpositioning.x);
@@ -596,12 +601,6 @@ public class SvgCodeRenderer
             classList);
         isFirstParameterNameOnLine = false;
       }
-      else
-      {
-         // Add some extra space at the end to make it easier to put
-         // the cursor at the end of the last parameter
-         positioning.x += horzEndParamPadding;
-      }
 //      span.appendChild(endSpan);
 //      if (hitBox != null)
 //      {
@@ -629,7 +628,8 @@ public class SvgCodeRenderer
     }
     private void layoutParameterTokenParameter(ParameterToken token, Integer level, CodePosition currentTokenPos,
         String classList, TokenRendererReturn returned, boolean isFirstParameterNameOnLine, int paramIdx,
-        TokenRendererPositioning paramNamePositioning, TokenRendererPositioning subpositioning, boolean isParameterExpressionOnNewLine) {
+        TokenRendererPositioning paramNamePositioning, TokenRendererPositioning subpositioning, boolean isParameterExpressionOnNewLine,
+        boolean addSpaceToEnd) {
       
       // Layout the name part of the parameter
       double startNameX = paramNamePositioning.x;
@@ -650,7 +650,7 @@ public class SvgCodeRenderer
         
       // Layout the expression part of the parameter
       double startExprX = subpositioning.x;
-      layoutParameterTokenParameterExpression(token.parameters.get(paramIdx), subpositioning, currentTokenPos, level, paramIdx, returned);
+      layoutParameterTokenParameterExpression(token.parameters.get(paramIdx), subpositioning, currentTokenPos, level, paramIdx, addSpaceToEnd, returned);
       returned.svgString = nameText + returned.svgString;
       
       // Set a width for the parameter
@@ -673,13 +673,13 @@ public class SvgCodeRenderer
     }
 
     private void layoutParameterTokenParameterExpression(TokenContainer line, TokenRendererPositioning subpositioning,
-        CodePosition currentTokenPos, Integer level, int paramIdx, TokenRendererReturn returned) {
+        CodePosition currentTokenPos, Integer level, int paramIdx, boolean addSpaceToEnd, TokenRendererReturn returned) {
       currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
       currentTokenPos.setOffset(level + 1, paramIdx);
       subpositioning.currentNestingInLine++;
 //        subpositioning.lineBottom = subpositioning.lineTop;
       if (!line.tokens.isEmpty())
-         renderLine(line, returned, subpositioning, level + 2, currentTokenPos, false, this, supplement, 0);
+         renderLine(line, returned, subpositioning, level + 2, currentTokenPos, false, this, supplement, 0, addSpaceToEnd);
       else
          renderEmptyFillIn(returned, subpositioning, level + 2, currentTokenPos, this, supplement, 0);
       subpositioning.currentNestingInLine--;
@@ -784,7 +784,7 @@ public class SvgCodeRenderer
         totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
         if (!exprContainer.tokens.isEmpty())
-          renderLine(exprContainer, toReturn, subPositioning, level + 1, currentTokenPos, false, this, supplement, 0);
+          renderLine(exprContainer, toReturn, subPositioning, level + 1, currentTokenPos, false, this, supplement, 0, false);
         else
           renderEmptyFillIn(toReturn, subPositioning, level + 1, currentTokenPos, this, supplement, 0);
         positioning.copyFrom(subPositioning);
@@ -1173,7 +1173,7 @@ public class SvgCodeRenderer
       supplement.nesting.calculateNestingForLine(line);
       positioning.maxNestingForLine = supplement.nesting.expressionNesting.get(line);
       positioning.currentNestingInLine = 0;
-      SvgCodeRenderer.renderLine(line, toReturn, positioning, level + 1, currentTokenPos, false, renderer, supplement, 1);
+      SvgCodeRenderer.renderLine(line, toReturn, positioning, level + 1, currentTokenPos, false, renderer, supplement, 1, false);
       svgString += toReturn.svgString;
       hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
@@ -1211,18 +1211,18 @@ public class SvgCodeRenderer
     toReturn.hitBox = hitBox;
   }
 
-  static void renderLine(TokenContainer line, TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos, boolean isStatement, TokenRenderer renderer, RenderSupplementalInfo supplement, int minPaddingNesting)
+  static void renderLine(TokenContainer line, TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos, boolean isStatement, TokenRenderer renderer, RenderSupplementalInfo supplement, int minPaddingNesting, boolean addSpaceToEnd)
   {
     // Check if the line contains some wide tokens
-    boolean hasWideTokens = false;
-    for (Token tok: line.tokens) 
-    {
-      if (tok.isWide())
-      {
-        hasWideTokens = true;
-        break;
-      }
-    }
+//    boolean hasWideTokens = false;
+//    for (Token tok: line.tokens) 
+//    {
+//      if (tok.isWide())
+//      {
+//        hasWideTokens = true;
+//        break;
+//      }
+//    }
 
     
 //    // Mark the parent container if it only contains non-wide tokens
@@ -1251,11 +1251,17 @@ public class SvgCodeRenderer
     boolean isStartOfLine = true;
     for (Token tok: line.tokens)
     {
+      boolean isLastToken = (tokenno == line.tokens.size() - 1);
       currentTokenPos.setOffset(level, tokenno);
       TokenRendererPositioning subpositioning = positioning.copy();
       tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
       if (!tok.isWide())
       {
+        // If requested, we can add some extra space that sticks to the end of the last token
+        // (this extra space should be added here so that we can wrap the token to the next line, and
+        // not just this extra space)
+        if (isLastToken && addSpaceToEnd)
+          subpositioning.x += renderer.horzEndParamPadding;
         // See if we need to wrap 
         if (!isStartOfLine && 
             (subpositioning.x > subpositioning.lineEnd || returnedRenderedToken.wraps))
@@ -1268,15 +1274,12 @@ public class SvgCodeRenderer
           toReturn.wraps = true;
           isStartOfLine = true;
           tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
+          if (isLastToken && addSpaceToEnd)
+            subpositioning.x += renderer.horzEndParamPadding;
         }
         isStartOfLine = false;
-        if (returnedRenderedToken.hitBox instanceof RenderedHitBox.RectangleRenderedHitBox) 
-        {
-          RenderedHitBox.RectangleRenderedHitBox rectHitBox = (RenderedHitBox.RectangleRenderedHitBox)returnedRenderedToken.hitBox;
-          subpositioning.maxBottom(rectHitBox.y + rectHitBox.height - subpositioning.lineTop);
-        }
-        else
-          subpositioning.maxBottom(returnedRenderedToken.height);
+        RenderedHitBox.RectangleRenderedHitBox rectHitBox = returnedRenderedToken.hitBox;
+        subpositioning.maxBottom(rectHitBox.y + rectHitBox.height - subpositioning.lineTop);
       }
       positioning.copyFrom(subpositioning);
       if (returnedRenderedToken.svgString != null && !returnedRenderedToken.svgString.isEmpty())
