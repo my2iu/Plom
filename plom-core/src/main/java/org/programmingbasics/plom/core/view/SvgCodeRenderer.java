@@ -610,6 +610,14 @@ public class SvgCodeRenderer
 //
 //      toReturn.el = span;
 //      toReturn.beforeInsertionPoint = span;
+      
+      // It looks strange when we place things to the right of a multi-line
+      // parameter token, so we'll just have a multi-line parameter token take
+      // the full width of the screen so nothing fits on the right
+      if (toReturn.wraps && maxX < positioning.lineEnd)
+        maxX = positioning.lineEnd;
+      
+      // Assemble the final box for the token
       maxX = Math.max(maxX, positioning.x);
       double rectTopY = startY;
       double height = positioning.lineBottom - rectTopY + vertPadding;
@@ -792,7 +800,7 @@ public class SvgCodeRenderer
         wideSvg += toReturn.svgString;
         xFirstLineExtent = Math.max(xFirstLineExtent, startX + toReturn.width);
 //        expressionWidth = Math.max(expressionWidth, nextX - startX);
-        expressionWidth = Math.max(expressionWidth, toReturn.width);
+        expressionWidth = Math.max(expressionWidth, toReturn.hitBox.width + toReturn.hitBox.x - startX);
         exprHitBox = toReturn.hitBox;
         expressionHeight = Math.max(expressionHeight, (toReturn.height + 2 * vertPadding));
       }
@@ -1247,6 +1255,7 @@ public class SvgCodeRenderer
     toReturn.width = 0;
     int tokenno = 0;
     double minX = positioning.x;
+    double maxX = positioning.x;
     TokenRendererReturn returnedRenderedToken = new TokenRendererReturn();
     boolean isStartOfLine = true;
     for (Token tok: line.tokens)
@@ -1254,6 +1263,12 @@ public class SvgCodeRenderer
       boolean isLastToken = (tokenno == line.tokens.size() - 1);
       currentTokenPos.setOffset(level, tokenno);
       TokenRendererPositioning subpositioning = positioning.copy();
+      // When parameters tokens wrap, they expand to fill the full width of the screen,
+      // but in some cases, we want some extra space at the end for a spacer, so let's
+      // reserve that space in advance (we'll undo it later)--it might be safe
+      // to do this for all non-wide tokens
+      if (isLastToken && addSpaceToEnd && tok instanceof Token.ParameterToken)
+        subpositioning.lineEnd -= renderer.horzEndParamPadding;
       tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
       if (!tok.isWide())
       {
@@ -1268,8 +1283,8 @@ public class SvgCodeRenderer
         {
           // Start a new line and lay out the token again
           positioning.newline();
-          minX = Math.min(minX, positioning.x);
           positioning.x = positioning.wrapLineStart;
+          minX = Math.min(minX, positioning.x);
           subpositioning.copyFrom(positioning);
           toReturn.wraps = true;
           isStartOfLine = true;
@@ -1280,7 +1295,11 @@ public class SvgCodeRenderer
         isStartOfLine = false;
         RenderedHitBox.RectangleRenderedHitBox rectHitBox = returnedRenderedToken.hitBox;
         subpositioning.maxBottom(rectHitBox.y + rectHitBox.height - subpositioning.lineTop);
+        if (returnedRenderedToken.wraps)
+          toReturn.wraps = true;
       }
+      if (isLastToken && addSpaceToEnd && tok instanceof Token.ParameterToken)
+        subpositioning.lineEnd += renderer.horzEndParamPadding;
       positioning.copyFrom(subpositioning);
       if (returnedRenderedToken.svgString != null && !returnedRenderedToken.svgString.isEmpty())
       {
@@ -1289,8 +1308,9 @@ public class SvgCodeRenderer
         else
           toReturn.svgString += returnedRenderedToken.svgString;
       }
-      toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
-      toReturn.width = Math.max(toReturn.width, positioning.x - minX);
+//      toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
+      maxX = Math.max(toReturn.hitBox.x + toReturn.hitBox.width, maxX);
+      maxX = Math.max(positioning.x, maxX);
       hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
@@ -1367,8 +1387,11 @@ public class SvgCodeRenderer
 //    else if (needEmptyLineAtEnd)
 //      subdiv.setTextContent("\u00a0");
     
+    toReturn.width = maxX - minX;
     toReturn.height = positioning.lineBottom - startY;
+    hitBox.x = minX;
     hitBox.height = toReturn.height;
+    hitBox.width = toReturn.width;
 
   }
 

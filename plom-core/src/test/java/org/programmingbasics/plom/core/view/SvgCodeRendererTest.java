@@ -508,7 +508,7 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='40.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>var</text>\n" + 
         "<rect x='40.0' y='0.0' width='30.0' height='18.0' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>.a</text>\n" + 
-        "<rect x='0.0' y='18.0' width='275.0' height='66.0' class='codetoken'/>\n" + 
+        "<rect x='0.0' y='18.0' width='300.0' height='66.0' class='codetoken'/>\n" + 
         "<text x='5.0' y='34.0' class='codetoken'>a:</text>\n" + 
         "<rect x='30.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>2</text>\n" + 
         "<rect x='50.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='34.0' class='codetoken'>+</text>\n" + 
@@ -561,7 +561,7 @@ public class SvgCodeRendererTest extends TestCase
             )
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
-    Assert.assertEquals("<rect x='0.0' y='0.0' width='290.0' height='123.0' class='codetoken'/>\n" + 
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='300.0' height='123.0' class='codetoken'/>\n" + 
         "<text x='5.0' y='16.0' class='codetoken'>a:</text>\n" + 
         "<rect x='30.0' y='3.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='16.0' class='codetoken'>3</text>\n" + 
         "<text x='55.0' y='16.0' class='codetoken'>b:</text>\n" + 
@@ -581,10 +581,77 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='30.0' y='102.0' width='30' height='18' class='fillinblank'/>\n" + 
         "<rect x='0.0' y='123.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='136.0' class='codetoken'>1</text>\n" + 
         "", returned.svgString);
+  }
+
+  @Test
+  public void testWrappingParameterTokenChained()
+  {
+    // wrapping parameter token with another token after it (should start a new line)
+    // nested parameter token
+    // parameter name is longest thing and should extend size of parameter token rectangle
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".this parameter name is longer than expression so it should determine width of token:b:", Symbol.DotVariable, 
+                new TokenContainer(
+                    new Token.SimpleToken("1", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("2", Symbol.Number)
+                    ),
+                new TokenContainer()
+                ),
+            new Token.SimpleToken("+", Symbol.Plus),
+            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable, 
+                new TokenContainer(
+                    new Token.SimpleToken("1", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("2", Symbol.Number)
+                    ),
+                new TokenContainer(),
+                new TokenContainer(
+                    new Token.SimpleToken("1", Symbol.Number),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    Token.ParameterToken.fromContents(".nested token:that wraps:", Symbol.DotVariable, 
+                        new TokenContainer(
+                            new Token.SimpleToken("5", Symbol.Number)
+                            ),
+                        new TokenContainer(
+                            new Token.SimpleToken("7", Symbol.Number)
+                            )
+                        ),
+                    new Token.SimpleToken("2", Symbol.Number)
+                    )
+                ),
+            new Token.SimpleToken("1", Symbol.Number)
+            )            
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='865.0' height='54.0' class='codetoken'/>\n" + 
+        "<text x='5.0' y='19.0' class='codetoken'>.this parameter name is longer than expression so it should determine width of token:</text>\n" + 
+        "<rect x='45.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='50.0' y='43.0' class='codetoken'>1</text>\n" + 
+        "<rect x='65.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='43.0' class='codetoken'>+</text>\n" + 
+        "<rect x='85.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='43.0' class='codetoken'>2</text>\n" + 
+        "<text x='110.0' y='43.0' class='codetoken'>b:</text>\n" + 
+        "<rect x='135.0' y='27.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<rect x='25.0' y='54.0' width='20.0' height='30' class='codetoken'/><text x='30.0' y='73.0' class='codetoken'>+</text>\n" + 
+        "<rect x='25.0' y='84.0' width='275.0' height='150.0' class='codetoken'/>\n" + 
+        "<text x='30.0' y='103.0' class='codetoken'>.a:</text>\n" + 
+        "<rect x='65.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='103.0' class='codetoken'>1</text>\n" + 
+        "<rect x='85.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='103.0' class='codetoken'>+</text>\n" + 
+        "<rect x='105.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='110.0' y='103.0' class='codetoken'>2</text>\n" + 
+        "<text x='130.0' y='103.0' class='codetoken'>b:</text>\n" + 
+        "<rect x='155.0' y='87.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<text x='30.0' y='130.0' class='codetoken'>c:</text>\n" + 
+        "<rect x='70.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='154.0' class='codetoken'>1</text>\n" + 
+        "<rect x='90.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='95.0' y='154.0' class='codetoken'>+</text>\n" + 
+        "<rect x='70.0' y='162.0' width='225.0' height='45.0' class='codetoken'/>\n" + 
+        "<text x='75.0' y='178.0' class='codetoken'>.nested token:</text>\n" + 
+        "<rect x='220.0' y='165.0' width='20.0' height='18' class='codetoken'/><text x='225.0' y='178.0' class='codetoken'>5</text>\n" + 
+        "<text x='75.0' y='199.0' class='codetoken'>that wraps:</text>\n" + 
+        "<rect x='190.0' y='186.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='199.0' class='codetoken'>7</text>\n" + 
+        "<rect x='70.0' y='207.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='223.0' class='codetoken'>2</text>\n" + 
+        "<rect x='25.0' y='234.0' width='20.0' height='30' class='codetoken'/><text x='30.0' y='253.0' class='codetoken'>1</text>\n" + 
+        "", returned.svgString);
     // To test:
-    //   nested parameter token
-    //   wrapping parameter token with another token after it (should start a new line)
-    //   parameter name is longest thing and should extend size of parameter token rectangle
-    //   placement of extra space after last parameter expression
+    //   placement of extra space after last parameter expression and how it wraps
   }
 }

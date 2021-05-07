@@ -96,9 +96,14 @@ public class CodeSuggestExpressionTyper
         {
           Type self = context.getLastTypeUsed();
           Type.TypeSignature sig = self.lookupMethodSignature(((Token.ParameterToken)node.children.get(0).token).getLookupName());
-          context.setLastTypeUsed(sig.returnType);
+          Type returnType;
+          if (sig != null)
+            returnType = sig.returnType;
+          else
+            returnType = context.coreTypes().getVoidType();
+          context.setLastTypeUsed(returnType);
           context.popType();
-          context.pushType(sig.returnType);
+          context.pushType(returnType);
         }
         else
         {
