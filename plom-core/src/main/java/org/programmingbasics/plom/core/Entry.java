@@ -47,11 +47,13 @@ TODO:
 - retype
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
 - fix problem with typing a boolean expression with a mix of AND and OR
-- svg render word wrap
+- svg render word wrap -- fix up hit testing
 - svg render underline nesting levels
 - svg render top of parameter in parameter token should extend to top of line
 - svg render have an "active" token (not the same as selection) so you know you can edit it
 - svg render for type fields
+- svg render extra border around svg
+- distinguish between cursor positions that are at the end of a line or beginning of next wrapped line 
  */
 
 public class Entry implements EntryPoint

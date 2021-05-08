@@ -116,6 +116,7 @@ public class HitDetect
   private static TokenHitLocation checkHitMultilineSpan(int x, int y,
       RenderedHitBox hitBox)
   {
+    // TODO: Not needed for svg renderer
     RenderedHitBox.Rect topRect = null, bottomRect = null;
     for (RenderedHitBox.Rect rect: hitBox.getClientRects())
     {
@@ -126,6 +127,7 @@ public class HitDetect
     if (y > bottomRect.getBottom() || (y > bottomRect.getTop() && x > bottomRect.getRight()))
       return TokenHitLocation.AFTER;
     if (y < topRect.getBottom() && x < topRect.getLeft()) return TokenHitLocation.NONE;
+    if (y < topRect.getTop()) return TokenHitLocation.NONE;
     return TokenHitLocation.ON;
   }
 
@@ -135,8 +137,10 @@ public class HitDetect
     public TokenHitLocation visitSimpleToken(SimpleToken token, Integer x,
         Integer y, RenderedHitBox hitBox)
     {
-      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x) return TokenHitLocation.AFTER;
-      if (hitBox.getOffsetLeft() < x) return TokenHitLocation.ON;
+      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x
+          && hitBox.getOffsetTop() < y) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetLeft() < x && hitBox.getOffsetTop() < y) return TokenHitLocation.ON;
       return TokenHitLocation.NONE;
     }
     @Override
@@ -146,7 +150,10 @@ public class HitDetect
     {
       // Early escape for if it definitely isn't on the token 
       if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x
+          && hitBox.getOffsetTop() < y) return TokenHitLocation.AFTER;
       if (y < hitBox.getOffsetTop()) return TokenHitLocation.NONE;
+      if (x < hitBox.getOffsetLeft()) return TokenHitLocation.NONE;
       
       // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
       return checkHitMultilineSpan(x, y, hitBox);
@@ -208,6 +215,8 @@ public class HitDetect
       RenderedHitBox hitBox = param.hitBox;
       int x = param.x;
       int y = param.y;
+      // Make sure we're actually on the token
+      if (x < hitBox.getOffsetLeft() || y < hitBox.getOffsetTop()) return null;
       // Check each parameter to see if we're clicking in there
       RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
       if (paramHitBox == null)
