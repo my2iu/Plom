@@ -25,6 +25,7 @@ import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
 import org.programmingbasics.plom.core.view.CodePosition;
+import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.EraseLeft;
 import org.programmingbasics.plom.core.view.EraseSelection;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
@@ -85,6 +86,11 @@ public class CodePanel
 //    hookTestCodeClick();
   }
 
+  final static double leftPadding = 10;
+  final static double rightPadding = 10;
+  final static double topPadding = 10;
+  final static double bottomPadding = 10;
+  
   public void setCode(StatementContainer code)
   {
     this.codeList = code;
@@ -193,16 +199,16 @@ public class CodePanel
     {
       double clientWidth = codeDiv.getClientWidth();
       if (selectionPos != null)
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, selectionPos, codeErrors, widthCalculator, clientWidth);
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
       else
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, null, codeErrors, widthCalculator, clientWidth);
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
     }
     else
     {
       if (selectionPos != null)
-        return SvgCodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
+        return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
       else
-        return SvgCodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
+        return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
     }
   }
 
@@ -761,7 +767,7 @@ public class CodePanel
         {
           CodePosition newPos;
           if (useSvg)
-            newPos = HitDetect.testHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeList, svgHitBoxes);
+            newPos = HitDetect.testHitDetect((int)(x + cursorHandle1.xOffset - leftPadding), (int)(y + cursorHandle1.yOffset - topPadding), codeList, svgHitBoxes);
           else
             newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
           if (newPos == null)
@@ -774,7 +780,7 @@ public class CodePanel
         {
           CodePosition newPos;
           if (useSvg)
-            newPos = HitDetect.testHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeList, svgHitBoxes);
+            newPos = HitDetect.testHitDetect((int)(x + cursorHandle2.xOffset - leftPadding), (int)(y + cursorHandle2.yOffset - topPadding), codeList, svgHitBoxes);
           else
             newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeDiv, codeList, cursorPos, codeErrors);
           if (newPos == null)
@@ -812,7 +818,7 @@ public class CodePanel
   void hookCodeClick(DivElement div)
   {
     div.addEventListener(Event.SCROLL, (evt) -> {
-      cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
+       updateForScroll();
     }, false);
     hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
     hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
@@ -823,7 +829,7 @@ public class CodePanel
       double y = pointerToRelativeY(pevt, div);
       CodePosition newPos;
       if (useSvg)
-        newPos = HitDetect.testHitDetect(x, y, codeList, svgHitBoxes);
+        newPos = HitDetect.testHitDetect(x - leftPadding, y - topPadding, codeList, svgHitBoxes);
       else
         newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
       if (newPos == null)
@@ -1018,6 +1024,13 @@ public class CodePanel
 ////    createCursorHandleSvg(svg, cursorHandle1);
 //  }
 
+  void updateForScroll()
+  {
+     String cssScrollTranslate = "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")";
+     if (useSvg)
+         cssScrollTranslate += " translate(" + leftPadding + ", " + topPadding + ")";
+     cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
+  }
   
   // We need the renderedhitboxes of the code to figure out where
   // the cursor is
@@ -1052,7 +1065,7 @@ public class CodePanel
       }
     }
     // Handle scrolling
-    cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
+    updateForScroll();
 
     // Main cursor
     if (pointerDownHandle == 1)

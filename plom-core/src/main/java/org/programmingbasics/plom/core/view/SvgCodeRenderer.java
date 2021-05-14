@@ -1,9 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -16,7 +14,6 @@ import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitBox;
 
 import com.google.gwt.regexp.shared.MatchResult;
@@ -45,150 +42,150 @@ public class SvgCodeRenderer
     
   }
   
-  static SVGSVGElement testSvgEl;
-  static SVGSVGElement testSvgCursorOverlay;
-  static SVGDocument testDoc;
-  static SvgCodeRenderer.TextWidthCalculator testWidthCalculator;
-  public static DivElement testDiv;
-  public static RenderedHitBox testHitBox;
-  public static double testClientWidth;
-  public static void test()
-  {
-    SVGDocument doc = (SVGDocument)Browser.getDocument();
-    DivElement newDiv = doc.createDivElement();
-    newDiv.setClassName("codesidesplit");
-    doc.getBody().appendChild(newDiv);
-    newDiv.setInnerHTML("<svg style=\"width: 500px; height: 1000px;\"></svg><svg style=\"width: 500px; height: 1000px;\" class=\"cursoroverlay\">" + 
-        "<g class=\"cursorscrolltransform\">" + 
-        "<circle class=\"cursorhandle\" cx=\"0\" cy=\"0\" r=\"20\"/>" + 
-        "<path class=\"cursorhandle\" d=\"M-20,-20 L 20, 0 L -20 20 z\"/>" + 
-        "<line class=\"cursorcaret\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"0\"/>" + 
-        "</g>" + 
-        "</svg>");
-    SVGSVGElement svgEl = (SVGSVGElement)newDiv.querySelectorAll("svg").item(0);
-//    svgEl.getStyle().setWidth("500px");
-//    svgEl.getStyle().setHeight("1000px");
-//    doc.getBody().appendChild(svgEl);
-    testSvgEl = svgEl;
-    testDoc = doc;
-    testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
-    testWidthCalculator = new SvgTextWidthCalculator(doc);
-    testDiv = newDiv;
-    testClientWidth = newDiv.getClientWidth();
-    
-    StatementContainer codeList = new StatementContainer(
-        new TokenContainer(
-            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
-            Token.ParameterToken.fromContents("@Type", Symbol.AtType),
-            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
-                new TokenContainer()),
-            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable,
-                new TokenContainer(
-                    Token.ParameterToken.fromContents(".d:", Symbol.DotVariable, 
-                        new TokenContainer(new Token.SimpleToken("12", Symbol.Number)))),
-                new TokenContainer(),
-                new TokenContainer(new Token.SimpleToken("32", Symbol.Number))
-                ),
-            new Token.SimpleToken("+", Symbol.Plus),
-            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
-            ),
-        new TokenContainer(
-            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
-                new TokenContainer(
-                    new Token.SimpleToken("true", Symbol.TrueLiteral),
-                    Token.ParameterToken.fromContents(".and:", Symbol.DotVariable, 
-                        new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)))), 
-                new StatementContainer(
-                    new TokenContainer(new Token.SimpleToken("64", Symbol.Number)))),
-            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
-                            new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
-                            new StatementContainer(
-                                new TokenContainer(
-                                    new Token.SimpleToken("3", Symbol.Number)
-                                    )))))),
-            new Token.SimpleToken("55", Symbol.Number)
-            )
-        );
-    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-    supplementalInfo.codeErrors = new ErrorList();
-    supplementalInfo.nesting = new CodeNestingCounter();
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
-    SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
-    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
-    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-    RenderedHitBox hitBox = new RenderedHitBox();
-    CodePosition currentTokenPos = new CodePosition();
-    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-//    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
-//    tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
-    
-    svgEl.setInnerHTML(returned.svgString);
-  }
-  
-  public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
-  {
-    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
-    supplement.codeErrors = codeErrors;
-    supplement.nesting = new CodeNestingCounter();
-    supplement.nesting.calculateNestingForStatements(codeList);
-    supplement.selectionStart = selectionPos1;
-    supplement.selectionEnd = selectionPos2;
-    CodeRenderer.renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
-    
-    if (testSvgEl != null)
-    {
-      SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
-      supplementalInfo.codeErrors = new ErrorList();
-      supplementalInfo.nesting = new CodeNestingCounter();
-      supplementalInfo.selectionStart = selectionPos1;
-      supplementalInfo.selectionEnd = selectionPos2;
-      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
-      SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
-      SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
-      SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
-      CodePosition currentTokenPos = new CodePosition();
-      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-//      SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
-//      tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
-      
-      testSvgEl.setInnerHTML(returned.svgString);
-      RenderedHitBox hitBox = returned.hitBox;
-      
-      
-      if (pos != null)
-      {
-        CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, pos, 0, hitBox);
-        // Draw caret for the secondary cursor
-        Element caretCursor = testSvgCursorOverlay.querySelector(".cursorcaret"); 
-        if (cursorRect != null)
-        {
-          caretCursor.getStyle().clearDisplay();
-          caretCursor.setAttribute("x1", "" + cursorRect.left);
-          caretCursor.setAttribute("x2", "" + cursorRect.left);
-          caretCursor.setAttribute("y1", "" + cursorRect.top);
-          caretCursor.setAttribute("y2", "" + cursorRect.bottom);
-        }
-      }
-      testHitBox = hitBox;
-    }
-  }
+//  static SVGSVGElement testSvgEl;
+//  static SVGSVGElement testSvgCursorOverlay;
+//  static SVGDocument testDoc;
+//  static SvgCodeRenderer.TextWidthCalculator testWidthCalculator;
+//  public static DivElement testDiv;
+//  public static RenderedHitBox testHitBox;
+//  public static double testClientWidth;
+//  public static void test()
+//  {
+//    SVGDocument doc = (SVGDocument)Browser.getDocument();
+//    DivElement newDiv = doc.createDivElement();
+//    newDiv.setClassName("codesidesplit");
+//    doc.getBody().appendChild(newDiv);
+//    newDiv.setInnerHTML("<svg style=\"width: 500px; height: 1000px;\"></svg><svg style=\"width: 500px; height: 1000px;\" class=\"cursoroverlay\">" + 
+//        "<g class=\"cursorscrolltransform\">" + 
+//        "<circle class=\"cursorhandle\" cx=\"0\" cy=\"0\" r=\"20\"/>" + 
+//        "<path class=\"cursorhandle\" d=\"M-20,-20 L 20, 0 L -20 20 z\"/>" + 
+//        "<line class=\"cursorcaret\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"0\"/>" + 
+//        "</g>" + 
+//        "</svg>");
+//    SVGSVGElement svgEl = (SVGSVGElement)newDiv.querySelectorAll("svg").item(0);
+////    svgEl.getStyle().setWidth("500px");
+////    svgEl.getStyle().setHeight("1000px");
+////    doc.getBody().appendChild(svgEl);
+//    testSvgEl = svgEl;
+//    testDoc = doc;
+//    testSvgCursorOverlay = (SVGSVGElement)newDiv.querySelectorAll("svg").item(1);
+//    testWidthCalculator = new SvgTextWidthCalculator(doc);
+//    testDiv = newDiv;
+//    testClientWidth = newDiv.getClientWidth();
+//    
+//    StatementContainer codeList = new StatementContainer(
+//        new TokenContainer(
+//            new Token.WideToken("// Comment", Symbol.DUMMY_COMMENT),
+//            Token.ParameterToken.fromContents("@Type", Symbol.AtType),
+//            Token.ParameterToken.fromContents(".a:", Symbol.DotVariable,
+//                new TokenContainer()),
+//            Token.ParameterToken.fromContents(".a:b:c:", Symbol.DotVariable,
+//                new TokenContainer(
+//                    Token.ParameterToken.fromContents(".d:", Symbol.DotVariable, 
+//                        new TokenContainer(new Token.SimpleToken("12", Symbol.Number)))),
+//                new TokenContainer(),
+//                new TokenContainer(new Token.SimpleToken("32", Symbol.Number))
+//                ),
+//            new Token.SimpleToken("+", Symbol.Plus),
+//            new Token.SimpleToken("\"sdfasdfasf\"", Symbol.String)
+//            ),
+//        new TokenContainer(
+//            new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+//                new TokenContainer(
+//                    new Token.SimpleToken("true", Symbol.TrueLiteral),
+//                    Token.ParameterToken.fromContents(".and:", Symbol.DotVariable, 
+//                        new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)))), 
+//                new StatementContainer(
+//                    new TokenContainer(new Token.SimpleToken("64", Symbol.Number)))),
+//            new Token.OneBlockToken("else", Symbol.COMPOUND_ELSE,
+//                new StatementContainer(
+//                    new TokenContainer(
+//                        new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+//                            new TokenContainer(new Token.SimpleToken("true", Symbol.TrueLiteral)), 
+//                            new StatementContainer(
+//                                new TokenContainer(
+//                                    new Token.SimpleToken("3", Symbol.Number)
+//                                    )))))),
+//            new Token.SimpleToken("55", Symbol.Number)
+//            )
+//        );
+//    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+//    supplementalInfo.codeErrors = new ErrorList();
+//    supplementalInfo.nesting = new CodeNestingCounter();
+//    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
+//    SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
+//    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+//    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+//    RenderedHitBox hitBox = new RenderedHitBox();
+//    CodePosition currentTokenPos = new CodePosition();
+//    SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+////    SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
+////    tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
+//    
+//    svgEl.setInnerHTML(returned.svgString);
+//  }
+//  
+//  public static void render(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, RenderedHitBox renderedHitBoxes, ErrorList codeErrors)
+//  {
+//    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
+//    supplement.codeErrors = codeErrors;
+//    supplement.nesting = new CodeNestingCounter();
+//    supplement.nesting.calculateNestingForStatements(codeList);
+//    supplement.selectionStart = selectionPos1;
+//    supplement.selectionEnd = selectionPos2;
+//    CodeRenderer.renderStatementContainer(codeDiv, codeList, pos, 0, new CodePosition(), renderedHitBoxes, supplement);
+//    
+//    if (testSvgEl != null)
+//    {
+//      SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+//      supplementalInfo.codeErrors = new ErrorList();
+//      supplementalInfo.nesting = new CodeNestingCounter();
+//      supplementalInfo.selectionStart = selectionPos1;
+//      supplementalInfo.selectionEnd = selectionPos2;
+//      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(testClientWidth);
+//      SvgCodeRenderer.TextWidthCalculator widthCalculator = testWidthCalculator;
+//      SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+//      SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+//      CodePosition currentTokenPos = new CodePosition();
+//      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+////      SvgCodeRenderer.renderLine(line, returned, new CodePosition(), 0, currentTokenPos, null, false, tokenRenderer, null, supplementalInfo);
+////      tok.visit(tokenRenderer, returned, positioning, 0, currentTokenPos, hitBox);
+//      
+//      testSvgEl.setInnerHTML(returned.svgString);
+//      RenderedHitBox hitBox = returned.hitBox;
+//      
+//      
+//      if (pos != null)
+//      {
+//        CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, pos, 0, hitBox);
+//        // Draw caret for the secondary cursor
+//        Element caretCursor = testSvgCursorOverlay.querySelector(".cursorcaret"); 
+//        if (cursorRect != null)
+//        {
+//          caretCursor.getStyle().clearDisplay();
+//          caretCursor.setAttribute("x1", "" + cursorRect.left);
+//          caretCursor.setAttribute("x2", "" + cursorRect.left);
+//          caretCursor.setAttribute("y1", "" + cursorRect.top);
+//          caretCursor.setAttribute("y2", "" + cursorRect.bottom);
+//        }
+//      }
+//      testHitBox = hitBox;
+//    }
+//  }
 
-  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth)
+  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth, double leftPadding, double topPadding, double rightPadding, double bottomPadding)
   {
 //    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
 //    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
     
-    final double extraWidth = 0.5; // Slightly larger to accommodate width of lines 
+    final double extraWidth = 0.5; // Slightly larger to accommodate width of lines     
     
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = codeErrors;
     supplementalInfo.nesting = new CodeNestingCounter();
     supplementalInfo.selectionStart = selectionPos1;
     supplementalInfo.selectionEnd = selectionPos2;
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -196,17 +193,11 @@ public class SvgCodeRenderer
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
     
     svgEl.setInnerHTML(returned.svgString);
-    svgEl.getStyle().setHeight(returned.height, Unit.PX);
-    svgEl.getStyle().setWidth(returned.width + extraWidth, Unit.PX);   
+    svgEl.setInnerHTML("<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
+    svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
+    svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
     RenderedHitBox hitBox = returned.hitBox;
     return hitBox;
-  }
-  
-  public static RenderedHitBox renderWithHitBoxes(DivElement codeDiv, StatementContainer codeList, CodePosition pos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors)
-  {
-    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
-    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
-    return renderedHitBoxes;
   }
 
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
