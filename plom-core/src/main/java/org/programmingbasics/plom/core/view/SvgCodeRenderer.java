@@ -272,6 +272,7 @@ public class SvgCodeRenderer
     double x = 0;
     int maxNestingForLine = 0;
     int currentNestingInLine = 0;
+    boolean showNestingAccent = false;
     
     TokenRendererPositioning(double width)
     {
@@ -309,6 +310,7 @@ public class SvgCodeRenderer
       x = from.x;
       maxNestingForLine = from.maxNestingForLine;
       currentNestingInLine = from.currentNestingInLine;
+      showNestingAccent = from.showNestingAccent;
     }
     
     TokenRendererPositioning copy()
@@ -441,8 +443,10 @@ public class SvgCodeRenderer
       double x = positioning.x;
       double y = positioning.lineTop;
       int totalVertPadding = (positioning.maxNestingForLine - positioning.currentNestingInLine) * vertPadding;
-      toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (textWidth + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
+      toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (textWidth + horzPadding * 2) + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
           + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      if (positioning.showNestingAccent)
+        toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (textWidth + horzPadding * 2) + " 0\" class=\"tokenslot\"/>"; 
       toReturn.width = horzPadding * 2 + textWidth;
       toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangleWithChildren(x, y + positioning.currentNestingInLine * vertPadding, toReturn.width, toReturn.height);
@@ -612,8 +616,10 @@ public class SvgCodeRenderer
       maxX = Math.max(maxX, positioning.x);
       double rectTopY = startY;
       double height = positioning.lineBottom - rectTopY + vertPadding;
-      toReturn.svgString = "<rect x='" + startX + "' y='" + (rectTopY) + "' width='" + (maxX - startX + horzPadding)+ "' height='" + (height) + "' class='" + classList + "'/>"
+      toReturn.svgString = "<rect x='" + startX + "' y='" + (rectTopY) + "' width='" + (maxX - startX + horzPadding) + "' height='" + (height) + "' class='" + classList + "'/>"
           + tokenText + "\n";
+      if (positioning.showNestingAccent)
+        toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>"; 
       toReturn.svgString += paramsSvg;
       toReturn.width = maxX + horzPadding - startX;
       toReturn.height = height;
@@ -675,6 +681,8 @@ public class SvgCodeRenderer
         CodePosition currentTokenPos, Integer level, int paramIdx, boolean addSpaceToEnd, TokenRendererReturn returned) {
       currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
       currentTokenPos.setOffset(level + 1, paramIdx);
+      boolean oldNestingAccent = subpositioning.showNestingAccent;
+      subpositioning.showNestingAccent = true;
       subpositioning.currentNestingInLine++;
 //        subpositioning.lineBottom = subpositioning.lineTop;
       if (!line.tokens.isEmpty())
@@ -682,6 +690,7 @@ public class SvgCodeRenderer
       else
          renderEmptyFillIn(returned, subpositioning, level + 2, currentTokenPos, this, supplement, 0);
       subpositioning.currentNestingInLine--;
+      subpositioning.showNestingAccent = oldNestingAccent;
       currentTokenPos.setMaxOffset(level + 1);
     }
 
@@ -779,6 +788,8 @@ public class SvgCodeRenderer
         subPositioning.lineEnd -= horzPadding;
         subPositioning.maxNestingForLine = supplement.nesting.expressionNesting.get(exprContainer);
         subPositioning.currentNestingInLine = 0;
+        boolean oldNestingAccent = subPositioning.showNestingAccent;
+        subPositioning.showNestingAccent = true;
         maxNesting = subPositioning.maxNestingForLine + 1;
         totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
@@ -786,6 +797,7 @@ public class SvgCodeRenderer
           renderLine(exprContainer, toReturn, subPositioning, level + 1, currentTokenPos, false, this, supplement, 0, false);
         else
           renderEmptyFillIn(toReturn, subPositioning, level + 1, currentTokenPos, this, supplement, 0);
+        subPositioning.showNestingAccent = oldNestingAccent;
         positioning.copyFrom(subPositioning);
         currentTokenPos.setMaxOffset(level + 1);
         wideSvg += toReturn.svgString;
@@ -983,7 +995,10 @@ public class SvgCodeRenderer
           classList += " tokenselected";
         double x = positioning.x;
         double y = positioning.lineTop;
-        toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (FILL_IN_WIDTH + horzPadding * 2)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>\n";
+        toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (FILL_IN_WIDTH + horzPadding * 2) + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>\n";
+        if (positioning.showNestingAccent)
+          toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (FILL_IN_WIDTH + horzPadding * 2) + " 0\" class=\"tokenslot\"/>"; 
+
         toReturn.width = horzPadding * 2 + FILL_IN_WIDTH;
         toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
         hitBox.children.add(RenderedHitBox.forRectangleWithChildren(x, y + positioning.currentNestingInLine * vertPadding, toReturn.width, toReturn.height));

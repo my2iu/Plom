@@ -767,7 +767,7 @@ public class CodePanel
         {
           CodePosition newPos;
           if (useSvg)
-            newPos = HitDetect.testHitDetect((int)(x + cursorHandle1.xOffset - leftPadding), (int)(y + cursorHandle1.yOffset - topPadding), codeList, svgHitBoxes);
+            newPos = HitDetect.detectHitBoxes((int)(x + cursorHandle1.xOffset - leftPadding), (int)(y + cursorHandle1.yOffset - topPadding), codeList, svgHitBoxes);
           else
             newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
           if (newPos == null)
@@ -780,7 +780,7 @@ public class CodePanel
         {
           CodePosition newPos;
           if (useSvg)
-            newPos = HitDetect.testHitDetect((int)(x + cursorHandle2.xOffset - leftPadding), (int)(y + cursorHandle2.yOffset - topPadding), codeList, svgHitBoxes);
+            newPos = HitDetect.detectHitBoxes((int)(x + cursorHandle2.xOffset - leftPadding), (int)(y + cursorHandle2.yOffset - topPadding), codeList, svgHitBoxes);
           else
             newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeDiv, codeList, cursorPos, codeErrors);
           if (newPos == null)
@@ -829,7 +829,7 @@ public class CodePanel
       double y = pointerToRelativeY(pevt, div);
       CodePosition newPos;
       if (useSvg)
-        newPos = HitDetect.testHitDetect(x - leftPadding, y - topPadding, codeList, svgHitBoxes);
+        newPos = HitDetect.detectHitBoxes(x - leftPadding, y - topPadding, codeList, svgHitBoxes);
       else
         newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
       if (newPos == null)

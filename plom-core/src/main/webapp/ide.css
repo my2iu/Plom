@@ -374,6 +374,11 @@ svg text.tokenError {
 	fill: red;
 }
 
+svg path.tokenslot {
+	stroke-width: 1px;
+	stroke: black;
+}
+
 svg.widthCalculator {
 	width: 0px;
     height: 0px;

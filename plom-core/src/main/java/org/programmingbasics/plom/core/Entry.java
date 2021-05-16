@@ -50,6 +50,7 @@ TODO:
 - svg render word wrap -- fix up hit testing
 - svg render underline nesting levels
 - svg render top of parameter in parameter token should extend to top of line
+- svg render add extra space between lines
 - svg render have an "active" token (not the same as selection) so you know you can edit it
 - svg render for type fields
 - distinguish between cursor positions that are at the end of a line or beginning of next wrapped line 

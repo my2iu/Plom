@@ -26,7 +26,7 @@ public class HitDetect
     return hitDetectStatementContainer(x, y, codeList, renderedHitBoxes, pos, 0);
   }
   
-  public static CodePosition testHitDetect(double x, double y, StatementContainer statements, RenderedHitBox renderedHitBoxes)
+  public static CodePosition detectHitBoxes(double x, double y, StatementContainer statements, RenderedHitBox renderedHitBoxes)
   {
     CodePosition pos = new CodePosition();
     return hitDetectStatementContainer((int)x, (int)y, statements, renderedHitBoxes, pos, 0);
