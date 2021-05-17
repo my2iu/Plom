@@ -380,6 +380,17 @@ svg path.tokenslot {
 	fill: none;
 }
 
+svg path.wideexpressionslot {
+	/*stroke-width: 1px;
+	stroke: black;*/
+	stroke: none;
+	fill: none;
+}
+
+svg rect.plomMultilineAccent {
+	fill: url(#plomMultilineAccent);
+}
+
 svg.widthCalculator {
 	width: 0px;
     height: 0px;

@@ -284,6 +284,7 @@ public class SvgCodeRenderer
     int currentNestingInLine = 0;
     boolean showNestingAccent = false;
     boolean showMultilineAccent = true;
+    boolean showWideExpresionAccent = false;
     
     TokenRendererPositioning(double width)
     {
@@ -323,6 +324,7 @@ public class SvgCodeRenderer
       currentNestingInLine = from.currentNestingInLine;
       showNestingAccent = from.showNestingAccent;
       showMultilineAccent = from.showMultilineAccent;
+      showWideExpresionAccent = from.showWideExpresionAccent;
     }
     
     TokenRendererPositioning copy()
@@ -459,6 +461,8 @@ public class SvgCodeRenderer
           + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>";
       if (positioning.showNestingAccent)
         toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (textWidth + horzPadding * 2) + " 0\" class=\"tokenslot\"/>"; 
+      else if (positioning.showWideExpresionAccent)
+        toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (textWidth + horzPadding * 2) + " 0\" class=\"wideexpressionslot\"/>"; 
       toReturn.width = horzPadding * 2 + textWidth;
       toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
       toReturn.hitBox = RenderedHitBox.forRectangleWithChildren(x, y + positioning.currentNestingInLine * vertPadding, toReturn.width, toReturn.height);
@@ -632,8 +636,10 @@ public class SvgCodeRenderer
           + tokenText + "\n";
       if (positioning.showNestingAccent)
           toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>\n"; 
+      else if (positioning.showWideExpresionAccent)
+        toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"wideexpressionslot\"/>\n"; 
       if (toReturn.wraps && positioning.showMultilineAccent)
-        toReturn.svgString += "<rect x='" + startX + "' y='" + rectTopY + "' width='2' height='" + (height) + "' fill=\"url(#plomMultilineAccent)\"/>\n";
+        toReturn.svgString += "<rect x='" + startX + "' y='" + rectTopY + "' width='2' height='" + (height) + "' class=\"plomMultilineAccent\"/>\n";
       toReturn.svgString += paramsSvg;
       toReturn.width = maxX + horzPadding - startX;
       toReturn.height = height;
@@ -802,8 +808,8 @@ public class SvgCodeRenderer
         subPositioning.lineEnd -= horzPadding;
         subPositioning.maxNestingForLine = supplement.nesting.expressionNesting.get(exprContainer);
         subPositioning.currentNestingInLine = 0;
-        boolean oldNestingAccent = subPositioning.showNestingAccent;
-        subPositioning.showNestingAccent = true;
+        boolean oldExpressionAccent = subPositioning.showNestingAccent;
+        subPositioning.showWideExpresionAccent = true;
         maxNesting = subPositioning.maxNestingForLine + 1;
         totalVertPadding = maxNesting * vertPadding;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
@@ -811,7 +817,7 @@ public class SvgCodeRenderer
           renderLine(exprContainer, toReturn, subPositioning, level + 1, currentTokenPos, false, this, supplement, 0, false);
         else
           renderEmptyFillIn(toReturn, subPositioning, level + 1, currentTokenPos, this, supplement, 0);
-        subPositioning.showNestingAccent = oldNestingAccent;
+        subPositioning.showWideExpresionAccent = oldExpressionAccent;
         positioning.copyFrom(subPositioning);
         currentTokenPos.setMaxOffset(level + 1);
         wideSvg += toReturn.svgString;
@@ -1012,6 +1018,8 @@ public class SvgCodeRenderer
         toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (FILL_IN_WIDTH + horzPadding * 2) + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>\n";
         if (positioning.showNestingAccent)
           toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (FILL_IN_WIDTH + horzPadding * 2) + " 0\" class=\"tokenslot\"/>\n"; 
+        else if (positioning.showWideExpresionAccent)
+          toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (FILL_IN_WIDTH + horzPadding * 2) + " 0\" class=\"wideexpressionslot\"/>\n"; 
 
         toReturn.width = horzPadding * 2 + FILL_IN_WIDTH;
         toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
