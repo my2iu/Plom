@@ -619,7 +619,7 @@ public class SvgCodeRenderer
       toReturn.svgString = "<rect x='" + startX + "' y='" + (rectTopY) + "' width='" + (maxX - startX + horzPadding) + "' height='" + (height) + "' class='" + classList + "'/>"
           + tokenText + "\n";
       if (positioning.showNestingAccent)
-        toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>"; 
+        toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>\n"; 
       toReturn.svgString += paramsSvg;
       toReturn.width = maxX + horzPadding - startX;
       toReturn.height = height;
@@ -997,7 +997,7 @@ public class SvgCodeRenderer
         double y = positioning.lineTop;
         toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (FILL_IN_WIDTH + horzPadding * 2) + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>\n";
         if (positioning.showNestingAccent)
-          toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (FILL_IN_WIDTH + horzPadding * 2) + " 0\" class=\"tokenslot\"/>"; 
+          toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (FILL_IN_WIDTH + horzPadding * 2) + " 0\" class=\"tokenslot\"/>\n"; 
 
         toReturn.width = horzPadding * 2 + FILL_IN_WIDTH;
         toReturn.height = textHeight + descenderHeight + totalVertPadding * 2;
@@ -1315,7 +1315,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
 //      toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
-      maxX = Math.max(toReturn.hitBox.x + toReturn.hitBox.width, maxX);
+      maxX = Math.max(returnedRenderedToken.hitBox.x + returnedRenderedToken.hitBox.width, maxX);
       maxX = Math.max(positioning.x, maxX);
       hitBox.children.add(returnedRenderedToken.hitBox);
       currentTokenPos.setMaxOffset(level + 1);

@@ -175,15 +175,18 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='60.0' y='18.0' width='75.0' height='30.0' class='codetoken'/>\n" + 
         "<text x='65.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='100.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<path d=\"M100.0 45.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='135.0' y='18.0' width='264.0' height='30.0' class='codetoken'/>\n" + 
         "<text x='140.0' y='37.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='175.0' y='21.0' width='87.0' height='24.0' class='codetoken'/>\n" + 
+        "<path d=\"M175.0 45.0 l87.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='180.0' y='37.0' class='codetoken'>.d:</text>\n" + 
-        "<rect x='215.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='220.0' y='37.0' class='codetoken'>12</text>\n" + 
+        "<rect x='215.0' y='24.0' width='30.0' height='18' class='codetoken'/><text x='220.0' y='37.0' class='codetoken'>12</text><path d=\"M215.0 42.0 l30.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='267.0' y='37.0' class='codetoken'>b:</text>\n" + 
         "<rect x='292.0' y='21.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<path d=\"M292.0 45.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<text x='327.0' y='37.0' class='codetoken'>c:</text>\n" + 
-        "<rect x='352.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='357.0' y='37.0' class='codetoken'>32</text>\n" + 
+        "<rect x='352.0' y='21.0' width='30.0' height='24' class='codetoken'/><text x='357.0' y='37.0' class='codetoken'>32</text><path d=\"M352.0 45.0 l30.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='399.0' y='18.0' width='20.0' height='30' class='codetoken'/><text x='404.0' y='37.0' class='codetoken'>+</text>\n" + 
         "<rect x='419.0' y='18.0' width='130.0' height='30' class='codetoken'/><text x='424.0' y='37.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='0.0' y='48.0' width='30.0' height='18' class='codetoken'/><text x='5.0' y='61.0' class='codetoken'>55</text>\n" + 
@@ -213,7 +216,7 @@ public class SvgCodeRendererTest extends TestCase
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
-        "<path d='M0.0 18.0 l 100.0 0 l 0 24.0 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text>\n" + 
+        "<path d='M0.0 18.0 l 100.0 0 l 0 24.0 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text><path d=\"M30.0 39.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='73.0'>}</text>\n" + 
         "<rect x='0.0' y='78.0' width='100.0' height='12' class='codetoken'/><text x='5.0' y='88.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='78.0' width='20.0' height='12' class='codetoken'/><text x='105.0' y='88.0' class='codetoken'>+</text>\n" + 
@@ -450,17 +453,17 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='25.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='155.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='160.0' y='31.0' class='codetoken'>+</text>\n" + 
         "<rect x='25.0' y='36.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='49.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='210.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='215.0' y='70.0' class='codetoken'>true</text>\n" + 
-        "<rect x='25.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='30.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='65.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='70.0' y='88.0' class='codetoken'>true</text>\n" + 
-        "<rect x='115.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='120.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='155.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='160.0' y='88.0' class='codetoken'>true</text>\n" + 
-        "<rect x='205.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='210.0' y='88.0' class='codetoken'>AND</text>\n" + 
-        "<rect x='245.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='250.0' y='88.0' class='codetoken'>true</text>\n" + 
+        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text><path d=\"M30.0 75.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text><path d=\"M80.0 75.0 l40.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text><path d=\"M120.0 75.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text><path d=\"M170.0 75.0 l40.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='210.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='215.0' y='70.0' class='codetoken'>true</text><path d=\"M210.0 75.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='25.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='30.0' y='88.0' class='codetoken'>AND</text><path d=\"M25.0 93.0 l40.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='65.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='70.0' y='88.0' class='codetoken'>true</text><path d=\"M65.0 93.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='115.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='120.0' y='88.0' class='codetoken'>AND</text><path d=\"M115.0 93.0 l40.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='155.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='160.0' y='88.0' class='codetoken'>true</text><path d=\"M155.0 93.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='205.0' y='75.0' width='40.0' height='18' class='codetoken'/><text x='210.0' y='88.0' class='codetoken'>AND</text><path d=\"M205.0 93.0 l40.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='245.0' y='75.0' width='50.0' height='18' class='codetoken'/><text x='250.0' y='88.0' class='codetoken'>true</text><path d=\"M245.0 93.0 l50.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='20.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='25.0' y='127.0' class='codetoken'>1</text>\n" + 
         "<rect x='40.0' y='114.0' width='20.0' height='18' class='codetoken'/><text x='45.0' y='127.0' class='codetoken'>+</text>\n" + 
         "<rect x='60.0' y='114.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='127.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
@@ -510,21 +513,23 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='40.0' y='0.0' width='30.0' height='18.0' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>.a</text>\n" + 
         "<rect x='0.0' y='18.0' width='300.0' height='66.0' class='codetoken'/>\n" + 
         "<text x='5.0' y='34.0' class='codetoken'>a:</text>\n" + 
-        "<rect x='30.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>2</text>\n" + 
-        "<rect x='50.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='34.0' class='codetoken'>+</text>\n" + 
-        "<rect x='70.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='34.0' class='codetoken'>3</text>\n" + 
+        "<rect x='30.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>2</text><path d=\"M30.0 39.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='50.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='34.0' class='codetoken'>+</text><path d=\"M50.0 39.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='70.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='34.0' class='codetoken'>3</text><path d=\"M70.0 39.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='55.0' class='codetoken'>b:</text>\n" + 
-        "<rect x='30.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='55.0' class='codetoken'>5</text>\n" + 
-        "<rect x='50.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='55.0' class='codetoken'>+</text>\n" + 
-        "<rect x='70.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='55.0' class='codetoken'>6</text>\n" + 
-        "<rect x='90.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='55.0' class='codetoken'>+</text>\n" + 
-        "<rect x='110.0' y='42.0' width='160.0' height='18' class='codetoken'/><text x='115.0' y='55.0' class='codetoken'>\"longer string\"</text>\n" + 
+        "<rect x='30.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='55.0' class='codetoken'>5</text><path d=\"M30.0 60.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='50.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='55.0' class='codetoken'>+</text><path d=\"M50.0 60.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='70.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='75.0' y='55.0' class='codetoken'>6</text><path d=\"M70.0 60.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='90.0' y='42.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='55.0' class='codetoken'>+</text><path d=\"M90.0 60.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='110.0' y='42.0' width='160.0' height='18' class='codetoken'/><text x='115.0' y='55.0' class='codetoken'>\"longer string\"</text><path d=\"M110.0 60.0 l160.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='76.0' class='codetoken'>c:</text>\n" + 
         "<rect x='30.0' y='63.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<path d=\"M30.0 81.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<text x='65.0' y='76.0' class='codetoken'>d:</text>\n" + 
-        "<rect x='90.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='76.0' class='codetoken'>8</text>\n" + 
+        "<rect x='90.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='95.0' y='76.0' class='codetoken'>8</text><path d=\"M90.0 81.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='115.0' y='76.0' class='codetoken'>e:</text>\n" + 
         "<rect x='140.0' y='63.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<path d=\"M140.0 81.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='0.0' y='84.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='97.0' class='codetoken'>1</text>\n" + 
         "", returned.svgString);
   }
@@ -563,22 +568,25 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='300.0' height='123.0' class='codetoken'/>\n" + 
         "<text x='5.0' y='16.0' class='codetoken'>a:</text>\n" + 
-        "<rect x='30.0' y='3.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='16.0' class='codetoken'>3</text>\n" + 
+        "<rect x='30.0' y='3.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='16.0' class='codetoken'>3</text><path d=\"M30.0 21.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='55.0' y='16.0' class='codetoken'>b:</text>\n" + 
         "<rect x='80.0' y='3.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<path d=\"M80.0 21.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='37.0' class='codetoken'>nameExprOneLine:</text>\n" + 
-        "<rect x='170.0' y='24.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='37.0' class='codetoken'>8</text>\n" + 
+        "<rect x='170.0' y='24.0' width='20.0' height='18' class='codetoken'/><text x='175.0' y='37.0' class='codetoken'>8</text><path d=\"M170.0 42.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='195.0' y='37.0' class='codetoken'>c:</text>\n" + 
         "<rect x='220.0' y='24.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<path d=\"M220.0 42.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='58.0' class='codetoken'>exprSeparateFromName:</text>\n" + 
-        "<rect x='45.0' y='63.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='76.0' class='codetoken'>\"longer string\"</text>\n" + 
-        "<rect x='205.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='210.0' y='76.0' class='codetoken'>5</text>\n" + 
-        "<rect x='225.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='230.0' y='76.0' class='codetoken'>+</text>\n" + 
-        "<rect x='245.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='250.0' y='76.0' class='codetoken'>6</text>\n" + 
-        "<rect x='265.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='270.0' y='76.0' class='codetoken'>+</text>\n" + 
-        "<rect x='45.0' y='81.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='94.0' class='codetoken'>\"longer string\"</text>\n" + 
+        "<rect x='45.0' y='63.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='76.0' class='codetoken'>\"longer string\"</text><path d=\"M45.0 81.0 l160.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='205.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='210.0' y='76.0' class='codetoken'>5</text><path d=\"M205.0 81.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='225.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='230.0' y='76.0' class='codetoken'>+</text><path d=\"M225.0 81.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='245.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='250.0' y='76.0' class='codetoken'>6</text><path d=\"M245.0 81.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='265.0' y='63.0' width='20.0' height='18' class='codetoken'/><text x='270.0' y='76.0' class='codetoken'>+</text><path d=\"M265.0 81.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='45.0' y='81.0' width='160.0' height='18' class='codetoken'/><text x='50.0' y='94.0' class='codetoken'>\"longer string\"</text><path d=\"M45.0 99.0 l160.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='5.0' y='115.0' class='codetoken'>e:</text>\n" + 
         "<rect x='30.0' y='102.0' width='30' height='18' class='fillinblank'/>\n" + 
+        "<path d=\"M30.0 120.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='0.0' y='123.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='136.0' class='codetoken'>1</text>\n" + 
         "", returned.svgString);
   }
@@ -627,28 +635,31 @@ public class SvgCodeRendererTest extends TestCase
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='865.0' height='54.0' class='codetoken'/>\n" + 
         "<text x='5.0' y='19.0' class='codetoken'>.this parameter name is longer than expression so it should determine width of token:</text>\n" + 
-        "<rect x='45.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='50.0' y='43.0' class='codetoken'>1</text>\n" + 
-        "<rect x='65.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='43.0' class='codetoken'>+</text>\n" + 
-        "<rect x='85.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='43.0' class='codetoken'>2</text>\n" + 
+        "<rect x='45.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='50.0' y='43.0' class='codetoken'>1</text><path d=\"M45.0 51.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='65.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='43.0' class='codetoken'>+</text><path d=\"M65.0 51.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='85.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='43.0' class='codetoken'>2</text><path d=\"M85.0 51.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='110.0' y='43.0' class='codetoken'>b:</text>\n" + 
         "<rect x='135.0' y='27.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<path d=\"M135.0 51.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='25.0' y='54.0' width='20.0' height='30' class='codetoken'/><text x='30.0' y='73.0' class='codetoken'>+</text>\n" + 
         "<rect x='25.0' y='84.0' width='275.0' height='150.0' class='codetoken'/>\n" + 
         "<text x='30.0' y='103.0' class='codetoken'>.a:</text>\n" + 
-        "<rect x='65.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='103.0' class='codetoken'>1</text>\n" + 
-        "<rect x='85.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='103.0' class='codetoken'>+</text>\n" + 
-        "<rect x='105.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='110.0' y='103.0' class='codetoken'>2</text>\n" + 
+        "<rect x='65.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='103.0' class='codetoken'>1</text><path d=\"M65.0 111.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='85.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='103.0' class='codetoken'>+</text><path d=\"M85.0 111.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='105.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='110.0' y='103.0' class='codetoken'>2</text><path d=\"M105.0 111.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='130.0' y='103.0' class='codetoken'>b:</text>\n" + 
         "<rect x='155.0' y='87.0' width='30' height='24' class='fillinblank'/>\n" + 
+        "<path d=\"M155.0 111.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<text x='30.0' y='130.0' class='codetoken'>c:</text>\n" + 
-        "<rect x='70.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='154.0' class='codetoken'>1</text>\n" + 
-        "<rect x='90.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='95.0' y='154.0' class='codetoken'>+</text>\n" + 
+        "<rect x='70.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='154.0' class='codetoken'>1</text><path d=\"M70.0 162.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='90.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='95.0' y='154.0' class='codetoken'>+</text><path d=\"M90.0 162.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='70.0' y='162.0' width='225.0' height='45.0' class='codetoken'/>\n" + 
+        "<path d=\"M70.0 207.0 l225.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='75.0' y='178.0' class='codetoken'>.nested token:</text>\n" + 
-        "<rect x='220.0' y='165.0' width='20.0' height='18' class='codetoken'/><text x='225.0' y='178.0' class='codetoken'>5</text>\n" + 
+        "<rect x='220.0' y='165.0' width='20.0' height='18' class='codetoken'/><text x='225.0' y='178.0' class='codetoken'>5</text><path d=\"M220.0 183.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='75.0' y='199.0' class='codetoken'>that wraps:</text>\n" + 
-        "<rect x='190.0' y='186.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='199.0' class='codetoken'>7</text>\n" + 
-        "<rect x='70.0' y='207.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='223.0' class='codetoken'>2</text>\n" + 
+        "<rect x='190.0' y='186.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='199.0' class='codetoken'>7</text><path d=\"M190.0 204.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='70.0' y='207.0' width='20.0' height='24' class='codetoken'/><text x='75.0' y='223.0' class='codetoken'>2</text><path d=\"M70.0 231.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='25.0' y='234.0' width='20.0' height='30' class='codetoken'/><text x='30.0' y='253.0' class='codetoken'>1</text>\n" + 
         "", returned.svgString);
     // To test:
