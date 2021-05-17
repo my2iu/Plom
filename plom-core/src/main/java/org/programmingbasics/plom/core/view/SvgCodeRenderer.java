@@ -173,6 +173,16 @@ public class SvgCodeRenderer
 //    }
 //  }
 
+  // We can't define svg gradients in css, so we need to define them in a separate defs section.
+  // If you have multiple code views, the same gradient will be defined more than once, but since
+  // it's always the same, it should be okay.
+  static final String GRADIENT_DEFS = "<defs>\n" + 
+      "<linearGradient id=\"plomMultilineAccent\" gradientTransform=\"rotate(90)\">\n" + 
+      "<stop offset=\"0%\" stop-color=\"black\" stop-opacity=\"0.15\"/>\n" + 
+      "<stop offset=\"1000%\" stop-color=\"black\" stop-opacity=\"0\"/>\n" + 
+      "</linearGradient>\n" + 
+      "</defs>\n";
+  
   public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth, double leftPadding, double topPadding, double rightPadding, double bottomPadding)
   {
 //    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
@@ -192,8 +202,8 @@ public class SvgCodeRenderer
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
     
-    svgEl.setInnerHTML(returned.svgString);
-    svgEl.setInnerHTML("<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
+//    svgEl.setInnerHTML(returned.svgString);
+    svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
     svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
     svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
     RenderedHitBox hitBox = returned.hitBox;
@@ -273,6 +283,7 @@ public class SvgCodeRenderer
     int maxNestingForLine = 0;
     int currentNestingInLine = 0;
     boolean showNestingAccent = false;
+    boolean showMultilineAccent = true;
     
     TokenRendererPositioning(double width)
     {
@@ -311,6 +322,7 @@ public class SvgCodeRenderer
       maxNestingForLine = from.maxNestingForLine;
       currentNestingInLine = from.currentNestingInLine;
       showNestingAccent = from.showNestingAccent;
+      showMultilineAccent = from.showMultilineAccent;
     }
     
     TokenRendererPositioning copy()
@@ -619,7 +631,9 @@ public class SvgCodeRenderer
       toReturn.svgString = "<rect x='" + startX + "' y='" + (rectTopY) + "' width='" + (maxX - startX + horzPadding) + "' height='" + (height) + "' class='" + classList + "'/>"
           + tokenText + "\n";
       if (positioning.showNestingAccent)
-        toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>\n"; 
+          toReturn.svgString += "<path d=\"M" + startX + " " + (rectTopY + height) + " l" + (maxX - startX + horzPadding) + " 0\" class=\"tokenslot\"/>\n"; 
+      if (toReturn.wraps && positioning.showMultilineAccent)
+        toReturn.svgString += "<rect x='" + startX + "' y='" + rectTopY + "' width='2' height='" + (height) + "' fill=\"url(#plomMultilineAccent)\"/>\n";
       toReturn.svgString += paramsSvg;
       toReturn.width = maxX + horzPadding - startX;
       toReturn.height = height;

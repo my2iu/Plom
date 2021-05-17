@@ -512,6 +512,7 @@ public class SvgCodeRendererTest extends TestCase
     Assert.assertEquals("<rect x='0.0' y='0.0' width='40.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>var</text>\n" + 
         "<rect x='40.0' y='0.0' width='30.0' height='18.0' class='codetoken'/><text x='45.0' y='13.0' class='codetoken'>.a</text>\n" + 
         "<rect x='0.0' y='18.0' width='300.0' height='66.0' class='codetoken'/>\n" + 
+        "<rect x='0.0' y='18.0' width='2' height='66.0' fill=\"url(#plomMultilineAccent)\"/>\n" + 
         "<text x='5.0' y='34.0' class='codetoken'>a:</text>\n" + 
         "<rect x='30.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>2</text><path d=\"M30.0 39.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='50.0' y='21.0' width='20.0' height='18' class='codetoken'/><text x='55.0' y='34.0' class='codetoken'>+</text><path d=\"M50.0 39.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
@@ -567,6 +568,7 @@ public class SvgCodeRendererTest extends TestCase
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='300.0' height='123.0' class='codetoken'/>\n" + 
+        "<rect x='0.0' y='0.0' width='2' height='123.0' fill=\"url(#plomMultilineAccent)\"/>\n" + 
         "<text x='5.0' y='16.0' class='codetoken'>a:</text>\n" + 
         "<rect x='30.0' y='3.0' width='20.0' height='18' class='codetoken'/><text x='35.0' y='16.0' class='codetoken'>3</text><path d=\"M30.0 21.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='55.0' y='16.0' class='codetoken'>b:</text>\n" + 
@@ -634,6 +636,7 @@ public class SvgCodeRendererTest extends TestCase
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='865.0' height='54.0' class='codetoken'/>\n" + 
+        "<rect x='0.0' y='0.0' width='2' height='54.0' fill=\"url(#plomMultilineAccent)\"/>\n" + 
         "<text x='5.0' y='19.0' class='codetoken'>.this parameter name is longer than expression so it should determine width of token:</text>\n" + 
         "<rect x='45.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='50.0' y='43.0' class='codetoken'>1</text><path d=\"M45.0 51.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='65.0' y='27.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='43.0' class='codetoken'>+</text><path d=\"M65.0 51.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
@@ -643,6 +646,7 @@ public class SvgCodeRendererTest extends TestCase
         "<path d=\"M135.0 51.0 l30 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='25.0' y='54.0' width='20.0' height='30' class='codetoken'/><text x='30.0' y='73.0' class='codetoken'>+</text>\n" + 
         "<rect x='25.0' y='84.0' width='275.0' height='150.0' class='codetoken'/>\n" + 
+        "<rect x='25.0' y='84.0' width='2' height='150.0' fill=\"url(#plomMultilineAccent)\"/>\n" + 
         "<text x='30.0' y='103.0' class='codetoken'>.a:</text>\n" + 
         "<rect x='65.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='70.0' y='103.0' class='codetoken'>1</text><path d=\"M65.0 111.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='85.0' y='87.0' width='20.0' height='24' class='codetoken'/><text x='90.0' y='103.0' class='codetoken'>+</text><path d=\"M85.0 111.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
@@ -655,6 +659,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='90.0' y='138.0' width='20.0' height='24' class='codetoken'/><text x='95.0' y='154.0' class='codetoken'>+</text><path d=\"M90.0 162.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<rect x='70.0' y='162.0' width='225.0' height='45.0' class='codetoken'/>\n" + 
         "<path d=\"M70.0 207.0 l225.0 0\" class=\"tokenslot\"/>\n" + 
+        "<rect x='70.0' y='162.0' width='2' height='45.0' fill=\"url(#plomMultilineAccent)\"/>\n" + 
         "<text x='75.0' y='178.0' class='codetoken'>.nested token:</text>\n" + 
         "<rect x='220.0' y='165.0' width='20.0' height='18' class='codetoken'/><text x='225.0' y='178.0' class='codetoken'>5</text><path d=\"M220.0 183.0 l20.0 0\" class=\"tokenslot\"/>\n" + 
         "<text x='75.0' y='199.0' class='codetoken'>that wraps:</text>\n" + 

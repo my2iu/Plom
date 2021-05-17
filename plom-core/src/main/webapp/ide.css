@@ -377,6 +377,7 @@ svg text.tokenError {
 svg path.tokenslot {
 	stroke-width: 1px;
 	stroke: black;
+	fill: none;
 }
 
 svg.widthCalculator {
