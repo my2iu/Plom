@@ -280,6 +280,7 @@ public class SvgCodeRenderer
     double minWidth;  
     double fontSize = 15;
     double x = 0;
+    double spaceBetweenLines = 0;
     int maxNestingForLine = 0;
     int currentNestingInLine = 0;
     boolean showNestingAccent = false;
@@ -300,6 +301,15 @@ public class SvgCodeRenderer
     {
       x = lineStart;
       lineTop = lineBottom;
+    }
+    void newlineWithSpace()
+    {
+      newline();
+      addSpaceBetweenLines();
+    }
+    void addSpaceBetweenLines()
+    {
+      lineTop = lineBottom = lineTop + spaceBetweenLines;
     }
 //    int getTextHeight()
 //    {
@@ -325,6 +335,7 @@ public class SvgCodeRenderer
       showNestingAccent = from.showNestingAccent;
       showMultilineAccent = from.showMultilineAccent;
       showWideExpresionAccent = from.showWideExpresionAccent;
+      spaceBetweenLines = from.spaceBetweenLines;
     }
     
     TokenRendererPositioning copy()
@@ -744,7 +755,7 @@ public class SvgCodeRenderer
       toReturn.hitBox.children.add(null);
       toReturn.hitBox.children.add(null);
       positioning.maxBottom(toReturn.height);
-      positioning.newline();
+      positioning.newlineWithSpace();
 //      createWideToken(token, token.contents, null, null, toReturn, positioning, level, currentTokenPos, hitBox);
 //      if (token.type == Symbol.DUMMY_COMMENT)
 //      {
@@ -850,7 +861,7 @@ public class SvgCodeRenderer
       String endBracketSvg = "";
       if (blockContainer != null)
       {
-        positioning.newline();
+        positioning.newlineWithSpace();
         toReturn.reset();
 //        TokenRendererPositioning subPositioning = positioning.copy();
         double oldLineStart = positioning.lineStart;
@@ -898,6 +909,7 @@ public class SvgCodeRenderer
       hitBox.children.set(EXPRBLOCK_POS_EXPR, exprHitBox);
       hitBox.children.set(EXPRBLOCK_POS_BLOCK, blockHitBox);
       
+      positioning.addSpaceBetweenLines();
 
       
 //      positioning.newline();
@@ -1214,7 +1226,7 @@ public class SvgCodeRenderer
       hitBox.children.add(toReturn.hitBox);
       currentTokenPos.setMaxOffset(level + 1);
       xExtent = Math.max(xExtent, toReturn.width + positioning.lineStart);
-      positioning.newline();
+      positioning.newlineWithSpace();
 //      codeDiv.appendChild(div);
       lineno++;
     }
