@@ -15,7 +15,8 @@
 		9624EF2E2654603C00922DAA /* plom_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9624EF2D2654603C00922DAA /* plom_iosTests.swift */; };
 		9624EF392654603C00922DAA /* plom_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9624EF382654603C00922DAA /* plom_iosUITests.swift */; };
 		9624EF4F265461F600922DAA /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9624EF4E265461F600922DAA /* WebKit.framework */; };
-		9624EFE026547FF600922DAA /* ProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9624EFDF26547FF500922DAA /* ProjectView.swift */; };
+		96388EF726555F7C00B0B465 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 96388EF526555F7C00B0B465 /* Main.storyboard */; };
+		96388F022655669100B0B465 /* ProjectListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96388F012655669100B0B465 /* ProjectListViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,7 +52,8 @@
 		9624EF3A2654603C00922DAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9624EF492654619B00922DAA /* plom-ios.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "plom-ios.entitlements"; sourceTree = "<group>"; };
 		9624EF4E265461F600922DAA /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk/System/iOSSupport/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
-		9624EFDF26547FF500922DAA /* ProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectView.swift; sourceTree = "<group>"; };
+		96388EF626555F7C00B0B465 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "plom-ios/Base.lproj/Main.storyboard"; sourceTree = "<group>"; };
+		96388F012655669100B0B465 /* ProjectListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,9 +111,10 @@
 				9624EF182654603900922DAA /* SceneDelegate.swift */,
 				9624EF1A2654603900922DAA /* ViewController.swift */,
 				9624EF1F2654603C00922DAA /* Assets.xcassets */,
+				96388EF526555F7C00B0B465 /* Main.storyboard */,
 				9624EF212654603C00922DAA /* LaunchScreen.storyboard */,
 				9624EF242654603C00922DAA /* Info.plist */,
-				9624EFDF26547FF500922DAA /* ProjectView.swift */,
+				96388F012655669100B0B465 /* ProjectListViewController.swift */,
 			);
 			path = "plom-ios";
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96388EF726555F7C00B0B465 /* Main.storyboard in Resources */,
 				9624EF232654603C00922DAA /* LaunchScreen.storyboard in Resources */,
 				9624EF202654603C00922DAA /* Assets.xcassets in Resources */,
 			);
@@ -271,9 +275,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				96388F022655669100B0B465 /* ProjectListViewController.swift in Sources */,
 				9624EF1B2654603900922DAA /* ViewController.swift in Sources */,
 				9624EF172654603900922DAA /* AppDelegate.swift in Sources */,
-				9624EFE026547FF600922DAA /* ProjectView.swift in Sources */,
 				9624EF192654603900922DAA /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -316,6 +320,14 @@
 				9624EF222654603C00922DAA /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		96388EF526555F7C00B0B465 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				96388EF626555F7C00B0B465 /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

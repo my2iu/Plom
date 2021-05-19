@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="mac" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Project List View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ProjectListViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="EDA-cb-0xK">
+                                <rect key="frame" x="0.0" y="50" width="800" height="550"/>
+                                <subviews>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jP8-c2-duh">
+                                        <rect key="frame" x="0.0" y="0.0" width="800" height="550"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <prototypes>
+                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddButtonTableItem" id="mcg-fa-z8C">
+                                                <rect key="frame" x="0.0" y="28" width="800" height="38.5"/>
+                                                <autoresizingMask key="autoresizingMask"/>
+                                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="mcg-fa-z8C" id="zlU-Sv-htb">
+                                                    <rect key="frame" x="0.0" y="0.0" width="800" height="38.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FfD-mS-iH9">
+                                                            <rect key="frame" x="20" y="0.0" width="760" height="39"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="22"/>
+                                                            <state key="normal" title="⊕ Add new project"/>
+                                                            <connections>
+                                                                <action selector="addNewProjectPressed" destination="BYZ-38-t0r" eventType="primaryActionTriggered" id="4fQ-VF-5ai"/>
+                                                            </connections>
+                                                        </button>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstAttribute="trailing" secondItem="FfD-mS-iH9" secondAttribute="trailing" constant="20" id="Nqh-Ba-n5Y"/>
+                                                        <constraint firstItem="FfD-mS-iH9" firstAttribute="leading" secondItem="zlU-Sv-htb" secondAttribute="leading" constant="20" id="g1k-3D-T68"/>
+                                                        <constraint firstItem="FfD-mS-iH9" firstAttribute="top" secondItem="zlU-Sv-htb" secondAttribute="top" id="gfI-yb-KlW"/>
+                                                        <constraint firstItem="FfD-mS-iH9" firstAttribute="bottom" secondItem="zlU-Sv-htb" secondAttribute="bottom" id="ksb-BJ-RnO"/>
+                                                    </constraints>
+                                                </tableViewCellContentView>
+                                            </tableViewCell>
+                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ProjectTableItem" textLabel="S2o-Pg-bwi" detailTextLabel="Mye-zN-nXo" style="IBUITableViewCellStyleValue1" id="cTl-ZI-dlh">
+                                                <rect key="frame" x="0.0" y="66.5" width="800" height="43.5"/>
+                                                <autoresizingMask key="autoresizingMask"/>
+                                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="cTl-ZI-dlh" id="Zyh-9s-L0H">
+                                                    <rect key="frame" x="0.0" y="0.0" width="800" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="S2o-Pg-bwi">
+                                                            <rect key="frame" x="15" y="12" width="35" height="20"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mye-zN-nXo">
+                                                            <rect key="frame" x="739.5" y="12" width="45.5" height="20"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                </tableViewCellContentView>
+                                            </tableViewCell>
+                                        </prototypes>
+                                        <connections>
+                                            <outlet property="dataSource" destination="BYZ-38-t0r" id="avU-Ls-3vx"/>
+                                            <outlet property="delegate" destination="BYZ-38-t0r" id="o58-rV-L8W"/>
+                                        </connections>
+                                    </tableView>
+                                </subviews>
+                            </stackView>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cUq-Oo-DZH">
+                                <rect key="frame" x="0.0" y="0.0" width="800" height="50"/>
+                                <items>
+                                    <navigationItem title="Plom Projects" id="WLO-wT-eCr"/>
+                                </items>
+                            </navigationBar>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="EDA-cb-0xK" firstAttribute="top" secondItem="cUq-Oo-DZH" secondAttribute="bottom" id="1ql-To-YpK"/>
+                            <constraint firstItem="EDA-cb-0xK" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="88U-BO-wwL"/>
+                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="LUH-jI-w9w"/>
+                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="Y3a-2y-X69"/>
+                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="n5T-fc-6hq"/>
+                            <constraint firstItem="EDA-cb-0xK" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="omo-ol-ZUJ"/>
+                            <constraint firstItem="EDA-cb-0xK" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="tJR-d0-KuJ"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="navigationBar" destination="cUq-Oo-DZH" id="n5h-be-eF0"/>
+                        <outlet property="tableView" destination="jP8-c2-duh" id="ISE-bh-ZPk"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="141" y="53"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
