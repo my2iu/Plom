@@ -2,8 +2,6 @@
 //  AppDelegate.swift
 //  plom-ios
 //
-//  Created by World on 2021-05-18.
-//
 
 import UIKit
 
