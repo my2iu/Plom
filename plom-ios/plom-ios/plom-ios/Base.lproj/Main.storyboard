@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ifc-Vx-SLR">
     <device id="mac" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -9,7 +9,23 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Project List View Controller-->
+        <!--Navigation Controller-->
+        <scene sceneID="g47-c3-s8y">
+            <objects>
+                <navigationController id="Ifc-Vx-SLR" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="GuF-ca-dEL">
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="50"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="cjY-0o-FEF"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SX3-SA-B6E" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-586" y="-377"/>
+        </scene>
+        <!--Plom Projects-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ProjectListViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
@@ -80,33 +96,53 @@
                                     </tableView>
                                 </subviews>
                             </stackView>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cUq-Oo-DZH">
-                                <rect key="frame" x="0.0" y="0.0" width="800" height="50"/>
-                                <items>
-                                    <navigationItem title="Plom Projects" id="WLO-wT-eCr"/>
-                                </items>
-                            </navigationBar>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="EDA-cb-0xK" firstAttribute="top" secondItem="cUq-Oo-DZH" secondAttribute="bottom" id="1ql-To-YpK"/>
                             <constraint firstItem="EDA-cb-0xK" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="88U-BO-wwL"/>
-                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="LUH-jI-w9w"/>
-                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="Y3a-2y-X69"/>
-                            <constraint firstItem="cUq-Oo-DZH" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="n5T-fc-6hq"/>
                             <constraint firstItem="EDA-cb-0xK" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="omo-ol-ZUJ"/>
                             <constraint firstItem="EDA-cb-0xK" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="tJR-d0-KuJ"/>
+                            <constraint firstItem="EDA-cb-0xK" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="uJ0-Is-SFv"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" title="Plom Projects" largeTitleDisplayMode="always" id="nNj-d1-eBd"/>
                     <connections>
-                        <outlet property="navigationBar" destination="cUq-Oo-DZH" id="n5h-be-eF0"/>
                         <outlet property="tableView" destination="jP8-c2-duh" id="ISE-bh-ZPk"/>
+                        <segue destination="fwH-X1-BrJ" kind="presentation" identifier="ShowNewProjectDialog" id="Ft6-xF-ESY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="141" y="53"/>
+            <point key="canvasLocation" x="175" y="13"/>
+        </scene>
+        <!--New Project-->
+        <scene sceneID="hwS-gq-2WZ">
+            <objects>
+                <viewController storyboardIdentifier="NewProjectViewController" id="fwH-X1-BrJ" customClass="NewProjectViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="xmW-Cl-sBe">
+                        <rect key="frame" x="0.0" y="0.0" width="720" height="560"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <navigationBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zjP-gE-h4c">
+                                <rect key="frame" x="0.0" y="-6" width="720" height="50"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                <items>
+                                    <navigationItem title="Title" id="cvh-5u-jbB"/>
+                                </items>
+                            </navigationBar>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="UbC-xW-I6z"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="New Project" id="nOF-7X-YND"/>
+                    <connections>
+                        <outlet property="navigationBar" destination="zjP-gE-h4c" id="GIt-iA-Fab"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pAC-tP-pqp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="175" y="815"/>
         </scene>
     </scenes>
     <resources>

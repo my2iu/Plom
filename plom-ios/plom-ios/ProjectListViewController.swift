@@ -5,13 +5,15 @@
 
 import UIKit
 
-class ProjectListViewController: ViewController, UITableViewDataSource, UITableViewDelegate {
+class ProjectListViewController: ViewController, UITableViewDataSource, UITableViewDelegate, CreateNewProjectProtocol {
     
-    @IBOutlet weak var navigationBar: UINavigationBar!
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
-        navigationBar.prefersLargeTitles = true
+//        navigationItem.largeTitleDisplayMode = .always
+//        navigationItem.title = "Plom Projects"
+        navigationController?.navigationBar.prefersLargeTitles = true
+
     }
     
     // For filling the table view
@@ -45,7 +47,33 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     }
 
     @IBAction func addNewProjectPressed() {
-        print("hi")
+        performSegue(withIdentifier: "ShowNewProjectDialog", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowNewProjectDialog" {
+            (segue.destination as! NewProjectViewController).newProjectCallback = self
+        }
     }
 }
 
+protocol CreateNewProjectProtocol {
+    
+}
+
+class NewProjectViewController : UIViewController {
+    @IBOutlet weak var navigationBar: UINavigationBar!
+    var newProjectCallback : CreateNewProjectProtocol?
+    
+    @objc func cancelPressed(sender: UIBarButtonItem) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    override func viewDidLoad() {
+        navigationBar.items = [navigationItem]
+        let backButton = UIBarButtonItem.init(title: "Cancel", style: .plain, target: self, action: #selector(cancelPressed))
+        navigationItem.leftBarButtonItem = backButton
+        
+        
+    }
+}
