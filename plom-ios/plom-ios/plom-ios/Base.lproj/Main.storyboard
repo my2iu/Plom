@@ -10,12 +10,43 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Plom View Controller-->
+        <scene sceneID="DzB-cp-rro">
+            <objects>
+                <viewController id="i9q-RB-ap2" customClass="PlomViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="LWI-Qn-yoS">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vTJ-aD-8JO" userLabel="Web Holder View">
+                                <rect key="frame" x="0.0" y="44" width="320" height="436"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Yb0-g2-Klv"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="vTJ-aD-8JO" firstAttribute="top" secondItem="Yb0-g2-Klv" secondAttribute="top" id="PHK-hB-JA2"/>
+                            <constraint firstItem="Yb0-g2-Klv" firstAttribute="trailing" secondItem="vTJ-aD-8JO" secondAttribute="trailing" id="QzT-ct-T1G"/>
+                            <constraint firstItem="vTJ-aD-8JO" firstAttribute="leading" secondItem="Yb0-g2-Klv" secondAttribute="leading" id="r3d-f6-S0i"/>
+                            <constraint firstItem="Yb0-g2-Klv" firstAttribute="bottom" secondItem="vTJ-aD-8JO" secondAttribute="bottom" id="sru-gW-ShK"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="5yr-ok-Ctn"/>
+                    <connections>
+                        <outlet property="webViewHolder" destination="vTJ-aD-8JO" id="aMj-Ye-6XX"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CLG-7c-Y0F" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1783" y="13"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="g47-c3-s8y">
             <objects>
                 <navigationController id="Ifc-Vx-SLR" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="GuF-ca-dEL">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -49,9 +80,9 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FfD-mS-iH9">
-                                                            <rect key="frame" x="20" y="0.0" width="280" height="39"/>
+                                                            <rect key="frame" x="20" y="0.0" width="280" height="39.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="22"/>
-                                                            <state key="normal" title="⊕ Add new project"/>
+                                                            <state key="normal" title="⊕ New project"/>
                                                             <connections>
                                                                 <action selector="addNewProjectPressed" destination="BYZ-38-t0r" eventType="primaryActionTriggered" id="4fQ-VF-5ai"/>
                                                             </connections>
@@ -111,6 +142,7 @@
                     <connections>
                         <outlet property="tableView" destination="jP8-c2-duh" id="ISE-bh-ZPk"/>
                         <segue destination="fwH-X1-BrJ" kind="presentation" identifier="ShowNewProjectDialog" id="Ft6-xF-ESY"/>
+                        <segue destination="i9q-RB-ap2" kind="show" identifier="PlomView" id="VNa-ch-5ZZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -144,12 +176,19 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xec-70-yd5">
-                                        <rect key="frame" x="0.0" y="28.5" width="288" height="156"/>
+                                        <rect key="frame" x="0.0" y="28.5" width="288" height="131.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textField>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bki-EF-ptx">
+                                        <rect key="frame" x="0.0" y="168" width="288" height="20"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="20" id="bXr-HC-OF9"/>
+                                        </constraints>
+                                    </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="3E2-yd-y0Q">
-                                        <rect key="frame" x="0.0" y="192.5" width="288" height="59.5"/>
+                                        <rect key="frame" x="0.0" y="196" width="288" height="87.5"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Advanced" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Myf-qi-mNd">
                                                 <rect key="frame" x="0.0" y="0.0" width="288" height="20.5"/>
@@ -162,9 +201,41 @@
                                                 <subviews>
                                                     <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" title="Use existing" translatesAutoresizingMaskIntoConstraints="NO" id="iQu-PU-Nkw">
                                                         <rect key="frame" x="0.0" y="0.0" width="51" height="31"/>
+                                                        <rect key="contentStretch" x="0.0" y="0.0" width="0.0" height="1"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="49" id="wKz-ZH-l8f"/>
+                                                        </constraints>
+                                                        <connections>
+                                                            <action selector="useExistingFolderSwitchToggled" destination="fwH-X1-BrJ" eventType="valueChanged" id="L9c-oS-10c"/>
+                                                        </connections>
                                                     </switch>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use an existing external folder" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Rt-nC-Nww">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use an existing external folder" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Rt-nC-Nww">
                                                         <rect key="frame" x="57" y="0.0" width="231" height="31"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="FIl-NC-Iqz">
+                                                <rect key="frame" x="0.0" y="67.5" width="288" height="20"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9uA-Jb-yPJ">
+                                                        <rect key="frame" x="0.0" y="0.0" width="70" height="20"/>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="70" id="bzK-av-Yrw"/>
+                                                        </constraints>
+                                                    </view>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" verticalHuggingPriority="251" image="folder" translatesAutoresizingMaskIntoConstraints="NO" id="MTs-ec-BCm">
+                                                        <rect key="frame" x="80" y="0.0" width="20" height="20"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="20" id="BZU-hW-tC6"/>
+                                                            <constraint firstAttribute="height" constant="20" id="IRt-4v-QCN"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" enabled="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cLG-yO-4tI">
+                                                        <rect key="frame" x="110" y="0.0" width="178" height="20"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
@@ -174,7 +245,7 @@
                                         </subviews>
                                     </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lJR-h6-gME">
-                                        <rect key="frame" x="0.0" y="260" width="288" height="128"/>
+                                        <rect key="frame" x="0.0" y="291.5" width="288" height="96.5"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     </view>
                                 </subviews>
@@ -194,6 +265,8 @@
                     </view>
                     <navigationItem key="navigationItem" title="New Project" id="nOF-7X-YND"/>
                     <connections>
+                        <outlet property="existingFolderName" destination="cLG-yO-4tI" id="Azk-4H-Z7x"/>
+                        <outlet property="existingFolderView" destination="FIl-NC-Iqz" id="iAE-Pg-FEr"/>
                         <outlet property="nameField" destination="xec-70-yd5" id="lk4-X2-TpD"/>
                         <outlet property="navigationBar" destination="zjP-gE-h4c" id="GIt-iA-Fab"/>
                         <outlet property="useExistingFolderSwitch" destination="iQu-PU-Nkw" id="LwW-B7-Oeo"/>
@@ -205,8 +278,9 @@
         </scene>
     </scenes>
     <resources>
+        <image name="folder" width="20" height="20"/>
         <systemColor name="systemBackgroundColor">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>
