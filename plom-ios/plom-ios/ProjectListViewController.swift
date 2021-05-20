@@ -10,8 +10,6 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
-//        navigationItem.largeTitleDisplayMode = .always
-//        navigationItem.title = "Plom Projects"
         navigationController?.navigationBar.prefersLargeTitles = true
 
     }
@@ -63,6 +61,9 @@ protocol CreateNewProjectProtocol {
 
 class NewProjectViewController : UIViewController {
     @IBOutlet weak var navigationBar: UINavigationBar!
+    @IBOutlet weak var nameField: UITextField!
+    @IBOutlet weak var useExistingFolderSwitch: UISwitch!
+
     var newProjectCallback : CreateNewProjectProtocol?
     
     @objc func cancelPressed(sender: UIBarButtonItem) {
@@ -74,6 +75,13 @@ class NewProjectViewController : UIViewController {
         let backButton = UIBarButtonItem.init(title: "Cancel", style: .plain, target: self, action: #selector(cancelPressed))
         navigationItem.leftBarButtonItem = backButton
         
-        
+        let doneButton = UIBarButtonItem.init(title: "Done", style: .plain, target: self, action: #selector(cancelPressed))
+        navigationItem.rightBarButtonItem = doneButton
+
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        nameField.becomeFirstResponder()
     }
 }

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ifc-Vx-SLR">
-    <device id="mac" appearance="light"/>
+    <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -14,7 +15,7 @@
             <objects>
                 <navigationController id="Ifc-Vx-SLR" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="GuF-ca-dEL">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -30,25 +31,25 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ProjectListViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="EDA-cb-0xK">
-                                <rect key="frame" x="0.0" y="50" width="800" height="550"/>
+                                <rect key="frame" x="0.0" y="44" width="320" height="436"/>
                                 <subviews>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jP8-c2-duh">
-                                        <rect key="frame" x="0.0" y="0.0" width="800" height="550"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="436"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddButtonTableItem" id="mcg-fa-z8C">
-                                                <rect key="frame" x="0.0" y="28" width="800" height="38.5"/>
+                                                <rect key="frame" x="0.0" y="28" width="320" height="39.5"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="mcg-fa-z8C" id="zlU-Sv-htb">
-                                                    <rect key="frame" x="0.0" y="0.0" width="800" height="38.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="320" height="39.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FfD-mS-iH9">
-                                                            <rect key="frame" x="20" y="0.0" width="760" height="39"/>
+                                                            <rect key="frame" x="20" y="0.0" width="280" height="39"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                                             <state key="normal" title="⊕ Add new project"/>
                                                             <connections>
@@ -65,21 +66,21 @@
                                                 </tableViewCellContentView>
                                             </tableViewCell>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ProjectTableItem" textLabel="S2o-Pg-bwi" detailTextLabel="Mye-zN-nXo" style="IBUITableViewCellStyleValue1" id="cTl-ZI-dlh">
-                                                <rect key="frame" x="0.0" y="66.5" width="800" height="43.5"/>
+                                                <rect key="frame" x="0.0" y="67.5" width="320" height="43.5"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="cTl-ZI-dlh" id="Zyh-9s-L0H">
-                                                    <rect key="frame" x="0.0" y="0.0" width="800" height="43.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="S2o-Pg-bwi">
-                                                            <rect key="frame" x="15" y="12" width="35" height="20"/>
+                                                            <rect key="frame" x="16" y="12" width="33" height="20.5"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mye-zN-nXo">
-                                                            <rect key="frame" x="739.5" y="12" width="45.5" height="20"/>
+                                                            <rect key="frame" x="260" y="12" width="44" height="20.5"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
@@ -121,28 +122,86 @@
             <objects>
                 <viewController storyboardIdentifier="NewProjectViewController" id="fwH-X1-BrJ" customClass="NewProjectViewController" customModule="plom_ios" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xmW-Cl-sBe">
-                        <rect key="frame" x="0.0" y="0.0" width="720" height="560"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <navigationBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zjP-gE-h4c">
-                                <rect key="frame" x="0.0" y="-6" width="720" height="50"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zjP-gE-h4c">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="56"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="56" id="SU9-DN-VLl"/>
+                                </constraints>
                                 <items>
                                     <navigationItem title="Title" id="cvh-5u-jbB"/>
                                 </items>
                             </navigationBar>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="NPo-Oe-RBM">
+                                <rect key="frame" x="16" y="72" width="288" height="388"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Project Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cfi-5d-I7K">
+                                        <rect key="frame" x="0.0" y="0.0" width="288" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xec-70-yd5">
+                                        <rect key="frame" x="0.0" y="28.5" width="288" height="156"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="3E2-yd-y0Q">
+                                        <rect key="frame" x="0.0" y="192.5" width="288" height="59.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Advanced" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Myf-qi-mNd">
+                                                <rect key="frame" x="0.0" y="0.0" width="288" height="20.5"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="I9O-TV-dsY">
+                                                <rect key="frame" x="0.0" y="28.5" width="288" height="31"/>
+                                                <subviews>
+                                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" title="Use existing" translatesAutoresizingMaskIntoConstraints="NO" id="iQu-PU-Nkw">
+                                                        <rect key="frame" x="0.0" y="0.0" width="51" height="31"/>
+                                                    </switch>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use an existing external folder" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Rt-nC-Nww">
+                                                        <rect key="frame" x="57" y="0.0" width="231" height="31"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lJR-h6-gME">
+                                        <rect key="frame" x="0.0" y="260" width="288" height="128"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </view>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="UbC-xW-I6z"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="NPo-Oe-RBM" firstAttribute="trailing" secondItem="UbC-xW-I6z" secondAttribute="trailing" constant="-16" id="8wD-VT-kzH"/>
+                            <constraint firstItem="NPo-Oe-RBM" firstAttribute="top" secondItem="zjP-gE-h4c" secondAttribute="bottom" constant="16" id="L49-K2-oOY"/>
+                            <constraint firstItem="NPo-Oe-RBM" firstAttribute="leading" secondItem="UbC-xW-I6z" secondAttribute="leading" constant="16" id="MHG-W4-bDg"/>
+                            <constraint firstItem="zjP-gE-h4c" firstAttribute="leading" secondItem="xmW-Cl-sBe" secondAttribute="leading" id="c9P-Es-CMe"/>
+                            <constraint firstAttribute="trailing" secondItem="zjP-gE-h4c" secondAttribute="trailing" id="gxe-1D-pYN"/>
+                            <constraint firstItem="UbC-xW-I6z" firstAttribute="bottom" secondItem="NPo-Oe-RBM" secondAttribute="bottom" id="j9T-z8-CR9"/>
+                            <constraint firstItem="UbC-xW-I6z" firstAttribute="top" secondItem="zjP-gE-h4c" secondAttribute="top" id="l1Z-U2-ehU"/>
+                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="New Project" id="nOF-7X-YND"/>
                     <connections>
+                        <outlet property="nameField" destination="xec-70-yd5" id="lk4-X2-TpD"/>
                         <outlet property="navigationBar" destination="zjP-gE-h4c" id="GIt-iA-Fab"/>
+                        <outlet property="useExistingFolderSwitch" destination="iQu-PU-Nkw" id="LwW-B7-Oeo"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pAC-tP-pqp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="175" y="815"/>
+            <point key="canvasLocation" x="174.375" y="814.43661971830988"/>
         </scene>
     </scenes>
     <resources>
