@@ -51,35 +51,47 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         self.webView.load(URLRequest(url: URL(string: "plombridge://app/index.html")!))
     }
     
+    func extensionToMime(_ ending:String) -> String {
+        var mime = "text/plain"
+        switch(ending) {
+        case "html":
+            mime = "text/html"
+        case "png":
+            mime = "image/png"
+        case "gif":
+            mime = "image/gif"
+        case "jpeg":
+            mime = "image/jpeg"
+        case "css":
+            mime = "text/css"
+        case "js":
+            mime = "application/x-javascript"
+        case "svg":
+            mime = "image/svg+xml"
+        case "json":
+            mime = "application/json"
+        case "wasm":
+            mime = "application/wasm"
+        default:
+            mime = "application/octet-stream"
+        }
+        return mime
+    }
+    
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         let url = urlSchemeTask.request.url!
         if (url.host == "app") {
             if (url.path.hasPrefix("/bridge")) {
                 // Special handling of paths
-            }
-            var mime = "text/plain"
-            switch(url.pathExtension) {
-            case "html":
-                mime = "text/html"
-            case "png":
-                mime = "image/png"
-            case "gif":
-                mime = "image/gif"
-            case "jpeg":
-                mime = "image/jpeg"
-            case "css":
-                mime = "text/css"
-            case "js":
-                mime = "application/x-javascript"
-            case "svg":
-                mime = "image/svg+xml"
-            case "json":
-                mime = "application/json"
-            case "wasm":
-                mime = "application/wasm"
-            default:
-                mime = "application/octet-streamSection"
-            }
+                if (url.path == "/bridge/test") {
+                    let received = String(data: urlSchemeTask.request.httpBody!, encoding: .utf8)
+                    let data: Data = (received?.appending(" received").data(using: .utf8))!
+                    urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: "text/plain", expectedContentLength: data.count, textEncodingName: "UTF-8"))
+                    urlSchemeTask.didReceive(data)
+                    urlSchemeTask.didFinish()
+                }
+           }
+            let mime = extensionToMime(url.pathExtension)
             do {
                 let data = try Data(contentsOf: NSURL.fileURL(withPath: htmlPath.appending(url.path)), options: .init())
                 urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: mime, expectedContentLength: data.count, textEncodingName: "UTF-8"))

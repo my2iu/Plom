@@ -1,2 +1,7 @@
 
+<script>
+    fetch('/bridge/test', {method: 'POST', body: 'request'})
+        .then(response => response.text())
+        .then(data => document.body.textContent = data)
+</script>
 Hello world
