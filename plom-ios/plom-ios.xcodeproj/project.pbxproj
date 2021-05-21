@@ -18,6 +18,7 @@
 		96388EF726555F7C00B0B465 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 96388EF526555F7C00B0B465 /* Main.storyboard */; };
 		96388F022655669100B0B465 /* ProjectListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96388F012655669100B0B465 /* ProjectListViewController.swift */; };
 		96AD89D42657017900DADF78 /* PlomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96AD89D32657017900DADF78 /* PlomViewController.swift */; };
+		96AD89DF265765AB00DADF78 /* html in Resources */ = {isa = PBXBuildFile; fileRef = 96AD89DE265765AB00DADF78 /* html */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		96388EF626555F7C00B0B465 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "plom-ios/Base.lproj/Main.storyboard"; sourceTree = "<group>"; };
 		96388F012655669100B0B465 /* ProjectListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListViewController.swift; sourceTree = "<group>"; };
 		96AD89D32657017900DADF78 /* PlomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlomViewController.swift; sourceTree = "<group>"; };
+		96AD89DE265765AB00DADF78 /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 		9624EF0A2654603900922DAA = {
 			isa = PBXGroup;
 			children = (
+				96AD89DE265765AB00DADF78 /* html */,
 				9624EF152654603900922DAA /* plom-ios */,
 				9624EF2C2654603C00922DAA /* plom-iosTests */,
 				9624EF372654603C00922DAA /* plom-iosUITests */,
@@ -252,6 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				96388EF726555F7C00B0B465 /* Main.storyboard in Resources */,
+				96AD89DF265765AB00DADF78 /* html in Resources */,
 				9624EF232654603C00922DAA /* LaunchScreen.storyboard in Resources */,
 				9624EF202654603C00922DAA /* Assets.xcassets in Resources */,
 			);
