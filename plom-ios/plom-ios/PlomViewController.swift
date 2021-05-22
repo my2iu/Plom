@@ -39,6 +39,9 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
         config.setURLSchemeHandler(self, forURLScheme: "plombridge")
+        #if DEBUG
+        config.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        #endif
         
         let wv = WKWebView(frame: webViewHolder.bounds, configuration:config)
         webView = wv
@@ -48,7 +51,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight,.flexibleTopMargin, .flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
         webViewHolder.addSubview(webView)
         
-        self.webView.load(URLRequest(url: URL(string: "plombridge://app/index.html")!))
+        self.webView.load(URLRequest(url: URL(string: "plombridge://app/plom/index.html")!))
     }
     
     func extensionToMime(_ ending:String) -> String {

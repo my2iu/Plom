@@ -58,6 +58,7 @@
 		96388F012655669100B0B465 /* ProjectListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListViewController.swift; sourceTree = "<group>"; };
 		96AD89D32657017900DADF78 /* PlomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlomViewController.swift; sourceTree = "<group>"; };
 		96AD89DE265765AB00DADF78 /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
+		96FF18742658743400535691 /* buildscripts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = buildscripts; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +90,7 @@
 		9624EF0A2654603900922DAA = {
 			isa = PBXGroup;
 			children = (
+				96FF18742658743400535691 /* buildscripts */,
 				96AD89DE265765AB00DADF78 /* html */,
 				9624EF152654603900922DAA /* plom-ios */,
 				9624EF2C2654603C00922DAA /* plom-iosTests */,
