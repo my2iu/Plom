@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name = "viewport" content = "user-scalable=no, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="iosplom.css">
+    <script type="text/javascript" language="javascript" src="plom/gwtPreload.js"></script>
+    <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
+    <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
+    <script type="text/javascript" language="javascript" src="plom/plomUi.js"></script>
+	<script>
+		// Safari on the web always scrolls the viewport when showing the soft keyboard,
+		// and we want everything to sort of stay visible on-screen, so we'll 
+		// load a custom css for that. I tried looking at the Visual Viewport API
+		// which is supposed to solve this problem, but it doesn't seem like it
+		// provides a mechanism that properly detects the soft keyboard for both
+		// Safari and Chrome browsers, so I'll just use browser sniffing
+		//if (navigator.vendor.includes("Apple Computer"))
+		//{
+		//	// Add the special Apple stylesheet
+		//	var link = document.createElement('link');
+		//	link.type = "text/css";
+		//	link.rel = "stylesheet";
+		//	link.href = "SafariWorkaround.css";
+		//	document.head.appendChild(link);
+		//}
+
+		// Run code for initializing the UI		 
+		addGwtOnLoad(function() {
+			setupPlomUi();
+			var main = new org.programmingbasics.plom.core.Main();
+			initRepository(main);
+			//main.go();
+    		hookRun(main);
+    		hookLoadSave(main);
+    		main.hookSubject();
+    		window.addEventListener('resize', function() {
+    			main.updateAfterResize();
+    		});
+    		main.loadFunctionCodeView("main");
+            
+            document.querySelector('.exitbutton').addEventListener('click', function(evt) {
+                fetch('/bridge/exit')
+               evt.preventDefault();
+            });
+		});
+	</script>
+
+  </head>
+
+  <body>
+  <div class="testbuttons">
+      <a class="exitbutton" href="#">&lt;&nbsp;Exit</a> <a class="runbutton" href="#">Run</a> &nbsp; <a class="loadbutton" href="#">Load</a> &nbsp; <a class="savebutton" href="#">Save</a> &nbsp; <span class="lineIndicator"></span></div>
+  <div class="console"></div>
+  <div class="subject">
+  	<div class="breadcrumb"></div>
+  	<!--<a href="#" class="edit"></a>-->
+  </div>
+  <div class="main">
+  </div>
+  </body>
+</html>
