@@ -20,7 +20,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     let htmlPath = Bundle.main.resourcePath!.appending("/html/")
     
     override func viewDidLoad() {
-        bridge = PlomJsBridge(self)
+        bridge = PlomJsBridge(self, url: projectUrl)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -164,10 +164,42 @@ enum BridgeError : Error {
 
 // Code that interfaces with the Plom JS code
 class PlomJsBridge {
-    weak var view: PlomViewController?;
+    weak var view: PlomViewController?
+    var projectUrl: URL
     
-    init(_ view: PlomViewController) {
+    init(_ view: PlomViewController, url: URL) {
         self.view = view
+        self.projectUrl = url
+    }
+    
+    func writeStringToSrcDir(fileName: String, contents: String)
+    {
+        do {
+            guard projectUrl.startAccessingSecurityScopedResource() else {
+                return
+            }
+            
+            defer { projectUrl.stopAccessingSecurityScopedResource() }
+            
+            // Go into the src directory
+            let srcDir = projectUrl.appendingPathComponent("src")
+            
+            try FileManager.default.createDirectory(at: srcDir, withIntermediateDirectories: true, attributes: nil)
+            
+            // Write file with the class contents
+            let classFile = srcDir.appendingPathComponent(fileName)
+            try contents.write(to: classFile, atomically: true, encoding: .utf8)
+        } catch {
+            
+        }
+    }
+    
+    func saveModule(contents: String) {
+        writeStringToSrcDir(fileName:"program.plom", contents: contents)
+    }
+    
+    func saveClass(name: String, contents: String) {
+        writeStringToSrcDir(fileName: "@" + name + ".plom", contents: contents)
     }
     
     func callPostHandler(urlPath: String, data: Data?, params: [String:String]) throws -> PlomPostResponse {
@@ -175,6 +207,16 @@ class PlomJsBridge {
         case "test":
             let received = String(data: data!, encoding: .utf8)
             return PlomPostResponse(mime: "text/plain", string: received!.appending(" received"))
+        
+        case "savemodule":
+            saveModule(contents: String(data: data!, encoding: .utf8)!)
+            return PlomPostResponse(mime: "text/plain", string: "")
+
+        case "saveclass":
+            let name = params["name"]
+            saveClass(name:name!, contents: String(data: data!, encoding: .utf8)!)
+            return PlomPostResponse(mime: "text/plain", string: "")
+
             
         case "exit":
             view?.navigationController?.popViewController(animated: true)

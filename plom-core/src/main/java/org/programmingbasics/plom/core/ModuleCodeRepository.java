@@ -563,7 +563,7 @@ public class ModuleCodeRepository
     }
   }
   
-  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out) throws IOException
+  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
   {
     out.token("module");
     out.token(".{program}");
@@ -583,10 +583,13 @@ public class ModuleCodeRepository
     }
     
     // Output classes
-    for (ClassDescription cls: classes)
+    if (saveClasses)
     {
-      if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
-        saveClass(out, cls);
+      for (ClassDescription cls: classes)
+      {
+        if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+          saveClass(out, cls);
+      }
     }
 
     out.token("}");

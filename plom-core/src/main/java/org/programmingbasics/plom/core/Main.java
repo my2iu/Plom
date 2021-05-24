@@ -1,7 +1,6 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
@@ -26,7 +25,6 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import jsinterop.annotations.JsFunction;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -171,8 +169,30 @@ public class Main
   public String getModuleAsString() throws IOException 
   {
     StringBuilder out = new StringBuilder();
-    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out));
+    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     return out.toString();
+  }
+  
+  public void saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver)
+  {
+    try {
+      StringBuilder out = new StringBuilder();
+      repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), false);
+      moduleSaver.saveModule(out.toString());
+      
+      for (ClassDescription cls: repository.classes)
+      {
+        if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+        {
+          out = new StringBuilder();
+          ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
+          classSaver.saveClass(cls.name, out.toString());
+        }
+      }
+    } catch (IOException e) {
+      // Ignore errors
+      e.printStackTrace();
+    }
   }
   
   /**
@@ -484,6 +504,17 @@ public class Main
         (ClassDescription c, FunctionDescription method, boolean isNewMethod) -> loadMethodSignatureView(c, method, isNewMethod),
         () -> loadGlobalsView(),
         isNew);
+  }
+
+  
+  @JsFunction public static interface SaveModuleCallback
+  {
+    public void saveModule(String contents);
+  }
+  
+  @JsFunction public static interface SaveClassCallback
+  {
+    public void saveClass(String className, String contents);
   }
 
 }

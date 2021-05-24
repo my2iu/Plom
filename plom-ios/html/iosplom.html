@@ -31,7 +31,7 @@
 			initRepository(main);
 			//main.go();
     		hookRun(main);
-    		hookLoadSave(main);
+    		// hookLoadSave(main);
     		main.hookSubject();
     		window.addEventListener('resize', function() {
     			main.updateAfterResize();
@@ -42,6 +42,15 @@
                 fetch('/bridge/exit')
                evt.preventDefault();
             });
+            document.querySelector("a.savebutton").addEventListener('click', function(evt) {
+                evt.preventDefault();
+                main.saveModuleAndClasses(function(contents) {
+                    fetch('/bridge/savemodule', {method: 'POST', body: contents});
+                }, function(name, contents) {
+                    fetch('/bridge/saveclass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
+                });
+            });
+            
 		});
 	</script>
 
