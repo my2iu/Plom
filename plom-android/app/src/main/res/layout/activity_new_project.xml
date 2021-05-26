@@ -30,10 +30,40 @@
             android:text="Advanced" />
 
         <CheckBox
-            android:id="@+id/checkBox"
+            android:id="@+id/useExistingDirCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:onClick="onUseExistingDirClicked"
             android:text="Use existing external folder" />
+
+        <LinearLayout
+            android:id="@+id/useExistingDirFolderPane"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Space
+                android:layout_width="36dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/ic_baseline_folder_open_24" />
+
+            <TextView
+                android:id="@+id/useExistingDirFolderName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:foregroundGravity="center_vertical"
+                android:text="TextView" />
+        </LinearLayout>
 
         <Space
             android:layout_width="match_parent"
