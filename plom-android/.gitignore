@@ -9,3 +9,4 @@ gradle
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/assets/www/plom/

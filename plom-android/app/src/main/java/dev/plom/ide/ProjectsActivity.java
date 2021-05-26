@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,7 +52,8 @@ public class ProjectsActivity extends AppCompatActivity {
                 View v = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.activity_projects_row, parent, false);
                     return new RecyclerView.ViewHolder(v) {
-                };            }
+                };
+            }
 
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
@@ -90,6 +92,17 @@ public class ProjectsActivity extends AppCompatActivity {
         if (requestCode == ACTIVITY_RESULT_NEW_PROJECT && resultCode == Activity.RESULT_OK) {
             if (data == null) return;
             String projectName = data.getStringExtra("name");
+            Uri dir = (Uri)data.getParcelableExtra("externalDir");
+            if (dir == null)
+            {
+                File projectDir = new File(getExternalFilesDir(null), "projects/" + projectName);
+                projectDir.mkdirs();
+                dir = Uri.fromFile(projectDir);
+            }
+            Intent intent = new Intent(this, PlomActivity.class);
+            intent.putExtra("name", projectName);
+            intent.putExtra("uri", dir);
+            startActivity(intent);
         }
     }
 

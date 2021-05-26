@@ -9,7 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Plom">
-        <activity android:name=".NewProjectActivity"></activity>
+        <activity android:name=".PlomActivity"
+            android:theme="@style/Theme.Plom.NoActionBar">
+
+        </activity>
+        <activity android:name=".NewProjectActivity" />
         <activity android:name=".ProjectsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

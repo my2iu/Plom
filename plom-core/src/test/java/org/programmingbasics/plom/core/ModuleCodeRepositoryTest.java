@@ -141,7 +141,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     StringBuilder strBuilder = new StringBuilder();
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
-    repository.saveModule(out);
+    repository.saveModule(out, true);
     Assert.assertEquals(" module .{program} {\n" + 
         " var . { var } @ {string }\n" + 
         " function . {get } @ {number } {\n" + 
