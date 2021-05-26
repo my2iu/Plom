@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Plom">
-        <activity android:name=".MainActivity">
+        <activity android:name=".NewProjectActivity"></activity>
+        <activity android:name=".ProjectsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
