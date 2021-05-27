@@ -220,6 +220,18 @@ function setupPlomUi() {
 		var lexer = new PlomTextReader.PlomTextScanner(inStream);
 		repository.loadModule(lexer);
 	}
+	function loadClassCodeStringIntoRepository(code, repository)
+	{
+		var inStream = new PlomTextReader.StringTextReader(code);
+		var lexer = new PlomTextReader.PlomTextScanner(inStream);
+		repository.loadClassIntoModule(lexer);
+	}
+	function makeRepositoryWithStdLib(main)
+    {
+        var repo = new ModuleCodeRepository();
+        repo.setChainedRepository(makeStdLibRepository());
+        return repo;
+    }
 	function doLoad(main)
 	{
 		var fileInput = document.createElement('input');
@@ -235,8 +247,7 @@ function setupPlomUi() {
 				reader.onload = function(loadedEvt) {
 					var readStr = reader.result;
 					try {
-					    var newRepository = new ModuleCodeRepository();
-					    newRepository.setChainedRepository(makeStdLibRepository());
+					    var newRepository = makeRepositoryWithStdLib(main);
 					    loadCodeStringIntoRepository(readStr, newRepository);
 						main.repository = newRepository;
 						main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
@@ -293,8 +304,7 @@ function setupPlomUi() {
 	{
 	    // Load in the built-in primitives of the interpreter into the 
 	    // code repository so that they can be browsed in the UI
-	    main.repository = new ModuleCodeRepository();
-	    main.repository.setChainedRepository(makeStdLibRepository());
+	    main.repository = makeRepositoryWithStdLib(main);
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
 				function .{main} @{void} {
@@ -319,4 +329,7 @@ function setupPlomUi() {
 	window.hookRun = hookRun;
 	window.hookLoadSave = hookLoadSave;
 	window.initRepository = initRepository;
+	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
+	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;
+	window.loadClassCodeStringIntoRepository = loadClassCodeStringIntoRepository;
 }

@@ -718,41 +718,46 @@ public class ModuleCodeRepository
       }
       else if ("class".equals(peek))
       {
-        ClassDescription loaded = loadClass(lexer);
-        ClassDescription cls = null;
-        boolean augmentClass = false;
-        // See if we have a built-in class with the same name. If so,
-        // we'll just fill-in the extra defined methods. Otherwise, we'll
-        // actually create a new class
-        for (ClassDescription c: classes)
-        {
-          if (c.isBuiltIn && c.name.equals(loaded.name))
-          {
-            cls = c;
-            augmentClass = true;
-            break;
-          }
-        }
-        if (cls == null)
-          cls = addClassAndResetIds(loaded.name);
-        if (!augmentClass)
-        {
-          cls.setSuperclass(loaded.parent);
-          for (VariableDescription v: loaded.variables)
-          {
-            cls.addVarAndResetIds(v.name, v.type);
-          }
-        }
-        for (FunctionDescription fn: loaded.methods)
-        {
-          cls.addMethod(fn);
-        }
+        loadClassIntoModule(lexer);
       }
       else
         throw new PlomReadException("Unexpected module contents", lexer);
     }
     
     lexer.expectToken("}");
+  }
+  
+  public void loadClassIntoModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    ClassDescription loaded = loadClass(lexer);
+    ClassDescription cls = null;
+    boolean augmentClass = false;
+    // See if we have a built-in class with the same name. If so,
+    // we'll just fill-in the extra defined methods. Otherwise, we'll
+    // actually create a new class
+    for (ClassDescription c: classes)
+    {
+      if (c.isBuiltIn && c.name.equals(loaded.name))
+      {
+        cls = c;
+        augmentClass = true;
+        break;
+      }
+    }
+    if (cls == null)
+      cls = addClassAndResetIds(loaded.name);
+    if (!augmentClass)
+    {
+      cls.setSuperclass(loaded.parent);
+      for (VariableDescription v: loaded.variables)
+      {
+        cls.addVarAndResetIds(v.name, v.type);
+      }
+    }
+    for (FunctionDescription fn: loaded.methods)
+    {
+      cls.addMethod(fn);
+    }
   }
   
   public static ClassDescription loadClass(PlomTextReader.PlomTextScanner lexer) throws PlomReadException

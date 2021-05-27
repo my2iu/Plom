@@ -28,7 +28,7 @@
 		addGwtOnLoad(function() {
 			setupPlomUi();
 			var main = new org.programmingbasics.plom.core.Main();
-			initRepository(main);
+			//initRepository(main);
 			//main.go();
     		hookRun(main);
     		// hookLoadSave(main);
@@ -36,7 +36,6 @@
     		window.addEventListener('resize', function() {
     			main.updateAfterResize();
     		});
-    		main.loadFunctionCodeView("main");
             
             document.querySelector('.exitbutton').addEventListener('click', function(evt) {
                 fetch('/bridge/exit')
@@ -45,12 +44,33 @@
             document.querySelector("a.savebutton").addEventListener('click', function(evt) {
                 evt.preventDefault();
                 main.saveModuleAndClasses(function(contents) {
-                    fetch('/bridge/savemodule', {method: 'POST', body: contents});
+                    fetch('/bridge/saveModule', {method: 'POST', body: contents});
                 }, function(name, contents) {
-                    fetch('/bridge/saveclass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
+                    fetch('/bridge/saveClass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
                 });
             });
-            
+
+            // Load in all the code for the project
+            var repo = makeRepositoryWithStdLib(main);
+            fetch('/bridge/listProjectFiles')
+                .then(response => response.json())
+                .then((json) =>
+                    Promise.all(json.files.map(filename =>
+                        fetch('/bridge/readProjectFile?name=' + encodeURIComponent(filename))
+                            .then((contents) => contents.text())
+                            .then((code) => {
+                    console.log(code);
+                    if (filename == 'program.plom')
+                        loadCodeStringIntoRepository(code, repo);
+                    else
+                        loadClassCodeStringIntoRepository(code, repo);
+                    }))))
+                .then((done) => {
+                    main.repository = repo;
+                    //main.loadFunctionCodeView("main");
+                    main.loadGlobalsView();
+                });
+
 		});
 	</script>
 

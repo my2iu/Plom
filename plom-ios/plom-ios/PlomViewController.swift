@@ -6,6 +6,8 @@
 import UIKit
 import WebKit
 
+private let PLOM_MIME_TYPE = "application/x.dev.plom";
+
 
 class PlomViewController : UIViewController, WKURLSchemeHandler {
     
@@ -172,16 +174,47 @@ class PlomJsBridge {
         self.projectUrl = url
     }
     
-    func writeStringToSrcDir(fileName: String, contents: String)
-    {
+    func doProjectFileOperation<T>(_ op: () throws -> T, badReturn:T) -> T {
         do {
             guard projectUrl.startAccessingSecurityScopedResource() else {
-                return
+                return badReturn
             }
             
             defer { projectUrl.stopAccessingSecurityScopedResource() }
             
-            // Go into the src directory
+            return try op()
+        } catch {
+            return badReturn
+        }
+    }
+    
+    func readProjectFile(_ name: String) -> Data? {
+        doProjectFileOperation( {() -> Data? in
+            let srcDir = projectUrl.appendingPathComponent("src").appendingPathComponent(name)
+            
+            return try Data(contentsOf: srcDir)
+        }, badReturn: nil);
+    }
+    
+    func listProjectFiles() -> [String] {
+        doProjectFileOperation( {() -> [String] in
+            let srcDir = projectUrl.appendingPathComponent("src")
+            
+            let urlList = try FileManager.default.contentsOfDirectory(at: srcDir, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+            
+            var toReturn: [String] = []
+            for url in urlList {
+                toReturn.append(url.lastPathComponent)
+            }
+            
+            return toReturn
+
+        }, badReturn: []);
+    }
+    
+    func writeStringToSrcDir(fileName: String, contents: String)
+    {
+        doProjectFileOperation( {() -> Void in
             let srcDir = projectUrl.appendingPathComponent("src")
             
             try FileManager.default.createDirectory(at: srcDir, withIntermediateDirectories: true, attributes: nil)
@@ -189,9 +222,8 @@ class PlomJsBridge {
             // Write file with the class contents
             let classFile = srcDir.appendingPathComponent(fileName)
             try contents.write(to: classFile, atomically: true, encoding: .utf8)
-        } catch {
-            
-        }
+
+        }, badReturn: nil);
     }
     
     func saveModule(contents: String) {
@@ -208,16 +240,25 @@ class PlomJsBridge {
             let received = String(data: data!, encoding: .utf8)
             return PlomPostResponse(mime: "text/plain", string: received!.appending(" received"))
         
-        case "savemodule":
+        case "saveModule":
             saveModule(contents: String(data: data!, encoding: .utf8)!)
             return PlomPostResponse(mime: "text/plain", string: "")
 
-        case "saveclass":
+        case "saveClass":
             let name = params["name"]
             saveClass(name:name!, contents: String(data: data!, encoding: .utf8)!)
             return PlomPostResponse(mime: "text/plain", string: "")
 
+        case "listProjectFiles":
+            let jsonEncoder = JSONEncoder()
+            let toReturn: ProjectFilesList = ProjectFilesList(files: listProjectFiles())
+            let toReturnJson = try jsonEncoder.encode(toReturn)
+            return PlomPostResponse(mime: "application/json", data: toReturnJson)
             
+        case "readProjectFile":
+            let name = params["name"]!
+            return PlomPostResponse(mime: PLOM_MIME_TYPE, data: readProjectFile(name) ?? Data(capacity: 0))
+
         case "exit":
             view?.navigationController?.popViewController(animated: true)
             return PlomPostResponse(mime: "text/plain", string: "")
@@ -226,4 +267,8 @@ class PlomJsBridge {
             throw BridgeError.badArguments
         }
     }
+}
+
+struct ProjectFilesList : Codable {
+    var files: [String]
 }
