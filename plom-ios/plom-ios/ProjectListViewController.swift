@@ -49,13 +49,22 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         tableView.deselectRow(at: indexPath, animated: false)
         if indexPath.item > 0 {
             do {
-                projectNameForSegue = projectNamesList[indexPath.item - 1]
+                // Move the project to the head of the list
+                let name = projectNamesList.remove(at:indexPath.item - 1)
+                let bookmark = projectBookmarksList.remove(at:indexPath.item - 1)
+                projectNamesList.insert(name, at: 0)
+                projectBookmarksList.insert(bookmark, at: 0)
+                saveProjectListToUserDefaults()
+                tableView.reloadData()
+                
+                // Show the project
+                projectNameForSegue = name
                 var isStale = true
-                projectUrlForSegue = try URL(resolvingBookmarkData: projectBookmarksList[indexPath.item - 1], bookmarkDataIsStale: &isStale)
+                projectUrlForSegue = try URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale)
                 if !isStale {
                     performSegue(withIdentifier: "PlomView", sender: self)
                 } else {
-                    // Remove the project since the URL is not valid
+                    // Should remove the project since the URL is not valid
                 }
                
             } catch {
@@ -73,10 +82,19 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     
     func createProject(name: String, url: URL) {
         do {
+            // Check if a project of the same name already exists
+            if projectNamesList.contains(where: {$0.lowercased() == name.lowercased()}) {
+                let alert = UIAlertController(title: "Project already exists", message: "A project with the same name already exists", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                alert.popoverPresentationController?.sourceView = tableView
+                self.present(alert, animated: true, completion: nil)
+                return
+            }
+            
             // Add the project to the list of projects
             let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            projectNamesList.append(name)
-            projectBookmarksList.append(bookmark)
+            projectNamesList.insert(name, at:0)
+            projectBookmarksList.insert(bookmark, at:0)
             saveProjectListToUserDefaults()
             tableView.reloadData()
 
