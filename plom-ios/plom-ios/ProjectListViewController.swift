@@ -10,9 +10,17 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     
     @IBOutlet weak var tableView: UITableView!
     
+    var projectNamesList : [String] = []
+    var projectBookmarksList : [Data] = []
+    
+    let PROJECT_NAMES_KEY = "project names"
+    let PROJECT_BOOKMARKS_KEY = "project bookmarks"
+    
     override func viewDidLoad() {
         navigationController?.navigationBar.prefersLargeTitles = true
-
+        
+        projectNamesList = UserDefaults.standard.array(forKey: PROJECT_NAMES_KEY) as? [String] ?? []
+        projectBookmarksList = UserDefaults.standard.array(forKey: PROJECT_BOOKMARKS_KEY) as? [Data] ?? []
     }
     
     // For filling the table view
@@ -22,7 +30,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3;
+        return projectNamesList.count + 1;
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -32,17 +40,28 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             cell = tableView.dequeueReusableCell(withIdentifier: "AddButtonTableItem", for: indexPath)
         } else {
             cell = tableView.dequeueReusableCell(withIdentifier: "ProjectTableItem", for: indexPath)
+            cell.textLabel?.text = projectNamesList[indexPath.item - 1]
         }
-//        if fontFileNames.isEmpty {
-//            cell.textLabel!.text = "No external fonts have been added"
-//            cell.detailTextLabel!.text = ""
-//            return cell;
-//        }
-//        cell.textLabel!.text = fontFileNames[indexPath.item]
-//        let metadata: [NSDictionary] = fontFileMetadata[fontBookmarkData[indexPath.item]]!
-//        let fontsFound = metadata.map( {$0.object(forKey: "fullName") as! String})
-//        cell.detailTextLabel!.text = fontsFound.joined(separator: ", ")
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: false)
+        if indexPath.item > 0 {
+            do {
+                projectNameForSegue = projectNamesList[indexPath.item - 1]
+                var isStale = true
+                projectUrlForSegue = try URL(resolvingBookmarkData: projectBookmarksList[indexPath.item - 1], bookmarkDataIsStale: &isStale)
+                if !isStale {
+                    performSegue(withIdentifier: "PlomView", sender: self)
+                } else {
+                    // Remove the project since the URL is not valid
+                }
+               
+            } catch {
+                
+            }
+        }
     }
 
     var projectNameForSegue: String?
@@ -53,9 +72,22 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     }
     
     func createProject(name: String, url: URL) {
-        projectNameForSegue = name
-        projectUrlForSegue = url
-        performSegue(withIdentifier: "PlomView", sender: self)
+        do {
+            // Add the project to the list of projects
+            let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            projectNamesList.append(name)
+            projectBookmarksList.append(bookmark)
+            saveProjectListToUserDefaults()
+            tableView.reloadData()
+
+            // Show the project view
+            projectNameForSegue = name
+            projectUrlForSegue = url
+            performSegue(withIdentifier: "PlomView", sender: self)
+        } catch {
+            
+        }
+        
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -68,6 +100,10 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         }
     }
     
+    func saveProjectListToUserDefaults() {
+        UserDefaults.standard.set(projectNamesList, forKey: PROJECT_NAMES_KEY)
+        UserDefaults.standard.set(projectBookmarksList, forKey: PROJECT_BOOKMARKS_KEY)
+    }
 }
 
 protocol CreateNewProjectProtocol {
