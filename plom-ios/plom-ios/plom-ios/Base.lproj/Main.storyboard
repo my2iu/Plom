@@ -32,7 +32,7 @@
                             <constraint firstItem="Yb0-g2-Klv" firstAttribute="bottom" secondItem="vTJ-aD-8JO" secondAttribute="bottom" id="sru-gW-ShK"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="5yr-ok-Ctn"/>
+                    <navigationItem key="navigationItem" largeTitleDisplayMode="never" id="5yr-ok-Ctn"/>
                     <connections>
                         <outlet property="webViewHolder" destination="vTJ-aD-8JO" id="aMj-Ye-6XX"/>
                     </connections>

@@ -16,6 +16,8 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     var projectUrl: URL!
     var bridge : PlomJsBridge!
     
+    var oldNavigationBarHidden = false
+    
     @IBOutlet weak var webViewHolder: UIView!
     weak var webView: WKWebView!
     
@@ -27,15 +29,15 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        navigationController?.isNavigationBarHidden = true
-        
+        oldNavigationBarHidden = navigationController?.isNavigationBarHidden ?? false
+        navigationController?.setNavigationBarHidden(true, animated: false)
         startWebView()
  
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-//        navigationController?.isNavigationBarHidden = false
+        navigationController?.setNavigationBarHidden(oldNavigationBarHidden, animated: false)
     }
     
     func callWebViewFunction(_ name: String, json: Any, completionHandler: ((Any?, Error?) -> Void)? = nil) {
