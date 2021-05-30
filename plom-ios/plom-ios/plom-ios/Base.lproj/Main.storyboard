@@ -34,6 +34,7 @@
                     </view>
                     <navigationItem key="navigationItem" largeTitleDisplayMode="never" id="5yr-ok-Ctn"/>
                     <connections>
+                        <outlet property="bottomConstraint" destination="sru-gW-ShK" id="Lpr-oh-b9c"/>
                         <outlet property="webViewHolder" destination="vTJ-aD-8JO" id="aMj-Ye-6XX"/>
                     </connections>
                 </viewController>

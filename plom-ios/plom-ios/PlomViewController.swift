@@ -20,11 +20,17 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     
     @IBOutlet weak var webViewHolder: UIView!
     weak var webView: WKWebView!
-    
+    // For adjusting the webview when the soft keyboard is shown
+    @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
+
     let htmlPath = Bundle.main.resourcePath!.appending("/html/")
     
     override func viewDidLoad() {
         bridge = PlomJsBridge(self, url: projectUrl)
+        
+        // Handle shrinking the webkit viewport when the soft keyboard is shown
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -32,12 +38,30 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         oldNavigationBarHidden = navigationController?.isNavigationBarHidden ?? false
         navigationController?.setNavigationBarHidden(true, animated: false)
         startWebView()
- 
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // We want to code fast, so we'll disable all animations (including, notably, the keyboard animation)
+        UIView.setAnimationsEnabled(false)
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
+        UIView.setAnimationsEnabled(true)
         super.viewDidDisappear(animated)
         navigationController?.setNavigationBarHidden(oldNavigationBarHidden, animated: false)
+    }
+    
+    @objc
+    func keyboardWillShow(_ notification: NSNotification) {
+        var keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        keyboardFrame = self.view.convert(keyboardFrame, from: self.view.window)
+        self.bottomConstraint.constant = keyboardFrame.size.height
+    }
+    
+    @objc
+    func keyboardWillHide(_ notification: NSNotification) {
+        self.bottomConstraint.constant = 0
     }
     
     func callWebViewFunction(_ name: String, json: Any, completionHandler: ((Any?, Error?) -> Void)? = nil) {

@@ -125,7 +125,11 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             }
             
             // Add the project to the list of projects
+#if os(iOS)
+            let bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+#else
             let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+#endif
             projects.insert(ProjectDescription(name: name, urlBookmark: bookmark, isManagedByPlom: !isExternal), at: 0)
             saveProjectListToUserDefaults()
             tableView.reloadData()
