@@ -176,9 +176,7 @@ class PlomJsBridge {
     
     func doProjectFileOperation<T>(_ op: () throws -> T, badReturn:T) -> T {
         do {
-            guard projectUrl.startAccessingSecurityScopedResource() else {
-                return badReturn
-            }
+            _ = projectUrl.startAccessingSecurityScopedResource()
             
             defer { projectUrl.stopAccessingSecurityScopedResource() }
             

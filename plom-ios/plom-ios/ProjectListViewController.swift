@@ -10,17 +10,21 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     
     @IBOutlet weak var tableView: UITableView!
     
-    var projectNamesList : [String] = []
-    var projectBookmarksList : [Data] = []
+    var projects : [ProjectDescription] = []
     
-    let PROJECT_NAMES_KEY = "project names"
-    let PROJECT_BOOKMARKS_KEY = "project bookmarks"
+    let PROJECT_PREFS_KEY = "project list"
     
     override func viewDidLoad() {
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        projectNamesList = UserDefaults.standard.array(forKey: PROJECT_NAMES_KEY) as? [String] ?? []
-        projectBookmarksList = UserDefaults.standard.array(forKey: PROJECT_BOOKMARKS_KEY) as? [Data] ?? []
+        let savedProjects = UserDefaults.standard.array(forKey: PROJECT_PREFS_KEY) ?? []
+        for entry in savedProjects {
+            let proj = entry as! [String: Any]
+            let name = proj["name"] as! String
+            let bookmark = proj["url"] as! Data
+            let managed = proj["managed"] as! Int
+            projects.append(ProjectDescription(name: name, urlBookmark: bookmark, isManagedByPlom: managed != 0))
+        }
     }
     
     // For filling the table view
@@ -30,7 +34,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return projectNamesList.count + 1;
+        return projects.count + 1;
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -39,8 +43,10 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         if indexPath.item == 0 {
             cell = tableView.dequeueReusableCell(withIdentifier: "AddButtonTableItem", for: indexPath)
         } else {
-            cell = tableView.dequeueReusableCell(withIdentifier: "ProjectTableItem", for: indexPath)
-            cell.textLabel?.text = projectNamesList[indexPath.item - 1]
+            let projectCel = tableView.dequeueReusableCell(withIdentifier: "ProjectTableItem", for: indexPath) as! ProjectTableItem
+            projectCel.titleLabel?.text = projects[indexPath.item - 1].name
+            projectCel.moreButton.tag = indexPath.item - 1
+            cell = projectCel
         }
         return cell
     }
@@ -50,17 +56,15 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         if indexPath.item > 0 {
             do {
                 // Move the project to the head of the list
-                let name = projectNamesList.remove(at:indexPath.item - 1)
-                let bookmark = projectBookmarksList.remove(at:indexPath.item - 1)
-                projectNamesList.insert(name, at: 0)
-                projectBookmarksList.insert(bookmark, at: 0)
+                let proj = projects.remove(at:indexPath.item - 1)
+                projects.insert(proj, at: 0)
                 saveProjectListToUserDefaults()
                 tableView.reloadData()
                 
                 // Show the project
-                projectNameForSegue = name
+                projectNameForSegue = proj.name
                 var isStale = true
-                projectUrlForSegue = try URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale)
+                projectUrlForSegue = try URL(resolvingBookmarkData: proj.urlBookmark, bookmarkDataIsStale: &isStale)
                 if !isStale {
                     performSegue(withIdentifier: "PlomView", sender: self)
                 } else {
@@ -73,6 +77,35 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         }
     }
 
+    @IBAction func projectItemMorePressed(_ sender: UIButton) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let index = sender.tag
+        let proj = projects[index]
+        let bookmark = proj.urlBookmark
+        var isStale = true
+        let url = try? URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale)
+        if proj.isManagedByPlom {
+            alert.addAction(UIAlertAction(title: "Delete", style: .default, handler: {_ in
+                do {
+                    try FileManager.default.removeItem(atPath: url!.path)
+                } catch {
+                    // Swallow the error
+                }
+                self.projects.remove(at: index)
+                self.saveProjectListToUserDefaults()
+                self.tableView.reloadData()
+            } ))
+        } else {
+            alert.addAction(UIAlertAction(title: "Remove", style: .default, handler: {_ in
+                self.projects.remove(at: index)
+                self.saveProjectListToUserDefaults()
+                self.tableView.reloadData()
+            }))
+        }
+        alert.popoverPresentationController?.sourceView = sender
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     var projectNameForSegue: String?
     var projectUrlForSegue: URL?
     
@@ -80,10 +113,10 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         performSegue(withIdentifier: "ShowNewProjectDialog", sender: self)
     }
     
-    func createProject(name: String, url: URL) {
+    func createProject(name: String, url: URL, isExternal: Bool) {
         do {
             // Check if a project of the same name already exists
-            if projectNamesList.contains(where: {$0.lowercased() == name.lowercased()}) {
+            if projects.contains(where: {$0.name.lowercased() == name.lowercased()}) {
                 let alert = UIAlertController(title: "Project already exists", message: "A project with the same name already exists", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                 alert.popoverPresentationController?.sourceView = tableView
@@ -93,8 +126,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             
             // Add the project to the list of projects
             let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            projectNamesList.insert(name, at:0)
-            projectBookmarksList.insert(bookmark, at:0)
+            projects.insert(ProjectDescription(name: name, urlBookmark: bookmark, isManagedByPlom: !isExternal), at: 0)
             saveProjectListToUserDefaults()
             tableView.reloadData()
 
@@ -119,13 +151,32 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
     }
     
     func saveProjectListToUserDefaults() {
-        UserDefaults.standard.set(projectNamesList, forKey: PROJECT_NAMES_KEY)
-        UserDefaults.standard.set(projectBookmarksList, forKey: PROJECT_BOOKMARKS_KEY)
+        var savedProjects: [Any] = []
+        for proj in projects {
+            var entry : [String:Any] = [:]
+            entry["name"] = proj.name
+            entry["url"] = proj.urlBookmark
+            entry["managed"] = (proj.isManagedByPlom ? 1 : 0)
+            savedProjects.append(entry)
+        }
+        UserDefaults.standard.set(savedProjects, forKey: PROJECT_PREFS_KEY)
     }
 }
 
+class ProjectTableItem : UITableViewCell {
+    @IBOutlet weak var titleLabel : UILabel!
+    @IBOutlet weak var moreButton : UIButton!
+}
+
+struct ProjectDescription {
+//    init(name: String, url: URL, isManagedByPlom: Bool)
+    let name: String
+    let urlBookmark: Data
+    let isManagedByPlom: Bool
+}
+
 protocol CreateNewProjectProtocol {
-    func createProject(name: String, url: URL)
+    func createProject(name: String, url: URL, isExternal: Bool)
 }
 
 class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
@@ -170,7 +221,8 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
 
     @objc func donePressed(sender: UIBarButtonItem) {
         // Make sure the name field isn't blank
-        if nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+        let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if name?.isEmpty ?? true {
             let alert = UIAlertController(title: "Missing project name", message: "Please provide a name for the project", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             alert.popoverPresentationController?.sourceView = nameField
@@ -179,27 +231,20 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
         }
         let url : URL
         if externalProjectFolder == nil {
-            url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("projects").appendingPathComponent(nameField.text!)
-            // Make sure the project doesn't already exist
-//            if FileManager.default.fileExists(atPath: url.path) {
-//                let alert = UIAlertController(title: "Project name already in use", message: "Please provide a different name for the project", preferredStyle: .actionSheet)
-//                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-//                alert.popoverPresentationController?.sourceView = nameField
-//                self.present(alert, animated: true, completion: nil)
-//                return
-//            }
+            url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("projects").appendingPathComponent(name!)
             // Create a project directory
             do {
                 try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
             } catch {
                 self.dismiss(animated: true, completion: nil)
+                return
             }
         } else {
             url = externalProjectFolder!
         }
         self.dismiss(animated: true, completion: nil)
         
-        newProjectCallback?.createProject(name: nameField.text!, url: url)
+        newProjectCallback?.createProject(name: name!, url: url, isExternal: externalProjectFolder != nil)
     }
     
     var externalProjectFolder : URL?
