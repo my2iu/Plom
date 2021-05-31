@@ -75,7 +75,6 @@ public class NewProjectActivity extends AppCompatActivity {
         Intent dataToReturn = new Intent();
         dataToReturn.putExtra("name", projectName);
         if (externalDir != null) {
-//            getContentResolver().takePersistableUriPermission(externalDir, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             dataToReturn.putExtra("externalDir", externalDir);
         }
         setResult(RESULT_OK, dataToReturn);

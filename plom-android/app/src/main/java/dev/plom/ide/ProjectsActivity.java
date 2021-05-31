@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,8 +27,14 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProjectsActivity extends AppCompatActivity {
 
@@ -35,10 +43,14 @@ public class ProjectsActivity extends AppCompatActivity {
 
     RecyclerView listWidget;
 
+    List<ProjectDescription> projects = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_projects);
+
+        loadProjectList();
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("Plom projects");
@@ -58,7 +70,18 @@ public class ProjectsActivity extends AppCompatActivity {
             @Override
             public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
                 TextView textView = holder.itemView.findViewById(R.id.project_row_item_text);
-                textView.setText("Project");
+                textView.setText(projects.get(position).name);
+                textView.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        ProjectDescription proj = projects.get(position);
+                        // Start an activity for the project
+                        Intent intent = new Intent(ProjectsActivity.this, PlomActivity.class);
+                        intent.putExtra("name", proj.name);
+                        intent.putExtra("uri", proj.uri);
+                        startActivity(intent);
+
+                    }
+                });
                 final ImageButton moreButton = holder.itemView.findViewById(R.id.project_row_item_more);
                 moreButton.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
@@ -80,10 +103,9 @@ public class ProjectsActivity extends AppCompatActivity {
 
             @Override
             public int getItemCount() {
-                return 1;
+                return projects.size();
             }
         });
-
     }
 
     @Override
@@ -91,6 +113,7 @@ public class ProjectsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_RESULT_NEW_PROJECT && resultCode == Activity.RESULT_OK) {
             if (data == null) return;
+            boolean isManagedByPlom;
             String projectName = data.getStringExtra("name");
             Uri dir = (Uri)data.getParcelableExtra("externalDir");
             if (dir == null)
@@ -98,7 +121,18 @@ public class ProjectsActivity extends AppCompatActivity {
                 File projectDir = new File(getExternalFilesDir(null), "projects/" + projectName);
                 projectDir.mkdirs();
                 dir = Uri.fromFile(projectDir);
+                isManagedByPlom = false;
             }
+            else
+            {
+                getContentResolver().takePersistableUriPermission(dir, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                isManagedByPlom = true;
+            }
+            // Add the new project to the list of projects
+            projects.add(new ProjectDescription(projectName, dir, isManagedByPlom));
+            listWidget.getAdapter().notifyDataSetChanged();
+            saveProjectList();
+            // Start an activity for the new project
             Intent intent = new Intent(this, PlomActivity.class);
             intent.putExtra("name", projectName);
             intent.putExtra("uri", dir);
@@ -110,5 +144,63 @@ public class ProjectsActivity extends AppCompatActivity {
     {
         Intent intent = new Intent(this, NewProjectActivity.class);
         startActivityForResult(intent, ACTIVITY_RESULT_NEW_PROJECT);
+    }
+
+    static class ProjectDescription
+    {
+        ProjectDescription(String name, Uri uri, boolean isManagedByPlom)
+        {
+            this.name = name;
+            this.uri = uri;
+            this.isManagedByPlom = isManagedByPlom;
+        }
+        String name;
+        Uri uri;
+        boolean isManagedByPlom;
+    }
+
+    void saveProjectList()
+    {
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        JSONArray json = new JSONArray();
+        for (ProjectDescription proj: projects)
+        {
+            try {
+                JSONObject projJson = new JSONObject();
+                projJson.put("name", proj.name);
+                projJson.put("uri", proj.uri.toString());
+                projJson.put("managed", proj.isManagedByPlom);
+                json.put(projJson);
+            }
+            catch (JSONException e)
+            {
+                // Ignore errors
+            }
+        }
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString("projects", json.toString());
+        prefsEditor.apply();
+    }
+
+    void loadProjectList()
+    {
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        List<ProjectDescription> newProjects = new ArrayList<>();
+        try {
+            JSONArray json = new JSONArray(prefs.getString("projects", "[]"));
+            for (int n = 0; n < json.length(); n++) {
+                JSONObject projJson = json.getJSONObject(n);
+                newProjects.add(new ProjectDescription(
+                        projJson.getString("name"),
+                        Uri.parse(projJson.getString("uri")),
+                        projJson.getBoolean("managed")
+                ));
+            }
+            projects = newProjects;
+        }
+        catch (JSONException e)
+        {
+            // Ignore errors
+        }
     }
 }
