@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -73,25 +74,44 @@ public class ProjectsActivity extends AppCompatActivity {
                 textView.setText(projects.get(position).name);
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
-                        ProjectDescription proj = projects.get(position);
+                        ProjectDescription proj = projects.remove(position);
+                        projects.add(0, proj);
+                        listWidget.getAdapter().notifyDataSetChanged();
                         // Start an activity for the project
                         Intent intent = new Intent(ProjectsActivity.this, PlomActivity.class);
                         intent.putExtra("name", proj.name);
                         intent.putExtra("uri", proj.uri);
                         startActivity(intent);
-
                     }
                 });
                 final ImageButton moreButton = holder.itemView.findViewById(R.id.project_row_item_more);
                 moreButton.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
+                        ProjectDescription proj = projects.get(position);
                         PopupMenu popup = new PopupMenu(ProjectsActivity.this, moreButton);
                         popup.inflate(R.menu.projects_row_context_menu);
+                        if (proj.isManagedByPlom)
+                            popup.getMenu().findItem(R.id.menuDelete).setVisible(false);
+                        else
+                            popup.getMenu().findItem(R.id.menuRemove).setVisible(false);
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
+                                ProjectDescription proj = projects.get(position);
                                 switch(item.getItemId())
                                 {
+                                    case R.id.menuDelete:
+                                        if ("file".equals(proj.uri.getScheme()))
+                                            deleteFileRecursively(new File(proj.uri.getPath()));
+                                        projects.remove(position);
+                                        saveProjectList();
+                                        listWidget.getAdapter().notifyDataSetChanged();
+                                        break;
+                                    case R.id.menuRemove:
+                                        projects.remove(position);
+                                        saveProjectList();
+                                        listWidget.getAdapter().notifyDataSetChanged();
+                                        break;
                                 }
                                 return false;
                             }
@@ -113,9 +133,23 @@ public class ProjectsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_RESULT_NEW_PROJECT && resultCode == Activity.RESULT_OK) {
             if (data == null) return;
-            boolean isManagedByPlom;
             String projectName = data.getStringExtra("name");
             Uri dir = (Uri)data.getParcelableExtra("externalDir");
+            // Check if we already have a project with the same name
+            for (ProjectDescription proj: projects)
+            {
+                if (projectName.equals(proj.name))
+                {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Project already exists")
+                            .setMessage("A project with the same name already exists")
+                            .setPositiveButton("OK", null)
+                            .show();
+                    return;
+                }
+            }
+            // Create necessary directories and permissions for the project
+            boolean isManagedByPlom;
             if (dir == null)
             {
                 File projectDir = new File(getExternalFilesDir(null), "projects/" + projectName);
@@ -129,7 +163,7 @@ public class ProjectsActivity extends AppCompatActivity {
                 isManagedByPlom = true;
             }
             // Add the new project to the list of projects
-            projects.add(new ProjectDescription(projectName, dir, isManagedByPlom));
+            projects.add(0, new ProjectDescription(projectName, dir, isManagedByPlom));
             listWidget.getAdapter().notifyDataSetChanged();
             saveProjectList();
             // Start an activity for the new project
@@ -202,5 +236,17 @@ public class ProjectsActivity extends AppCompatActivity {
         {
             // Ignore errors
         }
+    }
+
+    void deleteFileRecursively(File dir)
+    {
+        if (dir.isDirectory())
+        {
+            for (File f: dir.listFiles())
+            {
+                deleteFileRecursively(f);
+            }
+        }
+        dir.delete();
     }
 }
