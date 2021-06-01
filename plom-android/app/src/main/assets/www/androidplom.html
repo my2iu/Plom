@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name = "viewport" content = "user-scalable=no, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="androidplom.css">
+    <script type="text/javascript" language="javascript" src="plom/gwtPreload.js"></script>
+    <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
+    <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
+    <script type="text/javascript" language="javascript" src="plom/plomUi.js"></script>
+	<script>
+		// Run code for initializing the UI
+		addGwtOnLoad(function() {
+			setupPlomUi();
+			var main = new org.programmingbasics.plom.core.Main();
+			initRepository(main);
+			//main.go();
+    		hookRun(main);
+    		// hookLoadSave(main);
+    		main.hookSubject();
+    		window.addEventListener('resize', function() {
+    			main.updateAfterResize();
+    		});
+
+            document.querySelector("a.savebutton").addEventListener('click', function(evt) {
+                evt.preventDefault();
+                main.saveModuleAndClasses(function(contents) {
+                  window.AndroidBridge.saveModule(contents);
+                  AndroidBridge.saveModule(contents);
+                }, function(name, contents) {
+                  AndroidBridge.saveClass(name, contents);
+                });
+            });
+
+            // Load in all the code for the project
+            var repo = makeRepositoryWithStdLib(main);
+            fetch('http://webviewbridge.plom.dev/bridge/listProjectFiles')
+                .then(response => response.json())
+                .then((json) =>
+                    Promise.all(json.files.map(filename =>
+                        fetch('http://webviewbridge.plom.dev/bridge/readProjectFile?name=' + encodeURIComponent(filename))
+                            .then((contents) => contents.text())
+                            .then((code) => {
+                    console.log(code);
+                    if (filename == 'program.plom')
+                        loadCodeStringIntoRepository(code, repo);
+                    else
+                        loadClassCodeStringIntoRepository(code, repo);
+                    }))))
+                .then((done) => {
+                    main.repository = repo;
+                    //main.loadFunctionCodeView("main");
+                    main.loadGlobalsView();
+                });
+
+		});
+	</script>
+
+  </head>
+
+  <body>
+  <div class="testbuttons">
+      <a class="runbutton" href="#">Run</a> &nbsp; <a class="loadbutton" href="#">Load</a> &nbsp; <a class="savebutton" href="#">Save</a> &nbsp; <span class="lineIndicator"></span></div>
+  <div class="console"></div>
+  <div class="subject">
+  	<div class="breadcrumb"></div>
+  	<!--<a href="#" class="edit"></a>-->
+  </div>
+  <div class="main">
+  </div>
+  </body>
+</html>

@@ -8,6 +8,7 @@ import androidx.webkit.WebViewFeature;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -16,13 +17,23 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PlomActivity extends AppCompatActivity {
 
@@ -52,7 +63,7 @@ public class PlomActivity extends AppCompatActivity {
         final WebView webView = (WebView) findViewById(R.id.webview);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setAllowFileAccessFromFileURLs(true);
-        webView.getSettings().setAllowUniversalAccessFromFileURLs(true);  // To allow my omberbridge: XHR requests for sending data
+        webView.getSettings().setAllowUniversalAccessFromFileURLs(true);  // To allow my plombridge: XHR requests for sending data
         webView.getSettings().setDomStorageEnabled(true);
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)
                 && WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK_STRATEGY))
@@ -68,9 +79,23 @@ public class PlomActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return null;
+                if ("http".equals(request.getUrl().getScheme())
+                    && "webviewbridge.plom.dev".equals(request.getUrl().getHost())
+                    && request.getUrl().getPath().startsWith("/bridge/"))
+                {
+                    String endpoint = request.getUrl().getPath().substring("/bridge/".length());
+                    Map<String, String> params = new HashMap<>();
+                    for (String key: request.getUrl().getQueryParameterNames())
+                        params.put(key, request.getUrl().getQueryParameter(key));
+                    return handleBridgeRequest(endpoint, params);
+                }
+                return super.shouldInterceptRequest(view, request);
             }
-        }) ;
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            webView.setSafeBrowsingWhitelist(Arrays.asList("webviewbridge.plom.dev"), null);
+        }
+//        webView.loadUrl("file:///android_asset/www/androidplom.html");
         webView.loadUrl("file:///android_asset/www/androidplom.html");
 
     }
@@ -82,7 +107,41 @@ public class PlomActivity extends AppCompatActivity {
         outState.putString(STATE_BUNDLE_KEY_PROJECTNAME, projectName);
     }
 
-    void writeSourceFile(String name, String contents)
+    WebResourceResponse handleBridgeRequest(String endpoint, Map<String, String> params)
+    {
+        if ("test".equals(endpoint))
+            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("received ".getBytes(StandardCharsets.UTF_8)));
+        else if ("listProjectFiles".equals(endpoint))
+        {
+            try {
+                JSONArray filesJson = new JSONArray();
+                for (String name : listSourceFiles())
+                    filesJson.put(name);
+                JSONObject json = new JSONObject();
+                json.put("files", filesJson);
+                return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
+            }
+            catch (JSONException e)
+            {
+                // Eat the error
+            }
+        }
+        else if ("readProjectFile".equals(endpoint))
+        {
+            DocumentFile file = readSourceFile(params.get("name"));
+            try {
+                return new WebResourceResponse("text/plain", "utf-8", getContentResolver().openInputStream(file.getUri()));
+            }
+            catch (IOException e)
+            {
+                return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
+            }
+        }
+        return null;
+
+    }
+
+    DocumentFile getSourceDirectory()
     {
         DocumentFile projectFile;
         if ("file".equals(projectUri.getScheme())) {
@@ -93,7 +152,30 @@ public class PlomActivity extends AppCompatActivity {
             if (projectFile == null)
                 projectFile = DocumentFile.fromTreeUri(this, projectUri).findFile("src");
         }
+        return projectFile;
+    }
 
+    List<String> listSourceFiles()
+    {
+        DocumentFile projectFile = getSourceDirectory();
+        List<String> toReturn = new ArrayList<>();
+        for (DocumentFile file: projectFile.listFiles())
+        {
+            toReturn.add(file.getName());
+        }
+        return toReturn;
+    }
+
+    DocumentFile readSourceFile(String name)
+    {
+        DocumentFile projectFile = getSourceDirectory();
+        DocumentFile file = projectFile.findFile(name);
+        return file;
+    }
+
+    void writeSourceFile(String name, String contents)
+    {
+        DocumentFile projectFile = getSourceDirectory();
         DocumentFile newFile = projectFile.createFile(PLOM_MIME_TYPE, name);
         if (newFile == null)
             newFile = projectFile.findFile(name);
