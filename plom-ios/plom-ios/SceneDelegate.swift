@@ -33,6 +33,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillResignActive(_ scene: UIScene) {
         // Called when the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
+        if let navView = window?.rootViewController as? UINavigationController {
+            if let plomView = navView.topViewController as? PlomViewController {
+                plomView.prepareForBackground()
+
+            }
+        }
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {

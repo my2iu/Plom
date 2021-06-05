@@ -70,7 +70,15 @@
                     //main.loadFunctionCodeView("main");
                     main.loadGlobalsView();
                 });
-
+                
+            // Callback to save on exit
+            window.plomPrepareToUnload = function() {
+                main.saveModuleAndClasses(function(contents) {
+                    fetch('/bridge/saveModule', {method: 'POST', body: contents});
+                }, function(name, contents) {
+                    fetch('/bridge/saveClass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
+                });
+            }
 		});
 	</script>
 
