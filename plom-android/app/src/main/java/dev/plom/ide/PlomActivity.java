@@ -101,6 +101,13 @@ public class PlomActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        final WebView webView = (WebView) findViewById(R.id.webview);
+        webView.evaluateJavascript("window.plomPrepareToUnload()", null);
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(STATE_BUNDLE_KEY_PROJECTURI, projectUri);

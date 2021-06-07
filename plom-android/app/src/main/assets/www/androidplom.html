@@ -21,16 +21,6 @@
     			main.updateAfterResize();
     		});
 
-            document.querySelector("a.savebutton").addEventListener('click', function(evt) {
-                evt.preventDefault();
-                main.saveModuleAndClasses(function(contents) {
-                  window.AndroidBridge.saveModule(contents);
-                  AndroidBridge.saveModule(contents);
-                }, function(name, contents) {
-                  AndroidBridge.saveClass(name, contents);
-                });
-            });
-
             // Load in all the code for the project
             var repo = makeRepositoryWithStdLib(main);
             fetch('http://webviewbridge.plom.dev/bridge/listProjectFiles')
@@ -52,6 +42,14 @@
                     main.loadGlobalsView();
                 });
 
+            window.plomPrepareToUnload = function() {
+                main.saveModuleAndClasses(function(contents) {
+                  window.AndroidBridge.saveModule(contents);
+                  AndroidBridge.saveModule(contents);
+                }, function(name, contents) {
+                  AndroidBridge.saveClass(name, contents);
+                });
+            };
 		});
 	</script>
 
@@ -59,7 +57,7 @@
 
   <body>
   <div class="testbuttons">
-      <a class="runbutton" href="#">Run</a> &nbsp; <a class="loadbutton" href="#">Load</a> &nbsp; <a class="savebutton" href="#">Save</a> &nbsp; <span class="lineIndicator"></span></div>
+      <a class="runbutton" href="#">Run</a> &nbsp; <span class="lineIndicator"></span></div>
   <div class="console"></div>
   <div class="subject">
   	<div class="breadcrumb"></div>
