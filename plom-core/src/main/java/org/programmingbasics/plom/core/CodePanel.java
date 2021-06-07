@@ -444,6 +444,8 @@ public class CodePanel
     // around now. I'll just clamp the width of the keyboard area.
     contentDiv.getStyle().setDisplay(Display.BLOCK);
     contentDiv.getStyle().setProperty("max-width", "35em");
+    contentDiv.getStyle().setMarginLeft("auto");
+    contentDiv.getStyle().setMarginRight("auto");
 
     // If the user has selected some code, we'll show options
     // specific to working with selections 

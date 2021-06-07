@@ -41,14 +41,6 @@
                 fetch('/bridge/exit')
                evt.preventDefault();
             });
-            document.querySelector("a.savebutton").addEventListener('click', function(evt) {
-                evt.preventDefault();
-                main.saveModuleAndClasses(function(contents) {
-                    fetch('/bridge/saveModule', {method: 'POST', body: contents});
-                }, function(name, contents) {
-                    fetch('/bridge/saveClass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
-                });
-            });
 
             // Load in all the code for the project
             var repo = makeRepositoryWithStdLib(main);
@@ -86,7 +78,7 @@
 
   <body>
   <div class="testbuttons">
-      <a class="exitbutton" href="#">&lt;&nbsp;Exit</a> <a class="runbutton" href="#">Run</a> &nbsp; <a class="loadbutton" href="#">Load</a> &nbsp; <a class="savebutton" href="#">Save</a> &nbsp; <span class="lineIndicator"></span></div>
+      <a class="exitbutton" href="#">&lt;&nbsp;Exit</a> <a class="runbutton" href="#">Run</a> &nbsp;  <span class="lineIndicator"></span></div>
   <div class="console"></div>
   <div class="subject">
   	<div class="breadcrumb"></div>

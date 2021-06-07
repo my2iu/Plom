@@ -851,7 +851,7 @@ public class SvgCodeRenderer
         double braceY = positioning.lineTop + textHeight + totalVertPadding;
         if (exprContainer != null)
           braceY -= vertPadding; 
-        startBracketSvg += "<text x='" + (positioning.x + horzPadding) + "' y='" + (braceY) + "'>{</text>";
+        startBracketSvg += "<text x='" + (positioning.x + horzPadding) + "' y='" + (braceY) + "' class='" + classList + "'>{</text>";
         double nextX = positioning.x + horzPadding + widthCalculator.calculateWidth("{");
         expressionWidth = Math.max(expressionWidth, nextX - startX);
         xFirstLineExtent = Math.max(xFirstLineExtent, nextX);
@@ -881,7 +881,7 @@ public class SvgCodeRenderer
         positioning.newline();
         double endBracketY = positioning.lineTop + vertPadding + textHeight; 
         positioning.maxBottom(minLineHeight());
-        endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "'>}</text>"; 
+        endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "' class='" + classList + "'>}</text>"; 
         positioning.newline();
         blockHitBox = toReturn.hitBox;
       }
@@ -891,7 +891,7 @@ public class SvgCodeRenderer
       double width = expressionWidth + horzPadding;
       toReturn.svgString = "<path d=\'M" + startX + " " + startY + " l " + width + " 0 l 0 "+  (expressionHeight) + " l -" + (width - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
 //      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>";
-      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (startY + textHeight + totalVertPadding) + "'>" + text + "</text>";
+      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (startY + textHeight + totalVertPadding) + "' class='" + classList + "'>" + text + "</text>";
       toReturn.svgString += startBracketSvg;
       toReturn.svgString += wideSvg;
       toReturn.svgString += endBracketSvg;

@@ -131,6 +131,26 @@ div.main {
 	background-color: #fed;
 	flex-grow: 0;
 	flex-shrink: 0;
+	padding: 3px;
+}
+
+.simpleentry input {
+	background: transparent;
+	border: 0px;
+}
+
+.simpleentry input:active,
+.simpleentry input:focus {
+	outline: none;
+}
+
+.simpleentry form:focus-within {
+    outline: auto;
+}
+
+.simpleentry_done {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
 }
 
 .codemain .code .tokenline {
