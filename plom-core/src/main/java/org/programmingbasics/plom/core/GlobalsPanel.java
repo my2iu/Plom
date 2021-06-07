@@ -73,6 +73,7 @@ public class GlobalsPanel
     for (ClassDescription cls: repository.getAllClassesSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setClassName("plomUiButton");
       a.setTextContent(cls.name);
       a.setHref("#");
       a.addEventListener(Event.CLICK, (e) -> {
@@ -106,6 +107,7 @@ public class GlobalsPanel
     for (FunctionDescription fnName: repository.getAllFunctionSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setClassName("plomUiButton");
       a.setHref("#");
       a.setTextContent(fnName.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
@@ -116,6 +118,7 @@ public class GlobalsPanel
       if (fnName.isImported)
         div.getClassList().add("moduleImported");
       AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
+      deleteAnchor.setClassName("plomUiButton");
       deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
       deleteAnchor.setHref("#");
       deleteAnchor.setTextContent("X");
