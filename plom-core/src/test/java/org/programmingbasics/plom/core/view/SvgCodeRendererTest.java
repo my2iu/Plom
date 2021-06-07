@@ -216,8 +216,8 @@ public class SvgCodeRendererTest extends TestCase
         );
     SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, DEFAULT_CANVAS_WIDTH);
     Assert.assertEquals("<rect x='0.0' y='0.0' width='1000.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken tokencomment'>// Comment</text>\n" + 
-        "<path d='M0.0 18.0 l 100.0 0 l 0 24.0 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0'>if</text><text x='85.0' y='34.0'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text><path d=\"M30.0 39.0 l50.0 0\" class=\"wideexpressionslot\"/>\n" + 
-        "<text x='5.0' y='73.0'>}</text>\n" + 
+        "<path d='M0.0 18.0 l 100.0 0 l 0 24.0 l -80.0 0 L 20.0 78.0 L 0.0 78.0 z' class='codetoken'/><text x='5.0' y='34.0' class='codetoken'>if</text><text x='85.0' y='34.0' class='codetoken'>{</text><rect x='30.0' y='21.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='34.0' class='codetoken'>true</text><path d=\"M30.0 39.0 l50.0 0\" class=\"wideexpressionslot\"/>\n" + 
+        "<text x='5.0' y='73.0' class='codetoken'>}</text>\n" + 
         "<rect x='0.0' y='78.0' width='100.0' height='12' class='codetoken'/><text x='5.0' y='88.0' class='codetoken'>22 adf df</text>\n" + 
         "<rect x='100.0' y='78.0' width='20.0' height='12' class='codetoken'/><text x='105.0' y='88.0' class='codetoken'>+</text>\n" + 
         "<rect x='120.0' y='78.0' width='130.0' height='12' class='codetoken'/><text x='125.0' y='88.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
@@ -453,7 +453,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='25.0' y='18.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='31.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='155.0' y='18.0' width='20.0' height='18' class='codetoken'/><text x='160.0' y='31.0' class='codetoken'>+</text>\n" + 
         "<rect x='25.0' y='36.0' width='130.0' height='18' class='codetoken'/><text x='30.0' y='49.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0'>if</text><text x='25.0' y='106.0'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text><path d=\"M30.0 75.0 l50.0 0\" class=\"wideexpressionslot\"/>\n" + 
+        "<path d='M0.0 54.0 l 300.0 0 l 0 60.0 l -280.0 0 L 20.0 186.0 L 0.0 186.0 z' class='codetoken'/><text x='5.0' y='70.0' class='codetoken'>if</text><text x='25.0' y='106.0' class='codetoken'>{</text><rect x='30.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='35.0' y='70.0' class='codetoken'>true</text><path d=\"M30.0 75.0 l50.0 0\" class=\"wideexpressionslot\"/>\n" + 
         "<rect x='80.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='85.0' y='70.0' class='codetoken'>AND</text><path d=\"M80.0 75.0 l40.0 0\" class=\"wideexpressionslot\"/>\n" + 
         "<rect x='120.0' y='57.0' width='50.0' height='18' class='codetoken'/><text x='125.0' y='70.0' class='codetoken'>true</text><path d=\"M120.0 75.0 l50.0 0\" class=\"wideexpressionslot\"/>\n" + 
         "<rect x='170.0' y='57.0' width='40.0' height='18' class='codetoken'/><text x='175.0' y='70.0' class='codetoken'>AND</text><path d=\"M170.0 75.0 l40.0 0\" class=\"wideexpressionslot\"/>\n" + 
@@ -471,7 +471,7 @@ public class SvgCodeRendererTest extends TestCase
         "<rect x='60.0' y='132.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='145.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
         "<rect x='190.0' y='132.0' width='20.0' height='18' class='codetoken'/><text x='195.0' y='145.0' class='codetoken'>+</text>\n" + 
         "<rect x='60.0' y='150.0' width='130.0' height='18' class='codetoken'/><text x='65.0' y='163.0' class='codetoken'>\"sdfasdfasf\"</text>\n" + 
-        "<text x='5.0' y='181.0'>}</text>\n" + 
+        "<text x='5.0' y='181.0' class='codetoken'>}</text>\n" + 
         "", returned.svgString);
   }
   

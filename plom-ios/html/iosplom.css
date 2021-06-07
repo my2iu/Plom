@@ -1,33 +1,3 @@
 @import "plom/ide.css";
 /*@import "plom/SafariWorkaround.css";*/
-
-body {
-    font-family: system-ui;
-    font-size: 20px;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    border: 0;
-}
-
-input {
-    font-size: 20px;
-}
-
-div.main {
-    flex-grow: 1;
-    width: auto;
-    height: auto;
-}
-
-div.globaldetails {
-    padding-left: 1em;
-    padding-right: 1em;
-}
-
-div.classdetails,
-div.methoddetails {
-    padding: 1em;
-}
+@import "plom/app.css";

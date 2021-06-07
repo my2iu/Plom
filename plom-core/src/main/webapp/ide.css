@@ -148,6 +148,10 @@ a.breadcrumb-item:visited {
 	padding: 3px;
 }
 
+.simpleentry form {
+	padding: 3px;
+}
+
 .simpleentry input {
 	background: transparent;
 	border: 0px;
