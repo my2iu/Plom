@@ -178,6 +178,7 @@ public class ClassPanel
     for (FunctionDescription fn: fnList)
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setClassName("plomUiButton");
       a.setHref("#");
       a.setTextContent(fn.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
@@ -188,6 +189,7 @@ public class ClassPanel
       deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
       deleteAnchor.setHref("#");
       deleteAnchor.setTextContent("X");
+      deleteAnchor.setClassName("plomUiButton");
       deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
         evt.preventDefault();
         cls.deleteMethodAndResetIds(fn.id);

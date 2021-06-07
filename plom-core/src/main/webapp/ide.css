@@ -11,6 +11,20 @@ div.main {
 	position: relative;
 }
 
+a.plomUiButton, 
+a.plomUiButton:active,
+a.plomUiButton:link,
+a.plomUiButton:visited {
+	text-decoration: none;
+}
+
+a.breadcrumb-item, 
+a.breadcrumb-item:active,
+a.breadcrumb-item:link,
+a.breadcrumb-item:visited {
+	text-decoration: none;
+}
+
 .codemain, 
 .methodpanel, 
 .globalspanel, 

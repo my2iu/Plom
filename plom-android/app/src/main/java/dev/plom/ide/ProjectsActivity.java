@@ -77,6 +77,7 @@ public class ProjectsActivity extends AppCompatActivity {
                         ProjectDescription proj = projects.remove(position);
                         projects.add(0, proj);
                         listWidget.getAdapter().notifyDataSetChanged();
+                        saveProjectList();
                         // Start an activity for the project
                         Intent intent = new Intent(ProjectsActivity.this, PlomActivity.class);
                         intent.putExtra("name", proj.name);
