@@ -18,6 +18,25 @@ a.plomUiButton:visited {
 	text-decoration: none;
 }
 
+a.plomUiAddButton, 
+a.plomUiAddButton:active,
+a.plomUiAddButton:link,
+a.plomUiAddButton:visited {
+	text-decoration: none;
+	display: inline-flex;
+	background-color: black;
+	color: white;
+	align-content: center;
+	border-radius: 50%;
+	justify-content: center;
+	width: 1.1em;
+	height: 1.1em;
+	background: url('data:image/svg+xml,%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%0A%3C!DOCTYPE%20svg%20PUBLIC%20%22-//W3C//DTD%20SVG%201.1//EN%22%20%22http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd%22%3E%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20xmlns:xml=%22http://www.w3.org/XML/1998/namespace%22%20width=%2220px%22%20height=%2220px%22%20viewBox=%220%200%208%208%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M%204%202%20L%204%206%20M%202%204%20L%206%204%22%20stroke=%22white%22%20stroke-width=%222%22/%3E%3C/svg%3E'), #000;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 1em;
+}
+
 a.breadcrumb-item, 
 a.breadcrumb-item:active,
 a.breadcrumb-item:link,
