@@ -61,11 +61,13 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         var keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         keyboardFrame = self.view.convert(keyboardFrame, from: self.view.window)
         self.bottomConstraint.constant = keyboardFrame.size.height
+        self.view.layoutIfNeeded()
     }
     
     @objc
     func keyboardWillHide(_ notification: NSNotification) {
         self.bottomConstraint.constant = 0
+        self.view.layoutIfNeeded()
     }
     
     func callWebViewFunction(_ name: String, json: Any, completionHandler: ((Any?, Error?) -> Void)? = nil) {
