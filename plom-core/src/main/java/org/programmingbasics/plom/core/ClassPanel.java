@@ -186,10 +186,8 @@ public class ClassPanel
         viewSwitchCallback.load(cls, fn);
       }, false);
       AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
-      deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
       deleteAnchor.setHref("#");
-      deleteAnchor.setTextContent("X");
-      deleteAnchor.setClassName("plomUiButton");
+      deleteAnchor.setClassName("plomUiRemoveButton");
       deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
         evt.preventDefault();
         cls.deleteMethodAndResetIds(fn.id);
@@ -202,6 +200,11 @@ public class ClassPanel
     }
   }
   
+  private String classVarInnerHtml()
+  {
+    return GlobalsPanel.varInnerHtml("class_var", "delete_class_var");
+  }
+  
   private void addVarEntry(DivElement mainDiv,
       VariableDescription v,
       List<DivElement> varDivs)
@@ -209,7 +212,7 @@ public class ClassPanel
     String name = v.name;
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
-    div.setInnerHTML("<div class=\"class_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" class=\"delete_class_var plomUiButton\">X</a></div>");
+    div.setInnerHTML(classVarInnerHtml());
     ((InputElement)div.querySelector("input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".varsList").appendChild(div);

@@ -261,6 +261,14 @@ public class PlomTextReader
         return null;
       return match.trim();
     }
+
+    public String lexParameterTokenPartOrEmpty() throws PlomReadException
+    {
+      String token = lexParameterTokenPart();
+      if (token == null)
+        return "";
+      return token;
+    }
     
     public String lexComment() throws PlomReadException
     {

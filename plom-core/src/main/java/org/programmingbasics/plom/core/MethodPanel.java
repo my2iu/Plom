@@ -127,7 +127,7 @@ public class MethodPanel
       mainDiv.querySelector(".method_args").appendChild(nameDiv);
     }
     DivElement varDiv = doc.createDivElement();
-    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\" class=\"plomUiButton\">-</a></div>.<input size=\"15\" type=\"text\" autocapitalize=\"off\"><div class=\"typeEntry\">&nbsp;</div></div>");
+    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; display: inline-block;\"><a href=\"#\" aria-label=\"delete argument\" class=\"plomUiRemoveButton\"></a></div>.<input size=\"15\" type=\"text\" autocapitalize=\"off\"><div class=\"typeEntry\">&nbsp;</div></div>");
     ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
     argEls.add(varDiv);
     mainDiv.querySelector(".method_args").appendChild(varDiv);

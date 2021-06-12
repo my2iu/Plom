@@ -118,10 +118,10 @@ public class GlobalsPanel
       if (fnName.isImported)
         div.getClassList().add("moduleImported");
       AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
-      deleteAnchor.setClassName("plomUiButton");
-      deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
+      deleteAnchor.setClassName("plomUiRemoveButton");
+//      deleteAnchor.getStyle().setPaddingLeft(0.75, Unit.EM);
       deleteAnchor.setHref("#");
-      deleteAnchor.setTextContent("X");
+//      deleteAnchor.setTextContent("X");
       if (fnName.isImported)
         deleteAnchor.getStyle().setDisplay(Display.NONE);
       deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
@@ -158,7 +158,17 @@ public class GlobalsPanel
       addGlobalVarEntry(mainDiv, v, globalVarDivs);
     }
   }
-
+  
+  static String varInnerHtml(String divClass, String deleteLinkClass)
+  {
+    return "<div class=\"" + divClass + "\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" aria-label=\"delete\" class=\"" + deleteLinkClass + " plomUiRemoveButton\"></a></div>";
+  }
+  
+  private String globalVarInnerHtml()
+  {
+    return varInnerHtml("global_var", "delete_global_var");
+  }
+  
   private void addGlobalVarEntry(DivElement mainDiv,
       VariableDescription v,
       List<DivElement> varDivs)
@@ -166,7 +176,7 @@ public class GlobalsPanel
     String name = v.name;
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
-    div.setInnerHTML("<div class=\"global_var\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" class=\"delete_global_var plomUiButton\">X</a></div>");
+    div.setInnerHTML(globalVarInnerHtml());
     if (v.isImported)
       div.getClassList().add("moduleImported");
 

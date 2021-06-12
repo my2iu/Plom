@@ -812,9 +812,7 @@ public class ModuleCodeRepository
     lexer.expectToken("var");
     lexer.expectToken(".");
     lexer.expectToken("{");
-    String varName = lexer.lexParameterTokenPart();
-    if (varName == null)
-      varName = "";
+    String varName = lexer.lexParameterTokenPartOrEmpty();
     lexer.expectToken("}");
     
     // Read the variable type
