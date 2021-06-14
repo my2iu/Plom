@@ -28,3 +28,19 @@ div.classdetails,
 div.methoddetails {
     padding: 1em;
 }
+
+div.testbuttons {
+	padding-top: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+div.subject {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+div.console {
+    padding-left: 1em;
+    padding-right: 1em;
+}

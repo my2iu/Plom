@@ -7,7 +7,7 @@ body {
 div.main {
 	width: calc(100vw - 2em);
 	height: calc(100vh - 7em);
-	background-color: #eee;
+	background-color: #fafafa;
 	position: relative;
 }
 
@@ -101,7 +101,7 @@ a.breadcrumb-item:visited {
 }
 
 .code {
-	background-color: #eef;
+	background-color: #fafafa;
 	padding-right: 1em;
 	flex-grow: 1;
 	overflow: auto;
@@ -174,7 +174,8 @@ a.breadcrumb-item:visited {
 }
 
 .choices {
-	background-color: #fee;
+	background-color: #eee;
+	border-top: 1px solid black;
 	flex-grow: 0;
 	flex-shrink: 0;
 	height: 50%;
@@ -182,7 +183,7 @@ a.breadcrumb-item:visited {
 }
 
 .simpleentry {
-	background-color: #fed;
+	background-color: #fff;
 	flex-grow: 0;
 	flex-shrink: 0;
 	padding: 3px;
@@ -190,6 +191,8 @@ a.breadcrumb-item:visited {
 
 .simpleentry form {
 	padding: 3px;
+	border-radius: 2px;
+	border: 1px solid black;
 }
 
 .simpleentry input {
@@ -270,22 +273,24 @@ a.breadcrumb-item:visited {
 }
 
 .codemain .choices div.tokenchoice {
-	background-color: #ccc;
+	background-color: #fff;
 	display: inline-block;
 	padding: 0.2em;
 	border-radius: 0.2em;
-	border: 1px solid #aaa;
+	border: 1px solid #ccc;
 	margin-left: 0.5em;
 	margin-right: 0.5em;
 	line-height: 1.2em;
+	box-shadow: 1px 1px 2px rgba(0,0,0,0.25);
 }
 
 .codemain .choices div.tokenchoicedisabled {
-	color: #bbb background-color: #ddd;
+	color: #999;
+	/*background-color: #ddd;*/
 	display: inline-block;
 	padding: 0.2em;
 	border-radius: 0.2em;
-	border: 1px solid #aaa;
+	border: 1px solid #ccc;
 	margin-left: 0.5em;
 	margin-right: 0.5em;
 	line-height: 1.2em;
