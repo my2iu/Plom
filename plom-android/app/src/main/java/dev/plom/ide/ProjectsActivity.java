@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,8 +35,12 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static dev.plom.ide.PlomActivity.PLOM_MIME_TYPE;
 
 public class ProjectsActivity extends AppCompatActivity {
 
@@ -136,6 +141,7 @@ public class ProjectsActivity extends AppCompatActivity {
             if (data == null) return;
             String projectName = data.getStringExtra("name");
             Uri dir = (Uri)data.getParcelableExtra("externalDir");
+            String templateDir = data.getStringExtra("template");
             // Check if we already have a project with the same name
             for (ProjectDescription proj: projects)
             {
@@ -167,6 +173,8 @@ public class ProjectsActivity extends AppCompatActivity {
             projects.add(0, new ProjectDescription(projectName, dir, isManagedByPlom));
             listWidget.getAdapter().notifyDataSetChanged();
             saveProjectList();
+            // Fill the project with template contents
+            fillDirWithTemplate(dir, templateDir);
             // Start an activity for the new project
             Intent intent = new Intent(this, PlomActivity.class);
             intent.putExtra("name", projectName);
@@ -249,5 +257,60 @@ public class ProjectsActivity extends AppCompatActivity {
             }
         }
         dir.delete();
+    }
+
+    void copyFromTemplate(DocumentFile dest, String src, String srcName)
+    {
+        if ((src).isEmpty()) return;
+        try {
+            String[] fileList = getAssets().list(src);
+            if (fileList == null || fileList.length == 0)
+            {
+                DocumentFile destFile = dest.findFile(srcName);
+                if (destFile != null) return;
+                destFile = dest.createFile(PLOM_MIME_TYPE, srcName);
+                // It might be a file
+                byte [] data = new byte[8192];
+                try (InputStream in = getAssets().open(src);
+                     OutputStream out = getContentResolver().openOutputStream(destFile.getUri()))
+                {
+                    int len = in.read(data);
+                    while (len >= 0)
+                    {
+                        out.write(data, 0, len);
+                        len = in.read(data);
+                    }
+                }
+            }
+            else
+            {
+                DocumentFile subdir = dest;
+                if (!srcName.isEmpty())
+                {
+                    subdir = dest.createDirectory(srcName);
+                    if (subdir == null)
+                        subdir = dest.findFile(srcName);
+                }
+                // Recurse into directory
+                for (String f: fileList)
+                {
+                    copyFromTemplate(subdir, src + "/" + f, f);
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            // Stop trying to fill dir with template on error
+        }
+
+    }
+
+    void fillDirWithTemplate(Uri projectUri, String templateDir)
+    {
+        if ("file".equals(projectUri.getScheme())) {
+            copyFromTemplate(DocumentFile.fromFile(new File(projectUri.getPath())), "templates/" + templateDir, "");
+        } else {
+            copyFromTemplate(DocumentFile.fromTreeUri(this, projectUri), "templates/" + templateDir, "");
+        }
     }
 }

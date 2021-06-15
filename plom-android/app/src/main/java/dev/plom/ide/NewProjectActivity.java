@@ -15,8 +15,11 @@ import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.List;
@@ -24,11 +27,19 @@ import java.util.List;
 public class NewProjectActivity extends AppCompatActivity {
 
     EditText projectNameEdit;
+    Spinner templateSpinner;
     CheckBox useExistingDirCheckBox;
     TextView useExistingDirFolderName;
     View useExistingDirFolderPane;
 
     Uri externalDir = null;
+
+    CodeTemplate[] templateOptions = new CodeTemplate[] {
+            new CodeTemplate("Empty Project", ""),
+            new CodeTemplate("Simple Main", "simple"),
+            new CodeTemplate("Standard Library", "stdlib")
+    };
+    int selectedTemplateIndex = 1;
 
     // For activity results
     static final int ACTIVITY_RESULT_OPEN_DOCUMENT_TREE = 1000;
@@ -45,6 +56,22 @@ public class NewProjectActivity extends AppCompatActivity {
         useExistingDirCheckBox = findViewById(R.id.useExistingDirCheckBox);
         useExistingDirFolderName = findViewById(R.id.useExistingDirFolderName);
         useExistingDirFolderPane = findViewById(R.id.useExistingDirFolderPane);
+        templateSpinner = findViewById(R.id.templateSpinner);
+        ArrayAdapter<CodeTemplate> templateAdapter = new ArrayAdapter(this,
+                R.layout.support_simple_spinner_dropdown_item, templateOptions);
+        templateSpinner.setAdapter(templateAdapter);
+        templateSpinner.setSelection(selectedTemplateIndex);
+        templateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedTemplateIndex = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedTemplateIndex = 0;
+            }
+        });
     }
 
     @Override
@@ -77,6 +104,7 @@ public class NewProjectActivity extends AppCompatActivity {
         if (externalDir != null) {
             dataToReturn.putExtra("externalDir", externalDir);
         }
+        dataToReturn.putExtra("template", templateOptions[selectedTemplateIndex].sourceDir);
         setResult(RESULT_OK, dataToReturn);
         finish();
     }
@@ -102,5 +130,19 @@ public class NewProjectActivity extends AppCompatActivity {
             externalDir = null;
             useExistingDirFolderPane.setVisibility(View.GONE);
         }
+    }
+
+    static class CodeTemplate
+    {
+        String name;
+        String sourceDir;
+
+        CodeTemplate(String name, String sourceDir)
+        {
+            this.name = name;
+            this.sourceDir = sourceDir;
+        }
+
+        public String toString() { return name; }
     }
 }

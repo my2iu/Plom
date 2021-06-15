@@ -48,13 +48,19 @@ TODO:
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
 - fix problem with typing a boolean expression with a mix of AND and OR
 - svg render word wrap -- fix up hit testing
-- svg render underline nesting levels
 - svg render top of parameter in parameter token should extend to top of line
 - svg render add extra space between lines
 - svg render have an "active" token (not the same as selection) so you know you can edit it
 - svg render for type fields
 - distinguish between cursor positions that are at the end of a line or beginning of next wrapped line 
 - svg render better scrolling when the keyboard deploys
+- sidebar of suggestions should overlay instead of shrinking code view
+- templates for code
+- special mode for stdlib development
+- fix up scrolling when deleting classes or modifying code
+- move "Run" option into a menu to take up less space?
+- improve the breadcrumbs
+- improve the class/method view
  */
 
 public class Entry implements EntryPoint
