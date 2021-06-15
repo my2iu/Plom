@@ -48,6 +48,8 @@
                   AndroidBridge.saveModule(contents);
                 }, function(name, contents) {
                   AndroidBridge.saveClass(name, contents);
+                }, function(name) {
+                  AndroidBridge.deleteClass(name);
                 });
             };
 		});

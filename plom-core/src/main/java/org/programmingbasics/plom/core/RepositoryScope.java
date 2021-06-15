@@ -45,13 +45,13 @@ public class RepositoryScope extends VariableScope
     codeRepositoryClasses = new HashMap<>();
     for (ClassDescription cls: repository.classes)
     {
-      codeRepositoryClasses.put(cls.name, cls);
+      codeRepositoryClasses.put(cls.getName(), cls);
     }
     if (repository.chainedRepository != null)
     {
       for (ClassDescription cls: repository.chainedRepository.classes)
       {
-        codeRepositoryClasses.put(cls.name, cls);
+        codeRepositoryClasses.put(cls.getName(), cls);
       }
     }
     
@@ -182,14 +182,14 @@ public class RepositoryScope extends VariableScope
           AstNode code = ParseToAst.parseStatementContainer(fn.code);
           if (fn.sig.isStatic)
           {
-            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.name, fn.sig.getLookupName()), 
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
                 typeFromToken(fn.sig.returnType), args);
           }
           else if (fn.sig.isConstructor)
           {
-            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.name, fn.sig.getLookupName()), 
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             // Use @void as the return type for constructors
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
@@ -197,7 +197,7 @@ public class RepositoryScope extends VariableScope
           }
           else
           {
-            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.name, fn.sig.getLookupName()), 
+            ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addMethod(fn.sig.getLookupName(), execFn, 
                 typeFromToken(fn.sig.returnType), args);
@@ -227,7 +227,7 @@ public class RepositoryScope extends VariableScope
     for (ClassDescription cls: codeRepositoryClasses.values())
     {
       try {
-        types.add(typeFromToken(Token.ParameterToken.fromContents("@" + cls.name, Symbol.AtType)));
+        types.add(typeFromToken(Token.ParameterToken.fromContents("@" + cls.getName(), Symbol.AtType)));
       }
       catch (RunException e)
       {

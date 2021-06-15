@@ -53,7 +53,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     StringBuilder strBuilder = new StringBuilder();
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
-    ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get());
+    ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.getName().equals("test class")).findFirst().get());
     Assert.assertEquals(" class @ { test class } {\n" + 
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
@@ -71,7 +71,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     StringBuilder strBuilder = new StringBuilder();
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
-    ClassDescription c = repository.getAllClassesSorted().stream().filter(cls -> cls.name.equals("test class")).findFirst().get();
+    ClassDescription c = repository.getAllClassesSorted().stream().filter(cls -> cls.getName().equals("test class")).findFirst().get();
     c.setSuperclass(Token.ParameterToken.fromContents("@object", Symbol.AtType));
     ModuleCodeRepository.saveClass(out, c);
     Assert.assertEquals(" class @ { test class } extends @ {object } {\n" + 
@@ -102,7 +102,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
     ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
-    Assert.assertEquals("test class", cls.name);
+    Assert.assertEquals("test class", cls.getName());
     Assert.assertNull(cls.parent);
     Assert.assertEquals(1, cls.variables.size());
     Assert.assertEquals("test var", cls.variables.get(0).name);
@@ -128,7 +128,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
     ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
-    Assert.assertEquals("test class", cls.name);
+    Assert.assertEquals("test class", cls.getName());
     Assert.assertEquals("object", cls.parent.getLookupName());
     Assert.assertEquals(1, cls.methods.size());
     Assert.assertEquals("new", cls.methods.get(0).sig.getLookupName());
@@ -193,6 +193,6 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
     // If a class already exists, just augment that class, don't create a completely new class with the same name
-    Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.name.equals("test class 2")).count());
+    Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class 2")).count());
   }
 }

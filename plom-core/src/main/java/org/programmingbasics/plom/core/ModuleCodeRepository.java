@@ -19,6 +19,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
+import elemental.client.Browser;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -146,13 +147,19 @@ public class ModuleCodeRepository
 
   public static class ClassDescription extends DescriptionWithId
   {
-    public String name;
+    private String name;
+    private String originalName;
     Token.ParameterToken parent;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
     public boolean isBuiltIn = false;
     public boolean isImported;
     ModuleCodeRepository module;
+    public ClassDescription(String name, String originalName)
+    {
+      this.name = name;
+      this.originalName = originalName;
+    }
     public List<FunctionDescription> getInstanceMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
@@ -217,9 +224,17 @@ public class ModuleCodeRepository
     {
       // No change needed currently
     }
+    public String getName()
+    {
+      return name;
+    }
     public void setName(String name)
     {
       this.name = name;
+    }
+    public String getOriginalName()
+    {
+      return originalName;
     }
     public void setSuperclass(Token.ParameterToken parent)
     {
@@ -240,6 +255,9 @@ public class ModuleCodeRepository
 
   /** All classes */
   List<ClassDescription> classes = new ArrayList<>();
+  
+  /** Tracks classes that have been deleted so that we can remove their files when the project is saved */
+  List<ClassDescription> deletedClasses = new ArrayList<>();
   
   public ModuleCodeRepository()
   {
@@ -488,14 +506,13 @@ public class ModuleCodeRepository
     List<ClassDescription> mergedClassList = new ArrayList<>(classes);
     if (chainedRepository != null)
       chainedRepository.fillChainedClasses(mergedClassList);
-    return getSortedWithIds(mergedClassList, Comparator.comparing((ClassDescription v) -> v.name));
+    return getSortedWithIds(mergedClassList, Comparator.comparing((ClassDescription v) -> v.getName()));
   }
 
   public ClassDescription addClassAndResetIds(String name)
   {
-    ClassDescription cls = new ClassDescription();
+    ClassDescription cls = new ClassDescription(name, name);
     cls.module = this;
-    cls.name = name;
     cls.parent = Token.ParameterToken.fromContents("@object", Symbol.AtType);
     classes.add(0, cls);
     cls.id = 0;
@@ -507,6 +524,7 @@ public class ModuleCodeRepository
     // This only works if only the current module can delete things, and the current module's classes are inserted into the merged class list first 
     if (module != this)
       throw new IllegalArgumentException("Not deleting class from correct chained module");
+    deletedClasses.add(classes.get(id));
     classes.remove(id);
   }
   
@@ -514,7 +532,7 @@ public class ModuleCodeRepository
   {
     for (ClassDescription c: classes)
     {
-      if (c.name.equals(name)) 
+      if (c.getName().equals(name)) 
         return true;
     }
     return false;
@@ -537,7 +555,7 @@ public class ModuleCodeRepository
   {
     Map<String, ClassDescription> classMap = new HashMap<>();
     for (ClassDescription c: classes)
-      classMap.put(c.name, c);
+      classMap.put(c.getName(), c);
     for (StdLibClass clsdef: stdLibClasses)
     {
       if (classMap.containsKey(clsdef.name)) continue;
@@ -600,7 +618,7 @@ public class ModuleCodeRepository
     out.token("class");
     out.token("@");
     out.token("{");
-    out.token(c.name);
+    out.token(c.getName());
     out.token("}");
     if (c.parent != null)
     {
@@ -737,7 +755,7 @@ public class ModuleCodeRepository
     // actually create a new class
     for (ClassDescription c: classes)
     {
-      if (c.isBuiltIn && c.name.equals(loaded.name))
+      if (c.isBuiltIn && c.getName().equals(loaded.getName()))
       {
         cls = c;
         augmentClass = true;
@@ -745,7 +763,7 @@ public class ModuleCodeRepository
       }
     }
     if (cls == null)
-      cls = addClassAndResetIds(loaded.name);
+      cls = addClassAndResetIds(loaded.getName());
     if (!augmentClass)
     {
       cls.setSuperclass(loaded.parent);
@@ -770,8 +788,7 @@ public class ModuleCodeRepository
       throw new PlomReadException("Cannot read class name", lexer);
     lexer.expectToken("}");
     
-    ClassDescription cls = new ClassDescription();
-    cls.name = className;
+    ClassDescription cls = new ClassDescription(className, className);
     
     if ("extends".equals(lexer.peekLexInput()))
     {

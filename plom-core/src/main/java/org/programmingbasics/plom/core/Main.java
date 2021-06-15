@@ -173,20 +173,37 @@ public class Main
     return out.toString();
   }
   
-  public void saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver)
+  public void saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver, DeleteClassCallback classDeleter)
   {
     try {
       StringBuilder out = new StringBuilder();
       repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), false);
       moduleSaver.saveModule(out.toString());
       
+      // Delete any classes that no longer exist
+      for (ClassDescription cls: repository.deletedClasses)
+      {
+        if (cls.getOriginalName() == null) continue;
+        classDeleter.deleteClass(cls.getOriginalName());
+      }
+      for (ClassDescription cls: repository.classes)
+      {
+        if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+        {
+          if (cls.getOriginalName() == null) continue;
+          if (cls.getOriginalName().equals(cls.getName())) continue;
+          classDeleter.deleteClass(cls.getOriginalName());
+        }
+      }
+      
+      // Save all classes
       for (ClassDescription cls: repository.classes)
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
           out = new StringBuilder();
           ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
-          classSaver.saveClass(cls.name, out.toString());
+          classSaver.saveClass(cls.getName(), out.toString());
         }
       }
     } catch (IOException e) {
@@ -260,7 +277,7 @@ public class Main
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
-    a.setTextContent("@" + cls.name);
+    a.setTextContent("@" + cls.getName());
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
@@ -276,7 +293,7 @@ public class Main
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
-    a.setTextContent("@" + cls.name);
+    a.setTextContent("@" + cls.getName());
     a.setHref("#");
     a.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
@@ -404,7 +421,7 @@ public class Main
             // Create an object scope that will handle this and instance variables
             try {
               Value thisValue = new Value();
-              thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.name, Symbol.AtType));
+              thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.getName(), Symbol.AtType));
               context.pushObjectScope(thisValue);
             } 
             catch (RunException e)
@@ -515,6 +532,11 @@ public class Main
   @JsFunction public static interface SaveClassCallback
   {
     public void saveClass(String className, String contents);
+  }
+  
+  @JsFunction public static interface DeleteClassCallback
+  {
+    public void deleteClass(String className);
   }
 
 }

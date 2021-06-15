@@ -60,7 +60,7 @@ public class ClassPanel
 
     // For setting class name
     InputElement nameAnchor = (InputElement)mainDiv.querySelector(".className input");
-    nameAnchor.setValue(cls.name);
+    nameAnchor.setValue(cls.getName());
     nameAnchor.addEventListener(Event.CHANGE, (e) -> {
       e.preventDefault();
       cls.setName(nameAnchor.getValue());
@@ -195,6 +195,7 @@ public class ClassPanel
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);
+      div.appendChild(doc.createTextNode(" "));
       div.appendChild(deleteAnchor);
       methodListEl.appendChild(div);
     }

@@ -74,7 +74,7 @@ public class GlobalsPanel
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
-      a.setTextContent(cls.name);
+      a.setTextContent(cls.getName());
       a.setHref("#");
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
@@ -130,6 +130,7 @@ public class GlobalsPanel
         rebuildView();
       }, false);
       div.appendChild(a);
+      div.appendChild(doc.createTextNode(" "));
       div.appendChild(deleteAnchor);
       functionListEl.appendChild(div);
     }

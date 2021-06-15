@@ -194,6 +194,14 @@ public class PlomActivity extends AppCompatActivity {
         }
     }
 
+    void deleteSourceFile(String name)
+    {
+        DocumentFile projectFile = getSourceDirectory();
+        DocumentFile file = projectFile.findFile(name);
+        if (file != null)
+            file.delete();
+    }
+
     class PlomJsBridge {
         @JavascriptInterface
         public void saveModule(String contents) {
@@ -205,5 +213,9 @@ public class PlomActivity extends AppCompatActivity {
             writeSourceFile("@" + name + ".plom", contents);
         }
 
+        @JavascriptInterface
+        public void deleteClass(String name) {
+            deleteSourceFile("@" + name + ".plom");
+        }
     }
 }
