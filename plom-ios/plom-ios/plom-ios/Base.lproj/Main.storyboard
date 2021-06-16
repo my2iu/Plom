@@ -47,7 +47,7 @@
             <objects>
                 <navigationController id="Ifc-Vx-SLR" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="GuF-ca-dEL">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -192,10 +192,30 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xec-70-yd5">
-                                        <rect key="frame" x="0.0" y="28.5" width="288" height="135"/>
+                                        <rect key="frame" x="0.0" y="28.5" width="288" height="40.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textField>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vwu-Kc-pGA">
+                                        <rect key="frame" x="0.0" y="77" width="288" height="20"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="20" id="m4M-c7-5FR"/>
+                                        </constraints>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Template" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nl6-Hf-PB3">
+                                        <rect key="frame" x="0.0" y="105" width="288" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="td5-7y-1Wx">
+                                        <rect key="frame" x="0.0" y="133.5" width="288" height="30"/>
+                                        <state key="normal" title="Button"/>
+                                        <connections>
+                                            <action selector="templateButtonPressed" destination="fwH-X1-BrJ" eventType="primaryActionTriggered" id="Twc-qi-n95"/>
+                                        </connections>
+                                    </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bki-EF-ptx">
                                         <rect key="frame" x="0.0" y="171.5" width="288" height="20"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -285,6 +305,7 @@
                         <outlet property="existingFolderView" destination="FIl-NC-Iqz" id="iAE-Pg-FEr"/>
                         <outlet property="nameField" destination="xec-70-yd5" id="lk4-X2-TpD"/>
                         <outlet property="navigationBar" destination="zjP-gE-h4c" id="GIt-iA-Fab"/>
+                        <outlet property="templateButton" destination="td5-7y-1Wx" id="pJa-hv-xl9"/>
                         <outlet property="useExistingFolderSwitch" destination="iQu-PU-Nkw" id="LwW-B7-Oeo"/>
                     </connections>
                 </viewController>
