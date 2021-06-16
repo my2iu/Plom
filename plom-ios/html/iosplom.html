@@ -70,7 +70,7 @@
                 }, function(name, contents) {
                     fetch('/bridge/saveClass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
                 }, function(name) {
-                	// TODO: Fill this in for deleting classes
+                    fetch('/bridge/deleteClass?name=' + encodeURIComponent(name));
                 });
             }
 		});
