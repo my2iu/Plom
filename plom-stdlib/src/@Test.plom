@@ -1,0 +1,4 @@
+ class @ { Test } extends @ {object } {
+ constructor . {new } {
+ }
+ }
