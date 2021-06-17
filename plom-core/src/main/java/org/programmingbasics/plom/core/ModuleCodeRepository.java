@@ -259,6 +259,9 @@ public class ModuleCodeRepository
   /** Tracks classes that have been deleted so that we can remove their files when the project is saved */
   List<ClassDescription> deletedClasses = new ArrayList<>();
   
+  /** Special flag for when this module is being used to develop the standard library */
+  public boolean isNoStdLibFlag = false;
+
   public ModuleCodeRepository()
   {
 //    // Create a basic main function that can be filled in
@@ -588,6 +591,16 @@ public class ModuleCodeRepository
     out.token("{");
     out.newline();
 
+    // Output stdlib development flag
+    if (isNoStdLibFlag)
+    {
+      out.token("stdlib");
+      out.token("{");
+      out.token("-1");
+      out.token("}");
+      out.newline();
+    }
+    
     // Output global variables
     for (VariableDescription v: globalVars)
     {
@@ -738,11 +751,27 @@ public class ModuleCodeRepository
       {
         loadClassIntoModule(lexer);
       }
+      else if ("stdlib".equals(peek))
+      {
+        loadModuleStdLibFlag(lexer);
+      }
       else
         throw new PlomReadException("Unexpected module contents", lexer);
     }
     
     lexer.expectToken("}");
+  }
+  
+  public void loadModuleStdLibFlag(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    lexer.expectToken("stdlib");
+    lexer.expectToken("{");
+    String value = lexer.lexParameterTokenPartOrEmpty();
+    lexer.expectToken("}");
+    lexer.expectNewlineToken();
+    if (!"-1".equals(value))
+      throw new PlomReadException("Unexpected module stdlib value", lexer);
+    isNoStdLibFlag = true;
   }
   
   public void loadClassIntoModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException

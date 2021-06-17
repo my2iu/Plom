@@ -37,6 +37,8 @@
                         loadClassCodeStringIntoRepository(code, repo);
                     }))))
                 .then((done) => {
+					if (repo.isNoStdLibFlag)
+						repo.setChainedRepository(null);
                     main.repository = repo;
                     //main.loadFunctionCodeView("main");
                     main.loadGlobalsView();

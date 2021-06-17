@@ -195,4 +195,20 @@ public class ModuleCodeRepositoryTest extends TestCase
     // If a class already exists, just augment that class, don't create a completely new class with the same name
     Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class 2")).count());
   }
+  
+  @Test
+  public void testLoadModuleWithStdLibFlag() throws PlomReadException
+  {
+    String codeStr = " module .{program} {\n" + 
+        " stdlib {-1 } \n" + 
+        " }";
+    
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    
+    ModuleCodeRepository loaded = new ModuleCodeRepository();
+    loaded.loadModule(lexer);
+    
+    Assert.assertTrue(loaded.isNoStdLibFlag);
+  }
 }
