@@ -113,7 +113,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
         performSegue(withIdentifier: "ShowNewProjectDialog", sender: self)
     }
     
-    func createProject(name: String, url: URL, isExternal: Bool) {
+    func createProject(name: String, url: URL, template: String, isExternal: Bool) {
         do {
             // Check if a project of the same name already exists
             if projects.contains(where: {$0.name.lowercased() == name.lowercased()}) {
@@ -125,7 +125,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             }
             
             // Add the project to the list of projects
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
             let bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
 #else
             let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
@@ -134,6 +134,19 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             saveProjectListToUserDefaults()
             tableView.reloadData()
 
+            // Copy template into the project
+            if !template.isEmpty {
+                do {
+                    let path = Bundle.main.resourcePath!.appending("/html/templates/").appending(template)
+                    let subdirs = try FileManager.default.contentsOfDirectory(atPath: path)
+                    for subdir in subdirs {
+                        try FileManager.default.copyItem(at: URL(fileURLWithPath: path.appending("/").appending(subdir)), to: url.appendingPathComponent(subdir))
+                    }
+                } catch {
+                    // Continue even if we encounter an error
+                }
+            }
+            
             // Show the project view
             projectNameForSegue = name
             projectUrlForSegue = url
@@ -180,7 +193,12 @@ struct ProjectDescription {
 }
 
 protocol CreateNewProjectProtocol {
-    func createProject(name: String, url: URL, isExternal: Bool)
+    func createProject(name: String, url: URL, template: String, isExternal: Bool)
+}
+
+private struct CodeTemplate {
+    let name: String
+    let dir: String
 }
 
 class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
@@ -189,10 +207,18 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var useExistingFolderSwitch: UISwitch!
     @IBOutlet weak var existingFolderView: UIView!
     @IBOutlet weak var existingFolderName: UILabel!
+    @IBOutlet weak var templateButton: UIButton!
 
     var doneButton: UIBarButtonItem?;
     
     var newProjectCallback : CreateNewProjectProtocol?
+    
+    private let templateOptions = [
+        CodeTemplate(name: "Empty Project", dir: ""),
+        CodeTemplate(name: "Simple Main", dir: "simple"),
+        CodeTemplate(name: "Standard Library", dir: "stdlib")
+    ]
+    var selectedTemplateIndex = 1
     
     override func viewDidLoad() {
         navigationBar.items = [navigationItem]
@@ -201,6 +227,7 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
         
         doneButton = UIBarButtonItem.init(title: "Done", style: .plain, target: self, action: #selector(donePressed))
         navigationItem.rightBarButtonItem = doneButton
+        
         update()
     }
     
@@ -216,8 +243,8 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
         } else {
             existingFolderView.isHidden = true
         }
+        templateButton.setTitle(templateOptions[selectedTemplateIndex].name + " >", for: .normal)
     }
-    
 
     @objc func cancelPressed(sender: UIBarButtonItem) {
         self.dismiss(animated: true, completion: nil)
@@ -248,9 +275,9 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
         }
         self.dismiss(animated: true, completion: nil)
         
-        newProjectCallback?.createProject(name: name!, url: url, isExternal: externalProjectFolder != nil)
+        newProjectCallback?.createProject(name: name!, url: url, template: templateOptions[selectedTemplateIndex].dir, isExternal: externalProjectFolder != nil)
     }
-    
+
     var externalProjectFolder : URL?
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
@@ -278,6 +305,18 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
             externalProjectFolder = nil
             update()
         }
-        
+    }
+    
+    @IBAction func templateButtonPressed() {
+        // TODO: Migrate to using UIMenu on ios14
+        let alert = UIAlertController(title: "Templates", message: "Choose a template for the project", preferredStyle: .actionSheet)
+        var idx = 0
+        for template in templateOptions {
+            let templateIdx = idx
+            alert.addAction(UIAlertAction(title: template.name, style: .default, handler: {_ in self.selectedTemplateIndex = templateIdx; self.update()}))
+            idx = idx + 1
+        }
+        alert.popoverPresentationController?.sourceView = templateButton
+        self.present(alert, animated: true, completion: nil)
     }
 }

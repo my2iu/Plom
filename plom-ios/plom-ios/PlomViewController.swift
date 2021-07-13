@@ -269,6 +269,14 @@ class PlomJsBridge {
         writeStringToSrcDir(fileName: "@" + name + ".plom", contents: contents)
     }
     
+    func deleteClass(name:String) {
+        doProjectFileOperation( {() -> Void in
+            let srcDir = projectUrl.appendingPathComponent("src").appendingPathComponent("@" + name + ".plom")
+            
+            try FileManager.default.removeItem(at: srcDir)
+        }, badReturn: nil);
+    }
+    
     func callPostHandler(urlPath: String, data: Data?, params: [String:String]) throws -> PlomPostResponse {
         switch(urlPath) {
         case "test":
@@ -282,6 +290,11 @@ class PlomJsBridge {
         case "saveClass":
             let name = params["name"]
             saveClass(name:name!, contents: String(data: data!, encoding: .utf8)!)
+            return PlomPostResponse(mime: "text/plain", string: "")
+
+        case "deleteClass":
+            let name = params["name"]
+            deleteClass(name:name!)
             return PlomPostResponse(mime: "text/plain", string: "")
 
         case "listProjectFiles":
