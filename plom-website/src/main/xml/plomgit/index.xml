@@ -6,11 +6,55 @@
 	<body>
 		<h1>PlomGit</h1>
 		
-		<p>PlomGit is a basic, open source git client. Although it only supports a limited number of features, it should be sufficient for version controlling personal files.</p>
+		<p>PlomGit is a basic, open source git client for iOS and Android. Although it only supports a limited number of features, it should be sufficient for version controlling personal files.</p>
 		
 		<p>It is programmed using Flutter and uses the <a href="https://libgit2.org/">libgit2 library</a>.</p>
 		
 		<p>The source code for PlomGit is available on <a href="https://github.com/my2iu/PlomGit">GitHub</a>.</p>
+		
+		<h3>Using PlomGit with GitHub</h3>
+		
+		<p>First you should generate a passcode token with GitHub. This is only necessary if you need to access private repositories or push changes to repositories. If you're just cloning public repositories, it's not necessary to store credentials in PlomGit.</p>
+		
+		<ol>
+		<li>Go to <a href="github.com">github.com</a> website and login</li>
+		<li>Go to the settings section of the website</li>
+		<li>Go to the Developer Settings</li>
+		<li>Go to the Personal Access Tokens section</li>
+		<li>Generate a new token, and copy that token into your clipboard</li>
+		</ol>
+		
+		<p>You can then go into PlomGit and store your access token in the app.</p>
+		
+		<ol>
+		<li>From the main screen on PlomGit, press the three dots in the upper-right to open the menu, and then choose Accounts</li>
+		<li>Press the big + sign to create a new account</li>
+		<li>Give a name to the account such as "GitHub"</li>
+		<li>Put your github user name into the User section</li>
+		<li>Paste the personal access token from your clipboard into the "password or token" box</li>
+		<li>Hit create</li>
+		<li>Go back to the main screen of PlomGit</li>
+		</ol>
+		
+		<p>You can now clone a repository. First, get the URL of a repository</p>
+		
+		<ol>
+		<li>In a web browser, find the repository on github that you want to clone</li>
+		<li>If there is a green Code button, you can select it, and a menu will appear with the HTTPS clone URL for the repository</li>
+		<li>On many mobile browsers, GitHub does not show the Code button, so you will need to guess what the Git URL for the repository is. In most cases, you can simply take the URL for the project and add ".git" on the end to get the URL for the git repository</li>
+		</ol>
+		
+		<p>You can then clone the repository in PlomGit</p>
+		
+		<ol>
+		<li>From the main screen, press the big + button</li>
+		<li>Choose "clone repository" from the menu</li>
+		<li>Supply a name for the repository</li>
+		<li>Put the URL for the git repository in the "Remote URL" section</li>
+		<li>If you set-up a passcode token earlier, then switch from "Optional Password Login" to "Saved Credentials" using the drop-down</li>
+		<li>Then make sure it is using the correct saved credentials</li>
+		<li>Choose "Clone" to clone the repository</li>
+		</ol>
 		
 		<a id="downloads"><h2>Downloads</h2></a>
 		
@@ -21,7 +65,7 @@
 			<li><a href="https://apps.apple.com/us/app/plomgit/id1557947578">iPhones and iPads (Apple App Store)</a></li>
 			<li><a href="plomgit.apk">Android (direct apk download)</a></li>
 		</ul>
-		
+				
 		
 		<a id="privacy"><h2>Privacy Policy</h2></a>
 		
