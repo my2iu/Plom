@@ -21,7 +21,8 @@
 		<li>Go to the settings section of the website</li>
 		<li>Go to the Developer Settings</li>
 		<li>Go to the Personal Access Tokens section</li>
-		<li>Generate a new token, and copy that token into your clipboard</li>
+		<li>Generate a new token and configure the token to have "repo" access</li>
+		<li>Copy the generated token to your clipboard</li>
 		</ol>
 		
 		<p>You can then go into PlomGit and store your access token in the app.</p>
