@@ -5,8 +5,14 @@
 	</head>
 	<body>
 		<h1>Plom</h1>
-		<p><a href="ide/">Plom</a> is an in-development programming language that's designed specifically for programming on cellphones. It is not yet usable, but the <a href="https://github.com/my2iu/Plom">source code is available</a>.</p>
-		<p>In the course of developing Plom, a basic mobile git client was also developed called <a href="plomgit/">PlomGit</a></p>
+		<p><a href="ide/">Plom</a> is an in-development programming language that's designed specifically for programming on cellphones. It is currently still an evolving, experimental prototype. Development of Plom is done on <a href="https://github.com/my2iu/Plom">GitHub</a>. More documentation on the design of Plom can be found there as well.</p>
+		
+		<h3>How to type code in Plom</h3>
+		
+		<p>Plom is intended to be a real programming language that programmers can productively program in. Traditional text-based languages are too clunky for use with the cramped keyboards of mobile phones, so Plom has its own system for typing code. Although it may seem unusual at first, the goal of having an efficient way to enter code was considered more important than the barrier of having to learn a new input system.</p>
+		
+		<h2>PlomGit</h2>
+		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>
 		
 	</body>
 </html>
