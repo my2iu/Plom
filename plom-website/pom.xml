@@ -46,7 +46,7 @@
 				<transformationSets>
 					<transformationSet>
 						<dir>src/main/xml</dir>
-						<stylesheet>src/main/basetemplate.xsl</stylesheet>
+						<stylesheet>src/main/plomhelptemplate.xsl</stylesheet>
 						<fileMappers>
 							<fileMapper
 								implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">

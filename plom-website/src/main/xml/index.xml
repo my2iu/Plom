@@ -9,8 +9,25 @@
 		
 		<h3>How to type code in Plom</h3>
 		
-		<p>Plom is intended to be a real programming language that programmers can productively program in. Traditional text-based languages are too clunky for use with the cramped keyboards of mobile phones, so Plom has its own system for typing code. Although it may seem unusual at first, the goal of having an efficient way to enter code was considered more important than the barrier of having to learn a new input system.</p>
+		<p>Traditional text-based languages are too clunky for use with the cramped keyboards of mobile phones, so Plom has its own system for typing code. Although this system is unusual and does require some time to learn, it is a necessary trade-off. Programmers need a way to quickly type in their code for a programming language to be practical for real programming.</p>
+        
+        <p>To make entering code faster, Plom presents a special keyboard to the programmer. This keyboard has buttons for whole instructions and other program tokens. Notably, the keyboard has buttons for operators and other special symbols that are normally difficult to find on a mobile keyboard. Pressing a button will add these tokens to your program. The buttons shown on the keyboard will change depending on the context. Plom will only show you buttons for program tokens that can be validly added at the cursor position.</p>
 		
+        <p>Below are some examples that show how code can be typed into Plom. The examples may use simplified versions of the Plom keyboard to focus attention on certain features of the keyboard.</p>
+        
+        <h4>Example: Inputting Tokens</h4>
+        
+        <p>The basic "Hello World" program in Plom looks like this:</p>
+        
+        <plomcode>.print: <arg>"Hello World"</arg></plomcode>
+        
+        <p>Below is a small Plom coding area where one can practice typing in the above code example. One would first need to press the <plombutton>.print:</plombutton> to type the first part of the code. After pressing the button, a <plomsnippet>.print</plomsnippet> will appear in the code, with a blank space beside it for what should be printed. The cursor will automatically move to that blank space.</p>
+
+        <p>Strings in Plom start with <plomsnippet>"</plomsnippet> symbols. The only button that starts with a <plomsnippet>"</plomsnippet> is the <plombutton>"&#8230;"</plombutton> button. That is the button for typing strings. After ones presses that button, the Plom keyboard disappears, and one can type the text for the string using the normal keyboard. Pressing the <plombutton>&#10144;</plombutton> will finish inputting the string.</p>
+        
+        <plom-inline-ide>
+        </plom-inline-ide>
+        
 		<h2>PlomGit</h2>
 		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>
 		
