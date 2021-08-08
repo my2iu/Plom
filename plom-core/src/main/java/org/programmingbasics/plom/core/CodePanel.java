@@ -52,7 +52,10 @@ import elemental.html.ClientRect;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;
 import elemental.svg.SVGSVGElement;
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsType;
 
+@JsType
 public class CodePanel
 {
   public CodePanel(DivElement mainDiv, boolean useSvg)
@@ -100,10 +103,15 @@ public class CodePanel
 //    hookCodeClick(codeDiv);
   }
 
-  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> configurator)
+  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator)
   {
     this.globalConfigurator = globalConfigurator;
     variableContextConfigurator = configurator;
+  }
+  
+  @JsFunction
+  public static interface VariableContextConfigurator {
+    public void accept(CodeCompletionContext context);
   }
   
   public void close()
@@ -143,7 +151,7 @@ public class CodePanel
   ConfigureGlobalScope globalConfigurator; 
 
   /** To configure object variables and function arguments that are accessible for code completion */
-  Consumer<CodeCompletionContext> variableContextConfigurator; 
+  VariableContextConfigurator variableContextConfigurator; 
   
   /** Errors to show in the code listing (error tokens will be underlined) */
   ErrorList codeErrors = new ErrorList();
@@ -370,7 +378,7 @@ public class CodePanel
     }
   }
 
-  static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos, ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> variableContextConfigurator)
+  static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
     CodeCompletionContext suggestionContext = new CodeCompletionContext();
     globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
@@ -970,6 +978,7 @@ public class CodePanel
     return false;
   }
   
+  @JsFunction
   public static interface CodeOrCursorListener
   {
     public void onUpdate(boolean isCodeChanged);

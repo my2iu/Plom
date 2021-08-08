@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.programmingbasics.plom.core.CodePanel.VariableContextConfigurator;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -28,7 +29,7 @@ import elemental.html.DivElement;
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, Consumer<CodeCompletionContext> variableContextConfigurator)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
@@ -53,7 +54,7 @@ public class TypeEntryField
   ConfigureGlobalScope globalConfigurator; 
 
   /** To configure object variables and function arguments that are accessible for code completion */
-  Consumer<CodeCompletionContext> variableContextConfigurator; 
+  VariableContextConfigurator variableContextConfigurator; 
 
   /** 
    * You don't actually need to listen for changes because if there is an

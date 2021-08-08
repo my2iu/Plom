@@ -3,11 +3,17 @@ package org.programmingbasics.plom.core.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
+
+@JsType
 public class StatementContainer
 {
   public StatementContainer() {}
+  @JsIgnore
   public StatementContainer(TokenContainer...lines)
   {
+    this();
     for (TokenContainer line: lines)
       statements.add(line);
   }

@@ -2,6 +2,9 @@
 	<head>
 		<title>Plom</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<plom-ide-head-imports/>
+		<plom-tutorial-code-panel-css/>
+		<plom-tutorial-code-panel-js/>
 	</head>
 	<body>
 		<h1>Plom</h1>
@@ -25,8 +28,8 @@
 
         <p>Strings in Plom start with <plomsnippet>"</plomsnippet> symbols. The only button that starts with a <plomsnippet>"</plomsnippet> is the <plombutton>"&#8230;"</plombutton> button. That is the button for typing strings. After ones presses that button, the Plom keyboard disappears, and one can type the text for the string using the normal keyboard. Pressing the <plombutton>&#10144;</plombutton> will finish inputting the string.</p>
         
-        <plom-inline-ide>
-        </plom-inline-ide>
+        <plom-tutorial-code-panel>
+        </plom-tutorial-code-panel>
         
 		<h2>PlomGit</h2>
 		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>

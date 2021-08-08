@@ -43,7 +43,7 @@
             });
 
             // Load in all the code for the project
-            var repo = makeRepositoryWithStdLib(main);
+            var repo = makeRepositoryWithStdLib();
             fetch('/bridge/listProjectFiles')
                 .then(response => response.json())
                 .then((json) =>
