@@ -8,11 +8,16 @@
 
 <xsl:template match="plomsnippet"><span class="plomsnippet"><xsl:apply-templates/></span></xsl:template>
 
+<xsl:template match="plomsnippet//arg"><span class="plomarg"><xsl:apply-templates/></span></xsl:template>
+
 <xsl:template match="plomcode"><div class="plomcode"><xsl:apply-templates/></div></xsl:template>
+
+<xsl:template match="plomcode//arg"><span class="plomarg"><xsl:apply-templates/></span></xsl:template>
 
 <xsl:template match="plom-tutorial-code-panel"><div id="{generate-id()}"><xsl:apply-templates/></div></xsl:template>
 
 <xsl:template match="plom-ide-head-imports">
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&amp;display=swap" rel="stylesheet"/>
 	<link type="text/css" rel="stylesheet" href="ide/ide.css"/>
 <!-- <link type="text/css" rel="stylesheet" href="app.css">  -->
     <script type="text/javascript" language="javascript" src="ide/gwtPreload.js"></script>
@@ -21,6 +26,27 @@
 </xsl:template>
 
 <xsl:template match="plom-tutorial-code-panel-css">
+	<style>
+		.plombutton {
+			border: 1px solid #bbb;
+    		border-radius: 0.2em;
+    		background: linear-gradient(0deg, #ddd, #fff);;
+    		padding: 0.05em;
+		}
+		.plomsnippet {
+			font-family: 'Source Sans Pro', sans-serif;
+			font-weight: bold;
+		}
+		.plomcode {
+			padding: 0.5em;
+			background-color: #eee;
+			margin-left: 1em;
+			font-family: 'Source Sans Pro', sans-serif;
+		}
+		.plomarg {
+			border-bottom: 1px solid black;
+		}
+	</style>
 	<xsl:apply-templates select="//plom-tutorial-code-panel" mode="css"/>
 </xsl:template>
 
@@ -93,6 +119,11 @@
     else
 	  */
     codePanel.setCode(new org.programmingbasics.plom.core.ast.StatementContainer());
+	window.addEventListener('resize', function() {
+		codePanel.updateAfterResize();
+	});
+    
+    
 ]]>	  
 </xsl:template>
 
@@ -100,8 +131,41 @@
 <xsl:template match="plom-tutorial-code-panel" mode="css">
 	<style>
 		#<xsl:value-of select="generate-id()"/> {
-			height: 20em;
-			max-height: 90vh;
+			max-width: 30em;
+		}
+		#<xsl:value-of select="generate-id()"/> .codemain {
+			height: auto;
+		}
+		#<xsl:value-of select="generate-id()"/> .codemain .codesidesplit {
+			<xsl:choose>
+				<xsl:when test="@lines">
+					height: <xsl:value-of select="1.5 + 1.5 * @lines"/>em;
+				</xsl:when>
+				<xsl:otherwise>
+					min-height: 10em;
+					height: 50vh;
+				</xsl:otherwise>
+			</xsl:choose>
+		}
+		#<xsl:value-of select="generate-id()"/> .codemain .choices {
+			overflow: auto;
+			<xsl:choose>
+				<xsl:when test="@choicelines">
+					height: <xsl:value-of select="2 + 2 * @choicelines"/>em;
+				</xsl:when>
+				<xsl:otherwise>
+					height: auto;
+					max-height: 10em;
+				</xsl:otherwise>
+			</xsl:choose>
+		}
+		#<xsl:value-of select="generate-id()"/> .codemain .simpleentry {
+			<xsl:choose>
+				<xsl:when test="@choicelines">
+					height: <xsl:value-of select="2 + 2 * @choicelines"/>em;
+				</xsl:when>
+				<xsl:otherwise></xsl:otherwise>
+			</xsl:choose>
 		}
 	</style>
 </xsl:template>
