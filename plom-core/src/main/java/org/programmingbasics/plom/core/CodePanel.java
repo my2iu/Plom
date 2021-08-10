@@ -156,6 +156,18 @@ public class CodePanel
   /** Errors to show in the code listing (error tokens will be underlined) */
   ErrorList codeErrors = new ErrorList();
 
+  /** If we want to show suggestions for small code snippets as a button.
+   * Currently, only simple parameter tokens like @object or .from:to: are
+   * handled. */
+  @JsType
+  public static class QuickSuggestion {
+    public QuickSuggestion(String display, String code) { this.display = display; this.code = code; }
+    public String display;
+    public String code;
+  }
+  List<QuickSuggestion> suggestions = new ArrayList<>();
+  public void setQuickSuggestions(List<QuickSuggestion> newSuggestions) { suggestions = newSuggestions; }
+  
   // To ensure that predicted buttons end up in a consistent order and
   // with the most important ones showing first, we have a map with priorities
   // for each button
@@ -303,29 +315,11 @@ public class CodePanel
     }
 
     case DotVariable:
-      if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
-      {
-        showSimpleEntryForToken(newToken, false, null);
-      }
-      else
-      {
-        CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-        Suggester suggester;
-        if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
-        {
-          suggester = new StaticMemberSuggester(suggestionContext);
-        }
-        else if (parentSymbols.contains(Symbol.DotMember))
-        {
-          suggester = new MemberSuggester(suggestionContext);
-        }
-        else
-        {
-          suggester = new VariableSuggester(suggestionContext);
-        }
-        showSimpleEntryForToken(newToken, false, suggester);
-      }
+    {
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      showSimpleEntryForToken(newToken, false, getDotSuggester(suggestionContext, parentSymbols));
       break;
+    }
 
     case Number:
     case String:
@@ -338,6 +332,32 @@ public class CodePanel
       break;
     }
     updateCodeView(true);
+  }
+
+  private
+  Suggester getDotSuggester(CodeCompletionContext suggestionContext, List<Symbol> parentSymbols)
+  {
+    Suggester suggester;
+    if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
+    {
+      suggester = null;
+    }
+    else
+    {
+      if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
+      {
+        suggester = new StaticMemberSuggester(suggestionContext);
+      }
+      else if (parentSymbols.contains(Symbol.DotMember))
+      {
+        suggester = new MemberSuggester(suggestionContext);
+      }
+      else
+      {
+        suggester = new VariableSuggester(suggestionContext);
+      }
+    }
+    return suggester;
   }
 
   private void doPaste()
@@ -381,8 +401,10 @@ public class CodePanel
   static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
     CodeCompletionContext suggestionContext = new CodeCompletionContext();
-    globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
-    variableContextConfigurator.accept(suggestionContext);
+    if (globalConfigurator != null)
+      globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
+    if (variableContextConfigurator != null)
+      variableContextConfigurator.accept(suggestionContext);
     suggestionContext.pushNewScope();
     if (codeList != null && pos != null)
       GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
@@ -629,6 +651,51 @@ public class CodePanel
         contentDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
         contentDiv.appendChild(makeButton(tokenText, false, () -> {  }));
+    }
+    
+    // Show quick suggestions
+    if (!suggestions.isEmpty())
+    {
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+      Suggester dotSuggester = null;
+      if (allowedSymbols.contains(Symbol.DotVariable))
+        dotSuggester = getDotSuggester(suggestionContext, stmtParser.peekExpandedSymbols(Symbol.DotVariable)); 
+
+      for (QuickSuggestion suggestion: suggestions)
+      {
+        // If the suggestion is for a variable or member
+        if (suggestion.code.startsWith(".") && allowedSymbols.contains(Symbol.DotVariable))
+        {
+          // Check if variable would have been suggested here 
+          if (dotSuggester != null && dotSuggester.gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
+            contentDiv.appendChild(makeButton(suggestion.display, true, () -> {
+              Token newToken = new Token.ParameterToken(
+                  Token.ParameterToken.splitVarAtColons(suggestion.code), 
+                  Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
+                  Symbol.DotVariable);
+              InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
+              NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+              showPredictedTokenInput(choicesDiv);
+              updateCodeView(true);
+              }));
+        }
+        // If the suggestion is for a type
+        else if (suggestion.code.startsWith("@") && allowedSymbols.contains(Symbol.AtType))
+        {
+          // Check if type would have been suggested here 
+          if (new TypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
+            contentDiv.appendChild(makeButton(suggestion.display, true, () -> { 
+              Token newToken = new Token.ParameterToken(
+                  Token.ParameterToken.splitVarAtColons(suggestion.code), 
+                  Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
+                  Symbol.AtType);
+              InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
+              NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+              showPredictedTokenInput(choicesDiv);
+              updateCodeView(true);
+              }));
+        }
+      }
     }
     
     // Show a paste button
