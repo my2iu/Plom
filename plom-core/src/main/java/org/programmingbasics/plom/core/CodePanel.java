@@ -1,12 +1,14 @@
 package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -166,7 +168,18 @@ public class CodePanel
     public String code;
   }
   List<QuickSuggestion> suggestions = new ArrayList<>();
-  public void setQuickSuggestions(List<QuickSuggestion> newSuggestions) { suggestions = newSuggestions; }
+  public void setQuickSuggestions(Collection<QuickSuggestion> newSuggestions) { suggestions = new ArrayList<>(newSuggestions); }
+  
+  /** In tutorials, cut&paste support may be hidden to reduce clutter */
+  boolean hasCutAndPaste = true;
+  public void setHasCutAndPaste(boolean cutAndPaste) { hasCutAndPaste = cutAndPaste; }
+
+  /** Some tokens may be filtered out for tutorials or if they aren't relevant for a certain context */
+  Set<Symbol> filterExcludeTokens = new HashSet<>(Arrays.asList(Symbol.PrimitivePassthrough));
+  public void setExcludeTokens(Collection<Symbol> tokens)
+  {
+    filterExcludeTokens = new HashSet<>(tokens);
+  }
   
   // To ensure that predicted buttons end up in a consistent order and
   // with the most important ones showing first, we have a map with priorities
@@ -642,7 +655,7 @@ public class CodePanel
       default:
       }
       String tokenText = text;
-      if (sym == Symbol.PrimitivePassthrough) continue;
+      if (filterExcludeTokens.contains(sym)) continue;
       // Here we distinguish between allowed symbols and valid symbols because we
       // don't want the UI to keep changing all the time with the changes in context.
       // Instead we show all normally allowed symbols, but disable the ones that
@@ -699,9 +712,12 @@ public class CodePanel
     }
     
     // Show a paste button
-    contentDiv.appendChild(makeButton("\uD83D\uDCCB Paste", true, () -> {
-      doPaste();
-    }));
+    if (hasCutAndPaste)
+    {
+      contentDiv.appendChild(makeButton("\uD83D\uDCCB Paste", true, () -> {
+        doPaste();
+      }));
+    }
   }
 
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle

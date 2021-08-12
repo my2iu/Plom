@@ -88,6 +88,31 @@
 			// no class member variables or argument variables that need to be made available
 			return;
         });
+    <xsl:if test="@cutpaste='false'">codePanel.setHasCutAndPaste(false);</xsl:if>
+    <xsl:for-each select="token-filter">
+   		<xsl:if test="@exclude='control flow' or @exclude='statements' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE"]);</xsl:if>
+   		<xsl:if test="@include='control flow' or @include='statements' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE"]);</xsl:if>
+   		<xsl:if test="@exclude='statements' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["DUMMY_COMMENT", "Return", "Var"]);</xsl:if>
+   		<xsl:if test="@include='statements' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["DUMMY_COMMENT", "Return", "Var"]);</xsl:if>
+   		<xsl:if test="@exclude='math operators' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["Plus", "Minus", "Multiply", "Divide"]);</xsl:if>
+   		<xsl:if test="@include='math operators' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["Plus", "Minus", "Multiply", "Divide"]);</xsl:if>
+   		<xsl:if test="@exclude='boolean operators' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["Lt", "Gt", "Le", "Ge", "Eq", "Ne", "Or", "And"]);</xsl:if>
+   		<xsl:if test="@include='boolean operators' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["Lt", "Gt", "Le", "Ge", "Eq", "Ne", "Or", "And"]);</xsl:if>
+   		<xsl:if test="@exclude='simple literals' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["String", "Number"]);</xsl:if>
+   		<xsl:if test="@include='simple literals' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["String", "Number"]);</xsl:if>
+   		<xsl:if test="@exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "This", "NullLiteral", "TrueLiteral", "FalseLiteral", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment"]);</xsl:if>
+   		<xsl:if test="@include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["AtType", "This", "NullLiteral", "TrueLiteral", "FalseLiteral", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment"]);</xsl:if>
+   		<xsl:if test="@exclude='variable identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["DotVariable"]);</xsl:if>
+   		<xsl:if test="@include='variable identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["DotVariable"]);</xsl:if>
+   		<xsl:if test="@exclude='identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "DotVariable"]);</xsl:if>
+   		<xsl:if test="@include='identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["AtType", "DotVariable"]);</xsl:if>
+    </xsl:for-each>
+    var QuickSuggestion = org.programmingbasics.plom.core.CodePanel.QuickSuggestion;
+    codePanel.setQuickSuggestions(org.programmingbasics.plom.core.Main.jsMakeListFromArray([
+	    <xsl:for-each select="suggestion">
+	    	new QuickSuggestion("<xsl:value-of select="@token"/>", "<xsl:value-of select="@token"/>")<xsl:if test="count(following-sibling::suggestion) &gt; 0">,</xsl:if>
+	    </xsl:for-each>
+    ]));
 <![CDATA[
     codePanel.setListener(function(isCodeChanged) {
 	  /*
@@ -108,7 +133,7 @@
       if (codePanel.cursorPos != null)
       {
         int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
-        Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+       Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
         lineEl.setTextContent("L" + lineNo);
       }
 	  */

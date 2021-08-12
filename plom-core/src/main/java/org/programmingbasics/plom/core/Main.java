@@ -1,6 +1,9 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
@@ -24,6 +27,8 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
+import elemental.js.util.JsArrayOf;
+import elemental.js.util.JsArrayOfString;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
@@ -146,6 +151,38 @@ public class Main
     return UIResources.INSTANCE.getStdLibPlom().getText();
   }
   
+  /** Helper method for JavaScript to make a list of symbols from an array of symbol names */
+  public static Collection<Symbol> jsMakeSymbolList(JsArrayOfString symbolNames)
+  {
+    List<Symbol> symbols = new ArrayList<>();
+    for (int n = 0; n < symbolNames.length(); n++)
+      symbols.add(Symbol.valueOf(symbolNames.get(n)));
+    return symbols;
+  }
+  
+  /** Helper method to add some more excluded tokens from the CodePanel */
+  public static void jsCodePanelMoreExcludedTokens(CodePanel codePanel, JsArrayOfString symbolNames)
+  {
+    for (int n = 0; n < symbolNames.length(); n++)
+      codePanel.filterExcludeTokens.add(Symbol.valueOf(symbolNames.get(n)));
+  }
+
+  /** Helper method to remove some tokens from the list of excluded tokens from a CodePanel */
+  public static void jsCodePanelFewerExcludedTokens(CodePanel codePanel, JsArrayOfString symbolNames)
+  {
+    for (int n = 0; n < symbolNames.length(); n++)
+      codePanel.filterExcludeTokens.remove(Symbol.valueOf(symbolNames.get(n)));
+  }
+
+  /** Helper method for JavaScript to make Java Lists from a js array */
+  public static <T> List<T> jsMakeListFromArray(JsArrayOf<T> array)
+  {
+    List<T> list = new ArrayList<>();
+    for (int n = 0; n < array.length(); n++)
+      list.add(array.get(n));
+    return list;
+  }
+  
   /** If any code is currently being displayed in the code panel, save it
    * to the repository
    */
@@ -158,7 +195,7 @@ public class Main
         repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
       }
       if (currentMethodBeingViewed != null)
-      {
+     {
         // Fill this in properly
         currentMethodBeingViewed.code = codePanel.codeList;
         currentMethodClassBeingViewed.updateMethod(currentMethodBeingViewed);
