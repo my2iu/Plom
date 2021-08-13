@@ -72,6 +72,7 @@
 		});
 
 	]]></script>
+	<xsl:apply-templates select="//plom-tutorial-code-panel" mode="codefragments"/>
 </xsl:template>
 
 <!-- Sets up the JavaScript needed to start each tutorial code panel -->
@@ -138,18 +139,27 @@
       }
 	  */
     });
+]]>
 	/*
     if (code != null)
       codePanel.setCode(code);
     else
 	  */
-    codePanel.setCode(new org.programmingbasics.plom.core.ast.StatementContainer());
+    <xsl:choose>
+    	<xsl:when test="code">
+			var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
+    		var inStream = new PlomTextReader.StringTextReader(document.getElementById('plom-code-fragment-<xsl:value-of select="generate-id()"/>').textContent);
+			var lexer = new PlomTextReader.PlomTextScanner(inStream);
+			codePanel.setCode(PlomTextReader.readStatementContainer(lexer));
+    	</xsl:when>
+    	<xsl:otherwise>
+			codePanel.setCode(new org.programmingbasics.plom.core.ast.StatementContainer());
+    	</xsl:otherwise>
+    </xsl:choose>
+    
 	window.addEventListener('resize', function() {
 		codePanel.updateAfterResize();
 	});
-    
-    
-]]>	  
 </xsl:template>
 
 <!-- Sets up the CSS needed for each tutorial code panel -->
@@ -160,6 +170,7 @@
 		}
 		#<xsl:value-of select="generate-id()"/> .codemain {
 			height: auto;
+			max-height: 80vh;
 		}
 		#<xsl:value-of select="generate-id()"/> .codemain .codesidesplit {
 			<xsl:choose>
@@ -193,6 +204,10 @@
 			</xsl:choose>
 		}
 	</style>
+</xsl:template>
+
+<xsl:template match="plom-tutorial-code-panel[code]" mode="codefragments">
+	<script type="plom" id="plom-code-fragment-{generate-id()}"><xsl:value-of select="code"/></script>
 </xsl:template>
 
 

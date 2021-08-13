@@ -2,6 +2,7 @@
 	<head>
 		<title>Plom</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<link type="text/css" rel="stylesheet" href="style.css"/>
 		<plom-ide-head-imports/>
 		<plom-tutorial-code-panel-css/>
 		<plom-tutorial-code-panel-js/>
@@ -28,12 +29,53 @@
 
         <p>Strings in Plom start with <plomsnippet>"</plomsnippet> symbols. The only button that starts with a <plomsnippet>"</plomsnippet> is the <plombutton>"&#8230;"</plombutton> button. That is the button for typing strings. After ones presses that button, the Plom keyboard disappears, and one can type the text for the string using the normal keyboard. Pressing the <plombutton>&#10144;</plombutton> will finish inputting the string.</p>
         
+		<p>To recap, the steps needed to type in the code for Hello World are</p>
+		<ol>
+		<li>Press the <plombutton>.print:</plombutton> button</li>
+		<li>Press the <plombutton>"&#8230;"</plombutton> button</li>
+		<li>Type <plomsnippet>Hello World</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		</ol>
+		
         <plom-tutorial-code-panel lines="3" choicelines="3" cutpaste="false">
         	<suggestion token=".print:"/>
         	<token-filter exclude="all"/> 
         	<token-filter include="simple literals"/> 
         </plom-tutorial-code-panel>
         
+		<h4>Example: Deleting tokens and expressions</h4>
+		
+		<p>When typing in math expressions, the Plom keyboard will automatically change depending on the context to show buttons that you may need. Below is the Plom code for printing the result of the expression "1 + 2":</p>
+
+        <plomcode>.print: <arg>1 + 2</arg></plomcode>
+		
+		<p>Below is a Plom coding area with some existing code. The string <plomsnippet>"Hello World"</plomsnippet> needs to be deleted from this existing code in order to type the new <plomsnippet>1 + 2</plomsnippet> expression. Although the Plom editor is based on tokens instead of characters, editing text in Plom is similar to text editing. To delete the <plomsnippet>"Hello World"</plomsnippet> string, one taps on the code immediately after the <plomsnippet>"Hello World"</plomsnippet> token to move the cursor there and then one presses the <plombutton>&#9003;</plombutton> button to delete that token.</p>
+
+		<p>To type the expression <plomsnippet>1 + 2</plomsnippet>, one starts by typing the first number. One needs to press the <plombutton>123&#8230;</plombutton> button to enter a number, type <plomsnippet>1</plomsnippet> using the normal keyboard, and then press the <plombutton>&#10144;</plombutton> button to finish inputting the number. The Plom keyboard should reappear but with a different set of buttons. One has to press the <plombutton>+</plombutton> button to input a <plomsnippet>+</plomsnippet> token. Finally, to input the last number, one has to press the <plombutton>123&#8230;</plombutton> button, type <plomsnippet>2</plomsnippet> using the normal keyboard, and then press the <plombutton>&#10144;</plombutton> button to finish.</p>
+
+		<p>To recap, the steps needed to edit the code are</p>
+		<ol>
+		<p><b>Delete the old expression</b></p>
+		<li>Tap immediately after the <plomsnippet>"Hello World"</plomsnippet> token</li>
+		<li>Press the <plombutton>&#9003;</plombutton> button</li>
+		<p><b>Type the first number</b></p>
+		<li>Press the <plombutton>123&#8230;</plombutton> button</li>
+		<li>Type <plomsnippet>1</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		<p><b>Type the <plomsnippet>+</plomsnippet></b></p>
+		<li>Press the <plombutton>+</plombutton> button</li>
+		<p><b>Type the second number</b></p>
+		<li>Press the <plombutton>123&#8230;</plombutton> button</li>
+		<li>Type <plomsnippet>2</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		</ol>
+
+        <plom-tutorial-code-panel lines="3" choicelines="3" cutpaste="false">
+			<code>.{print: {"Hello World"}}</code>
+        	<suggestion token=".print:"/>
+        	<token-filter exclude="all"/> 
+        	<token-filter include="simple literals"/> 
+        	<token-filter include="math operators"/> 
+        </plom-tutorial-code-panel>
+
+		
 		<h2>PlomGit</h2>
 		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>
 		
