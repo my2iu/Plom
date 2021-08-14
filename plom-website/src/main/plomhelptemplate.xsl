@@ -42,9 +42,17 @@
 			background-color: #eee;
 			margin-left: 1em;
 			font-family: 'Source Sans Pro', sans-serif;
+			white-space: pre;
 		}
 		.plomarg {
 			border-bottom: 1px solid black;
+		}
+		.plomtip {
+			display: flow-root;
+			padding: 0.5em;
+			margin-left: 1em;
+			margin-right: 1em;
+			background: #d2f5ff;
 		}
 	</style>
 	<xsl:apply-templates select="//plom-tutorial-code-panel" mode="css"/>
@@ -140,11 +148,6 @@
 	  */
     });
 ]]>
-	/*
-    if (code != null)
-      codePanel.setCode(code);
-    else
-	  */
     <xsl:choose>
     	<xsl:when test="code">
 			var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
@@ -208,6 +211,11 @@
 
 <xsl:template match="plom-tutorial-code-panel[code]" mode="codefragments">
 	<script type="plom" id="plom-code-fragment-{generate-id()}"><xsl:value-of select="code"/></script>
+</xsl:template>
+
+<xsl:template match="plom-tip">
+	<!-- Better to use a different icon? &#128161; lightbulb, &#129300; thinking face, &#128173; thought balloon, &#128466; spiral notepad -->
+	<div class="plomtip"><div style="float: left; font-size: 200%; vertical-align: top; line-height: 1; padding: 0 0.25em 0.25em 0;">&#128161;</div><xsl:apply-templates /></div>
 </xsl:template>
 
 

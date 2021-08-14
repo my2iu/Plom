@@ -13,6 +13,14 @@
 		
 		<h3>How to type code in Plom</h3>
 		
+		<!-- 
+		Should emphasize the themes or principles that
+		
+		1. If you aren't sure which button to press, you look for a button with text that matches the next few characters that you need to input
+		2. Although the system is based on tokens and code structure, it tries to imitate the behaviour of a traditional text editor in that you can just press Backspace to delete the parts that you don't want or press Enter to start a new line
+		3. There is no code formatting. Code formatting is cumbersome to do on small devices, doesn't adapt well as you change to differently sized devices, and isn't used in industry anyways (since they often use automatic linters to achieve consistent formatting). Plom will automatically format the code to make it look reasonable
+		-->
+		
 		<p>Traditional text-based languages are too clunky for use with the cramped keyboards of mobile phones, so Plom has its own system for typing code. Although this system is unusual and does require some time to learn, it is a necessary trade-off. Programmers need a way to quickly type in their code for a programming language to be practical for real programming.</p>
         
         <p>To make entering code faster, Plom presents a special keyboard to the programmer. This keyboard has buttons for whole instructions and other program tokens. Notably, the keyboard has buttons for operators and other special symbols that are normally difficult to find on a mobile keyboard. Pressing a button will add these tokens to your program. The buttons shown on the keyboard will change depending on the context. Plom will only show you buttons for program tokens that can be validly added at the cursor position.</p>
@@ -29,6 +37,10 @@
 
         <p>Strings in Plom start with <plomsnippet>"</plomsnippet> symbols. The only button that starts with a <plomsnippet>"</plomsnippet> is the <plombutton>"&#8230;"</plombutton> button. That is the button for typing strings. After ones presses that button, the Plom keyboard disappears, and one can type the text for the string using the normal keyboard. Pressing the <plombutton>&#10144;</plombutton> will finish inputting the string.</p>
         
+		<plom-tip><b>Plom Principle</b><br/>
+		Plom is designed so that the next button you need to press on the keyboard usually matches the next character(s) of the text you want to type.
+		</plom-tip>
+		
 		<p>To recap, the steps needed to type in the code for Hello World are</p>
 		<ol>
 		<li>Press the <plombutton>.print:</plombutton> button</li>
@@ -49,6 +61,10 @@
         <plomcode>.print: <arg>1 + 2</arg></plomcode>
 		
 		<p>Below is a Plom coding area with some existing code. The string <plomsnippet>"Hello World"</plomsnippet> needs to be deleted from this existing code in order to type the new <plomsnippet>1 + 2</plomsnippet> expression. Although the Plom editor is based on tokens instead of characters, editing text in Plom is similar to text editing. To delete the <plomsnippet>"Hello World"</plomsnippet> string, one taps on the code immediately after the <plomsnippet>"Hello World"</plomsnippet> token to move the cursor there and then one presses the <plombutton>&#9003;</plombutton> button to delete that token.</p>
+
+		<plom-tip><b>Plom Principle</b><br/>
+		Although Plom has its own special input system based on tokens and code structure, it is designed to mimic a traditional text editor. You can modify text like a normal text editor by moving a cursor/caret, deleting text using Backspace, or adding lines using the Enter button.
+		</plom-tip>
 
 		<p>To type the expression <plomsnippet>1 + 2</plomsnippet>, one starts by typing the first number. One needs to press the <plombutton>123&#8230;</plombutton> button to enter a number, type <plomsnippet>1</plomsnippet> using the normal keyboard, and then press the <plombutton>&#10144;</plombutton> button to finish inputting the number. The Plom keyboard should reappear but with a different set of buttons. One has to press the <plombutton>+</plombutton> button to input a <plomsnippet>+</plomsnippet> token. Finally, to input the last number, one has to press the <plombutton>123&#8230;</plombutton> button, type <plomsnippet>2</plomsnippet> using the normal keyboard, and then press the <plombutton>&#10144;</plombutton> button to finish.</p>
 
