@@ -115,6 +115,9 @@
    		<xsl:if test="@include='variable identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["DotVariable"]);</xsl:if>
    		<xsl:if test="@exclude='identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "DotVariable"]);</xsl:if>
    		<xsl:if test="@include='identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["AtType", "DotVariable"]);</xsl:if>
+		<xsl:if test="@exclude='assign' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["Assignment"]);</xsl:if>
+   		<xsl:if test="@include='assign' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["Assignment"]);</xsl:if>
+
     </xsl:for-each>
     var QuickSuggestion = org.programmingbasics.plom.core.CodePanel.QuickSuggestion;
     codePanel.setQuickSuggestions(org.programmingbasics.plom.core.Main.jsMakeListFromArray([
