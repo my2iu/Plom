@@ -117,6 +117,48 @@
         	<token-filter include="assign"/> 
         </plom-tutorial-code-panel>
 
+		<h4>Example: Control flow blocks</h4>
+
+		<p>Below is some code with a simple <plomsnippet>while</plomsnippet> loop that repeatedly prints "You are great."</p>
+
+<plomcode>while true {
+  .print: <arg>"You are great"</arg>
+}</plomcode>
+
+		<p>Plom has special handling for these blocks of code inside control flow statements. Plom understands the structure of these blocks, and it will automatically handle all the code formatting to ensure everything is properly indented. At the end of this example section is a small Plom coding area where one can practice typing in the above code example.
+		</p>
+
+		<plom-tip><b>Plom Principle</b><br/>
+		Because code must be formatted differently to fit on different devices and because formatting code on a mobile phone is cumbersome, Plom automatically formats program code instead of letting programmers control it. This is consistent with industry practices where code formatting is managed by computer in order to ensure consistent formatting.
+		</plom-tip>
+
+		<p>To enter the above code into Plom, one first needs to press the <plombutton>while</plombutton> button to create a <plomsnippet>while</plomsnippet> loop. Plom will automatically add the necessary parentheses and indentation for the code. Then, one should press the <plombutton>true</plombutton> button.</p>
+		
+		<p>Next, one needs to move the cursor between the <plomsnippet>{</plomsnippet> and <plomsnippet>}</plomsnippet> to type code there. Although one can simply tap on the screen or drag the cursor, Plom has a special button that will automatically move the cursor to the next available entry location in the code. One can press that <plombutton>&#10144;</plombutton> button to move the cursor there. When there, one can press the <plombutton>.print:</plombutton> button to call the <plomsnippet>print:</plomsnippet>. And then one presses the <plombutton>"&#8230;"</plombutton> button to create a string. Finally, one can type <plomsnippet>You are great</plomsnippet> using the normal keyboard and the press the <plombutton>&#10144;</plombutton> button to finish.
+		</p>
+
+		<p>To recap, the steps needed to edit the code are</p>
+		<ol>
+		<li>Press the <plombutton>while</plombutton> button</li>
+		<li>Press the <plombutton>true</plombutton> button</li>
+		<li>Press the <plombutton>&#10144;</plombutton> button</li>
+		<li>Press the <plombutton>print:</plombutton> button</li>
+		<li>Press the <plombutton>"&#8230;"</plombutton> button </li>
+		<li>Type <plomsnippet>You are great</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		</ol>
+		
+        <plom-tutorial-code-panel lines="5" choicelines="3" cutpaste="false">
+        	<suggestion token=".print:"/>
+        	<token-filter exclude="all"/> 
+        	<token-filter include="simple literals"/> 
+        	<token-filter include="math operators"/> 
+        	<token-filter include="variable identifiers"/> 
+        	<token-filter include="assign"/> 
+        	<token-filter include="control flow"/> 
+        	<token-filter include="boolean literals"/> 
+        </plom-tutorial-code-panel>
+		
+
 		
 		<h2>PlomGit</h2>
 		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>
