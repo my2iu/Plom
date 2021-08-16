@@ -42,6 +42,7 @@
 			background-color: #eee;
 			margin-left: 1em;
 			font-family: 'Source Sans Pro', sans-serif;
+			line-height: 1.6;
 			white-space: pre;
 		}
 		.plomarg {
