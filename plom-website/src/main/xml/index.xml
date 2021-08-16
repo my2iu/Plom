@@ -103,8 +103,22 @@
 		
 		<p>To start a new line, one should first move the cursor to the end of the first line. One can just tap at the end of the first line to move the cursor there. Alternately, one can also drag the circle handle underneath the cursor to move the cursor. Then, one can add a newline by pressing the <plombutton>&#8629;</plombutton> button.</p>
 
-		<p>To type the second line, one needs to input the name of a variable. In Plom, all variable names, function names, method names, and other identifiers begin with a period. To type the variable <plomsnippet>.name</plomsnippet>, one first needs to press the <plombutton>.</plombutton> button. Plom will then allow one to type the name of the variable, but Plom should show a suggesetion for <plomsnippet>name</plomsnippet> to the right of the code. Just tap on the suggestion <plombutton>name</plombutton>. Next, press the <plombutton>:=</plombutton> button to input the assignment operator. Then, one needs to type the <plomsnippet>.input:</plomsnippet> function. Unlike with <plomsnippet>.print:</plomsnippet>, there is button for that. Instead, press the <plombutton>.</plombutton> to input the function name. One can try to find the </p>
+		<p>To type the second line, one needs to input the name of a variable. In Plom, all variable names, function names, method names, and other identifiers begin with a period. To type the variable <plomsnippet>.name</plomsnippet>, one first needs to press the <plombutton>.</plombutton> button. Plom will then allow one to type the name of the variable, but Plom should show a suggesetion for <plomsnippet>name</plomsnippet> to the right of the code. Just tap on the suggestion <plombutton>name</plombutton>. Next, press the <plombutton>:=</plombutton> button to input the assignment operator. Then, one needs to type the <plomsnippet>.input:</plomsnippet> function. Unlike with <plomsnippet>.print:</plomsnippet>, there is button for that. Instead, press the <plombutton>.</plombutton> to input the function name. One can try to find the suggestion for <plomsnippet>.input:</plomsnippet> to the right of the code and choosing that suggestion. Alternately, one can simply type <plomsnippet>input:</plomsnippet> using the normal keyboard and then press the <plombutton>&#10144;</plombutton> button. Finally, one can type the argument to the <plomsnippet>.input:</plomsnippet> function by pressing the <plombutton>"&#8230;"</plombutton> button to create a string, typing <plomsnippet>What is your name?</plomsnippet> using the normal keyboard, and then pressing the <plombutton>&#10144;</plombutton> button.</p>
 
+		<p>To recap, the steps needed to add the new line of code are</p>
+		<ol>
+		<p><b>Create a new line</b></p>
+		<li>Tap at the end of the first line</li>
+		<li><plombutton>&#8629;</plombutton> button.</li>
+		<p><b>Type the new line</b></p>
+		<li>Press the <plombutton>.</plombutton> button</li>
+		<li>Choose the <plomsnippet>name</plomsnippet> suggestion shown to the right of the code</li>
+		<li>Press the <plombutton>:=</plombutton> button</li>
+		<li>Press the <plombutton>.</plombutton> button</li>
+		<li>Find the <plomsnippet>input:</plomsnippet> suggestion and choose it; alternately, type <plomsnippet>input:</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		<li>Press the <plombutton>"&#8230;"</plombutton> button</li>
+		<li>Type <plomsnippet>What is your name?</plomsnippet> and press the <plombutton>&#10144;</plombutton> button</li>
+		</ol>
 		
         <plom-tutorial-code-panel lines="5" choicelines="3" cutpaste="false">
 			<code>var .{name} : @{string} := "User"
@@ -158,7 +172,6 @@
         	<token-filter include="boolean literals"/> 
         </plom-tutorial-code-panel>
 		
-
 		
 		<h2>PlomGit</h2>
 		<p>In the course of developing Plom, we found the need for a basic mobile git client to version control our Plom code. Although there are other mobile git clients, we wanted a free one that worked with certain APIs, so we made the <a href="plomgit/">PlomGit</a> git client.</p>
