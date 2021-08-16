@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
@@ -444,6 +445,9 @@ public class Main
   private void showCodePanel(StatementContainer code)
   {
     codePanel = new CodePanel(getMainDiv(), true);
+    if (repository.isNoStdLibFlag)
+      // Normally, the "primitive" keyword isn't available unless we're editing a standard library
+      codePanel.setExcludeTokens(Collections.emptyList());
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
