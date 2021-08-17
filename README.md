@@ -8,6 +8,8 @@ Plom is a project to create a programming language specifically for mobile phone
 - it automatically formats code so as to reduce the amount of formatting and special symbols that need to be typed
 - it represents programs at a higher level than just text in order to make it easier to manipulate program code
 
+Some early prototypes of Plom are available to play with at the [Plom website](https://www.plom.dev/).
+
 ## Language Overview
 
 Plom is not intended to innovate in the area of language design. It will use a fairly straight-forward garbage-collected object-oriented design with a syntax derived from C and Java.  
