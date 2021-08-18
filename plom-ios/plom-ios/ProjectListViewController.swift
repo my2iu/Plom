@@ -125,12 +125,22 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             }
             
             // Add the project to the list of projects
+            var bookmark : Data?
 #if os(iOS) && !targetEnvironment(macCatalyst)
-            let bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+            do {
+                let success =  url.startAccessingSecurityScopedResource()
+                defer {
+                    if success {
+                        url.stopAccessingSecurityScopedResource()
+                    }
+                }
+                bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+
+            }
 #else
-            let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
 #endif
-            projects.insert(ProjectDescription(name: name, urlBookmark: bookmark, isManagedByPlom: !isExternal), at: 0)
+            projects.insert(ProjectDescription(name: name, urlBookmark: bookmark!, isManagedByPlom: !isExternal), at: 0)
             saveProjectListToUserDefaults()
             tableView.reloadData()
 
