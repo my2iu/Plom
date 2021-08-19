@@ -396,7 +396,7 @@ public class PlomTextReader
         lexer.expectToken("{");
         String name = "";
         List<TokenContainer> params = new ArrayList<>();
-        String nextPart = lexer.lexParameterTokenPart();
+        String nextPart = lexer.lexParameterTokenPartOrEmpty();
         if (nextPart.endsWith(":"))
         {
           while (true)

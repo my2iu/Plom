@@ -80,6 +80,27 @@ public class ModuleCodeRepository
       isStatic = val;
       return this;
     }
+    public boolean canReplace(FunctionSignature fn)
+    {
+//      if (isBuiltIn != fn.isBuiltIn) return false;
+      if (isStatic != fn.isStatic) return false; 
+      if (isConstructor != fn.isConstructor) return false;
+      if (!returnType.equals(fn.returnType)) return false;
+      if (nameParts.size() != fn.nameParts.size()) return false;
+      if (argNames.size() != fn.argNames.size()) return false;
+      if (argTypes.size() != fn.argTypes.size()) return false;
+      for (int n = 0; n < nameParts.size(); n++)
+      {
+        if (!nameParts.get(n).equals(fn.nameParts.get(n))) return false;
+      }
+      for (int n = 0; n < argNames.size(); n++)
+      {
+        if (!argNames.get(n).equals(fn.argNames.get(n))) return false;
+        if (!argTypes.get(n).equals(fn.argTypes.get(n))) return false;
+        
+      }
+      return true;
+    }
     public static FunctionSignature from(Token.ParameterToken returnType, String name)
     {
       return from(returnType, Arrays.asList(name.split(":")), new ArrayList<>(), new ArrayList<>(), null);
@@ -727,7 +748,7 @@ public class ModuleCodeRepository
     lexer.expectToken("module");
     lexer.expectToken(".");
     lexer.expectToken("{");
-    String moduleName = lexer.lexParameterTokenPart();
+    String moduleName = lexer.lexParameterTokenPartOrEmpty();
     lexer.expectToken("}");
     
     lexer.expectToken("{");
@@ -801,8 +822,23 @@ public class ModuleCodeRepository
         cls.addVarAndResetIds(v.name, v.type);
       }
     }
+new_methods:
     for (FunctionDescription fn: loaded.methods)
     {
+      if (augmentClass)
+      {
+        // Check if we're replacing an existing method or adding a new one to
+        // a built-in class
+        for (FunctionDescription m: cls.methods)
+        {
+          if (m.sig.canReplace(fn.sig))
+          {
+            m.code = fn.code;
+            continue new_methods;
+          }
+        }
+        
+      }
       cls.addMethod(fn);
     }
   }
@@ -892,7 +928,7 @@ public class ModuleCodeRepository
         fnName += namePart;
         lexer.expectToken(".");
         lexer.expectToken("{");
-        argNames.add(lexer.lexParameterTokenPart());
+        argNames.add(lexer.lexParameterTokenPartOrEmpty());
         lexer.expectToken("}");
         argTypes.add((Token.ParameterToken)PlomTextReader.readToken(lexer));
         namePart = lexer.lexParameterTokenPart();

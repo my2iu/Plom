@@ -1,80 +1,111 @@
  module .{program} {
- 	var . { var } @ {object }
-	 function . {test: . { arg1 } @ {number } } @ {number } {
-	 }
-	 function . {print string: . { value } @ {string } } @ {void } {
-	 // Prints a string to the screen
-	 primitive
-	 }
-	 function . {print: . { value } @ {object } } @ {void } {
-	 // Prints a value to the screen
-	 . {print string: { . {value } . {to string } } }
-	 }
-	 function . {input: . { prompt } @ {string } } @ {string } {
-	 // Displays a prompt asking for input and returns the value entered by the user
-	 primitive
-	 }
-	class @{JS object} extends @{object} {
-		function .{as number} @{number} {
-			primitive
-		}
-		function .{as string} @{string} {
-			primitive
-		}
-		function .{as boolean} @{boolean} {
-			primitive
-		}
-		function .{get: .{key} @{string}} @{JS object} {
-			primitive
-		}
-		function .{set: .{key} @{string} to:.{value} @{object}} @{void} {
-			primitive
-		}
-		function .{at: .{index} @{number}} @{JS object} {
-			primitive
-		}
-		function .{at: .{index} @{number} set: .{value} @{object}} @{void} {
-			primitive
-		}
-		function .{call: .{method} @{string}} @{JS object} {
-			primitive
-		}
-		function .{call: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
-			primitive
-		}
-		function .{call: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object}} @{JS object} {
-			primitive
-		}
-		function .{call: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object} and: .{param3} @{JS object}} @{JS object} {
-			primitive
-		}
-		function .{new: .{method} @{string}} @{JS object} {
-			primitive
-		}
-		function .{new: .{method} @{string} with: .{param1} @{JS object}} @{JS object} {
-			primitive
-		}
-		function .{new: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object}} @{JS object} {
-			primitive
-		}
-		function .{new: .{method} @{string} with: .{param1} @{JS object} and: .{param2} @{JS object} and: .{param3} @{JS object}} @{JS object} {
-			primitive
-		}
-		classfunction .{globals} @{JS object} {
-			primitive
-		}
-		classfunction .{from number: .{value} @{number}} @{JS object} {
-			primitive
-		}
-		classfunction .{from string: .{value} @{string}} @{JS object} {
-			primitive
-		}
-		classfunction .{from boolean: .{value} @{boolean}} @{JS object} {
-			primitive
-		}
-	}
-	class @ { Test } extends @{object} {
-		constructor . {new } {
-		}
-	}
+ stdlib { -1 }
+ var . { var } @ {object }
+ function . {input: . { prompt } @ {string } } @ {string } {
+ // Displays a prompt asking for input and returns the value entered by the user
+ primitive
+ }
+ function . {print: . { value } @ {object } } @ {void } {
+ // Prints a value to the screen
+ . {print string: { . {value } . {to string } } }
+ }
+ function . {print string: . { value } @ {string } } @ {void } {
+ // Prints a string to the screen
+ primitive
+ }
+ function . {test: . { arg1 } @ {number } } @ {number } {
+ }
+ class @ { Test } extends @ {object } {
+ constructor . {new } {
+ }
+ }
+ class @ { string } extends @ {object } {
+ }
+ class @ { object } {
+ function . {!=: . { val } @ {object } } @ {boolean } {
+ return ( this = . {val } ) . {not }
+ }
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ primitive
+ }
+ }
+ class @ { JS object } extends @ {object } {
+ function . {as boolean } @ {boolean } {
+ primitive
+ }
+ function . {as number } @ {number } {
+ primitive
+ }
+ function . {as string } @ {string } {
+ primitive
+ }
+ function . {at: . { index } @ {number } } @ {JS object } {
+ primitive
+ }
+ function . {at: . { index } @ {number }set: . { value } @ {object } } @ {void } {
+ primitive
+ }
+ function . {call: . { method } @ {string } } @ {JS object } {
+ primitive
+ }
+ function . {call: . { method } @ {string }with: . { param1 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {call: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {call: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object }and: . { param3 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {get: . { key } @ {string } } @ {JS object } {
+ primitive
+ }
+ function . {new: . { method } @ {string } } @ {JS object } {
+ primitive
+ }
+ function . {new: . { method } @ {string }with: . { param1 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {new: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {new: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object }and: . { param3 } @ {JS object } } @ {JS object } {
+ primitive
+ }
+ function . {set: . { key } @ {string }to: . { value } @ {object } } @ {void } {
+ primitive
+ }
+ classfunction . {from boolean: . { value } @ {boolean } } @ {JS object } {
+ primitive
+ }
+ classfunction . {from number: . { value } @ {number } } @ {JS object } {
+ primitive
+ }
+ classfunction . {from string: . { value } @ {string } } @ {JS object } {
+ primitive
+ }
+ classfunction . {globals } @ {JS object } {
+ primitive
+ }
+ }
+ class @ { boolean } extends @ {object } {
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {not } @ {boolean } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ if { this = true } {
+ return"true"
+ }
+ else {
+ return"false"
+ }
+
+ }
+ }
  }

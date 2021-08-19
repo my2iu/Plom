@@ -30,7 +30,6 @@
                         fetch('http://webviewbridge.plom.dev/bridge/readProjectFile?name=' + encodeURIComponent(filename))
                             .then((contents) => contents.text())
                             .then((code) => {
-                    console.log(code);
                     if (filename == 'program.plom')
                         loadCodeStringIntoRepository(code, repo);
                     else
