@@ -1,0 +1,11 @@
+ class @ { object } extends @ {object } {
+ function . {!=: . { val } @ {object } } @ {boolean } {
+ return ( this = . {val } ) . {not }
+ }
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ primitive
+ }
+ }

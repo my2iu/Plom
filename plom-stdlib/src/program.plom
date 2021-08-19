@@ -1,18 +1,18 @@
  module .{program} {
  stdlib { -1 }
  var . { var } @ {object }
- function . {input: . { prompt } @ {string } } @ {string } {
- // Displays a prompt asking for input and returns the value entered by the user
+ function . {test: . { arg1 } @ {number } } @ {number } {
+ }
+ function . {print string: . { value } @ {string } } @ {void } {
+ // Prints a string to the screen
  primitive
  }
  function . {print: . { value } @ {object } } @ {void } {
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
- function . {print string: . { value } @ {string } } @ {void } {
- // Prints a string to the screen
+ function . {input: . { prompt } @ {string } } @ {string } {
+ // Displays a prompt asking for input and returns the value entered by the user
  primitive
- }
- function . {test: . { arg1 } @ {number } } @ {number } {
  }
  }

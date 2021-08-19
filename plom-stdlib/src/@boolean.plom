@@ -1,0 +1,17 @@
+ class @ { boolean } extends @ {object } {
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {not } @ {boolean } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ if { this = true } {
+ return"true"
+ }
+ else {
+ return"false"
+ }
+
+ }
+ }
