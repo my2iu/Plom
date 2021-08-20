@@ -7,6 +7,7 @@
     <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
     <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
     <script type="text/javascript" language="javascript" src="plom/plomUi.js"></script>
+    <script type="text/javascript" language="javascript" src="plom/plomApp.js"></script>
 	<script>
 		// Safari on the web always scrolls the viewport when showing the soft keyboard,
 		// and we want everything to sort of stay visible on-screen, so we'll 
@@ -26,16 +27,7 @@
 
 		// Run code for initializing the UI		 
 		addGwtOnLoad(function() {
-			setupPlomUi();
-			var main = new org.programmingbasics.plom.core.Main();
-			//initRepository(main);
-			//main.go();
-    		hookRun(main);
-    		// hookLoadSave(main);
-    		main.hookSubject();
-    		window.addEventListener('resize', function() {
-    			main.updateAfterResize();
-    		});
+			var main = setupPlomMain();
             
             document.querySelector('.exitbutton').addEventListener('click', function(evt) {
                 fetch('/bridge/exit')
@@ -43,28 +35,7 @@
             });
 
             // Load in all the code for the project
-            var repo = makeRepositoryWithStdLib();
-            fetch('/bridge/listProjectFiles')
-                .then(response => response.json())
-                .then((json) =>
-                    Promise.all(json.files.map(filename =>
-                        fetch('/bridge/readProjectFile?name=' + encodeURIComponent(filename))
-                            .then((contents) => contents.text())
-                            .then((code) => {
-                    console.log(code);
-                    if (filename == 'program.plom')
-                        loadCodeStringIntoRepository(code, repo);
-                    else
-                        loadClassCodeStringIntoRepository(code, repo);
-                    }))))
-                .then((done) => {
-                    if (repo.isNoStdLibFlag)
-                        repo.setChainedRepository(null);
-                    main.repository = repo;
-
-                    //main.loadFunctionCodeView("main");
-                    main.loadGlobalsView();
-                });
+            var repo = createPlomRepositoryWithProjectCode(main, '/bridge/')
                 
             // Callback to save on exit
             window.plomPrepareToUnload = function() {

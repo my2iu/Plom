@@ -7,45 +7,17 @@
     <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
     <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
     <script type="text/javascript" language="javascript" src="plom/plomUi.js"></script>
+    <script type="text/javascript" language="javascript" src="plom/plomApp.js"></script>
 	<script>
 		// Run code for initializing the UI
 		addGwtOnLoad(function() {
-			setupPlomUi();
-			var main = new org.programmingbasics.plom.core.Main();
-			initRepository(main);
-			//main.go();
-    		hookRun(main);
-    		// hookLoadSave(main);
-    		main.hookSubject();
-    		window.addEventListener('resize', function() {
-    			main.updateAfterResize();
-    		});
+		    var main = setupPlomMain();
 
             // Load in all the code for the project
-            var repo = makeRepositoryWithStdLib();
-            fetch('http://webviewbridge.plom.dev/bridge/listProjectFiles')
-                .then(response => response.json())
-                .then((json) =>
-                    Promise.all(json.files.map(filename =>
-                        fetch('http://webviewbridge.plom.dev/bridge/readProjectFile?name=' + encodeURIComponent(filename))
-                            .then((contents) => contents.text())
-                            .then((code) => {
-                    if (filename == 'program.plom')
-                        loadCodeStringIntoRepository(code, repo);
-                    else
-                        loadClassCodeStringIntoRepository(code, repo);
-                    }))))
-                .then((done) => {
-					if (repo.isNoStdLibFlag)
-						repo.setChainedRepository(null);
-                    main.repository = repo;
-                    //main.loadFunctionCodeView("main");
-                    main.loadGlobalsView();
-                });
+            var repo = createPlomRepositoryWithProjectCode(main, 'http://webviewbridge.plom.dev/bridge/')
 
             window.plomPrepareToUnload = function() {
                 main.saveModuleAndClasses(function(contents) {
-                  window.AndroidBridge.saveModule(contents);
                   AndroidBridge.saveModule(contents);
                 }, function(name, contents) {
                   AndroidBridge.saveClass(name, contents);
