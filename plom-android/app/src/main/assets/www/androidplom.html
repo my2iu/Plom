@@ -25,6 +25,10 @@
                   AndroidBridge.deleteClass(name);
                 });
             };
+
+            window.plomOnAndroidBackPressed = function() {
+                fetch('http://webviewbridge.plom.dev/bridge/exit');
+            };
 		});
 	</script>
 
@@ -32,7 +36,7 @@
 
   <body>
   <div class="testbuttons">
-      <a class="runbutton plomUiButton" href="#">Run</a> &nbsp; <span class="lineIndicator"></span></div>
+      <a class="runbutton plomUiButton" href="#">Run</a> &nbsp; <span class="lineIndicator"></span> <a class="plomUiButton" href="#">&#8801;</a></div>
   <div class="console"></div>
   <div class="subject">
   	<div class="breadcrumb"></div>

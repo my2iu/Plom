@@ -144,8 +144,21 @@ public class PlomActivity extends AppCompatActivity {
                 return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
             }
         }
+        else if ("exit".equals(endpoint))
+        {
+            finish();
+        }
         return null;
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Intercept the back button and let the JavaScript handle it. The JS can call
+        // back into Java if it wants to actually exit
+        final WebView webView = (WebView) findViewById(R.id.webview);
+        webView.evaluateJavascript("window.plomOnAndroidBackPressed()", null);
+//        super.onBackPressed();
     }
 
     DocumentFile getSourceDirectory()
