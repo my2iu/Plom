@@ -259,14 +259,49 @@ public class Main
       codePanel.updateAfterResize();
   }
   
+  /**
+   * Some versions of Plom have an on-screen back button, and they need to
+   * listen for changes in the breadcrumbs in case they need to hide it
+   */
+  public void setBackBreadcrumbListener(BackBreadcrumbListener listener)
+  {
+    backBreadcrumbListener = listener; 
+  }
+  
+  @JsFunction public static interface BackBreadcrumbListener
+  {
+    public void fireNotification();
+  }
+  BackBreadcrumbListener backBreadcrumbListener;
+  
+  /** Call this to go back up the breadcrumb chain */ 
+  Runnable backBreadcrumb = null;
+  
+  public void goBack()
+  {
+    if (backBreadcrumb != null)
+      backBreadcrumb.run();
+  }
+  
+  public boolean canGoBack()
+  {
+    return backBreadcrumb != null;
+  }
+  
+  private void setBackBreadcrumb(Runnable backAction)
+  {
+    backBreadcrumb = backAction;
+    if (backBreadcrumbListener != null)
+      backBreadcrumbListener.fireNotification();
+  }
+  
   
   /**
    * Basic UI for changing the class/method/function
    */
   public void hookSubject()
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
 //    Element editEl = subjectEl.querySelector(".edit");
     
 //    fillBreadcrumbForFunction(breadcrumbEl, FunctionSignature.noArg("main"));
@@ -290,11 +325,13 @@ public class Main
       loadGlobalsView();
     }, false);
     breadcrumbEl.appendChild(a);
+    setBackBreadcrumb(null);
   }
   
   void fillBreadcrumbForFunction(Element breadcrumbEl, FunctionDescription sig)
   {
     fillBreadcrumbForGlobals(breadcrumbEl);
+    setBackBreadcrumb(this::loadGlobalsView);
     Document doc = Browser.getDocument();
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
@@ -311,6 +348,7 @@ public class Main
   void fillBreadcrumbForClass(Element breadcrumbEl, ClassDescription cls)
   {
     fillBreadcrumbForGlobals(breadcrumbEl);
+    setBackBreadcrumb(this::loadGlobalsView);
     Document doc = Browser.getDocument();
     
     AnchorElement a = (AnchorElement)doc.createElement("a");
@@ -338,6 +376,7 @@ public class Main
       loadClassView(cls, false);
     }, false);
     breadcrumbEl.appendChild(a);
+    setBackBreadcrumb(() -> loadClassView(cls, false));
     
     a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
@@ -355,10 +394,18 @@ public class Main
     return (DivElement)Browser.getDocument().querySelector("div.main");
   }
   
-  public void loadFunctionCodeView(String fnName)
+  private Element getBreadcrumbEl()
   {
     Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = 
+        subjectEl != null ? subjectEl.querySelector(".breadcrumb")
+            : Browser.getDocument().querySelector(".breadcrumb");
+    return breadcrumbEl;
+  }
+  
+  public void loadFunctionCodeView(String fnName)
+  {
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForFunction(breadcrumbEl, repository.getFunctionDescription(fnName));
     
@@ -369,8 +416,7 @@ public class Main
 
   void loadFunctionSignatureView(FunctionDescription sig, boolean isNew)
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForFunction(breadcrumbEl, sig);
     
@@ -380,8 +426,7 @@ public class Main
 
   void loadClassView(ClassDescription cls, boolean isNew)
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForClass(breadcrumbEl, cls);
     
@@ -391,8 +436,7 @@ public class Main
 
   void loadMethodCodeView(ClassDescription cls, FunctionDescription m)
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForMethod(breadcrumbEl, cls, m);
     
@@ -404,8 +448,7 @@ public class Main
 
   void loadMethodSignatureView(ClassDescription cls, FunctionDescription m, boolean isNew)
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForMethod(breadcrumbEl, cls, m);
     
@@ -415,8 +458,7 @@ public class Main
 
   public void loadGlobalsView()
   {
-    Element subjectEl = Browser.getDocument().querySelector(".subject");
-    Element breadcrumbEl = subjectEl.querySelector(".breadcrumb");
+    Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
     fillBreadcrumbForGlobals(breadcrumbEl);
     
@@ -514,7 +556,11 @@ public class Main
       {
         int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
         Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
-        lineEl.setTextContent("L" + lineNo);
+        if (lineEl != null)
+        {
+          lineEl.getStyle().clearDisplay();
+          lineEl.setTextContent("L" + lineNo);
+        }
       }
     });
     

@@ -310,7 +310,15 @@ a.breadcrumb-item:visited {
 }
 
 .testbuttons {
-	height: 1.5em;
+		background: white;
+		border: 1px solid black;
+		padding: 0.5em;
+		display: none; 
+		position: absolute; 
+		right: 0; 
+		top: 0;
+		z-index: 1;
+		flex-direction: column;
 }
 
 .console {
@@ -321,20 +329,32 @@ a.runbutton {
 	
 }
 
-.subject {
-	display: flex;
-	min-height: 1.5em;
+.plomNavigationHeader {
+	border-bottom: 1px solid black;
+	display: flex; 
+	align-items: flex-start;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
 }
 
-.subject .breadcrumb {
+.plomNavigationHeader .subject {
+	display: flex;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	min-height: 1.5em;
+	min-width: 0;
+	align-self: center;
+}
+
+.plomNavigationHeader .subject .breadcrumb {
 	flex-grow: 1;
 }
 
-.subject .breadcrumb .breadcrumb-item {
+.plomNavigationHeader .subject .breadcrumb .breadcrumb-item {
 	padding-right: 1em;
 }
 
-.subject .edit {
+.plomNavigationHeader .subject .edit {
 	min-width: 1.5em;
 	background-color: #ddd;
 	text-align: center;

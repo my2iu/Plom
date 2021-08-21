@@ -38,19 +38,63 @@
     			main.updateAfterResize();
     		});
     		main.loadFunctionCodeView("main");
+    		
+    		hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
+    		
+    		// Back button
+    		document.querySelector('.backbutton').addEventListener('click', function(evt) {
+ 		      main.goBack();
+  		      evt.preventDefault();
+   		    });
+    		main.setBackBreadcrumbListener(function() {
+    			if (main.canGoBack())
+    				document.querySelector('.backbutton').style.display = 'block';
+    			else
+    				document.querySelector('.backbutton').style.display = 'none';
+    		});
+    		
+
 		});
+		
+		function hookSimpleHamburgerMenu(menuButtonAnchor, menuDiv)
+		{
+			menuButtonAnchor.onclick = function(evt) {
+				evt.preventDefault();
+				if (menuDiv.style.display == 'none') {
+					menuDiv.style.display = 'flex';
+					// Position the menu under the button
+					var bounds = menuButtonAnchor.getBoundingClientRect();
+					menuDiv.style.top = bounds.bottom + 'px';
+				}
+				else
+					menuDiv.style.display = 'none';
+			};
+		}
 	</script>
     <style>
     </style>
   </head>
 
   <body>
-  <div class="testbuttons"><a class="runbutton plomUiButton" href="#">Run</a> &nbsp; <a class="loadbutton plomUiButton" href="#">Load</a> &nbsp; <a class="savebutton plomUiButton" href="#">Save</a> &nbsp; <span class="lineIndicator"></span></div>
+  
+  <div class="plomNavigationHeader">
+      <a class="plomUiButton backbutton" style="display: block; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
+      <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
+      	<div class="breadcrumb" style="flex-grow: 1;"></div>
+   	  </div>
+      <a class="plomUiButton hamburgermenubutton" style="font-size: 1.5em;" href="javascript:void(0)"><div>&#8801;</div></a>
+  </div>
+  <div class="testbuttons" style="display: none;">
+  <a class="runbutton plomUiButton" href="#">Run</a> 
+  &nbsp; <a class="loadbutton plomUiButton" href="#">Load</a> &nbsp; 
+  <a class="savebutton plomUiButton" href="#">Save</a> </div>
+
   <div class="console"></div>
+  <!-- 
   <div class="subject">
   	<div class="breadcrumb"></div>
-  	<!--<a href="#" class="edit"></a>-->
   </div>
+   -->
   <div class="main">
   </div>
   </body>
