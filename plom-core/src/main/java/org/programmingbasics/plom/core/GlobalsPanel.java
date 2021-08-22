@@ -74,7 +74,7 @@ public class GlobalsPanel
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
-      a.setTextContent(cls.getName());
+      a.setTextContent("@" + cls.getName());
       a.setHref("#");
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
@@ -109,7 +109,7 @@ public class GlobalsPanel
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
       a.setHref("#");
-      a.setTextContent(fnName.sig.getLookupName());
+      a.setTextContent("." + fnName.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         viewSwitchCallback.load(fnName);

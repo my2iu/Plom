@@ -59,7 +59,7 @@ TODO:
 - improve the breadcrumbs
 - improve the class/method view
 - refine the hamburger menu (should automatically close itself)
-- change the back button to match the platform?
+- change the back button to match the platform style?
  */
 
 public class Entry implements EntryPoint

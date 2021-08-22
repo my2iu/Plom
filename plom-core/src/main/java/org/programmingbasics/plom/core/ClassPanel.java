@@ -180,7 +180,7 @@ public class ClassPanel
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
       a.setHref("#");
-      a.setTextContent(fn.sig.getLookupName());
+      a.setTextContent("." + fn.sig.getLookupName());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         viewSwitchCallback.load(cls, fn);

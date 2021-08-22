@@ -17,6 +17,8 @@ div.main {
     flex-grow: 1;
     width: auto;
     height: auto;
+    flex-shrink: 1;
+    min-height: 0;
 }
 
 div.globaldetails {

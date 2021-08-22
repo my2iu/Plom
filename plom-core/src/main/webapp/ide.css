@@ -117,6 +117,8 @@ a.breadcrumb-item:visited {
 
 .codesvg {
 	padding: 0;
+
+	padding-bottom: 100vh;  /* So that the code area won't scroll when the keyboard pops in and out */ 
 	
 	/* Helps prevent jank from the scrollbar appearing and disappearing, which
 	can trigger a need to layout the svg again. But if the code section never
@@ -334,7 +336,6 @@ a.breadcrumb-item:visited {
 }
 
 .console {
-	height: 2em;
 }
 
 a.runbutton {
