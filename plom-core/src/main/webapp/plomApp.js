@@ -39,6 +39,4 @@ function createPlomRepositoryWithProjectCode(main, bridgeUrl)
             //main.loadFunctionCodeView("main");
             main.loadGlobalsView();
         });
-        
-	return repo;
 }

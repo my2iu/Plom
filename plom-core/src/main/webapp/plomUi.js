@@ -324,12 +324,26 @@ function setupPlomUi() {
 		{
 			console.error(err);
 		}
-
 	}
+	function hookSimpleHamburgerMenu(menuButtonAnchor, menuDiv)
+		{
+			menuButtonAnchor.onclick = function(evt) {
+				evt.preventDefault();
+				if (menuDiv.style.display == 'none') {
+					menuDiv.style.display = 'flex';
+					// Position the menu under the button
+					var bounds = menuButtonAnchor.getBoundingClientRect();
+					menuDiv.style.top = bounds.bottom + 'px';
+				}
+				else
+					menuDiv.style.display = 'none';
+			};
+		}
 	window.hookRun = hookRun;
 	window.hookLoadSave = hookLoadSave;
 	window.initRepository = initRepository;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
 	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;
 	window.loadClassCodeStringIntoRepository = loadClassCodeStringIntoRepository;
+	window.hookSimpleHamburgerMenu = hookSimpleHamburgerMenu;
 }

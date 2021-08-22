@@ -56,20 +56,7 @@
 
 		});
 		
-		function hookSimpleHamburgerMenu(menuButtonAnchor, menuDiv)
-		{
-			menuButtonAnchor.onclick = function(evt) {
-				evt.preventDefault();
-				if (menuDiv.style.display == 'none') {
-					menuDiv.style.display = 'flex';
-					// Position the menu under the button
-					var bounds = menuButtonAnchor.getBoundingClientRect();
-					menuDiv.style.top = bounds.bottom + 'px';
-				}
-				else
-					menuDiv.style.display = 'none';
-			};
-		}
+		
 	</script>
     <style>
     </style>

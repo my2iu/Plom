@@ -14,7 +14,7 @@
 		    var main = setupPlomMain();
 
             // Load in all the code for the project
-            var repo = createPlomRepositoryWithProjectCode(main, 'http://webviewbridge.plom.dev/bridge/')
+            createPlomRepositoryWithProjectCode(main, 'http://webviewbridge.plom.dev/bridge/')
 
             window.plomPrepareToUnload = function() {
                 main.saveModuleAndClasses(function(contents) {
@@ -26,8 +26,13 @@
                 });
             };
 
+    		hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
+
             window.plomOnAndroidBackPressed = function() {
-                fetch('http://webviewbridge.plom.dev/bridge/exit');
+                if (main.canGoBack())
+ 		          main.goBack();
+                else
+                  fetch('http://webviewbridge.plom.dev/bridge/exit');
             };
 		});
 	</script>
@@ -35,13 +40,19 @@
   </head>
 
   <body>
-  <div class="testbuttons">
-      <a class="runbutton plomUiButton" href="#">Run</a> &nbsp; <span class="lineIndicator"></span> <a class="plomUiButton" href="#">&#8801;</a></div>
-  <div class="console"></div>
-  <div class="subject">
-  	<div class="breadcrumb"></div>
-  	<!--<a href="#" class="edit"></a>-->
+  <div class="plomNavigationHeader">
+    <a class="plomUiButton backbutton" style="display: none; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
+    <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
+      <div class="breadcrumb" style="flex-grow: 1;"></div>
+    </div>
+    <a class="plomUiButton hamburgermenubutton" style="font-size: 1.5em;" href="javascript:void(0)"><div>&#8801;</div></a>
   </div>
+  <div class="testbuttons" style="display: none;">
+      <a class="runbutton plomUiButton" href="#">Run</a> &nbsp; </div>
+  <div class="console"></div>
+  <!--  <div class="subject">
+  <div class="breadcrumb"></div>
+  </div>-->
   <div class="main">
   </div>
   </body>
