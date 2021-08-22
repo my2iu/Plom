@@ -55,12 +55,11 @@ TODO:
 - distinguish between cursor positions that are at the end of a line or beginning of next wrapped line 
 - svg render better scrolling when the keyboard deploys
 - sidebar of suggestions should overlay instead of shrinking code view
-- templates for code
-- special mode for stdlib development
 - fix up scrolling when deleting classes or modifying code
-- move "Run" option into a menu to take up less space?
 - improve the breadcrumbs
 - improve the class/method view
+- refine the hamburger menu (should automatically close itself)
+- change the back button to match the platform?
  */
 
 public class Entry implements EntryPoint
