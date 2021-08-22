@@ -28,14 +28,9 @@
 		// Run code for initializing the UI		 
 		addGwtOnLoad(function() {
 			var main = setupPlomMain();
-            
-            document.querySelector('.exitbutton').addEventListener('click', function(evt) {
-                fetch('/bridge/exit')
-               evt.preventDefault();
-            });
 
             // Load in all the code for the project
-            var repo = createPlomRepositoryWithProjectCode(main, '/bridge/')
+            createPlomRepositoryWithProjectCode(main, '/bridge/')
                 
             // Callback to save on exit
             window.plomPrepareToUnload = function() {
@@ -47,19 +42,36 @@
                     fetch('/bridge/deleteClass?name=' + encodeURIComponent(name));
                 });
             }
+            
+            hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
+            
+            // Back button
+            document.querySelector('.backbutton').addEventListener('click', function(evt) {
+                evt.preventDefault();
+                if (main.canGoBack())
+                    main.goBack();
+                else
+                    fetch('/bridge/exit')
+            });
 		});
 	</script>
 
   </head>
 
   <body>
-  <div class="testbuttons">
-      <a class="exitbutton plomUiButton" href="#">&lt;&nbsp;Exit</a> <a class="runbutton plomUiButton" href="#">Run</a> &nbsp;  <span class="lineIndicator"></span></div>
+    <div class="plomNavigationHeader">
+        <a class="plomUiButton backbutton" style="display: block; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
+        <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
+        <div class="breadcrumb" style="flex-grow: 1;"></div>
+        </div>
+        <a class="plomUiButton hamburgermenubutton" style="font-size: 1.5em;" href="javascript:void(0)"><div>&#8801;</div></a>
+    </div>
+  <div class="testbuttons" style="display: none;">
+      <a class="runbutton plomUiButton" href="#">Run</a> </div>
   <div class="console"></div>
-  <div class="subject">
+<!--  <div class="subject">
   	<div class="breadcrumb"></div>
-  	<!--<a href="#" class="edit"></a>-->
-  </div>
+  </div> -->
   <div class="main">
   </div>
   </body>
