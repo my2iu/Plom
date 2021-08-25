@@ -85,4 +85,19 @@ public class LL1ParserTest extends TestCase
      Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
      Assert.assertTrue(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotMember));
    }
+   
+   @Test
+   public void testAndOr()
+   {
+     // Checking a problem with the grammar for expressions mixing "and" and "or"
+     LL1Parser parser = new LL1Parser();
+     parser.addToParse(Symbol.FullStatement);
+     new SimpleToken("true", Symbol.TrueLiteral).visit(parser);
+     new SimpleToken("or", Symbol.Or).visit(parser);
+     new SimpleToken("true", Symbol.TrueLiteral).visit(parser);
+     Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.Or));
+     Assert.assertTrue(parser.allowedNextSymbols().contains(Symbol.And));
+     Assert.assertTrue(parser.peekParseSymbol(Symbol.And));
+
+   }
 }

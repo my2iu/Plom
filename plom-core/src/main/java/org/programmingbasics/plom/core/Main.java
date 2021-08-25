@@ -334,6 +334,7 @@ public class Main
     setBackBreadcrumb(this::loadGlobalsView);
     Document doc = Browser.getDocument();
     
+    breadcrumbEl.appendChild(doc.createTextNode(" "));
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
     a.setTextContent("." + sig.sig.getDisplayName() + " \u270e");
@@ -351,6 +352,7 @@ public class Main
     setBackBreadcrumb(this::loadGlobalsView);
     Document doc = Browser.getDocument();
     
+    breadcrumbEl.appendChild(doc.createTextNode(" "));
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
     a.setTextContent("@" + cls.getName());
@@ -367,6 +369,7 @@ public class Main
     fillBreadcrumbForGlobals(breadcrumbEl);
     Document doc = Browser.getDocument();
     
+    breadcrumbEl.appendChild(doc.createTextNode(" "));
     AnchorElement a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
     a.setTextContent("@" + cls.getName());
@@ -378,6 +381,7 @@ public class Main
     breadcrumbEl.appendChild(a);
     setBackBreadcrumb(() -> loadClassView(cls, false));
     
+    breadcrumbEl.appendChild(doc.createTextNode(" "));
     a = (AnchorElement)doc.createElement("a");
     a.setClassName("breadcrumb-item");
     a.setTextContent("." + m.sig.getDisplayName() + " \u270e");

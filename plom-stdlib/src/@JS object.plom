@@ -29,8 +29,6 @@
  function . {get: . { key } @ {string } } @ {JS object } {
  primitive
  }
- function . {method } @ {void } {
- }
  function . {new: . { method } @ {string } } @ {JS object } {
  primitive
  }

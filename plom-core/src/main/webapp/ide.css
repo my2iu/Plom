@@ -362,6 +362,7 @@ a.runbutton {
 .plomNavigationHeader .subject .breadcrumb {
 	flex-grow: 1;
 	align-self: center;
+	overflow: clip;
 }
 
 .plomNavigationHeader .subject .breadcrumb .breadcrumb-item {

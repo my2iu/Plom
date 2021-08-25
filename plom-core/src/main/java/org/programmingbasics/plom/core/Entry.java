@@ -46,7 +46,6 @@ TODO:
 - standardize value stuff so that functions always return and pass around direct pointers, but you are expected to copy the contents (unless you specify explicitly something else)?
 - retype
 - restrict grammar so that boolean expressions normally aren't allowed so as to avoid confusion between := and =
-- fix problem with typing a boolean expression with a mix of AND and OR
 - svg render word wrap -- fix up hit testing
 - svg render top of parameter in parameter token should extend to top of line
 - svg render add extra space between lines
@@ -58,8 +57,12 @@ TODO:
 - fix up scrolling when deleting classes or modifying code
 - improve the breadcrumbs
 - improve the class/method view
+- method view and input focus when adding new args 
+- deleting args doesn't close suggestions (is this a problem elsewhere?) 
+- sidebar of suggestions in method view shifts text around (should absolute position itself)
 - refine the hamburger menu (should automatically close itself)
 - change the back button to match the platform style?
+- saving should save out functions and methods in alphabetical order
  */
 
 public class Entry implements EntryPoint

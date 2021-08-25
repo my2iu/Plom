@@ -2,7 +2,6 @@ package org.programmingbasics.plom.core.ast;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import junit.framework.TestCase;
