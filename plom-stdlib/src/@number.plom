@@ -1,0 +1,13 @@
+ class @ { number } extends @ {object } {
+ function . {*: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ function . {+: . { val } @ {number } } @ {number } {
+ }
+ function . {-: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ function . {/: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ }

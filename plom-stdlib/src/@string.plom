@@ -1,2 +1,14 @@
  class @ { string } extends @ {object } {
+ function . {+: . { val } @ {string } } @ {boolean } {
+ primitive
+ }
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {substring from: . { from } @ {number }to: . { to } @ {number } } @ {string } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ return this
+ }
  }
