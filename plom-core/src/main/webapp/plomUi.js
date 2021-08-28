@@ -6,6 +6,24 @@ function setupPlomUi() {
 	var Value = org.programmingbasics.plom.core.interpreter.Value; 
 	var StandardLibrary = org.programmingbasics.plom.core.interpreter.StandardLibrary;
 	var RunException = org.programmingbasics.plom.core.interpreter.RunException;
+
+	// Code for the custom auto-resizing DOM input element	
+	class AutoResizingInputElement extends HTMLElement {
+		constructor() {
+			super();
+			var shadowRoot = this.attachShadow({mode: 'open'});
+			
+			shadowRoot.innerHTML = org.programmingbasics.plom.core.Main.getAutoResizingInputHtmlText();
+		}
+		get value() {
+			return this.shadowRoot.querySelector('input').value;
+		}
+		set value(val) {
+			this.shadowRoot.querySelector('input').value = val;
+			this.shadowRoot.querySelector('div').textContent = val;
+		}
+	}
+	customElements.define('plom-autoresizing-input', AutoResizingInputElement);
 	
 	function addPrimitives(interpreter, coreTypes)
 	{

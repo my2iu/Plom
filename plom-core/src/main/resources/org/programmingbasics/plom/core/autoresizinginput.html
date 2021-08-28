@@ -1,0 +1,19 @@
+<style>
+:host {
+	display: inline-grid;
+	vertical-align: middle;
+}
+input {
+	grid-area: 1 / 1;
+	font: var(--input-font, 1rem sans-serif);
+	padding: 0;
+}
+div{
+	grid-area: 1 / 1;
+	font: var(--input-font, 1rem sans-serif);
+	padding: 0;
+	padding-right: 1.5em;	
+}
+</style>
+<div></div>
+<input size="1" type="text" autocapitalize="off" oninput="this.parentNode.querySelector('div').textContent = this.value;">

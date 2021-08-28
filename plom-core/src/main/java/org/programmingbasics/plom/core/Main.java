@@ -629,5 +629,10 @@ public class Main
   {
     public void deleteClass(String className);
   }
+  
+  public static String getAutoResizingInputHtmlText() {
+    return UIResources.INSTANCE.getAutoResizingInputHtml().getText();
+  }
+
 
 }

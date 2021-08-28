@@ -14,7 +14,6 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
-import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.NodeList;

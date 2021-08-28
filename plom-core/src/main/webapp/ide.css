@@ -460,6 +460,10 @@ a.runbutton {
     border-radius: 0.3em;
 }
 
+.plomUiAutoResizingInput {
+	--input-font: 1rem system-ui, 1rem sans-serif;
+}
+
 svg rect.codetoken {
 	fill: #eee;
 	stroke: #aaa;

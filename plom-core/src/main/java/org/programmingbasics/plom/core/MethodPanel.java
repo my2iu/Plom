@@ -10,10 +10,14 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
+import elemental.dom.DocumentFragment;
+import elemental.dom.Element;
+import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import elemental.js.dom.JsDocumentFragment;
 
 public class MethodPanel
 {
@@ -95,7 +99,7 @@ public class MethodPanel
       for (DivElement div: nameEls)
         nameParts.add(((InputElement)div.querySelector("input")).getValue());
       for (DivElement div: argEls)
-        argNames.add(((InputElement)div.querySelector("input")).getValue());
+        argNames.add(((InputElement)div.querySelector("plom-autoresizing-input")).getValue());
       for (TypeEntryField typeField: argTypeFields)
         argTypes.add(typeField.type);
       if (returnTypeField != null)
@@ -127,8 +131,8 @@ public class MethodPanel
       mainDiv.querySelector(".method_args").appendChild(nameDiv);
     }
     DivElement varDiv = doc.createDivElement();
-    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; margin-right: 0.2em; display: inline-block;\"><a href=\"#\" aria-label=\"delete argument\" class=\"plomUiRemoveButton\"></a></div>.<input size=\"15\" type=\"text\" autocapitalize=\"off\"><div class=\"typeEntry\">&nbsp;</div></div>");
-    ((InputElement)varDiv.querySelector("input")).setValue(argNameVal);
+    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; margin-right: 0.2em; display: inline-block;\"><a href=\"#\" aria-label=\"delete argument\" class=\"plomUiRemoveButton\"></a></div>.<plom-autoresizing-input></plom-autoresizing-input><div class=\"typeEntry\">&nbsp;</div></div>");
+    ((InputElement)varDiv.querySelector("plom-autoresizing-input")).setValue(argNameVal);
     argEls.add(varDiv);
     mainDiv.querySelector(".method_args").appendChild(varDiv);
 
@@ -162,5 +166,4 @@ public class MethodPanel
       argTypeFields.remove(typeField);
     }, false);
   }
-  
 }
