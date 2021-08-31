@@ -23,6 +23,12 @@ public interface UIResources extends ClientBundle
    @Source("methodpanel.html")
    TextResource getMethodPanelHtml();
 
+   @Source("methodnamebase.html")
+   TextResource getMethodNameBaseHtml();
+
+   @Source("methodnamepartarg.html")
+   TextResource getMethodNamePartForArgumentHtml();
+
    @Source("globalspanel.html")
    TextResource getGlobalsPanelHtml();
    

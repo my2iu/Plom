@@ -10,14 +10,11 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
-import elemental.dom.DocumentFragment;
 import elemental.dom.Element;
-import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
-import elemental.js.dom.JsDocumentFragment;
 
 public class MethodPanel
 {
@@ -57,6 +54,9 @@ public class MethodPanel
     List<DivElement> nameEls = new ArrayList<>();
     List<DivElement> argEls = new ArrayList<>();
     List<TypeEntryField> argTypeFields = new ArrayList<>();
+
+    MethodNameWidget methodWidget = new MethodNameWidget(sig);
+    containerDiv.querySelector(".methoddetails").appendChild(methodWidget.getBaseElement());
     
     // Fill in the function name
     nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
@@ -165,5 +165,48 @@ public class MethodPanel
       varDiv.getParentElement().removeChild(varDiv);
       argTypeFields.remove(typeField);
     }, false);
+  }
+  
+  static class MethodNameWidget
+  {
+    final Document doc;
+    final DivElement baseDiv;
+    FunctionSignature sig;
+    List<InputElement> nameEls = new ArrayList<>();
+    List<DivElement> argEls = new ArrayList<>();
+    List<TypeEntryField> argTypeFields = new ArrayList<>();
+    Element firstColonEl;
+    
+    public MethodNameWidget(FunctionSignature sig)
+    {
+      doc = Browser.getDocument();
+      this.sig = FunctionSignature.copyOf(sig);
+      
+      // Create initial layout
+      baseDiv = doc.createDivElement();
+      baseDiv.setClassName("flexloosewrappinggroup");
+      rebuildTree();
+    }
+    
+    private void rebuildTree() 
+    {
+      baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
+      firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
+      
+      InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0); 
+      nameEls.add(firstNamePartEl);
+      firstNamePartEl.setValue(sig.nameParts.get(0));
+      
+      if (!sig.argNames.isEmpty())
+      {
+        DivElement dummyDiv = doc.createDivElement();
+        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePartForArgumentHtml().getText());
+        while (dummyDiv.getFirstChild() != null)
+          baseDiv.appendChild(dummyDiv.getFirstChild());
+      }
+    }
+    
+    public Element getBaseElement() { return baseDiv; }
+    
   }
 }

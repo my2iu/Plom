@@ -136,6 +136,18 @@ public class ModuleCodeRepository
       }
       return sig;
     }
+    public static FunctionSignature copyOf(FunctionSignature oldSig)
+    {
+      FunctionSignature sig = new FunctionSignature();
+      sig.returnType = oldSig.returnType;
+      sig.nameParts = new ArrayList<>(oldSig.nameParts);
+      sig.argNames = new ArrayList<>(oldSig.argNames);
+      sig.argTypes = new ArrayList<>(oldSig.argTypes);
+      sig.isConstructor = oldSig.isConstructor;
+      sig.isBuiltIn = oldSig.isBuiltIn;
+      sig.isStatic = oldSig.isStatic;
+      return sig;
+    }
   }
 
   public static class DescriptionWithId

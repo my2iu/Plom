@@ -7,13 +7,16 @@ input {
 	grid-area: 1 / 1;
 	font: var(--input-font, 1rem sans-serif);
 	padding: 0.25em;
+	text-overflow: ellipsis;
 }
 div{
 	grid-area: 1 / 1;
 	font: var(--input-font, 1rem sans-serif);
 	border: 2px solid transparent;
 	padding: 0.25em;
-	padding-right: 1.5em;	
+	padding-right: 1.5em;
+	overflow: clip;
+	white-space: pre;	
 }
 </style>
 <div></div>

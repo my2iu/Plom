@@ -464,6 +464,16 @@ plom-autoresizing-input {
 	--input-font: 1rem system-ui, sans-serif;
 }
 
+.flexloosewrappinggroup {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.flextightgroup {
+	display: flex;	
+	flex-wrap: nowrap;
+}
+
 svg rect.codetoken {
 	fill: #eee;
 	stroke: #aaa;
