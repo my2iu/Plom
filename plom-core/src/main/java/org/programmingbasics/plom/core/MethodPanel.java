@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
@@ -37,6 +39,7 @@ public class MethodPanel
   SignatureListener listener;
   ModuleCodeRepository repository;
   SimpleEntry simpleEntry;
+  MethodNameWidget methodWidget;
   TypeEntryField returnTypeField = null;
   
   public static interface SignatureListener
@@ -55,7 +58,11 @@ public class MethodPanel
     List<DivElement> argEls = new ArrayList<>();
     List<TypeEntryField> argTypeFields = new ArrayList<>();
 
-    MethodNameWidget methodWidget = new MethodNameWidget(sig);
+    methodWidget = new MethodNameWidget(sig, simpleEntry, 
+        (scope, coreTypes) -> {
+      StandardLibrary.createGlobals(null, scope, coreTypes);
+      scope.setParent(new RepositoryScope(repository, coreTypes));
+    });
     containerDiv.querySelector(".methoddetails").appendChild(methodWidget.getBaseElement());
     
     // Fill in the function name
@@ -68,7 +75,10 @@ public class MethodPanel
     // Add argument button
     containerDiv.querySelector(".method_args_add a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
+      // old code
       addMethodPanelArg(containerDiv, "", "", null, nameEls, argEls, argTypeFields);
+      // new approach
+      methodWidget.addArgumentToEnd();
     }, false);
 
     // Render the return type
@@ -104,7 +114,8 @@ public class MethodPanel
         argTypes.add(typeField.type);
       if (returnTypeField != null)
         returnType = returnTypeField.type;
-      FunctionSignature newSig = FunctionSignature.from(returnType, nameParts, argNames, argTypes, sig);
+      FunctionSignature nameSig = methodWidget.getNameSig();
+      FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);
@@ -170,37 +181,93 @@ public class MethodPanel
   static class MethodNameWidget
   {
     final Document doc;
+    final SimpleEntry simpleEntry;
+    final ConfigureGlobalScope globalScopeForTypeLookup;
     final DivElement baseDiv;
     FunctionSignature sig;
-    List<InputElement> nameEls = new ArrayList<>();
-    List<DivElement> argEls = new ArrayList<>();
-    List<TypeEntryField> argTypeFields = new ArrayList<>();
+    List<InputElement> nameEls;
+    List<InputElement> argEls;
+    List<TypeEntryField> argTypeFields;
     Element firstColonEl;
     
-    public MethodNameWidget(FunctionSignature sig)
+    public MethodNameWidget(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup)
     {
       doc = Browser.getDocument();
+      this.simpleEntry = simpleEntry;
+      this.globalScopeForTypeLookup = globalScopeForTypeLookup;
       this.sig = FunctionSignature.copyOf(sig);
       
       // Create initial layout
       baseDiv = doc.createDivElement();
       baseDiv.setClassName("flexloosewrappinggroup");
-      rebuildTree();
+      rebuild();
     }
     
-    private void rebuildTree() 
+    public void rebuild() 
     {
+      nameEls = new ArrayList<>();
+      argEls = new ArrayList<>();
+      argTypeFields = new ArrayList<>();
+      
       baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
       firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
       
       InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0); 
       nameEls.add(firstNamePartEl);
       firstNamePartEl.setValue(sig.nameParts.get(0));
-      
+
+      // Show the first argument if there is one
       if (!sig.argNames.isEmpty())
       {
         DivElement dummyDiv = doc.createDivElement();
-        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePartForArgumentHtml().getText());
+        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgumentHtml().getText());
+        InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
+        argNameEl.setValue(sig.argNames.get(0));
+        argEls.add(argNameEl);
+        
+        // argument type
+        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+            globalScopeForTypeLookup, (context) -> {});
+        argTypeFields.add(typeField);
+        typeField.render();
+
+        // Remove button
+        dummyDiv.querySelector(".plomUiRemoveButton").addEventListener(Event.CLICK, (evt) -> {
+          evt.preventDefault();
+          deleteArg(0);
+        });
+        
+        // Copy markup for the arguments into the UI
+        while (dummyDiv.getFirstChild() != null)
+          baseDiv.appendChild(dummyDiv.getFirstChild());
+      }
+      
+      // Handle the rest of the arguments
+      for (int n = 1; n < sig.argNames.size(); n++)
+      {
+        DivElement dummyDiv = doc.createDivElement();
+        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePartHtml().getText());
+        InputElement namePartEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(0); 
+        namePartEl.setValue(sig.nameParts.get(n));
+        nameEls.add(namePartEl);
+        InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
+        argNameEl.setValue(sig.argNames.get(n));
+        argEls.add(argNameEl);
+        
+        // argument type
+        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+            globalScopeForTypeLookup, (context) -> {});
+        argTypeFields.add(typeField);
+        typeField.render();
+
+        // Remove button
+        final int argIdx = n;
+        dummyDiv.querySelector(".plomUiRemoveButton").addEventListener(Event.CLICK, (evt) -> {
+          evt.preventDefault();
+          deleteArg(argIdx);
+        });
+
+        // Copy markup for the arguments into the UI
         while (dummyDiv.getFirstChild() != null)
           baseDiv.appendChild(dummyDiv.getFirstChild());
       }
@@ -208,5 +275,45 @@ public class MethodPanel
     
     public Element getBaseElement() { return baseDiv; }
     
+    public void addArgumentToEnd()
+    {
+      getNameSig();
+      sig.argNames.add("val");
+      sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      if (sig.argNames.size() > 1)
+        sig.nameParts.add("with");
+      rebuild();
+    }
+
+    public void deleteArg(int index)
+    {
+      getNameSig();
+      if (index == 0)
+      {
+        sig.argNames.remove(index);
+        sig.argTypes.remove(index);
+        if (sig.nameParts.size() > 1)
+        sig.nameParts.remove(index + 1);
+      }
+      else
+      {
+        sig.argNames.remove(index);
+        sig.argTypes.remove(index);
+        sig.nameParts.remove(index);
+      }
+      rebuild();
+    }
+
+    public FunctionSignature getNameSig()
+    {
+      for (int n = 0; n < nameEls.size(); n++)
+        sig.nameParts.set(n, nameEls.get(n).getValue());
+      for (int n = 0; n < argEls.size(); n++)
+        sig.argNames.set(n, argEls.get(n).getValue());
+      for (int n = 0; n < argTypeFields.size(); n++)
+        sig.argTypes.set(n, argTypeFields.get(n).type);
+      return sig;
+    }
+
   }
 }

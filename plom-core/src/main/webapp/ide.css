@@ -467,6 +467,7 @@ plom-autoresizing-input {
 .flexloosewrappinggroup {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 }
 
 .flextightgroup {
