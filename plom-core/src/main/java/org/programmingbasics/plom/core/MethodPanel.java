@@ -54,30 +54,28 @@ public class MethodPanel
   
   public void showMethod(DivElement containerDiv, FunctionSignature sig, boolean isNew)
   {
-    List<DivElement> nameEls = new ArrayList<>();
-    List<DivElement> argEls = new ArrayList<>();
-    List<TypeEntryField> argTypeFields = new ArrayList<>();
+//    List<DivElement> nameEls = new ArrayList<>();
+//    List<DivElement> argEls = new ArrayList<>();
+//    List<TypeEntryField> argTypeFields = new ArrayList<>();
 
     methodWidget = new MethodNameWidget(sig, simpleEntry, 
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
       scope.setParent(new RepositoryScope(repository, coreTypes));
     });
-    containerDiv.querySelector(".methoddetails").appendChild(methodWidget.getBaseElement());
+    containerDiv.querySelector(".method_name").setInnerHTML("");
+    containerDiv.querySelector(".method_name").appendChild(methodWidget.getBaseElement());
     
-    // Fill in the function name
-    nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
-    ((InputElement)nameEls.get(0).querySelector("input")).setValue(sig.nameParts.get(0));
-
-    for (int n = 0; n < sig.argNames.size(); n++)
-      addMethodPanelArg(containerDiv, sig.nameParts.get(n), sig.argNames.get(n), sig.argTypes.get(n), nameEls, argEls, argTypeFields);
-    
+//    // Fill in the function name
+//    nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
+//    ((InputElement)nameEls.get(0).querySelector("input")).setValue(sig.nameParts.get(0));
+//
+//    for (int n = 0; n < sig.argNames.size(); n++)
+//      addMethodPanelArg(containerDiv, sig.nameParts.get(n), sig.argNames.get(n), sig.argTypes.get(n), nameEls, argEls, argTypeFields);
+//    
     // Add argument button
     containerDiv.querySelector(".method_args_add a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      // old code
-      addMethodPanelArg(containerDiv, "", "", null, nameEls, argEls, argTypeFields);
-      // new approach
       methodWidget.addArgumentToEnd();
     }, false);
 
@@ -100,18 +98,18 @@ public class MethodPanel
     AnchorElement okButton = (AnchorElement)containerDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      // TODO: Remove OK button and just have changes automatically be applied
-      // TODO: Check validity of function name
-      List<String> nameParts = new ArrayList<>();
-      List<String> argNames = new ArrayList<>();
-      List<Token.ParameterToken> argTypes = new ArrayList<>();
+//      // TODO: Remove OK button and just have changes automatically be applied
+//      // TODO: Check validity of function name
+//      List<String> nameParts = new ArrayList<>();
+//      List<String> argNames = new ArrayList<>();
+//      List<Token.ParameterToken> argTypes = new ArrayList<>();
       Token.ParameterToken returnType = null;
-      for (DivElement div: nameEls)
-        nameParts.add(((InputElement)div.querySelector("input")).getValue());
-      for (DivElement div: argEls)
-        argNames.add(((InputElement)div.querySelector("plom-autoresizing-input")).getValue());
-      for (TypeEntryField typeField: argTypeFields)
-        argTypes.add(typeField.type);
+//      for (DivElement div: nameEls)
+//        nameParts.add(((InputElement)div.querySelector("input")).getValue());
+//      for (DivElement div: argEls)
+//        argNames.add(((InputElement)div.querySelector("plom-autoresizing-input")).getValue());
+//      for (TypeEntryField typeField: argTypeFields)
+//        argTypes.add(typeField.type);
       if (returnTypeField != null)
         returnType = returnTypeField.type;
       FunctionSignature nameSig = methodWidget.getNameSig();
@@ -123,60 +121,59 @@ public class MethodPanel
     // When creating a new function/method, the name should be selected so that you can immediately give it a new name 
     if (isNew)
     {
-      ((InputElement)nameEls.get(0).querySelector("input")).focus();  // Documentation is unclear as to whether select() also sets focus or not
-      ((InputElement)nameEls.get(0).querySelector("input")).select();
+      methodWidget.focusAndSelectFirstName();
     }
   }
 
-  private void addMethodPanelArg(DivElement mainDiv,
-      String nameVal, String argNameVal, Token.ParameterToken argTypeVal, 
-      List<DivElement> nameEls, List<DivElement> argEls, 
-      List<TypeEntryField> argTypeFields)
-  {
-    if (!argEls.isEmpty())
-    {
-      DivElement nameDiv = doc.createDivElement();
-      nameDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_name\"><input size=\"15\" type=\"text\" autocapitalize=\"off\">:</div>");
-      ((InputElement)nameDiv.querySelector("input")).setValue(nameVal);
-      nameEls.add(nameDiv);
-      mainDiv.querySelector(".method_args").appendChild(nameDiv);
-    }
-    DivElement varDiv = doc.createDivElement();
-    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; margin-right: 0.2em; display: inline-block;\"><a href=\"#\" aria-label=\"delete argument\" class=\"plomUiRemoveButton\"></a></div>.<plom-autoresizing-input></plom-autoresizing-input><div class=\"typeEntry\">&nbsp;</div></div>");
-    ((InputElement)varDiv.querySelector("plom-autoresizing-input")).setValue(argNameVal);
-    argEls.add(varDiv);
-    mainDiv.querySelector(".method_args").appendChild(varDiv);
-
-    // argument type
-    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false,
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
-        },
-        (context) -> {});
-    argTypeFields.add(typeField);
-    typeField.render();
-
-    // remove arg button
-    varDiv.querySelector(".method_args_var a").addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      int idx = argEls.indexOf(varDiv);
-      if (idx != 0)
-      {
-        DivElement div = nameEls.remove(idx);
-        div.getParentElement().removeChild(div);
-      }
-      else if (nameEls.size() > 1)
-      {
-        DivElement div = nameEls.get(1);
-        nameEls.remove(div);
-        div.getParentElement().removeChild(div);
-      }
-      argEls.remove(varDiv);
-      varDiv.getParentElement().removeChild(varDiv);
-      argTypeFields.remove(typeField);
-    }, false);
-  }
+//  private void addMethodPanelArg(DivElement mainDiv,
+//      String nameVal, String argNameVal, Token.ParameterToken argTypeVal, 
+//      List<DivElement> nameEls, List<DivElement> argEls, 
+//      List<TypeEntryField> argTypeFields)
+//  {
+//    if (!argEls.isEmpty())
+//    {
+//      DivElement nameDiv = doc.createDivElement();
+//      nameDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_name\"><input size=\"15\" type=\"text\" autocapitalize=\"off\">:</div>");
+//      ((InputElement)nameDiv.querySelector("input")).setValue(nameVal);
+//      nameEls.add(nameDiv);
+//      mainDiv.querySelector(".method_args").appendChild(nameDiv);
+//    }
+//    DivElement varDiv = doc.createDivElement();
+//    varDiv.setInnerHTML("<div style=\"padding-left: 1em;\" class=\"method_args_var\"><div style=\"min-width: 1em; margin-right: 0.2em; display: inline-block;\"><a href=\"#\" aria-label=\"delete argument\" class=\"plomUiRemoveButton\"></a></div>.<plom-autoresizing-input></plom-autoresizing-input><div class=\"typeEntry\">&nbsp;</div></div>");
+//    ((InputElement)varDiv.querySelector("plom-autoresizing-input")).setValue(argNameVal);
+//    argEls.add(varDiv);
+//    mainDiv.querySelector(".method_args").appendChild(varDiv);
+//
+//    // argument type
+//    TypeEntryField typeField = new TypeEntryField(argTypeVal, (DivElement)varDiv.querySelector(".typeEntry"), simpleEntry, false,
+//        (scope, coreTypes) -> {
+//          StandardLibrary.createGlobals(null, scope, coreTypes);
+//          scope.setParent(new RepositoryScope(repository, coreTypes));
+//        },
+//        (context) -> {});
+//    argTypeFields.add(typeField);
+//    typeField.render();
+//
+//    // remove arg button
+//    varDiv.querySelector(".method_args_var a").addEventListener(Event.CLICK, (evt) -> {
+//      evt.preventDefault();
+//      int idx = argEls.indexOf(varDiv);
+//      if (idx != 0)
+//      {
+//        DivElement div = nameEls.remove(idx);
+//        div.getParentElement().removeChild(div);
+//      }
+//      else if (nameEls.size() > 1)
+//      {
+//        DivElement div = nameEls.get(1);
+//        nameEls.remove(div);
+//        div.getParentElement().removeChild(div);
+//      }
+//      argEls.remove(varDiv);
+//      varDiv.getParentElement().removeChild(varDiv);
+//      argTypeFields.remove(typeField);
+//    }, false);
+//  }
   
   static class MethodNameWidget
   {
@@ -200,6 +197,7 @@ public class MethodPanel
       // Create initial layout
       baseDiv = doc.createDivElement();
       baseDiv.setClassName("flexloosewrappinggroup");
+      baseDiv.getStyle().setProperty("row-gap", "0.25em");
       rebuild();
     }
     
@@ -216,6 +214,10 @@ public class MethodPanel
       nameEls.add(firstNamePartEl);
       firstNamePartEl.setValue(sig.nameParts.get(0));
 
+      // Don't show a colon after the method name if there is no argument coming after it
+      if (sig.argNames.isEmpty())
+        baseDiv.querySelector(".method_name_colon").getStyle().setDisplay("none");
+      
       // Show the first argument if there is one
       if (!sig.argNames.isEmpty())
       {
@@ -277,17 +279,27 @@ public class MethodPanel
     
     public void addArgumentToEnd()
     {
-      getNameSig();
+      syncFromUi();
       sig.argNames.add("val");
       sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
       if (sig.argNames.size() > 1)
         sig.nameParts.add("with");
       rebuild();
+      if (nameEls.size() == 1)
+      {
+        argEls.get(argEls.size() - 1).focus();
+        argEls.get(argEls.size() - 1).select();
+      }
+      else
+      {
+        nameEls.get(nameEls.size() - 1).focus();
+        nameEls.get(nameEls.size() - 1).select();
+      }
     }
 
     public void deleteArg(int index)
     {
-      getNameSig();
+      syncFromUi();
       if (index == 0)
       {
         sig.argNames.remove(index);
@@ -304,7 +316,7 @@ public class MethodPanel
       rebuild();
     }
 
-    public FunctionSignature getNameSig()
+    public void syncFromUi()
     {
       for (int n = 0; n < nameEls.size(); n++)
         sig.nameParts.set(n, nameEls.get(n).getValue());
@@ -312,6 +324,17 @@ public class MethodPanel
         sig.argNames.set(n, argEls.get(n).getValue());
       for (int n = 0; n < argTypeFields.size(); n++)
         sig.argTypes.set(n, argTypeFields.get(n).type);
+    }
+    
+    public void focusAndSelectFirstName()
+    {
+      nameEls.get(0).focus();  // Documentation is unclear as to whether select() also sets focus or not
+      nameEls.get(0).select();
+    }
+    
+    public FunctionSignature getNameSig()
+    {
+      syncFromUi();
       return sig;
     }
 

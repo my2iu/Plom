@@ -8,6 +8,8 @@ input {
 	font: var(--input-font, 1rem sans-serif);
 	padding: 0.25em;
 	text-overflow: ellipsis;
+	background: var(--input-background, revert);
+	border: var(--input-border, 1px solid transparent);
 }
 div{
 	grid-area: 1 / 1;
@@ -16,7 +18,8 @@ div{
 	padding: 0.25em;
 	padding-right: 1.5em;
 	overflow: clip;
-	white-space: pre;	
+	white-space: pre;
+	visibility: hidden;	
 }
 </style>
 <div></div>

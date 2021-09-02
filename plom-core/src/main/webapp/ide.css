@@ -462,6 +462,7 @@ a.runbutton {
 
 plom-autoresizing-input {
 	--input-font: 1rem system-ui, sans-serif;
+	--input-background: transparent;
 }
 
 .flexloosewrappinggroup {

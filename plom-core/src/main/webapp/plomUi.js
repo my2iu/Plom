@@ -22,6 +22,12 @@ function setupPlomUi() {
 			this.shadowRoot.querySelector('input').value = val;
 			this.shadowRoot.querySelector('div').textContent = val;
 		}
+		focus() {
+			this.shadowRoot.querySelector('input').focus();
+		}
+		select() {
+			this.shadowRoot.querySelector('input').select();
+		}
 	}
 	customElements.define('plom-autoresizing-input', AutoResizingInputElement);
 	
