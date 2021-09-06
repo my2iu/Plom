@@ -75,6 +75,9 @@ a.breadcrumb-item:visited {
 	flex-direction: column;
 }
 
+.methodsidesplit, 
+.globalsidesplit, 
+.classsidesplit,
 .codesidesplit {
 	flex-grow: 1;
 	flex-shrink: 1;
@@ -82,22 +85,17 @@ a.breadcrumb-item:visited {
 	position: relative;
 } 
 
-.methodsidesplit, 
-.globalsidesplit, 
-.classsidesplit {
-	display: flex;
-	flex-direction: row;
-	flex-grow: 1;
-	flex-shrink: 1;
-	overflow: hidden;
-}
-
 .globaldetails, 
 .classdetails, 
 .methoddetails {
 	flex-grow: 1;
 	flex-shrink: 1;
 	overflow: auto;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
 }
 
 .code {
@@ -128,18 +126,13 @@ a.breadcrumb-item:visited {
 
 .sidechoices {
 	background-color: #eee;
-	flex-grow: 1;
-	flex-shrink: 1;
 	overflow-y: auto;
-}
-
-/* code panel lays out the side choices slightly differently to account for the svg overlay */
-.codesidesplit .sidechoices {
 	position: absolute;
 	right: 0;
 	top: 0;
 	bottom: 0;
-	width: 20%;	
+	width: 20%;
+	min-width: 8em;	
 }
 
 .codesidesplit svg.cursoroverlay {

@@ -439,16 +439,16 @@ public class CodePanel
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -456,7 +456,7 @@ public class CodePanel
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);

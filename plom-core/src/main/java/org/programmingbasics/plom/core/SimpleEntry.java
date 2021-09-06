@@ -7,6 +7,7 @@ import org.programmingbasics.plom.core.suggestions.Suggester;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
+import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -32,6 +33,9 @@ public class SimpleEntry
   String tokenPostfix = "";
   Suggester suggester;
   boolean isEdit;
+  Element doNotCoverEl;
+  String doNotCoverElOldRightPadding;
+  double doNotCoverElOldScrollLeft;
   
   SimpleEntry(DivElement el, DivElement suggestionsEl)
   {
@@ -39,6 +43,13 @@ public class SimpleEntry
     container = el;
     suggestionsContainer = suggestionsEl;
     hookSimpleEntry(el);
+  }
+  
+  // The side panel might show on the either the left or right side
+  // depending 
+  void setPositionRelativeTo(int x)
+  {
+    
   }
   
   void setVisible(boolean isVisible)
@@ -51,6 +62,17 @@ public class SimpleEntry
     {
       suggestionsContainer.getStyle().setDisplay(Display.NONE);
       container.getStyle().setDisplay(Display.NONE);
+      // If we scrolled the view so that it wouldn't be covered up by suggestions,
+      // then we should scroll it back
+      if (doNotCoverEl != null)
+      {
+        if (doNotCoverElOldRightPadding == null)
+          doNotCoverEl.getStyle().clearPaddingRight();
+        else
+          doNotCoverEl.getStyle().setProperty("padding-right", doNotCoverElOldRightPadding);
+        doNotCoverEl.setScrollLeft((int)doNotCoverElOldScrollLeft);
+        doNotCoverEl = null;
+      }
     }
   }
 
@@ -171,21 +193,21 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, Element doNotCoverEl, int doNotCoverLeftX, int doNotCoverRightX, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, doNotCoverEl, doNotCoverLeftX, doNotCoverRightX, callback, bkspCallback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
   <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, callback, bkspCallback,
+    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, null, 0, 0, callback, bkspCallback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, Element doNotCoverEl, int doNotCoverLeftX, int doNotCoverRightX, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
@@ -215,6 +237,25 @@ public class SimpleEntry
     this.callback = (InputCallback<Token>)callback;
     this.backspaceCallback = bkspCallback;
     refillSuggestions();
+    if (doNotCoverEl != null && suggester != null)
+    {
+      // If there is an element that we should ensure that a certain
+      // part isn't covered up (because that's the part that the user is editing
+      // and it might be confusing if it's covered up), then we will
+      // try to scroll it so that it isn't covered up by any suggestions
+      double sidePanelLeft = suggestionsContainer.getBoundingClientRect().getLeft();
+      this.doNotCoverEl = doNotCoverEl;
+      doNotCoverElOldRightPadding = doNotCoverEl.getStyle().getPropertyValue("padding-right");
+      doNotCoverElOldScrollLeft = doNotCoverEl.getScrollLeft();
+      if (doNotCoverRightX - doNotCoverElOldScrollLeft > sidePanelLeft)
+      {
+        double newScrollLeft = doNotCoverRightX - sidePanelLeft;
+        if (newScrollLeft > doNotCoverLeftX)
+          newScrollLeft = doNotCoverLeftX;
+        doNotCoverEl.getStyle().setPaddingRight(newScrollLeft, Unit.PX);
+        doNotCoverEl.setScrollLeft((int)newScrollLeft);
+      }
+    }
     simpleEntryInput(initialValue, false);
   }
 

@@ -95,7 +95,7 @@ public class TypeEntryField
       }
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
       CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, globalConfigurator, variableContextConfigurator);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), null, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
 
       render();
     }, false);
