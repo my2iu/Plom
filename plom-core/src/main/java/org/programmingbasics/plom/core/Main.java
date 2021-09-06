@@ -591,7 +591,8 @@ public class Main
     methodPanel = new MethodPanel(getMainDiv(), repository, sig.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
       repository.changeFunctionSignature(newSig, sig);
-      loadFunctionCodeView(newSig.getLookupName());
+      if (isFinal)
+        loadFunctionCodeView(newSig.getLookupName());
     });
   }
 
@@ -601,7 +602,8 @@ public class Main
     methodPanel.setListener((newSig, isFinal) -> {
       m.sig = newSig;
       cls.updateMethod(m);
-      loadMethodCodeView(cls, m);
+      if (isFinal)
+        loadMethodCodeView(cls, m);
     });
   }
 

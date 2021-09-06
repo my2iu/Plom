@@ -63,6 +63,14 @@ TODO:
 - refine the hamburger menu (should automatically close itself)
 - change the back button to match the platform style?
 - saving should save out functions and methods in alphabetical order
+- when editing methods, automatic advance to next field when pressing enter
+- when editing methods, name validation
+- when editing methods, should have a menu with delete and insert, not just a delete button
+- when editing methods, have button to clear an input field?
+- when editing methods, there should be a better indication that input fields are editable?
+- when editing methods, too much space between part name and ":"
+- when editing methods, not handling blur of type fields properly
+- <auto-resizing-input> should have an attribute that styles things transparently 
  */
 
 public class Entry implements EntryPoint

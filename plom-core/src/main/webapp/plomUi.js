@@ -12,8 +12,17 @@ function setupPlomUi() {
 		constructor() {
 			super();
 			var shadowRoot = this.attachShadow({mode: 'open'});
-			
 			shadowRoot.innerHTML = org.programmingbasics.plom.core.Main.getAutoResizingInputHtmlText();
+			this.shadowRoot.querySelector('input').addEventListener('change', function(evt) {
+				if (!evt.composed) 
+				{
+					// Redispatch the event if it won't bubble out of the shadow dom
+					shadowRoot.dispatchEvent(new CustomEvent('change', {
+						  bubbles: true,
+						  composed: true
+						}));
+				}
+			});
 		}
 		get value() {
 			return this.shadowRoot.querySelector('input').value;

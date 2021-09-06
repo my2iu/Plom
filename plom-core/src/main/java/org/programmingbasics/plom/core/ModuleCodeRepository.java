@@ -142,7 +142,9 @@ public class ModuleCodeRepository
       sig.returnType = oldSig.returnType;
       sig.nameParts = new ArrayList<>(oldSig.nameParts);
       sig.argNames = new ArrayList<>(oldSig.argNames);
-      sig.argTypes = new ArrayList<>(oldSig.argTypes);
+      sig.argTypes = new ArrayList<>();
+      for (Token.ParameterToken argType: oldSig.argTypes)
+        sig.argTypes.add(argType.copy());
       sig.isConstructor = oldSig.isConstructor;
       sig.isBuiltIn = oldSig.isBuiltIn;
       sig.isStatic = oldSig.isStatic;

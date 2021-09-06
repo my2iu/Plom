@@ -23,6 +23,14 @@ public class TokenContainer
        tokens.add(tok);
    }
 
+   public TokenContainer copy()
+   {
+     TokenContainer copy = new TokenContainer();
+     for (Token tok: tokens)
+       copy.tokens.add(tok.copy());
+     return copy;
+   }
+   
    public boolean endsWithWideToken()
    {
      if (tokens.isEmpty()) return false;

@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.Token;
@@ -40,6 +41,7 @@ public class MethodPanel
   ModuleCodeRepository repository;
   SimpleEntry simpleEntry;
   MethodNameWidget methodWidget;
+  FunctionSignature originalSig;
   TypeEntryField returnTypeField = null;
   
   public static interface SignatureListener
@@ -57,7 +59,8 @@ public class MethodPanel
 //    List<DivElement> nameEls = new ArrayList<>();
 //    List<DivElement> argEls = new ArrayList<>();
 //    List<TypeEntryField> argTypeFields = new ArrayList<>();
-
+    originalSig = sig;
+    
     methodWidget = new MethodNameWidget(sig, simpleEntry, 
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
@@ -65,6 +68,9 @@ public class MethodPanel
     });
     containerDiv.querySelector(".method_name").setInnerHTML("");
     containerDiv.querySelector(".method_name").appendChild(methodWidget.getBaseElement());
+    methodWidget.setListener((nameSig) -> {
+      notifyOfChanges();
+    });
     
 //    // Fill in the function name
 //    nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
@@ -82,12 +88,15 @@ public class MethodPanel
     // Render the return type
     if (!sig.isConstructor)
     {
-      returnTypeField = new TypeEntryField(sig.returnType, (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
+      returnTypeField = new TypeEntryField(sig.returnType.copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
           (scope, coreTypes) -> {
             StandardLibrary.createGlobals(null, scope, coreTypes);
             scope.setParent(new RepositoryScope(repository, coreTypes));
           },
           (context) -> {});
+      returnTypeField.setChangeListener((type, isFinal) -> {
+        notifyOfChanges();
+      });
       returnTypeField.render();
     }
     else
@@ -114,6 +123,7 @@ public class MethodPanel
         returnType = returnTypeField.type;
       FunctionSignature nameSig = methodWidget.getNameSig();
       FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
+      Browser.getWindow().getConsole().log("listener");
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);
@@ -174,6 +184,17 @@ public class MethodPanel
 //      argTypeFields.remove(typeField);
 //    }, false);
 //  }
+
+  private void notifyOfChanges()
+  {
+    FunctionSignature nameSig = methodWidget.getNameSig();
+    Token.ParameterToken returnType = null;
+    if (returnTypeField != null)
+      returnType = returnTypeField.type;
+    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
+    if (listener != null)
+      listener.onSignatureChange(newSig, false);
+  }
   
   static class MethodNameWidget
   {
@@ -186,6 +207,7 @@ public class MethodPanel
     List<InputElement> argEls;
     List<TypeEntryField> argTypeFields;
     Element firstColonEl;
+    Consumer<FunctionSignature> changeListener;
     
     public MethodNameWidget(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup)
     {
@@ -210,7 +232,10 @@ public class MethodPanel
       baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
       firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
       
-      InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0); 
+      InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0);
+      firstNamePartEl.addEventListener(Event.CHANGE, (evt) -> {
+        onCommittedChangeInUi();
+      }, false);
       nameEls.add(firstNamePartEl);
       firstNamePartEl.setValue(sig.nameParts.get(0));
 
@@ -225,12 +250,18 @@ public class MethodPanel
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgumentHtml().getText());
         InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
         argNameEl.setValue(sig.argNames.get(0));
+        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
         argEls.add(argNameEl);
         
         // argument type
         TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
             globalScopeForTypeLookup, (context) -> {});
         argTypeFields.add(typeField);
+        typeField.setChangeListener((token, isFinal) -> {
+          onCommittedChangeInUi();
+        });
         typeField.render();
 
         // Remove button
@@ -251,15 +282,24 @@ public class MethodPanel
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePartHtml().getText());
         InputElement namePartEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(0); 
         namePartEl.setValue(sig.nameParts.get(n));
+        namePartEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
         nameEls.add(namePartEl);
         InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
         argNameEl.setValue(sig.argNames.get(n));
+        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
         argEls.add(argNameEl);
         
         // argument type
         TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
             globalScopeForTypeLookup, (context) -> {});
         argTypeFields.add(typeField);
+        typeField.setChangeListener((token, isFinal) -> {
+          onCommittedChangeInUi();
+        });
         typeField.render();
 
         // Remove button
@@ -273,6 +313,14 @@ public class MethodPanel
         while (dummyDiv.getFirstChild() != null)
           baseDiv.appendChild(dummyDiv.getFirstChild());
       }
+    }
+    
+    /** User changed values in one of the input fields (this is a final, committed change) */
+    private void onCommittedChangeInUi()
+    {
+      syncFromUi();
+      if (changeListener != null)
+        changeListener.accept(sig);
     }
     
     public Element getBaseElement() { return baseDiv; }
@@ -295,6 +343,7 @@ public class MethodPanel
         nameEls.get(nameEls.size() - 1).focus();
         nameEls.get(nameEls.size() - 1).select();
       }
+      onCommittedChangeInUi();
     }
 
     public void deleteArg(int index)
@@ -314,6 +363,7 @@ public class MethodPanel
         sig.nameParts.remove(index);
       }
       rebuild();
+      onCommittedChangeInUi();
     }
 
     public void syncFromUi()
@@ -338,5 +388,9 @@ public class MethodPanel
       return sig;
     }
 
+    public void setListener(Consumer<FunctionSignature> listener)
+    {
+      this.changeListener = listener;
+    }
   }
 }

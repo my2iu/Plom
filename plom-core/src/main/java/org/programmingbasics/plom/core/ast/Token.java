@@ -16,6 +16,7 @@ public abstract class Token
    public abstract <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5);
    public abstract <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E;
    public boolean isWide() { return false; }
+   public abstract Token copy();
    
    public static interface TokenWithSymbol
    {
@@ -37,6 +38,7 @@ public abstract class Token
       }
       @Override public Symbol getType() { return type; }
       @Override public String getTextContent() { return contents; }
+      @Override public Token copy() { return new SimpleToken(contents, type); }
       public <S> S visit(TokenVisitor<S> visitor)
       {
          return visitor.visitSimpleToken(this);
@@ -112,6 +114,13 @@ public abstract class Token
           parameters.add(new TokenContainer());
         this.postfix = postfix;
         this.type = type;
+     }
+     @Override public ParameterToken copy()
+     {
+       ParameterToken token = new ParameterToken(contents, postfix, type);
+       for (int n = 0; n < parameters.size(); n++)
+         token.parameters.set(n, parameters.get(n).copy());
+       return token;
      }
      public static ParameterToken fromContents(String name, Symbol type, TokenContainer... params)
      {
@@ -243,6 +252,10 @@ public abstract class Token
       public boolean isWide() { return true; }
       @Override public Symbol getType() { return type; }
       @Override public String getTextContent() { return contents; }
+      @Override public WideToken copy()
+      {
+        throw new IllegalArgumentException("Not implemented");
+      }
       public <S> S visit(TokenVisitor<S> visitor)
       {
          return visitor.visitWideToken(this);
