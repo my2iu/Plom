@@ -222,6 +222,10 @@ a.breadcrumb-item:visited {
 	padding-right: 0.5em;
 }
 
+.simpleentry_erase {
+	padding-right: 0.5em;
+}
+
 .codemain .code .tokenline {
 	padding-left: 2em;
 	text-indent: -2em;

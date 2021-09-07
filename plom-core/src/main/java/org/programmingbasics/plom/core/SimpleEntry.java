@@ -5,7 +5,6 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.suggestions.Suggester;
 
-import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
@@ -153,6 +152,22 @@ public class SimpleEntry
         simpleEntryInput(inputEl.getValue(), true);
       else
         simpleEntryInput(textAreaEl.getValue(), true);
+    }, false);
+    // handle the erase button being pressed
+    formEl.querySelector(".simpleentry_erase").addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      if (inputEl.getStyle().getDisplay() != Display.NONE)
+      {
+        inputEl.setValue("");
+        simpleEntryInput(inputEl.getValue(), false);
+        inputEl.focus();
+      }
+      else
+      {
+        textAreaEl.setValue("");
+        simpleEntryInput(textAreaEl.getValue(), false);
+        textAreaEl.focus();
+      }
     }, false);
     // handle text being typed into the input
     inputEl.addEventListener(Event.INPUT, (e) -> {

@@ -70,7 +70,10 @@ TODO:
 - when editing methods, there should be a better indication that input fields are editable?
 - when editing methods, too much space between part name and ":"
 - when editing methods, not handling blur of type fields properly
-- <auto-resizing-input> should have an attribute that styles things transparently 
+- when editing methods, type fields should use new svg rendering
+- when editing methods, have a quick erase button for auto-resizing text input?
+- highlighting of "active" token in code--use that for scrolling code so that they aren't covered up by suggestions
+- <auto-resizing-input> should have an attribute that styles things transparently
  */
 
 public class Entry implements EntryPoint

@@ -123,7 +123,6 @@ public class MethodPanel
         returnType = returnTypeField.type;
       FunctionSignature nameSig = methodWidget.getNameSig();
       FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
-      Browser.getWindow().getConsole().log("listener");
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);
