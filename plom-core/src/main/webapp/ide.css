@@ -222,8 +222,12 @@ a.breadcrumb-item:visited {
 	padding-right: 0.5em;
 }
 
+
+.simpleentry_erase:link,
+.simpleentry_erase:visited,
 .simpleentry_erase {
 	padding-right: 0.5em;
+	color: #ccc;
 }
 
 .codemain .code .tokenline {

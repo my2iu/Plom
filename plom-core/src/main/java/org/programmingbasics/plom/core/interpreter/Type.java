@@ -85,12 +85,11 @@ public class Type
       sig = type.methodTypeSigs.get(name);
     return sig;
   }
-  public void lookupMethodSuggestions(String val, List<String> suggestions)
+  public void lookupMethodSuggestions(GatheredSuggestions suggestions)
   {
     for (String memberName: methodTypeSigs.keySet())
     {
-      if (!suggestions.contains(memberName))
-        suggestions.add(memberName);
+      suggestions.addSuggestion(memberName);
     }
   }
   public void addStaticMethod(String name, ExecutableFunction fn, Type returnType, Type...args)
@@ -106,12 +105,11 @@ public class Type
   {
     return staticMethodTypeSigs.get(name);
   }
-  public void lookupStaticMemberSuggestions(String val, List<String> suggestions)
+  public void lookupStaticMemberSuggestions(GatheredSuggestions suggestions)
   {
     for (String memberName: staticMethodTypeSigs.keySet())
     {
-      if (!suggestions.contains(memberName))
-        suggestions.add(memberName);
+      suggestions.addSuggestion(memberName);
     }
   }
   public void addMemberVariable(String varName, Type type)

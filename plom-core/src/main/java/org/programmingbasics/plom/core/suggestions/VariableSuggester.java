@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.suggestions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 public class VariableSuggester implements Suggester
@@ -17,14 +18,15 @@ public class VariableSuggester implements Suggester
   @Override
   public List<String> gatherSuggestions(String val)
   {
-    List<String> suggestions = new ArrayList<>();
+    GatheredSuggestions gatheredSuggestions = new GatheredSuggestions();
+    gatheredSuggestions.setStringMatch(val);
     VariableScope scope = context.currentScope();
     while (scope != null)
     {
-      scope.lookupSuggestions(val, suggestions);
+      scope.lookupSuggestions(gatheredSuggestions);
       scope = scope.getParent();
     }
-    return suggestions;
+    return gatheredSuggestions.mergeFinalSuggestions();
   }
 
 }

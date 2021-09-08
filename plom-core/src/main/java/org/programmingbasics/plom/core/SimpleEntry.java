@@ -105,7 +105,7 @@ public class SimpleEntry
     }
   }
   
-  void refillSuggestions()
+  void refillSuggestions(String search)
   {
     suggestionsContainer.setInnerHTML("");
     if (suggester == null) 
@@ -117,7 +117,7 @@ public class SimpleEntry
     {
       suggestionsContainer.getStyle().setDisplay(Display.BLOCK);
     }
-    List<String> suggestions = suggester.gatherSuggestions("");
+    List<String> suggestions = suggester.gatherSuggestions(search);
     Document doc = suggestionsContainer.getOwnerDocument();
     for (int n = 0; n < Math.min(20, suggestions.size()); n++)
     {
@@ -172,6 +172,7 @@ public class SimpleEntry
     // handle text being typed into the input
     inputEl.addEventListener(Event.INPUT, (e) -> {
       simpleEntryInput(inputEl.getValue(), false);
+      refillSuggestions(inputEl.getValue());
     }, false);
     inputEl.addEventListener(Event.KEYDOWN, (e) -> {
       KeyboardEvent keyEvt = (KeyboardEvent)e;
@@ -251,7 +252,7 @@ public class SimpleEntry
     this.suggester = suggester;
     this.callback = (InputCallback<Token>)callback;
     this.backspaceCallback = bkspCallback;
-    refillSuggestions();
+    refillSuggestions(initialValue);
     if (doNotCoverEl != null && suggester != null)
     {
       // If there is an element that we should ensure that a certain

@@ -16,6 +16,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
+import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
@@ -238,18 +239,18 @@ public class RepositoryScope extends VariableScope
   }
   
   @Override
-  public void lookupSuggestions(String val, List<String> suggestions)
+  public void lookupSuggestions(GatheredSuggestions suggestions)
   {
-    suggestions.addAll(repository.getAllFunctionNamesSorted());
+    suggestions.addAllSuggestions(repository.getAllFunctionNamesSorted());
     for (VariableDescription v: repository.globalVars)
     {
-      suggestions.add(v.name);
+      suggestions.addSuggestion(v.name);
     }
     if (repository.chainedRepository != null)
     {
       for (VariableDescription v: repository.chainedRepository.globalVars)
       {
-        suggestions.add(v.name);
+        suggestions.addSuggestion(v.name);
       }
     }
   }

@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.suggestions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.Type;
 
 public class StaticMemberSuggester implements Suggester
@@ -17,9 +18,10 @@ public class StaticMemberSuggester implements Suggester
   @Override
   public List<String> gatherSuggestions(String val)
   {
-    List<String> suggestions = new ArrayList<>();
+    GatheredSuggestions gatheredSuggestions = new GatheredSuggestions();
+    gatheredSuggestions.setStringMatch(val);
     Type type = context.getLastTypeForStaticCall();
-    type.lookupStaticMemberSuggestions(val, suggestions);
-    return suggestions;
+    type.lookupStaticMemberSuggestions(gatheredSuggestions);
+    return gatheredSuggestions.mergeFinalSuggestions();
   }
 }

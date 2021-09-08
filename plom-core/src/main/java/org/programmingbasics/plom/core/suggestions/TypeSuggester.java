@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.suggestions;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.Type;
 
 public class TypeSuggester implements Suggester
@@ -19,13 +20,14 @@ public class TypeSuggester implements Suggester
   @Override
   public List<String> gatherSuggestions(String val)
   {
-    List<String> toReturn = new ArrayList<>();
+    GatheredSuggestions gatheredSuggestions = new GatheredSuggestions();
+    gatheredSuggestions.setStringMatch(val);
     if (allowVoid)
-      toReturn.add("void");
+      gatheredSuggestions.addSuggestion("void");
     for (Type t: context.currentScope().getAllKnownTypes())
     {
-      toReturn.add(t.name);
+      gatheredSuggestions.addSuggestion(t.name);
     }
-    return toReturn;
+    return gatheredSuggestions.mergeFinalSuggestions();
   }
 }

@@ -64,11 +64,11 @@ public class VariableScope
     }
     return type;
   }
-  public void lookupSuggestions(String val, List<String> suggestions)
+  public void lookupSuggestions(GatheredSuggestions suggestions)
   {
     for (String name: values.keySet())
     {
-      suggestions.add(name);
+      suggestions.addSuggestion(name);
     }
   }
   /**
