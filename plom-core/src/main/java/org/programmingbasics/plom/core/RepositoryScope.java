@@ -98,6 +98,14 @@ public class RepositoryScope extends VariableScope
     }
   }
   
+  private Type makeFunctionType(FunctionDescription func) throws RunException
+  {
+    Type [] argTypes = new Type[func.sig.argTypes.size()];
+    for (int n = 0; n < func.sig.argTypes.size(); n++)
+      argTypes[n] = typeFromToken(func.sig.argTypes.get(n));
+    return Type.makeFunctionType(typeFromToken(func.sig.returnType), argTypes);    
+  }
+  
   @Override
   public Value lookup(String name) throws RunException
   {
@@ -105,7 +113,7 @@ public class RepositoryScope extends VariableScope
     if (func != null)
     {
       Value val = new Value();
-      val.type = Type.makeFunctionType(coreTypes.getVoidType());
+      val.type = makeFunctionType(func);
       
       AstNode code;
       try {
@@ -125,6 +133,23 @@ public class RepositoryScope extends VariableScope
       return val;
     }
     return super.lookup(name);
+  }
+
+  @Override
+  public Type lookupType(String name)
+  {
+    FunctionDescription func = repository.getFunctionDescription(name);
+    if (func != null)
+    {
+      try {
+        return makeFunctionType(func);
+      }
+      catch (RunException e)
+      {
+        // Fall through
+      }
+    }
+    return super.lookupType(name);
   }
 
   @Override

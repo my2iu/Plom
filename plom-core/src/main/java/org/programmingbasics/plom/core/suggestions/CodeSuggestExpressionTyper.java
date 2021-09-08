@@ -87,6 +87,10 @@ public class CodeSuggestExpressionTyper
         Type t = context.currentScope().lookupType(((Token.ParameterToken)node.token).getLookupName());
         if (t == null)
           t = context.coreTypes().getVoidType();
+        else if (t instanceof Type.TypeSignature)
+        {
+          t = ((Type.TypeSignature)t).returnType;
+        }
         context.pushType(t);
         context.setLastTypeUsed(t);
         return true;
