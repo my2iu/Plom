@@ -440,6 +440,7 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.setEraseButtonVisible(false);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -462,6 +463,7 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(3);
       simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.setEraseButtonVisible(false);
       break;
     default:
       return;

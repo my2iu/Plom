@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class GatheredSuggestions
 {
+  private List<String> bestSuggestions = new ArrayList<>();
   private List<String> suggestions = new ArrayList<>();
   private List<String> genericSuggestions = new ArrayList<>();
   private String search = "";
@@ -23,16 +24,25 @@ public class GatheredSuggestions
   public void addSuggestion(String suggestion)
   {
     // Do a simple text match for now to find the best matches
+    // Right now we prioritize matches that start with the search string
+    if (bestSuggestions.contains(suggestion)) return;
+    if (suggestion.startsWith(search))
+    {
+      bestSuggestions.add(suggestion);
+      return;
+    }
+    // Do a simple text match for now to find the best matches
+    if (suggestions.contains(suggestion)) return;
     if (suggestion.contains(search))
     {
-      if (!suggestions.contains(suggestion))
-        suggestions.add(suggestion);
+      suggestions.add(suggestion);
+      return;
     }
-    else
-    {
-      if (!genericSuggestions.contains(suggestion))
-        genericSuggestions.add(suggestion);
-    }
+    // Potentially handle inexact matches or general keyword matching too
+    
+    // Save out other bunch of possibilities
+    if (genericSuggestions.contains(suggestion)) return;
+    genericSuggestions.add(suggestion);
   }
 
   public void addAllSuggestions(Collection<String> suggestions)
@@ -43,7 +53,12 @@ public class GatheredSuggestions
   
   public List<String> mergeFinalSuggestions()
   {
-    return suggestions;
+    // Pad out suggestions with weaker suggestions up to 500 entries
+    if (bestSuggestions.size() < 500)
+      bestSuggestions.addAll(suggestions.subList(0, Math.min(suggestions.size(), 500)));
+    if (bestSuggestions.size() < 500)
+      bestSuggestions.addAll(genericSuggestions.subList(0, Math.min(genericSuggestions.size(), 500)));
+    return bestSuggestions;
   }
 
 }

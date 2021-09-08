@@ -75,6 +75,14 @@ public class SimpleEntry
     }
   }
 
+  void setEraseButtonVisible(boolean isVisible)
+  {
+    if (isVisible)
+      container.querySelector(".simpleentry_erase").getStyle().setDisplay(Display.BLOCK);
+    else
+      container.querySelector(".simpleentry_erase").getStyle().setDisplay(Display.NONE);
+  }
+  
   private void forceSafariBlur()
   {
     // Safari seems like it sometimes doesn't close the soft keyboard if the
@@ -160,6 +168,7 @@ public class SimpleEntry
       {
         inputEl.setValue("");
         simpleEntryInput(inputEl.getValue(), false);
+        refillSuggestions(inputEl.getValue());
         inputEl.focus();
       }
       else
@@ -235,6 +244,7 @@ public class SimpleEntry
       container.querySelector("span.prefix").setTextContent(prompt);
       container.querySelector("span.postfix").setTextContent("");
     }
+    setEraseButtonVisible(false);
     setVisible(true);
     toHide.getStyle().setDisplay(Display.NONE);
     forInput.getStyle().setDisplay(Display.INLINE);
