@@ -39,7 +39,7 @@ public class SvgCodeRenderer
   
   static class RenderSupplementalInfo extends CodeRenderer.RenderSupplementalInfo
   {
-    
+    CodePosition activeHighlightPos;
   }
   
 //  static SVGSVGElement testSvgEl;
@@ -183,7 +183,7 @@ public class SvgCodeRenderer
       "</linearGradient>\n" + 
       "</defs>\n";
   
-  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth, double leftPadding, double topPadding, double rightPadding, double bottomPadding)
+  public static RenderedHitBox renderSvgWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition activeHighlightPos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth, double leftPadding, double topPadding, double rightPadding, double bottomPadding)
   {
 //    RenderedHitBox renderedHitBoxes = RenderedHitBox.withChildren();
 //    render(codeDiv, codeList, pos, selectionPos1, selectionPos2, renderedHitBoxes, codeErrors);
@@ -193,6 +193,7 @@ public class SvgCodeRenderer
     SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
     supplementalInfo.codeErrors = codeErrors;
     supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.activeHighlightPos = activeHighlightPos;
     supplementalInfo.selectionStart = selectionPos1;
     supplementalInfo.selectionEnd = selectionPos2;
     SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
@@ -462,6 +463,8 @@ public class SvgCodeRenderer
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
+      if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
+        classList += " tokenactive";
       String text = token.contents;
       double textWidth = widthCalculator.calculateWidth(text);
       toReturn.reset();
@@ -512,6 +515,8 @@ public class SvgCodeRenderer
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
+      if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
+        classList += " tokenactive";  
       toReturn.reset();
 
 //      Element span = doc.createSpanElement();
@@ -733,6 +738,8 @@ public class SvgCodeRenderer
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
+      if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
+        classList += " tokenactive";  
       String textClassList = classList;
       if (token.type == Symbol.DUMMY_COMMENT)
         textClassList += " tokencomment";
@@ -789,6 +796,8 @@ public class SvgCodeRenderer
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
+      if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
+        classList += " tokenactive";  
 
       final double startX = positioning.x;
       final double startY = positioning.lineTop;
@@ -1310,6 +1319,7 @@ public class SvgCodeRenderer
       if (isLastToken && addSpaceToEnd && tok instanceof Token.ParameterToken)
         subpositioning.lineEnd -= renderer.horzEndParamPadding;
       tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
+      currentTokenPos.setMaxOffset(level + 1);
       if (!tok.isWide())
       {
         // If requested, we can add some extra space that sticks to the end of the last token
@@ -1329,6 +1339,7 @@ public class SvgCodeRenderer
           toReturn.wraps = true;
           isStartOfLine = true;
           tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
+          currentTokenPos.setMaxOffset(level + 1);
           if (isLastToken && addSpaceToEnd)
             subpositioning.x += renderer.horzEndParamPadding;
         }
@@ -1352,7 +1363,6 @@ public class SvgCodeRenderer
       maxX = Math.max(returnedRenderedToken.hitBox.x + returnedRenderedToken.hitBox.width, maxX);
       maxX = Math.max(positioning.x, maxX);
       hitBox.children.add(returnedRenderedToken.hitBox);
-      currentTokenPos.setMaxOffset(level + 1);
 //      Element el = returnedRenderedToken.el;
 //      if (supplement.renderTypeFieldStyle && pos != null && !pos.hasOffset(level + 1))
 //        el.getClassList().add("typeTokenSelected");

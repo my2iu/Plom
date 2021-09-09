@@ -232,9 +232,11 @@ public class CodePanel
     {
       double clientWidth = codeDiv.getClientWidth();
       if (selectionPos != null)
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
       else
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+      {
+        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+      }
     }
     else
     {
@@ -440,7 +442,6 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.setEraseButtonVisible(false);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -463,7 +464,6 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(3);
       simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.setEraseButtonVisible(false);
       break;
     default:
       return;
@@ -591,16 +591,7 @@ public class CodePanel
     }));
     // Edit button for certain tokens
     Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
-    boolean showEditButton = false;
-    if (currentToken != null)
-    {
-      Symbol tokenType = null;
-      if (currentToken instanceof Token.TokenWithSymbol)
-        tokenType = ((Token.TokenWithSymbol)currentToken).getType();
-      
-      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
-        showEditButton = true;
-    }
+    boolean showEditButton = isTokenEditable(currentToken);
     if (showEditButton)
     {
       contentDiv.appendChild(makeButton("\u270e", true, () -> {
@@ -720,6 +711,20 @@ public class CodePanel
         doPaste();
       }));
     }
+  }
+
+  static boolean isTokenEditable(Token currentToken)
+  {
+    if (currentToken != null)
+    {
+      Symbol tokenType = null;
+      if (currentToken instanceof Token.TokenWithSymbol)
+        tokenType = ((Token.TokenWithSymbol)currentToken).getType();
+      
+      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
+        return true;
+    }
+    return false;
   }
 
   int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle

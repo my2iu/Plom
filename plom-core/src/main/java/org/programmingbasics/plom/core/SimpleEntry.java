@@ -263,6 +263,7 @@ public class SimpleEntry
     this.callback = (InputCallback<Token>)callback;
     this.backspaceCallback = bkspCallback;
     refillSuggestions(initialValue);
+    this.doNotCoverEl = doNotCoverEl;
     if (doNotCoverEl != null && suggester != null)
     {
       // If there is an element that we should ensure that a certain
@@ -270,7 +271,6 @@ public class SimpleEntry
       // and it might be confusing if it's covered up), then we will
       // try to scroll it so that it isn't covered up by any suggestions
       double sidePanelLeft = suggestionsContainer.getBoundingClientRect().getLeft();
-      this.doNotCoverEl = doNotCoverEl;
       doNotCoverElOldRightPadding = doNotCoverEl.getStyle().getPropertyValue("padding-right");
       doNotCoverElOldScrollLeft = doNotCoverEl.getScrollLeft();
       if (doNotCoverRightX - doNotCoverElOldScrollLeft > sidePanelLeft)
