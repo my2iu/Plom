@@ -40,6 +40,7 @@ import org.programmingbasics.plom.core.view.ParseContext;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
+import org.programmingbasics.plom.core.view.RenderedTokenHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -324,29 +325,32 @@ public class CodePanel
     {
     case AtType:
     {
+      updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, false));
+      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, false), pos);
       break;
     }
 
     case DotVariable:
     {
+      updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-      showSimpleEntryForToken(newToken, false, getDotSuggester(suggestionContext, parentSymbols));
+      showSimpleEntryForToken(newToken, false, getDotSuggester(suggestionContext, parentSymbols), pos);
       break;
     }
 
     case Number:
     case String:
     case DUMMY_COMMENT:
-      showSimpleEntryForToken(newToken, false, null);
+      updateCodeView(true);
+      showSimpleEntryForToken(newToken, false, null, pos);
       break;
     default:
       NextPosition.nextPositionOfStatements(codeList, pos, 0);
       showPredictedTokenInput(choicesDiv);
+      updateCodeView(true);
       break;
     }
-    updateCodeView(true);
   }
 
   private
@@ -426,7 +430,7 @@ public class CodePanel
     return suggestionContext;
   }
 
-  void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester)
+  void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester, CodePosition pos)
   {
     if (newToken == null) return;
     Symbol tokenType = null;
@@ -436,21 +440,33 @@ public class CodePanel
     if (newToken instanceof Token.TokenWithEditableTextContent)
       initialValue = ((Token.TokenWithEditableTextContent)newToken).getTextContent();
     
+    int doNotCoverLeft = 0, doNotCoverRight = 0;
+    final int MIN_TOKEN_SIZE_FOR_DO_NOT_COVER = 50;
+    if (svgHitBoxes != null)
+    {
+      RenderedHitBox hitBox = RenderedTokenHitBox.inStatements(codeList, pos, 0, svgHitBoxes);
+      if (hitBox != null)
+      {
+        doNotCoverLeft = (int)(hitBox.getOffsetLeft() + leftPadding);
+        doNotCoverRight = doNotCoverLeft + Math.max(hitBox.getOffsetWidth(), MIN_TOKEN_SIZE_FOR_DO_NOT_COVER);
+      }
+    }
+    
     switch (tokenType)
     {
     case DotVariable:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, codeDiv, doNotCoverLeft, doNotCoverRight, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, codeDiv, doNotCoverLeft, doNotCoverRight, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
-      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, codeDiv, doNotCoverLeft, doNotCoverRight, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -458,7 +474,7 @@ public class CodePanel
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, codeDiv, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, codeDiv, doNotCoverLeft, doNotCoverRight, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -595,7 +611,7 @@ public class CodePanel
     if (showEditButton)
     {
       contentDiv.appendChild(makeButton("\u270e", true, () -> {
-        showSimpleEntryForToken(currentToken, true, null);
+        showSimpleEntryForToken(currentToken, true, null, cursorPos);
       }));
     }
     else
