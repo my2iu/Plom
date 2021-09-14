@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.programmingbasics.plom.core.UIResources;
@@ -213,39 +214,106 @@ public class SvgCodeRenderer
 
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
   {
-    RenderedHitBox hitBox = new RenderedHitBox(null);
-    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
-    supplement.codeErrors = new ErrorList();
-    supplement.nesting = new CodeNestingCounter();
-    supplement.nesting.calculateNestingForStatements(type == null ? new StatementContainer(new TokenContainer()) : new StatementContainer(new TokenContainer(type)));
-    supplement.renderTypeFieldStyle = true;
-    CodeRenderer.TokenRenderer renderer = new CodeRenderer.TokenRenderer(Browser.getDocument(), supplement);
+    final double clientWidth = 1000;
+    final double leftPadding = 0;
+    final double rightPadding = 0;
+    final double topPadding = 0;
+    final double bottomPadding = 0;
+    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
+
+    final double extraWidth = 0.5; // Slightly larger to accommodate width of lines     
+    
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    supplementalInfo.nesting = new CodeNestingCounter();
+    supplementalInfo.nesting.calculateNestingForStatements(type == null ? new StatementContainer(new TokenContainer()) : new StatementContainer(new TokenContainer(type)));
+    supplementalInfo.renderTypeFieldStyle = true;
+    supplementalInfo.activeHighlightPos = pos;
+    supplementalInfo.selectionStart = null;
+    supplementalInfo.selectionEnd = null;
+    
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+    positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
     if (type != null)
     {
-      CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn();
+//      RenderedHitBox hitBox = new RenderedHitBox(null);
+//      CodeRenderer.TokenRendererReturn returnedRenderedToken = new CodeRenderer.TokenRendererReturn();
+      SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
       CodePosition currentTokenPos = new CodePosition();
       currentTokenPos.setOffset(0, 0);
-      type.visit(renderer, returnedRenderedToken, pos, 1, currentTokenPos, hitBox);
+//      type.visit(tokenRenderer, returned, positioning, 1, currentTokenPos, null);
+
+//      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+
+      TokenContainer dummyLine = new TokenContainer(Arrays.asList(type));
+      supplementalInfo.nesting.calculateNestingForLine(dummyLine);
+      positioning.maxNestingForLine = supplementalInfo.nesting.expressionNesting.get(dummyLine);
+      positioning.currentNestingInLine = 0;
+      SvgCodeRenderer.renderLine(dummyLine, returned, positioning, 0, currentTokenPos, false, tokenRenderer, supplementalInfo, 1, false);
+//      svgString += toReturn.svgString;
+//      hitBox.children.add(toReturn.hitBox);
+
+      
+      
       currentTokenPos.setMaxOffset(1);
-      Element el = returnedRenderedToken.el;
-      div.setInnerHTML("");
-      div.appendChild(el);
-      if (pos != null && !pos.hasOffset(1))
-        el.getClassList().add("typeTokenSelected");
-      return hitBox;
+//      Element el = returnedRenderedToken.el;
+      div.setInnerHTML("<svg></svg>");
+      SVGSVGElement svgEl = (SVGSVGElement)div.querySelector("svg");
+      svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
+      svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
+      svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+//      div.appendChild(el);
+//      if (pos != null && !pos.hasOffset(1))
+//        el.getClassList().add("typeTokenSelected");
+      return returned.hitBox.children.get(0);
+
     }
     else
     {
-      if (pos != null)
-      {
-        DivElement toInsert = Browser.getDocument().createDivElement();
-        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
-        div.appendChild(toInsert.querySelector("div"));
-      }
-      else
+//      if (pos != null)
+//      {
+//        DivElement toInsert = Browser.getDocument().createDivElement();
+//        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+//        div.appendChild(toInsert.querySelector("div"));
+//      }
+//      else
         div.setTextContent("\u00A0");
       return null;
+      
     }
+    
+//    svgEl.setInnerHTML(returned.svgString);
+//    svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
+//    svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
+//    svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+//    RenderedHitBox hitBox = returned.hitBox;
+//    return hitBox;
+
+    
+    
+//    RenderedHitBox hitBox = new RenderedHitBox(null);
+////    RenderSupplementalInfo supplement = new RenderSupplementalInfo();
+////    supplement.codeErrors = new ErrorList();
+////    supplement.nesting = new CodeNestingCounter();
+////    supplement.nesting.calculateNestingForStatements(type == null ? new StatementContainer(new TokenContainer()) : new StatementContainer(new TokenContainer(type)));
+////    supplement.renderTypeFieldStyle = true;
+//    CodeRenderer.TokenRenderer renderer = new CodeRenderer.TokenRenderer(Browser.getDocument(), supplement);
+//    if (type != null)
+//    {
+//    }
+//    else
+//    {
+//      if (pos != null)
+//      {
+//        DivElement toInsert = Browser.getDocument().createDivElement();
+//        toInsert.setInnerHTML(UIResources.INSTANCE.getCursorHtml().getText());
+//        div.appendChild(toInsert.querySelector("div"));
+//      }
+//      else
+//        div.setTextContent("\u00A0");
+//      return null;
+//    }
   }
   
   /** Holds data to be returned about how a token is rendered */
@@ -456,7 +524,7 @@ public class SvgCodeRenderer
 //      el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
 //    }
     @Override
-    public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
+    public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
       String classList = "codetoken";
       if (supplement.codeErrors.containsToken(token))
@@ -464,7 +532,7 @@ public class SvgCodeRenderer
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
-        classList += " tokenactive";
+        classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
       String text = token.contents;
       double textWidth = widthCalculator.calculateWidth(text);
       toReturn.reset();
@@ -492,7 +560,7 @@ public class SvgCodeRenderer
       return null;
     }
     @Override
-    public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, TokenRendererPositioning externalPositioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
+    public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, TokenRendererPositioning externalPositioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
       // We render inside the parameter token with a separate context than what's used for the rest of the line
       TokenRendererPositioning positioning = externalPositioning.copy();
@@ -516,7 +584,7 @@ public class SvgCodeRenderer
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
-        classList += " tokenactive";  
+        classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
       toReturn.reset();
 
 //      Element span = doc.createSpanElement();
@@ -731,7 +799,7 @@ public class SvgCodeRenderer
     }
 
     @Override
-    public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
+    public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
       String classList = "codetoken";
       if (supplement.codeErrors.containsToken(token))
@@ -739,7 +807,7 @@ public class SvgCodeRenderer
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
-        classList += " tokenactive";  
+        classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
       String textClassList = classList;
       if (token.type == Symbol.DUMMY_COMMENT)
         textClassList += " tokencomment";
@@ -773,22 +841,21 @@ public class SvgCodeRenderer
     }
     @Override
     public Void visitOneBlockToken(OneBlockToken token,
-        TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
+        TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
-      createWideToken(token, token.contents, null, token.block, toReturn, positioning, level, currentTokenPos, hitBox);
+      createWideToken(token, token.contents, null, token.block, toReturn, positioning, level, currentTokenPos);
       return null;
     }
     @Override
     public Void visitOneExpressionOneBlockToken(
-        OneExpressionOneBlockToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)
+        OneExpressionOneBlockToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
-      createWideToken(token, token.contents, token.expression, token.block, toReturn, positioning, level, currentTokenPos, hitBox);
+      createWideToken(token, token.contents, token.expression, token.block, toReturn, positioning, level, currentTokenPos);
       return null;
     }
     private void createWideToken(Token token, String tokenText, TokenContainer exprContainer,
         StatementContainer blockContainer,
-        TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos,
-        RenderedHitBox _hitBox)
+        TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos)
     {
       final double INDENT = INDENT_SIZE;
       String classList = "codetoken";
@@ -797,7 +864,7 @@ public class SvgCodeRenderer
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
-        classList += " tokenactive";  
+        classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
 
       final double startX = positioning.x;
       final double startY = positioning.lineTop;

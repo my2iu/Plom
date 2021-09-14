@@ -18,6 +18,7 @@ import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SetTypeToken;
+import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.events.Event;
 import elemental.events.MouseEvent;
@@ -39,6 +40,7 @@ public class TypeEntryField
     this.variableContextConfigurator = variableContextConfigurator;
     hookCodeClick(div);
   }
+  boolean useSvg = true;
   boolean isReturnType;  // Should void be allowed as a type
   DivElement fieldDiv;
   SimpleEntry simpleEntry;
@@ -129,7 +131,10 @@ public class TypeEntryField
   
   public void render()
   {
-    hitBox = CodeRenderer.renderTypeToken(fieldDiv, type, cursorPos);
+    if (useSvg)
+      hitBox = SvgCodeRenderer.renderTypeToken(fieldDiv, type, cursorPos);
+    else
+      hitBox = CodeRenderer.renderTypeToken(fieldDiv, type, cursorPos);
 //    CodeRenderer.render(fieldDiv, 
 //        type == null ? new StatementContainer(new TokenContainer()) : new StatementContainer(new TokenContainer(type)), 
 //            cursorPos, null, new ErrorList());

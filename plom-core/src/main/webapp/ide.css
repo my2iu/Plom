@@ -502,6 +502,11 @@ svg path.tokenactive {
 	fill: #d0d6e8;
 }
 
+svg rect.typeTokenSelected,
+svg path.typeTokenSelected {
+	fill: #7f7;
+}
+
 svg rect.fillinblank {
 	fill: #e0e0e0;
 	stroke: #aaa;

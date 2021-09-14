@@ -152,8 +152,8 @@ public class ClassPanel
       {
         Element el = (Element)nodes.item(newId);
         el.scrollIntoView();
-        ((InputElement)el.querySelector("input")).focus();
-        ((InputElement)el.querySelector("input")).select();
+        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
+        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
       }
     }, false);
    
@@ -213,7 +213,7 @@ public class ClassPanel
     Token.ParameterToken type = v.type; 
     DivElement div = doc.createDivElement();
     div.setInnerHTML(classVarInnerHtml());
-    ((InputElement)div.querySelector("input")).setValue(name);
+    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".varsList").appendChild(div);
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
@@ -228,7 +228,7 @@ public class ClassPanel
     });
     typeField.render();
     
-    InputElement nameInput = (InputElement)div.querySelector("input"); 
+    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
     nameInput.addEventListener(Event.CHANGE, (evt) -> {
       v.name = nameInput.getValue(); 
       cls.updateVariable(v);

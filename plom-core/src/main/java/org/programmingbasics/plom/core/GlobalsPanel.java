@@ -14,7 +14,6 @@ import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
-import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
@@ -148,8 +147,8 @@ public class GlobalsPanel
       {
         Element el = (Element)nodes.item(newId);
         el.scrollIntoView();
-        ((InputElement)el.querySelector("input")).focus();
-        ((InputElement)el.querySelector("input")).select();
+        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
+        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
       }
     }, false);
    
@@ -162,7 +161,7 @@ public class GlobalsPanel
   
   static String varInnerHtml(String divClass, String deleteLinkClass)
   {
-    return "<div class=\"" + divClass + "\">.<input size=\"15\" type=\"text\" autocapitalize=\"off\"> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" aria-label=\"delete\" class=\"" + deleteLinkClass + " plomUiRemoveButton\"></a></div>";
+    return "<div class=\"" + divClass + "\">.<plom-autoresizing-input></plom-autoresizing-input> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" aria-label=\"delete\" class=\"" + deleteLinkClass + " plomUiRemoveButton\"></a></div>";
   }
   
   private String globalVarInnerHtml()
@@ -181,7 +180,7 @@ public class GlobalsPanel
     if (v.isImported)
       div.getClassList().add("moduleImported");
 
-    ((InputElement)div.querySelector("input")).setValue(name);
+    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".globalVarsList").appendChild(div);
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
@@ -196,7 +195,7 @@ public class GlobalsPanel
     });
     typeField.render();
     
-    InputElement nameInput = (InputElement)div.querySelector("input"); 
+    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
     nameInput.addEventListener(Event.CHANGE, (evt) -> {
       v.name = nameInput.getValue(); 
       repository.updateGlobalVariable(v);
