@@ -98,6 +98,12 @@ a.breadcrumb-item:visited {
 	bottom: 0;
 }
 
+.globaldetails .scrollable-interior , 
+.classdetails .scrollable-interior , 
+.methoddetails .scrollable-interior {
+	width: 100%;
+}
+
 .code {
 	background-color: #fafafa;
 	padding-right: 1em;
@@ -431,10 +437,24 @@ a.runbutton {
 .globalspanel .typeEntry, 
 .classpanel .typeEntry {
 	display: inline-block;
-	border: 1px solid black;
 	min-width: 3em;
-	padding-right: 1em;
 	position: relative;
+}
+
+.methodpanel .typeEntry:not(:empty), 
+.globalspanel .typeEntry:not(:empty), 
+.classpanel .typeEntry:not(:empty) {
+}
+
+.methodpanel .typeEntry:empty, 
+.globalspanel .typeEntry:empty, 
+.classpanel .typeEntry:empty {
+	border: 1px solid black;
+	min-height: 1em;
+}	
+
+div.typeEntry svg {
+	vertical-align: middle;
 }
 
 .methodpanel .typeEntry .tokenline, 

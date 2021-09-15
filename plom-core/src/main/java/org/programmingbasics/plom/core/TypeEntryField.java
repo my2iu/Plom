@@ -17,20 +17,24 @@ import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
+import org.programmingbasics.plom.core.view.RenderedTokenHitBox;
 import org.programmingbasics.plom.core.view.SetTypeToken;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
+import elemental.client.Browser;
+import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.MouseEvent;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
+import elemental.svg.SVGDocument;
 
 /**
  * Handles UI logic for a field where a type can be entered
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxClientWidth, Element scrollableDiv, Element scrollableExtraPaddingDiv)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
@@ -38,6 +42,10 @@ public class TypeEntryField
     fieldDiv = div;
     this.globalConfigurator = globalConfigurator;
     this.variableContextConfigurator = variableContextConfigurator;
+    this.widthCalculator = widthCalculator;
+    this.maxClientWidth = maxClientWidth;
+    this.scrollableDiv = scrollableDiv;
+    this.scrollableExtraPaddingDiv = scrollableExtraPaddingDiv;
     hookCodeClick(div);
   }
   boolean useSvg = true;
@@ -48,7 +56,12 @@ public class TypeEntryField
   CodePosition cursorPos;
   RenderedHitBox hitBox;
   BiConsumer<Token.ParameterToken, Boolean> listener;
-
+  SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
+  int maxClientWidth;
+  // A div that can be scrolled to ensure that the type being edited is not overlapped by another element
+  Element scrollableDiv;
+  Element scrollableExtraPaddingDiv;
+  
   /** 
    * Allows for the configuration of what global variables/types there are
    * for type checking.
@@ -95,9 +108,20 @@ public class TypeEntryField
             Symbol.AtType);
         type = (ParameterToken) SetTypeToken.set(type, hitToken, cursorPos);
       }
+      
+      int doNotCoverLeft = 0, doNotCoverRight = 0;
+      final int MIN_TOKEN_SIZE_FOR_DO_NOT_COVER = 50;
+      RenderedHitBox typeHitBox = RenderedTokenHitBox.inTypeField(type, hitBox, cursorPos);
+      if (typeHitBox != null)
+      {
+        doNotCoverLeft = (int)(typeHitBox.getOffsetLeft() + div.getOffsetLeft() + scrollableExtraPaddingDiv.getOffsetLeft());
+        doNotCoverRight = doNotCoverLeft + Math.max(typeHitBox.getOffsetWidth(), MIN_TOKEN_SIZE_FOR_DO_NOT_COVER);
+      }
+      
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
       CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, globalConfigurator, variableContextConfigurator);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), null, 0, 0, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, new TypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      simpleEntry.scrollForDoNotCover(scrollableDiv, scrollableExtraPaddingDiv, doNotCoverLeft, doNotCoverRight);
       simpleEntry.setEraseButtonVisible(true);
 
       render();
@@ -132,7 +156,7 @@ public class TypeEntryField
   public void render()
   {
     if (useSvg)
-      hitBox = SvgCodeRenderer.renderTypeToken(fieldDiv, type, cursorPos);
+      hitBox = SvgCodeRenderer.renderTypeToken(fieldDiv, type, cursorPos, widthCalculator, maxClientWidth);
     else
       hitBox = CodeRenderer.renderTypeToken(fieldDiv, type, cursorPos);
 //    CodeRenderer.render(fieldDiv, 

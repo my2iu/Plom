@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -18,6 +19,7 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import elemental.svg.SVGDocument;
 
 public class MethodPanel
 {
@@ -27,6 +29,7 @@ public class MethodPanel
 
     doc = Browser.getDocument();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getMethodPanelHtml().getText());
+    widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
     
     // UI elements for the type suggestion and type entry stuff
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
@@ -43,6 +46,7 @@ public class MethodPanel
   MethodNameWidget methodWidget;
   FunctionSignature originalSig;
   TypeEntryField returnTypeField = null;
+  SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
   public static interface SignatureListener
   {
@@ -61,11 +65,15 @@ public class MethodPanel
 //    List<TypeEntryField> argTypeFields = new ArrayList<>();
     originalSig = sig;
     
+    // (Using the method_name div to get the maximum width for rendering types is a little
+    // bit too wide, should find something that removes the padding of the argument box too)
+    int maxTypeWidth = containerDiv.querySelector(".method_name").getClientWidth();
+    
     methodWidget = new MethodNameWidget(sig, simpleEntry, 
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
       scope.setParent(new RepositoryScope(repository, coreTypes));
-    });
+    }, widthCalculator, maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
     containerDiv.querySelector(".method_name").setInnerHTML("");
     containerDiv.querySelector(".method_name").appendChild(methodWidget.getBaseElement());
     methodWidget.setListener((nameSig) -> {
@@ -88,12 +96,14 @@ public class MethodPanel
     // Render the return type
     if (!sig.isConstructor)
     {
+      int maxReturnTypeWidth = containerDiv.querySelector(".method_return").getClientWidth();
       returnTypeField = new TypeEntryField(sig.returnType.copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
           (scope, coreTypes) -> {
             StandardLibrary.createGlobals(null, scope, coreTypes);
             scope.setParent(new RepositoryScope(repository, coreTypes));
           },
-          (context) -> {});
+          (context) -> {},
+          widthCalculator, maxReturnTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
       returnTypeField.setChangeListener((type, isFinal) -> {
         notifyOfChanges();
       });
@@ -207,13 +217,21 @@ public class MethodPanel
     List<TypeEntryField> argTypeFields;
     Element firstColonEl;
     Consumer<FunctionSignature> changeListener;
+    SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
+    int maxTypeWidth;
+    Element scrollableDiv;
+    Element scrollableInterior;
     
-    public MethodNameWidget(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup)
+    public MethodNameWidget(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup,   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
     {
       doc = Browser.getDocument();
       this.simpleEntry = simpleEntry;
       this.globalScopeForTypeLookup = globalScopeForTypeLookup;
       this.sig = FunctionSignature.copyOf(sig);
+      this.widthCalculator = widthCalculator;
+      this.maxTypeWidth = maxTypeWidth;
+      this.scrollableDiv = scrollableDiv;
+      this.scrollableInterior = scrollableInterior;
       
       // Create initial layout
       baseDiv = doc.createDivElement();
@@ -230,7 +248,7 @@ public class MethodPanel
       
       baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
       firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
-      
+
       InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0);
       firstNamePartEl.addEventListener(Event.CHANGE, (evt) -> {
         onCommittedChangeInUi();
@@ -256,7 +274,7 @@ public class MethodPanel
         
         // argument type
         TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
-            globalScopeForTypeLookup, (context) -> {});
+            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
         argTypeFields.add(typeField);
         typeField.setChangeListener((token, isFinal) -> {
           onCommittedChangeInUi();
@@ -294,7 +312,7 @@ public class MethodPanel
         
         // argument type
         TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
-            globalScopeForTypeLookup, (context) -> {});
+            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
         argTypeFields.add(typeField);
         typeField.setChangeListener((token, isFinal) -> {
           onCommittedChangeInUi();

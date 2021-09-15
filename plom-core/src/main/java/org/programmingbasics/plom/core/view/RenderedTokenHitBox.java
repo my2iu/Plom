@@ -5,6 +5,10 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.view.HitDetect.HitDetectParam;
+import org.programmingbasics.plom.core.view.HitDetect.TokenHitDetection;
+import org.programmingbasics.plom.core.view.HitDetect.TokenHitLocation;
+import org.programmingbasics.plom.core.view.HitDetect.TypeInternalHitDetection;
 
 /**
  * Returns a hitbox surrounding a token in the code (it might also
@@ -73,6 +77,17 @@ public class RenderedTokenHitBox
       return hitBox;
     }
   }
+  
+  public static RenderedHitBox inTypeField(Token type, RenderedHitBox hitBox,
+      CodePosition pos)
+  {
+    if (pos.hasOffset(1))
+    {
+      return type.visit(new TokenAtCursor(), pos, 1, hitBox);
+    }
+    return hitBox;
+  }
+
   
   static class TokenAtCursor extends RecurseIntoCompoundToken<RenderedHitBox, RenderedHitBox, RuntimeException>
   {

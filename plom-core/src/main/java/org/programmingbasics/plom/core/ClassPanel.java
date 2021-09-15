@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -21,6 +22,7 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import elemental.svg.SVGDocument;
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -36,6 +38,7 @@ public class ClassPanel
   LoadMethodCodeViewCallback viewSwitchCallback;
   LoadMethodSigViewCallback methodSigViewCallback;
   ExitClassViewCallback exitCallback;
+  SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
   ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, ExitClassViewCallback exitCallback, boolean isNew)
   {
@@ -45,6 +48,8 @@ public class ClassPanel
     this.viewSwitchCallback = callback;
     this.methodSigViewCallback = methodSigViewCallback;
     this.exitCallback = exitCallback;
+    widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
+
     rebuildView(isNew);
   }
   
@@ -78,12 +83,14 @@ public class ClassPanel
     }
     
     // For setting the supertype
+    int maxTypeWidth = mainDiv.querySelector(".extends").getClientWidth();
     TypeEntryField extendsField = new TypeEntryField(cls.parent, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
         },
-        (context) -> {});
+        (context) -> {},
+        widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
     extendsField.setChangeListener((newType, isFinal) -> {
       cls.setSuperclass(newType);
     });
@@ -216,12 +223,14 @@ public class ClassPanel
     ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".varsList").appendChild(div);
+    int maxTypeWidth = div.querySelector(".class_var").getClientWidth();
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
         },
-        (context) -> {});
+        (context) -> {},
+        widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
     typeField.setChangeListener((newType, isFinal) -> {
       v.type = newType;
       cls.updateVariable(v);

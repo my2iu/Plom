@@ -212,14 +212,12 @@ public class SvgCodeRenderer
     return hitBox;
   }
 
-  public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos)
+  public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth)
   {
-    final double clientWidth = 1000;
     final double leftPadding = 0;
     final double rightPadding = 0;
     final double topPadding = 0;
     final double bottomPadding = 0;
-    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
 
     final double extraWidth = 0.5; // Slightly larger to accommodate width of lines     
     
@@ -278,7 +276,7 @@ public class SvgCodeRenderer
 //        div.appendChild(toInsert.querySelector("div"));
 //      }
 //      else
-        div.setTextContent("\u00A0");
+        div.setTextContent("");
       return null;
       
     }
@@ -478,6 +476,11 @@ public class SvgCodeRenderer
     SVGTextElement textEl;
     public SvgTextWidthCalculator(SVGDocument doc)
     {
+      // See if there's an existing width calculator element
+      // that we can reuse
+      textEl = (SVGTextElement) doc.querySelector("svg.widthCalculator text.codetoken");
+      if (textEl != null) return;
+      // If not, create a new svg element that we can use for computing widths
       SVGSVGElement svgEl = doc.createSVGElement();
       textEl = doc.createSVGTextElement();
       textEl.getClassList().add("codetoken");

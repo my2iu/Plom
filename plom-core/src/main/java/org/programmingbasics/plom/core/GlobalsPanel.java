@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -21,6 +22,7 @@ import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
+import elemental.svg.SVGDocument;
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -35,6 +37,7 @@ public class GlobalsPanel
   LoadFunctionCodeViewCallback viewSwitchCallback;
   LoadFunctionSigViewCallback functionSigCallback;
   LoadClassViewCallback classViewCallback;
+  SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
   GlobalsPanel(DivElement mainDiv, ModuleCodeRepository repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback)
   {
@@ -43,6 +46,7 @@ public class GlobalsPanel
     this.viewSwitchCallback = callback;
     this.functionSigCallback = functionSigCallback;
     this.classViewCallback = classViewCallback;
+    widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
     rebuildView();
   }
   
@@ -183,12 +187,14 @@ public class GlobalsPanel
     ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
     varDivs.add(div);
     mainDiv.querySelector(".globalVarsList").appendChild(div);
+    int maxTypeWidth = div.querySelector(".global_var").getClientWidth();
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
         },
-        (context) -> {});
+        (context) -> {},
+        widthCalculator, maxTypeWidth, mainDiv.querySelector(".globaldetails"), mainDiv.querySelector(".globaldetails .scrollable-interior"));
     typeField.setChangeListener((newType, isFinal) -> {
       v.type = newType; 
       repository.updateGlobalVariable(v);
