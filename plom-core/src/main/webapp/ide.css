@@ -98,9 +98,10 @@ a.breadcrumb-item:visited {
 	bottom: 0;
 }
 
-.globaldetails .scrollable-interior , 
-.classdetails .scrollable-interior , 
-.methoddetails .scrollable-interior {
+.globaldetails .scrollable-interior, 
+.classdetails .scrollable-interior, 
+.methoddetails .scrollable-interior,
+.code .scrollable-interior {
 	width: 100%;
 }
 

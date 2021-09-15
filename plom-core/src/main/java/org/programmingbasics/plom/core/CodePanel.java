@@ -75,6 +75,7 @@ public class CodePanel
       mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
+    codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
     cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
@@ -129,6 +130,7 @@ public class CodePanel
   
   StatementContainer codeList = new StatementContainer();
   DivElement codeDiv;
+  DivElement codeDivInterior;
   DivElement choicesDiv;
   Element cursorOverlayEl;
   SimpleEntry simpleEntry;
@@ -458,18 +460,18 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDiv, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDiv, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDiv, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -478,7 +480,7 @@ public class CodePanel
       else
         initialValue = "";
       simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDiv, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -889,7 +891,7 @@ public class CodePanel
           if (useSvg)
             newPos = HitDetect.detectHitBoxes((int)(x + cursorHandle1.xOffset - leftPadding), (int)(y + cursorHandle1.yOffset - topPadding), codeList, svgHitBoxes);
           else
-            newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+            newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle1.xOffset), (int)(y + cursorHandle1.yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
           if (newPos == null)
             newPos = new CodePosition();
           cursorPos = newPos;
@@ -902,7 +904,7 @@ public class CodePanel
           if (useSvg)
             newPos = HitDetect.detectHitBoxes((int)(x + cursorHandle2.xOffset - leftPadding), (int)(y + cursorHandle2.yOffset - topPadding), codeList, svgHitBoxes);
           else
-            newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeDiv, codeList, cursorPos, codeErrors);
+            newPos = HitDetect.renderAndHitDetect((int)(x + cursorHandle2.xOffset), (int)(y + cursorHandle2.yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
           if (newPos == null)
             newPos = new CodePosition();
           if (newPos.equals(cursorPos))
@@ -951,7 +953,7 @@ public class CodePanel
       if (useSvg)
         newPos = HitDetect.detectHitBoxes(x - leftPadding, y - topPadding, codeList, svgHitBoxes);
       else
-        newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDiv, codeList, cursorPos, codeErrors);
+        newPos = HitDetect.renderAndHitDetect((int)x, (int)y, codeDivInterior, codeList, cursorPos, codeErrors);
       if (newPos == null)
         newPos = new CodePosition();
       cursorPos = newPos;
@@ -1105,8 +1107,8 @@ public class CodePanel
     if (listener != null)
       listener.onUpdate(isCodeChanged);
     if (!useSvg)
-      codeDiv.setInnerHTML("");
-    RenderedHitBox renderedHitBoxes = renderTokens(codeDiv, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
+      codeDivInterior.setInnerHTML("");
+    RenderedHitBox renderedHitBoxes = renderTokens(codeDivInterior, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
     if (useSvg)
       svgHitBoxes = renderedHitBoxes;
     updateCursor(renderedHitBoxes);
