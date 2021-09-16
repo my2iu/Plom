@@ -63,7 +63,7 @@ public class ClassPanel
     simpleEntry.setVisible(false);
 
     // For setting class name
-    InputElement nameAnchor = (InputElement)mainDiv.querySelector(".className input");
+    InputElement nameAnchor = (InputElement)mainDiv.querySelector(".className plom-autoresizing-input");
     nameAnchor.setValue(cls.getName());
     nameAnchor.addEventListener(Event.CHANGE, (e) -> {
       e.preventDefault();

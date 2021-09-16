@@ -76,7 +76,10 @@ public class CodePanel
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
     codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
-    codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
+    if (useSvg)
+      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
+    else
+      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
     cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
