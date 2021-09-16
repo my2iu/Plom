@@ -283,15 +283,16 @@ public class SimpleEntry
       double sidePanelLeft = suggestionsContainer.getBoundingClientRect().getLeft();
       doNotCoverElOldRightPadding = scrollableEl.getStyle().getPropertyValue("padding-right");
       doNotCoverElOldScrollLeft = scrollableEl.getScrollLeft();
+      double sidePanelWidth = suggestionsContainer.getBoundingClientRect().getWidth();
+      int oldRightPadding = 0;
+      String oldRightPaddingString = Browser.getWindow().getComputedStyle(extraPaddingEl, null).getPaddingRight();
+      oldRightPadding = Integer.parseInt(RegExp.compile("[0-9]*").exec(oldRightPaddingString).getGroup(0));
+      extraPaddingEl.getStyle().setPaddingRight(sidePanelWidth + oldRightPadding, Unit.PX);
       if (doNotCoverRightX - doNotCoverElOldScrollLeft > sidePanelLeft)
       {
         double newScrollLeft = doNotCoverRightX - sidePanelLeft;
         if (newScrollLeft > doNotCoverLeftX)
           newScrollLeft = doNotCoverLeftX;
-        int oldRightPadding = 0;
-        String oldRightPaddingString = Browser.getWindow().getComputedStyle(extraPaddingEl, null).getPaddingRight();
-        oldRightPadding = Integer.parseInt(RegExp.compile("[0-9]*").exec(oldRightPaddingString).getGroup(0));
-        extraPaddingEl.getStyle().setPaddingRight(newScrollLeft + oldRightPadding, Unit.PX);
         scrollableEl.setScrollLeft((int)newScrollLeft);
       }
     }

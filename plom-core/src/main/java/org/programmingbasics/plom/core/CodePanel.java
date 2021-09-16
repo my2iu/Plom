@@ -75,7 +75,7 @@ public class CodePanel
       mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
-    codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
+    codeDivInterior = (DivElement)mainDiv.querySelector("div.code");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
     cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
