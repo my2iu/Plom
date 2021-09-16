@@ -75,7 +75,8 @@ public class CodePanel
       mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
-    codeDivInterior = (DivElement)mainDiv.querySelector("div.code");
+    codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
+    codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
     cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
@@ -131,6 +132,7 @@ public class CodePanel
   StatementContainer codeList = new StatementContainer();
   DivElement codeDiv;
   DivElement codeDivInterior;
+  Element codeDivInteriorForScrollPadding;
   DivElement choicesDiv;
   Element cursorOverlayEl;
   SimpleEntry simpleEntry;
@@ -460,18 +462,18 @@ public class CodePanel
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       initialValue = initialValue.substring(1);
       simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
       choicesDiv.getStyle().setDisplay(Display.NONE);
       simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
       break;
     case String:
       choicesDiv.getStyle().setDisplay(Display.NONE);
@@ -480,7 +482,7 @@ public class CodePanel
       else
         initialValue = "";
       simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInterior, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
       choicesDiv.getStyle().setDisplay(Display.NONE);
