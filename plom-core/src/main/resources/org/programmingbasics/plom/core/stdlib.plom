@@ -1,7 +1,9 @@
  module .{program} {
  stdlib { -1 }
  var . { var } @ {object }
- function . {test: . { arg1 } @ {number } } @ {number } {
+ function . {input: . { prompt } @ {string } } @ {string } {
+ // Displays a prompt asking for input and returns the value entered by the user
+ primitive
  }
  function . {print string: . { value } @ {string } } @ {void } {
  // Prints a string to the screen
@@ -11,56 +13,7 @@
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
- function . {input: . { prompt } @ {string } } @ {string } {
- // Displays a prompt asking for input and returns the value entered by the user
- primitive
- }
- class @ { Test } extends @ {object } {
- constructor . {new } {
- }
- }
- class @ { string } extends @ {object } {
- function . {+: . { val } @ {string } } @ {boolean } {
- primitive
- }
- function . {=: . { val } @ {object } } @ {boolean } {
- primitive
- }
- function . {substring from: . { from } @ {number }to: . { to } @ {number } } @ {string } {
- primitive
- }
- function . {to string } @ {string } {
- return this
- }
- }
- class @ { object } {
- function . {!=: . { val } @ {object } } @ {boolean } {
- return ( this = . {val } ) . {not }
- }
- function . {=: . { val } @ {object } } @ {boolean } {
- primitive
- }
- function . {to string } @ {string } {
- primitive
- }
- }
- class @ { number } extends @ {object } {
- function . {*: . { val } @ {number } } @ {number } {
- primitive
- }
- function . {+: . { val } @ {number } } @ {number } {
- }
- function . {-: . { val } @ {number } } @ {number } {
- primitive
- }
- function . {/: . { val } @ {number } } @ {number } {
- primitive
- }
- }
- class @ { null } extends @ {object } {
- function . {= } @ {boolean } {
- primitive
- }
+ function . {test: . { arg1 } @ {number } } @ {number } {
  }
  class @ { JS object } extends @ {object } {
  function . {as boolean } @ {boolean } {
@@ -121,6 +74,10 @@
  primitive
  }
  }
+ class @ { Test } extends @ {object } {
+ constructor . {new } {
+ }
+ }
  class @ { boolean } extends @ {object } {
  function . {=: . { val } @ {object } } @ {boolean } {
  primitive
@@ -136,6 +93,49 @@
  return"false"
  }
 
+ }
+ }
+ class @ { null } extends @ {object } {
+ function . {= } @ {boolean } {
+ primitive
+ }
+ }
+ class @ { number } extends @ {object } {
+ function . {*: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ function . {+: . { val } @ {number } } @ {number } {
+ }
+ function . {-: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ function . {/: . { val } @ {number } } @ {number } {
+ primitive
+ }
+ }
+ class @ { object } {
+ function . {!=: . { val } @ {object } } @ {boolean } {
+ return ( this = . {val } ) . {not }
+ }
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ primitive
+ }
+ }
+ class @ { string } extends @ {object } {
+ function . {+: . { val } @ {string } } @ {boolean } {
+ primitive
+ }
+ function . {=: . { val } @ {object } } @ {boolean } {
+ primitive
+ }
+ function . {substring from: . { from } @ {number }to: . { to } @ {number } } @ {string } {
+ primitive
+ }
+ function . {to string } @ {string } {
+ return this
  }
  }
  }

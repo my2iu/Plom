@@ -637,13 +637,17 @@ public class ModuleCodeRepository
     }
     
     // Output global variables
-    for (VariableDescription v: globalVars)
+    List<VariableDescription> sortedGlobalVars = new ArrayList<>(globalVars);
+    sortedGlobalVars.sort(Comparator.comparing((VariableDescription v) -> v.name));
+    for (VariableDescription v: sortedGlobalVars)
     {
       saveVariable(out, v);
     }
     
     // Output global functions
-    for (FunctionDescription fn: functions)
+    List<FunctionDescription> sortedFunctions = new ArrayList<>(functions);
+    sortedFunctions.sort(Comparator.comparing(f -> f.sig.getLookupName()));
+    for (FunctionDescription fn: sortedFunctions)
     {
       saveFunction(out, fn);
     }
@@ -651,7 +655,9 @@ public class ModuleCodeRepository
     // Output classes
     if (saveClasses)
     {
-      for (ClassDescription cls: classes)
+      List<ClassDescription> sortedClasses = new ArrayList<>(classes);
+      sortedClasses.sort(Comparator.comparing((ClassDescription v) -> v.getName()));
+      for (ClassDescription cls: sortedClasses)
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
           saveClass(out, cls);

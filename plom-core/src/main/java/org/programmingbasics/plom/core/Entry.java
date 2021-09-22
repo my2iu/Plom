@@ -61,7 +61,6 @@ TODO:
 - sidebar of suggestions in method view shifts text around (should absolute position itself)
 - refine the hamburger menu (should automatically close itself)
 - change the back button to match the platform style?
-- saving should save out functions and methods in alphabetical order
 - when editing methods, automatic advance to next field when pressing enter
 - when editing methods, name validation
 - when editing methods, should have a menu with delete and insert, not just a delete button
@@ -71,8 +70,6 @@ TODO:
 - when editing methods, not handling blur of type fields properly
 - when editing methods, type fields should use new svg rendering
 - when editing methods, have a quick erase button for auto-resizing text input?
-- highlighting of "active" token in code--use that for scrolling code so that they aren't covered up by suggestions
-- <auto-resizing-input> should have an attribute that styles things transparently
  */
 
 public class Entry implements EntryPoint
