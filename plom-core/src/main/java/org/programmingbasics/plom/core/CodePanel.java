@@ -221,6 +221,7 @@ public class CodePanel
         Symbol.DUMMY_COMMENT,
         Symbol.Var,
         Symbol.COMPOUND_WHILE,
+        Symbol.COMPOUND_FOR,
         Symbol.COMPOUND_IF,
         Symbol.COMPOUND_ELSEIF,
         Symbol.COMPOUND_ELSE,
@@ -303,6 +304,7 @@ public class CodePanel
     case COMPOUND_IF:
     case COMPOUND_ELSEIF:
     case COMPOUND_WHILE:
+    case COMPOUND_FOR:
       newToken = new Token.OneExpressionOneBlockToken(tokenText, tokenType);
       break;
     case COMPOUND_ELSE:
@@ -670,6 +672,7 @@ public class CodePanel
       case COMPOUND_ELSE: text = "else"; break;
       case COMPOUND_ELSEIF: text = "elseif"; break;
       case COMPOUND_WHILE: text = "while"; break;
+      case COMPOUND_FOR: text = "for"; break;
       case Return: text = "return"; break;
       case PrimitivePassthrough: text = "primitive"; break;
       default:

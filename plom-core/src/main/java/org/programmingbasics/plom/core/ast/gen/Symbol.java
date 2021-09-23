@@ -35,6 +35,7 @@ public enum Symbol
 	ParenthesisExpression,
 	ValueExpression,
 	StaticMethodCallExpression,
+	ForExpression,
 	EndStatement,
 	This,
 	NullLiteral,
@@ -64,6 +65,7 @@ public enum Symbol
 	ClosedParenthesis,
 	Return,
 	PrimitivePassthrough,
+	In,
 	DotDeclareIdentifier,
 	DotMember,
 	DUMMY_COMMENT,
@@ -71,6 +73,7 @@ public enum Symbol
 	COMPOUND_ELSE,
 	COMPOUND_ELSEIF,
 	COMPOUND_WHILE,
+	COMPOUND_FOR,
 	DUMMY_BEGIN,
 	DUMMY_END,
 	ASSEMBLED_STATEMENTS_BLOCK;
@@ -107,11 +110,13 @@ public enum Symbol
 		case ClosedParenthesis:
 		case Return:
 		case PrimitivePassthrough:
+		case In:
 		case DUMMY_COMMENT:
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:
 		case COMPOUND_ELSEIF:
 		case COMPOUND_WHILE:
+		case COMPOUND_FOR:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
 		case ASSEMBLED_STATEMENTS_BLOCK:
@@ -128,6 +133,7 @@ public enum Symbol
 		case COMPOUND_ELSE:
 		case COMPOUND_ELSEIF:
 		case COMPOUND_WHILE:
+		case COMPOUND_FOR:
 			return true;
 		default:
 			return false;

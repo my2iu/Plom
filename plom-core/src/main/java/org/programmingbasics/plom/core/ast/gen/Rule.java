@@ -15,6 +15,7 @@ public class Rule
 	public final static List<Symbol> Statement_WideStatement_StatementOrEmpty = Arrays.asList(Symbol.Statement, Symbol.WideStatement, Symbol.StatementOrEmpty);
 	public final static List<Symbol> WideStatement_COMPOUND_IF_AfterIf = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_IF, Symbol.AfterIf);
 	public final static List<Symbol> WideStatement_COMPOUND_WHILE = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_WHILE);
+	public final static List<Symbol> WideStatement_COMPOUND_FOR = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_FOR);
 	public final static List<Symbol> WideStatement_DUMMY_COMMENT = Arrays.asList(Symbol.WideStatement, Symbol.DUMMY_COMMENT);
 	public final static List<Symbol> ExpressionOnly_Expression_EndStatement = Arrays.asList(Symbol.ExpressionOnly, Symbol.Expression, Symbol.EndStatement);
 	public final static List<Symbol> AssignmentExpression_Expression_AssignmentExpressionMore = Arrays.asList(Symbol.AssignmentExpression, Symbol.Expression, Symbol.AssignmentExpressionMore);
@@ -69,6 +70,7 @@ public class Rule
 	public final static List<Symbol> VarAssignment_Assignment_Expression = Arrays.asList(Symbol.VarAssignment, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> VarAssignment = Arrays.asList(Symbol.VarAssignment);
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
+	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression_EndStatement = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression, Symbol.EndStatement);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
 	public final static List<Symbol> This = Arrays.asList(Symbol.This);
@@ -99,11 +101,13 @@ public class Rule
 	public final static List<Symbol> ClosedParenthesis = Arrays.asList(Symbol.ClosedParenthesis);
 	public final static List<Symbol> Return = Arrays.asList(Symbol.Return);
 	public final static List<Symbol> PrimitivePassthrough = Arrays.asList(Symbol.PrimitivePassthrough);
+	public final static List<Symbol> In = Arrays.asList(Symbol.In);
 	public final static List<Symbol> DUMMY_COMMENT = Arrays.asList(Symbol.DUMMY_COMMENT);
 	public final static List<Symbol> COMPOUND_IF = Arrays.asList(Symbol.COMPOUND_IF);
 	public final static List<Symbol> COMPOUND_ELSE = Arrays.asList(Symbol.COMPOUND_ELSE);
 	public final static List<Symbol> COMPOUND_ELSEIF = Arrays.asList(Symbol.COMPOUND_ELSEIF);
 	public final static List<Symbol> COMPOUND_WHILE = Arrays.asList(Symbol.COMPOUND_WHILE);
+	public final static List<Symbol> COMPOUND_FOR = Arrays.asList(Symbol.COMPOUND_FOR);
 	public final static List<Symbol> DUMMY_BEGIN = Arrays.asList(Symbol.DUMMY_BEGIN);
 	public final static List<Symbol> DUMMY_END = Arrays.asList(Symbol.DUMMY_END);
 	public final static List<Symbol> ASSEMBLED_STATEMENTS_BLOCK = Arrays.asList(Symbol.ASSEMBLED_STATEMENTS_BLOCK);

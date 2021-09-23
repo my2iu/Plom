@@ -452,6 +452,79 @@ public abstract class Token
       }
    }
 
+   /** I might use this for for...each loops to provide additional
+    * structure, but I'll hold off for now because it's faster to
+    * implement that structure using a grammar for now 
+    */
+   public static class OneIdentifierOneExpressionOneBlockToken extends OneExpressionOneBlockToken
+   {
+      public TokenContainer identifier = new TokenContainer();
+      public OneIdentifierOneExpressionOneBlockToken(String contents, Symbol type)
+      {
+        super(contents, type);
+      }
+      public OneIdentifierOneExpressionOneBlockToken(String contents, Symbol type, TokenContainer identifier, TokenContainer expression, StatementContainer block)
+      {
+        super(contents, type, expression, block);
+        this.identifier = identifier;
+      }
+//      public <S> S visit(TokenVisitor<S> visitor)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this);
+//      }
+//      public <S, T> S visit(TokenVisitor1<S, T> visitor, T param1)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1);
+//      }
+//      public <S, T, U> S visit(TokenVisitor2<S, T, U> visitor, T param1, U param2)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1, param2);
+//      }
+//      public <S, T, U, V> S visit(TokenVisitor3<S, T, U, V> visitor, T param1, U param2, V param3)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1, param2, param3);
+//      }
+//      public <S, T, U, V, E extends Throwable> S visit(TokenVisitor3Err<S, T, U, V, E> visitor, T param1, U param2, V param3) throws E
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1, param2, param3);
+//      }
+//      public <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1, param2, param3, param4);
+//      }
+//      public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
+//      {
+//         return visitor.visitOneIdentifierOneExpressionOneBlockToken(this, param1, param2, param3, param4, param5);
+//      }
+//      public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+//      {
+//        return visitor.visitOneIdentifierOneExpressionOneBlockToken(this);
+//      }
+      @Override
+      public int hashCode()
+      {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result
+            + ((identifier == null) ? 0 : identifier.hashCode());
+        return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        OneIdentifierOneExpressionOneBlockToken other = (OneIdentifierOneExpressionOneBlockToken) obj;
+        if (identifier == null)
+        {
+          if (other.identifier != null) return false;
+        }
+        else if (!identifier.equals(other.identifier)) return false;
+        return true;
+      }
+   }
+
    public static interface TokenVisitorErr<S, E extends Throwable>
    {
       public S visitSimpleToken(SimpleToken token) throws E;
@@ -459,6 +532,7 @@ public abstract class Token
       public S visitWideToken(WideToken token) throws E;
       public S visitOneBlockToken(OneBlockToken token) throws E;
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws E;
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token) throws E;
    }
 
    public static interface TokenVisitor<S>
@@ -468,6 +542,7 @@ public abstract class Token
       public S visitWideToken(WideToken token);
       public S visitOneBlockToken(OneBlockToken token);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token);
    }
    
    public static interface TokenVisitor1<S, T>
@@ -477,6 +552,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1);
       public S visitOneBlockToken(OneBlockToken token, T param1);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1);
    }
    
    public static interface TokenVisitor2<S, T, U>
@@ -486,6 +562,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1, U param2);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1, U param2);
    }
    public static interface TokenVisitor3<S, T, U, V>
    {
@@ -494,6 +571,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1, U param2, V param3);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1, U param2, V param3);
    }
    public static interface TokenVisitor3Err<S, T, U, V, E extends Throwable>
    {
@@ -502,6 +580,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1, U param2, V param3) throws E;
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3) throws E;
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3) throws E;
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1, U param2, V param3) throws E;
    }
    public static interface TokenVisitor4<S, T, U, V, W>
    {
@@ -510,6 +589,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1, U param2, V param3, W param4);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3, W param4);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1, U param2, V param3, W param4);
    }
    public static interface TokenVisitor5<S, T, U, V, W, X>
    {
@@ -518,6 +598,7 @@ public abstract class Token
       public S visitWideToken(WideToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4, X param5);
+//      public S visitOneIdentifierOneExpressionOneBlockToken(OneIdentifierOneExpressionOneBlockToken token, T param1, U param2, V param3, W param4, X param5);
    }
 
 }

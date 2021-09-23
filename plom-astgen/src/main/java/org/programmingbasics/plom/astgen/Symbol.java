@@ -35,6 +35,7 @@ enum Symbol
   ParenthesisExpression(false),
   ValueExpression(false),
   StaticMethodCallExpression(false),
+  ForExpression(false),
   EndStatement(true),
   This(true),
   NullLiteral(true),
@@ -64,6 +65,7 @@ enum Symbol
   ClosedParenthesis(true),
   Return(true),
   PrimitivePassthrough(true),
+  In(true),
   
   DotDeclareIdentifier(false),  // Expands to DotVariable
   DotMember(false),             // Expands to DotVariable
@@ -73,6 +75,7 @@ enum Symbol
   COMPOUND_ELSE(true),
   COMPOUND_ELSEIF(true),
   COMPOUND_WHILE(true),
+  COMPOUND_FOR(true),
   DUMMY_BEGIN(true),
   DUMMY_END(true),
   
