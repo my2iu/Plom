@@ -216,6 +216,32 @@ public class SimpleInterpreter
               machine.ip.setIdx(0);
               break;
             }
+          })
+      .add(Rule.WideStatement_COMPOUND_FOR, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            throw new IllegalArgumentException("Not implemented yet");
+//            switch (idx)
+//            {
+//            case 0: // Evaluate expression
+//              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), ExpressionEvaluator.expressionHandlers);
+//              break;
+//            case 1: // Decide whether to follow the if or not
+//              Value val = machine.popValue();
+//              if (!machine.coreTypes().getBooleanType().equals(val.type))
+//                throw new RunException();
+//              if (val.getBooleanValue())
+//              {
+//                machine.pushNewScope();
+//                machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+//              }
+//              else
+//                machine.ip.pop();
+//              break;
+//            case 2: // go back to reevaluate the expression
+//              machine.popScope();
+//              machine.ip.setIdx(0);
+//              break;
+//            }
           });
   }
 

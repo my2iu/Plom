@@ -329,6 +329,18 @@ public class CodeSuggestExpressionTyper
             return true;
           }
       )
+      .add(Rule.ForExpression_DotDeclareIdentifier_VarType_In_Expression, 
+          (triggers, node, context, param) -> {
+            if (node.children.get(3) != null)
+            {
+              node.children.get(3).recursiveVisit(triggers, context, param);
+              Type t = context.popType();
+              context.setLastTypeUsed(t);
+              context.pushType(t);
+            }
+            return true;
+          }
+      )
       ;
   }
 }

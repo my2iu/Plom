@@ -5,7 +5,12 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
+import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -48,9 +53,8 @@ public class GatherCodeCompletionInfo
     {
       // Ignore errors
     }
-    
   }
-  
+
   public static void fromLine(TokenContainer line, Symbol baseContext, CodeCompletionContext context, CodePosition pos, int level)
   {
     if (!pos.hasOffset(level + 1))
@@ -76,6 +80,27 @@ public class GatherCodeCompletionInfo
       // We're inside another token that might contain statements, so we'll
       // need to recurse into there.
       Token token = line.tokens.get(pos.getOffset(level));
+      // If we're entering a block of a for loop, we need to find
+      // any variables defined in the expression part first
+      token.visit(new Token.TokenVisitor1<Void, CodeCompletionContext>() {
+        @Override public Void visitSimpleToken(SimpleToken token,
+            CodeCompletionContext param1) { return null; }
+        @Override public Void visitParameterToken(ParameterToken token,
+            CodeCompletionContext param1) { return null; }
+        @Override public Void visitWideToken(WideToken token,
+            CodeCompletionContext param1) { return null; }
+        @Override public Void visitOneBlockToken(OneBlockToken token,
+            CodeCompletionContext param1) { return null; }
+        @Override public Void visitOneExpressionOneBlockToken(
+            OneExpressionOneBlockToken token, CodeCompletionContext param1) 
+        {
+          if (token.getType() != Symbol.COMPOUND_FOR) return null;
+          if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+          parseWholeLine(token.expression, Symbol.ForExpression, context);
+          return null; 
+        }
+      }, context); 
+      // Now enter into the token for the current code position
       token.visit(new RecurseIntoCompoundToken<Void, CodeCompletionContext, RuntimeException>() {
         @Override Void handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, CodeCompletionContext context)
@@ -111,20 +136,36 @@ public class GatherCodeCompletionInfo
       .add(Rule.VarStatement_Var_DotDeclareIdentifier_VarType_VarAssignment, (triggers, node, context, param) -> {
         if (node.children.size() < 4)
           return true;
-        if (node.children.get(1) == null || !node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
-          return true;
-        String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-        GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-        if (node.children.get(2) == null)
-          return true;
-        node.children.get(2).recursiveVisit(CodeSuggestExpressionTyper.typeParsingHandlers, typeInfo, context);
-        Type type = typeInfo.type;
-        if (type == null) type = context.coreTypes().getVoidType();
+        AstNode declareIdentifier = node.children.get(1);
+        AstNode varType = node.children.get(2);
+        handleVariableDeclaration(context, declareIdentifier, varType);
+        return true;
+      })
+    .add(Rule.ForExpression_DotDeclareIdentifier_VarType_In_Expression, (triggers, node, context, param) -> {
+      if (node.children.size() < 4)
+        return true;
+      AstNode declareIdentifier = node.children.get(0);
+      AstNode varType = node.children.get(1);
+      handleVariableDeclaration(context, declareIdentifier, varType);
+      return true;
+      });
+  }
+  static void handleVariableDeclaration(CodeCompletionContext context,
+      AstNode declareIdentifier, AstNode varType)
+  {
+    if (declareIdentifier == null || !declareIdentifier.matchesRule(Rule.DotDeclareIdentifier_DotVariable))
+      return;
+    String name = ((Token.ParameterToken)declareIdentifier.children.get(0).token).getLookupName();
+    GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+    if (varType == null)
+      return;
+    varType.recursiveVisit(CodeSuggestExpressionTyper.typeParsingHandlers, typeInfo, context);
+    Type type = typeInfo.type;
+    if (type == null) type = context.coreTypes().getVoidType();
 //        Value val = context.coreTypes().getNullValue();
 //        if (node.children.get(3) == null || !node.children.get(3).matchesRule(Rule.VarAssignment))
 //          return true;
-        context.currentScope().addVariable(name, type, context.coreTypes().getNullValue());
-        return true;
-      });
+    context.currentScope().addVariable(name, type, context.coreTypes().getNullValue());
+    return;
   }
 }

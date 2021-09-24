@@ -455,32 +455,38 @@ public class GatherCodeCompletionInfoTest extends TestCase
             ),
             new Token.SimpleToken("2", Symbol.Number)
         ));
+    CodeCompletionContext context;
+    List<String> suggestions;
     
     // Before the for
-    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0));
     Assert.assertNull(context.getLastTypeUsed());
-    List<String> suggestions = new VariableSuggester(context).gatherSuggestions("");
-    Assert.assertFalse(suggestions.contains(".a"));
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains("a"));
 
     // Start of the for expression
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains("a"));
 
     // After the "in"
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
     Assert.assertNull(context.getLastTypeUsed());
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains("a"));
 
     // Inside the block of the for
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
-    Assert.assertTrue(suggestions.contains(".a"));
+    Assert.assertTrue(suggestions.contains("a"));
 
     // After the for
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
-    Assert.assertFalse(suggestions.contains(".a"));
+    Assert.assertFalse(suggestions.contains("a"));
   }
 
   @Test
