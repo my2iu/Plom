@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.ast;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import junit.framework.TestCase;
@@ -45,5 +46,26 @@ public class ParseToAstTest extends TestCase
       // Ok
     }
 
+  }
+  
+  @Test
+  public void testFor() throws ParseToAst.ParseException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR, 
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                new Token.SimpleToken("in", Symbol.In),
+                Token.ParameterToken.fromContents(".b", Symbol.DotVariable)),
+            new StatementContainer(
+                new TokenContainer(new Token.SimpleToken("1", Symbol.Number)))
+        )
+    );
+    ParseToAst lineParser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
+    AstNode node = lineParser.parseToEnd(Symbol.Statement);
+    AstNode nodeForFor = node.children.get(0).children.get(0);
+    Assert.assertEquals(2, nodeForFor.internalChildren.size());
+    Assert.assertEquals(4, nodeForFor.internalChildren.get(0).children.size());
+    Assert.assertEquals(5, nodeForFor.internalChildren.get(0).symbols.size());
   }
 }

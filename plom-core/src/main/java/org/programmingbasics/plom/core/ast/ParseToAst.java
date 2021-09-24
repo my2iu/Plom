@@ -65,7 +65,7 @@ public class ParseToAst
     node.internalChildren = new ArrayList<>();
     for (TokenContainer param: paramToken.parameters)
     {
-      node.internalChildren.add(parseExpression(param.tokens, errorGatherer));
+      node.internalChildren.add(parseExpression(Symbol.Expression, param.tokens, errorGatherer));
     }
   }
 
@@ -74,7 +74,10 @@ public class ParseToAst
   {
     if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
-    node.internalChildren.add(parseExpression(token.expression.tokens, errorGatherer));
+    if (token.getType() == Symbol.COMPOUND_FOR)
+      node.internalChildren.add(parseExpression(Symbol.ForExpression, token.expression.tokens, errorGatherer));
+    else
+      node.internalChildren.add(parseExpression(Symbol.Expression, token.expression.tokens, errorGatherer));
     if (errorGatherer != null)
       node.internalChildren.add(parseStatementContainer(token.block, errorGatherer));
     else
@@ -140,11 +143,11 @@ public class ParseToAst
     return production;
   }
   
-  public static AstNode parseExpression(List<Token> tokens, ErrorList errorGatherer) throws ParseException
+  public static AstNode parseExpression(Symbol baseContext, List<Token> tokens, ErrorList errorGatherer) throws ParseException
   {
     try {
       ParseToAst exprParser = new ParseToAst(tokens, Symbol.EndStatement, errorGatherer);
-      return exprParser.parseToEnd(Symbol.Expression);
+      return exprParser.parseToEnd(baseContext);
     }
     catch (ParseException e)
     {
@@ -155,7 +158,7 @@ public class ParseToAst
     }
     return null;
   }
-  
+
   public static AstNode parseStatementContainer(StatementContainer code) throws ParseException
   {
     return parseStatementContainer(code, null);

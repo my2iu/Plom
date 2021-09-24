@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.view;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 
@@ -182,7 +183,7 @@ public class EraseSelection
           }
           throw new IllegalArgumentException();
         }
-        @Override StatementContainer handleExpression(Token originalToken,
+        @Override StatementContainer handleExpression(TokenWithSymbol originalToken,
             TokenContainer exprContainer, CodePosition start, int level,
             CodePosition end) 
         {
@@ -191,7 +192,7 @@ public class EraseSelection
             throw new IllegalArgumentException();
           return null;
         }
-        @Override StatementContainer handleStatementContainer(Token originalToken,
+        @Override StatementContainer handleStatementContainer(TokenWithSymbol originalToken,
             StatementContainer blockContainer, CodePosition start, int level,
             CodePosition end) 
         {
@@ -296,14 +297,14 @@ public class EraseSelection
       }
       return null;
     }
-    @Override Void handleExpression(Token originalToken,
+    @Override Void handleExpression(TokenWithSymbol originalToken,
         TokenContainer exprContainer, CodePosition start, int level,
         Void param)
     {
       eraseAfterFromLine(exprContainer, start, level);
       return null;
     }
-    @Override Void handleStatementContainer(Token originalToken,
+    @Override Void handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition start, int level,
         Void param)
     {

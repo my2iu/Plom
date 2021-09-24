@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.HitDetect.HitDetectParam;
 import org.programmingbasics.plom.core.view.HitDetect.TokenHitDetection;
@@ -103,13 +104,16 @@ public class RenderedTokenHitBox
     }
     
     @Override
-    RenderedHitBox handleExpression(Token originalToken, TokenContainer exprContainer,
+    RenderedHitBox handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, RenderedHitBox hitBox)
     {
-      return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+      if (originalToken.getType() == Symbol.COMPOUND_FOR)
+        return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+      else
+        return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
     }
     @Override
-    RenderedHitBox handleStatementContainer(Token originalToken,
+    RenderedHitBox handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, RenderedHitBox hitBox)
     {
       return inStatements(blockContainer, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK));

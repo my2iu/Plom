@@ -2,7 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
@@ -42,13 +42,16 @@ public class LineForPosition
   static class TokenAtCursor extends RecurseIntoCompoundToken<Integer, LineNumberTracker, RuntimeException>
   {
     @Override
-    Integer handleExpression(Token originalToken, TokenContainer exprContainer,
+    Integer handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, LineNumberTracker lineTracker)
     {
-      return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, lineTracker);
+      if (originalToken.getType() == Symbol.COMPOUND_FOR)
+        return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, lineTracker);
+      else
+        return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, lineTracker);
     }
     @Override
-    Integer handleStatementContainer(Token originalToken,
+    Integer handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, LineNumberTracker lineTracker)
     {
       int line = inStatements(blockContainer, pos, level, lineTracker);

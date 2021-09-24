@@ -79,4 +79,49 @@ public class ParseContextTest extends TestCase
         Arrays.asList(container.statements.get(1).tokens.get(0)),
         parseContext.tokens);
   }
+  
+  @Test
+  public void testFor()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR, 
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("in", Symbol.In),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable)),
+                    new StatementContainer(
+                        new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number)))
+                )
+            )
+        );
+    // Inside the block of the for
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
+    Assert.assertEquals(Symbol.FullStatement, parseContext.baseContext);
+    Assert.assertEquals(
+        Arrays.asList(new Token.SimpleToken("1", Symbol.Number)),
+        parseContext.tokens);
+    
+    // Inside the expression of the for (beginning)
+    pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0);
+    parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
+    Assert.assertEquals(Symbol.ForExpressionOnly, parseContext.baseContext);
+    Assert.assertEquals(
+        Arrays.asList(),
+        parseContext.tokens);
+
+    // Inside the expression of the for (end)
+    pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 3);
+    parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
+    Assert.assertEquals(Symbol.ForExpressionOnly, parseContext.baseContext);
+    Assert.assertEquals(
+        Arrays.asList(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken("in", Symbol.In),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable)),
+        parseContext.tokens);
+  }
+
 }

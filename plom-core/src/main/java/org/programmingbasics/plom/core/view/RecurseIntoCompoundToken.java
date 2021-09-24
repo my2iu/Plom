@@ -1,12 +1,12 @@
 package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3Err;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 
@@ -66,12 +66,12 @@ public class RecurseIntoCompoundToken<T, U, E extends Throwable> implements Toke
     throw new IllegalArgumentException();
   }
   
-  T handleExpression(Token originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param) throws E
+  T handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer, CodePosition pos, int level, U param) throws E
   {
     return null;
   }
   
-  T handleStatementContainer(Token originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param) throws E
+  T handleStatementContainer(TokenWithSymbol originalToken, StatementContainer blockContainer, CodePosition pos, int level, U param) throws E
   {
     return null;
   }

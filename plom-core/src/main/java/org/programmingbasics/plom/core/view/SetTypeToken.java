@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 
 /**
@@ -41,13 +42,13 @@ public class SetTypeToken
   static class SetTokenAtCursor extends RecurseIntoCompoundToken<Token, Token, RuntimeException>
   {
     @Override
-    Token handleExpression(Token originalToken, TokenContainer exprContainer,
+    Token handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, Token newToken)
     {
       return inLine(exprContainer, newToken, pos, level);
     }
     @Override
-    Token handleStatementContainer(Token originalToken,
+    Token handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, Token newToken)
     {
       throw new IllegalArgumentException();

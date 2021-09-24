@@ -439,7 +439,50 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(suggestions.contains("floor"));
     Assert.assertTrue(suggestions.contains("ceiling"));
   }
-  
+
+  @Test
+  public void testFor() throws RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("in", Symbol.In),
+                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable)),
+                new StatementContainer(
+                    new TokenContainer(new Token.SimpleToken("1", Symbol.Number)))
+            ),
+            new Token.SimpleToken("2", Symbol.Number)
+        ));
+    
+    // Before the for
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+    List<String> suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains(".a"));
+
+    // Start of the for expression
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    // After the "in"
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    // Inside the block of the for
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains(".a"));
+
+    // After the for
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains(".a"));
+  }
+
   @Test
   public void testRetype() throws RunException
   {

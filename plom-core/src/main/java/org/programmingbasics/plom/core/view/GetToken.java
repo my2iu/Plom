@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
@@ -33,13 +34,16 @@ public class GetToken
   static class TokenAtCursor extends RecurseIntoCompoundToken<Token, Void, RuntimeException>
   {
     @Override
-    Token handleExpression(Token originalToken, TokenContainer exprContainer,
+    Token handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, Void param)
     {
-      return inLine(exprContainer, Symbol.ExpressionOnly, pos, level);
+      if (originalToken.getType() == Symbol.COMPOUND_FOR)
+        return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level);
+      else
+        return inLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    Token handleStatementContainer(Token originalToken,
+    Token handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return inStatements(blockContainer, pos, level);

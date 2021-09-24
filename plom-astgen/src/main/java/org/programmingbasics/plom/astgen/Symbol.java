@@ -36,6 +36,7 @@ enum Symbol
   ValueExpression(false),
   StaticMethodCallExpression(false),
   ForExpression(false),
+  ForExpressionOnly(false),
   EndStatement(true),
   This(true),
   NullLiteral(true),

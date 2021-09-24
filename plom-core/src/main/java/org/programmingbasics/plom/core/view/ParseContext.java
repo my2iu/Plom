@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
@@ -46,13 +47,16 @@ public class ParseContext
   static class TokenPredictiveParseContext extends RecurseIntoCompoundToken<ParseContextForCursor, Void, RuntimeException>
   {
     @Override
-    ParseContextForCursor handleExpression(Token originalToken, TokenContainer exprContainer,
+    ParseContextForCursor handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
         CodePosition pos, int level, Void param)
     {
-      return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
+      if (originalToken.getType() == Symbol.COMPOUND_FOR)
+        return findPredictiveParseContextForLine(exprContainer, Symbol.ForExpressionOnly, pos, level);
+      else
+        return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }
     @Override
-    ParseContextForCursor handleStatementContainer(Token originalToken,
+    ParseContextForCursor handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForStatements(blockContainer, pos, level);

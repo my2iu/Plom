@@ -5,8 +5,11 @@ import static org.programmingbasics.plom.astgen.Symbol.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -89,7 +92,8 @@ public class PlomAstGen
       rule(VarAssignment, Assignment, Expression),
       rule(VarAssignment),
       rule(ReturnStatement, Return, Expression),
-      rule(ForExpression, DotDeclareIdentifier, VarType, In, Expression, EndStatement),
+      rule(ForExpression, DotDeclareIdentifier, VarType, In, Expression),
+      rule(ForExpressionOnly, ForExpression, EndStatement),
 //      rule(IfMore, COMPOUND_ELSEIF, OptionalComm ent, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),
 //      rule(OptionalComment),
@@ -357,13 +361,19 @@ public class PlomAstGen
       out.println("{");
       out.println("\tpublic Map<Symbol, Map<Symbol, Symbol[]>> parsingTable = new HashMap<>();");
       out.println("\t{");
-      for (Map.Entry<Symbol, Map<Symbol, Production>> stackTop: parsingTable.entrySet())
+      List<Symbol> sortedParsingSymbols = new ArrayList<>(parsingTable.keySet());
+      sortedParsingSymbols.sort(Comparator.comparing(Symbol::name));
+      for (Symbol stackTop: sortedParsingSymbols)
       {
-        out.println("\t\tparsingTable.put(Symbol." + stackTop.getKey().name() + ", new HashMap<>());");
-        for (Map.Entry<Symbol, Production> expansion: stackTop.getValue().entrySet())
+        Map<Symbol, Production> nextTokenProduction = parsingTable.get(stackTop);
+        out.println("\t\tparsingTable.put(Symbol." + stackTop.name() + ", new HashMap<>());");
+        List<Symbol> sortedNextTokens = new ArrayList<>(nextTokenProduction.keySet());
+        sortedNextTokens.sort(Comparator.comparing(Symbol::name));
+        for (Symbol nextToken: sortedNextTokens)
         {
-          out.print("\t\tparsingTable.get(Symbol." + stackTop.getKey().name() + ").put(Symbol." + expansion.getKey().name() + ", new Symbol[] {");
-          for (Symbol to: expansion.getValue().to)
+          Production expansion = nextTokenProduction.get(nextToken);
+          out.print("\t\tparsingTable.get(Symbol." + stackTop.name() + ").put(Symbol." + nextToken.name() + ", new Symbol[] {");
+          for (Symbol to: expansion.to)
           {
             out.print("Symbol." + to.name() +", ");
           }

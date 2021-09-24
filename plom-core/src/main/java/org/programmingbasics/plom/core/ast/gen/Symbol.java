@@ -36,6 +36,7 @@ public enum Symbol
 	ValueExpression,
 	StaticMethodCallExpression,
 	ForExpression,
+	ForExpressionOnly,
 	EndStatement,
 	This,
 	NullLiteral,

@@ -227,6 +227,8 @@ public class CodePanel
         Symbol.COMPOUND_ELSE,
         Symbol.Return,
         Symbol.Retype,
+        Symbol.Colon,
+        Symbol.In,
     };
     for (int n = 0; n < symbolOrder.length; n++)
       buttonOrderPriority.put(symbolOrder[n], n);
@@ -394,7 +396,7 @@ public class CodePanel
     if (fragmentStr == null) return;
     
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
-    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly); 
+    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly); 
     try {
       PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
       PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(strReader); 
@@ -599,7 +601,7 @@ public class CodePanel
     // newline button
     floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
-    if (parseContext.baseContext != Symbol.ExpressionOnly)
+    if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly)
     {
       floatDivLine.appendChild(makeButton("\u21b5", true, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
@@ -668,6 +670,7 @@ public class CodePanel
       case String: text = "\"...\""; break;
       case Var: text = "var"; break;
       case Colon: text = ":"; break;
+      case In: text = "in"; break;
       case COMPOUND_IF: text = "if"; break;
       case COMPOUND_ELSE: text = "else"; break;
       case COMPOUND_ELSEIF: text = "elseif"; break;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -123,14 +124,14 @@ public class CodeFragmentExtractor
           }
           throw new IllegalArgumentException();
         }
-        @Override Void handleExpression(Token originalToken,
+        @Override Void handleExpression(TokenWithSymbol originalToken,
             TokenContainer exprContainer, CodePosition start, int level,
             CodePosition end) throws IOException
         {
           findCommonBaseFromLine(exprContainer, start, end, level, out);
           return null;
         }
-        @Override Void handleStatementContainer(Token originalToken,
+        @Override Void handleStatementContainer(TokenWithSymbol originalToken,
             StatementContainer blockContainer, CodePosition start, int level,
             CodePosition end) throws IOException
         {
@@ -238,14 +239,14 @@ public class CodeFragmentExtractor
       }
       return null;
     }
-    @Override Void handleExpression(Token originalToken,
+    @Override Void handleExpression(TokenWithSymbol originalToken,
         TokenContainer exprContainer, CodePosition start, int level,
         PlomCodeOutputFormatter out) throws IOException
     {
       extractAfterFromLine(exprContainer, start, level, out);
       return null;
     }
-    @Override Void handleStatementContainer(Token originalToken,
+    @Override Void handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition start, int level,
         PlomCodeOutputFormatter out) throws IOException
     {

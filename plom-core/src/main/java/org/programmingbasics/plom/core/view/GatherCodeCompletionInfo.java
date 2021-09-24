@@ -5,6 +5,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -76,13 +77,16 @@ public class GatherCodeCompletionInfo
       // need to recurse into there.
       Token token = line.tokens.get(pos.getOffset(level));
       token.visit(new RecurseIntoCompoundToken<Void, CodeCompletionContext, RuntimeException>() {
-        @Override Void handleExpression(Token originalToken, TokenContainer exprContainer,
+        @Override Void handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, CodeCompletionContext context)
         {
-          fromLine(exprContainer, Symbol.Expression, context, pos, level);
+          if (originalToken.getType() == Symbol.COMPOUND_FOR)
+            fromLine(exprContainer, Symbol.ForExpression, context, pos, level);
+          else
+            fromLine(exprContainer, Symbol.Expression, context, pos, level);
           return null;
         }
-        @Override Void handleStatementContainer(Token originalToken,
+        @Override Void handleStatementContainer(TokenWithSymbol originalToken,
             StatementContainer blockContainer, CodePosition pos, int level,
             CodeCompletionContext context)
         {

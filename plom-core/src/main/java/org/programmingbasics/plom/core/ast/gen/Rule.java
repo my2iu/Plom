@@ -70,7 +70,8 @@ public class Rule
 	public final static List<Symbol> VarAssignment_Assignment_Expression = Arrays.asList(Symbol.VarAssignment, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> VarAssignment = Arrays.asList(Symbol.VarAssignment);
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
-	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression_EndStatement = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression, Symbol.EndStatement);
+	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression);
+	public final static List<Symbol> ForExpressionOnly_ForExpression_EndStatement = Arrays.asList(Symbol.ForExpressionOnly, Symbol.ForExpression, Symbol.EndStatement);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
 	public final static List<Symbol> This = Arrays.asList(Symbol.This);
