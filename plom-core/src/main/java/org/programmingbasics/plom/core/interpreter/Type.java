@@ -126,12 +126,11 @@ public class Type
   {
     return memberVarsTypes.get(varName);
   }
-  public void lookupMemberVarSuggestions(String name, List<String> suggestions)
+  public void lookupMemberVarSuggestions(GatheredSuggestions suggestions)
   {
     for (String memberName: memberVarSlots.keySet())
     {
-      if (!suggestions.contains(memberName))
-        suggestions.add(memberName);
+      suggestions.addSuggestion(memberName);
     }
   }
   

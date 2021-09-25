@@ -65,9 +65,10 @@ public class ObjectScope extends VariableScope
     }
     return toReturn;
   }
-  public void lookupSuggestions(String val, List<String> suggestions)
+  @Override
+  public void lookupSuggestions(GatheredSuggestions suggestions)
   {
-    type.lookupMemberVarSuggestions(val, suggestions);
+    type.lookupMemberVarSuggestions(suggestions);
   }
   
   
