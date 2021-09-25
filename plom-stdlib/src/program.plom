@@ -5,13 +5,16 @@
  // Displays a prompt asking for input and returns the value entered by the user
  primitive
  }
+ function . {print string: . { value } @ {string } } @ {void } {
+ // Prints a string to the screen
+ primitive
+ }
  function . {print: . { value } @ {object } } @ {void } {
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
- function . {print string: . { value } @ {string } } @ {void } {
- // Prints a string to the screen
- primitive
+ function . {range from: . { from } @ {number }to: . { to } @ {number } } @ {number iterator } {
+ return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
  }
  function . {test: . { arg1 } @ {number } } @ {number } {
  }

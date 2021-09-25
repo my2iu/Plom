@@ -1,0 +1,11 @@
+ class @ { number iterator } extends @ {object } {
+ function . {at end } @ {boolean } {
+ return true
+ }
+ function . {next } @ {number iterator } {
+ return this
+ }
+ function . {value } @ {number } {
+ return null
+ }
+ }
