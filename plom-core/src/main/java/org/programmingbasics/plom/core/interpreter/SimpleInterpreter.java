@@ -1,13 +1,13 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.function.Consumer;
-
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
@@ -22,6 +22,10 @@ import jsinterop.annotations.JsType;
 @JsType
 public class SimpleInterpreter
 {
+  private static final ParameterToken AT_END_METHOD = Token.ParameterToken.fromContents(".at end", Symbol.DotVariable);
+  private static final ParameterToken VALUE_METHOD = Token.ParameterToken.fromContents(".value", Symbol.DotVariable);
+  private static final ParameterToken NEXT_METHOD = Token.ParameterToken.fromContents(".next", Symbol.DotVariable);
+
   public SimpleInterpreter(StatementContainer code)
   {
     this.code = code;
@@ -219,12 +223,98 @@ public class SimpleInterpreter
           })
       .add(Rule.WideStatement_COMPOUND_FOR, 
           (MachineContext machine, AstNode node, int idx) -> {
-            throw new IllegalArgumentException("Not implemented yet");
-//            switch (idx)
-//            {
-//            case 0: // Evaluate expression
-//              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0), ExpressionEvaluator.expressionHandlers);
-//              break;
+            switch (idx)
+            {
+            case 0: // Get the iterator or list
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(0).children.get(3), ExpressionEvaluator.expressionHandlers);
+              break;
+            case 1: // If it's a list, get an iterator from it
+            {
+              Value val = machine.popValue();
+              // TODO: Check if val is of iterator type
+              // Leave the iterator on the stack and start the iteration
+              machine.pushValue(val);
+              machine.ip.advanceIdx();
+              break;
+            }
+            case 2: // See if there are any values to iterate over
+            {
+              Value iterator = machine.readValue(0);
+              Value self = iterator;
+              machine.pushValue(self); 
+              machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
+              ExecutableFunction method = self.type.lookupMethod(AT_END_METHOD.getLookupName());
+              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+              if (self != null)
+                machine.pushObjectScope(self);
+              machine.pushNewScope();  // For parameters
+              break;
+            }
+            case 3: // We have result of calling "at end", so decide if we should break out of the loop or not
+            {
+              Value atEnd = machine.popValue();
+              if (!machine.coreTypes().getBooleanType().equals(atEnd.type))
+                throw new RunException();
+              if (atEnd.getBooleanValue())
+              {
+                // At end of the loop, so clean-up the iterator that we have on the stack
+                machine.popValue();
+                machine.ip.pop();
+                break;
+              }
+              machine.ip.advanceIdx();
+              break;
+            }
+            case 4: // Start a loop, get the value from the iterator
+            {
+              Value iterator = machine.readValue(0);
+              Value self = iterator;
+              machine.pushValue(self); 
+              machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
+              ExecutableFunction method = self.type.lookupMethod(VALUE_METHOD.getLookupName());
+              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+              if (self != null)
+                machine.pushObjectScope(self);
+              machine.pushNewScope();  // For parameters
+              break;
+            } 
+            case 5: // Have the value for the loop, store it in a variable
+            {
+              machine.pushNewScope();  // For the loop variable and for the block
+              AstNode forExpression = node.children.get(0).internalChildren.get(0);
+              if (!forExpression.children.get(0).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
+                throw new RunException();
+              String name = ((Token.ParameterToken)forExpression.children.get(0).children.get(0).token).getLookupName();
+              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+              forExpression.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, machine);
+              Type type = typeInfo.type;
+              if (type == null) type = machine.coreTypes().getVoidType();
+              Value val = machine.popValue();
+              machine.currentScope().addVariable(name, type, val);
+              machine.ip.advanceIdx();
+              break;
+            } 
+            case 6: // Run the loop block code
+              machine.ip.pushAndAdvanceIdx(node.children.get(0).internalChildren.get(1), statementHandlers);
+              break;
+            case 7: // Clean up after running loop block code and advance the iterator
+            {
+              machine.popScope();
+              Value iterator = machine.readValue(0);
+              Value self = iterator;
+              machine.pushValue(self); 
+              machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
+              ExecutableFunction method = self.type.lookupMethod(NEXT_METHOD.getLookupName());
+              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
+              if (self != null)
+                machine.pushObjectScope(self);
+              machine.pushNewScope();  // For parameters
+              break;
+            } 
+            case 8: // Go back and run the loop again
+              machine.popValue();  // discard the return value
+              machine.ip.setIdx(2);
+              break;
 //            case 1: // Decide whether to follow the if or not
 //              Value val = machine.popValue();
 //              if (!machine.coreTypes().getBooleanType().equals(val.type))
@@ -241,7 +331,7 @@ public class SimpleInterpreter
 //              machine.popScope();
 //              machine.ip.setIdx(0);
 //              break;
-//            }
+            }
           });
   }
 

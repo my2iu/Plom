@@ -808,4 +808,105 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
+  @Test
+  public void testForLoop() throws RunException, ParseException
+  {
+    // Create a fake iterator and use it in a loop
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+//      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type iteratorType = new Type("number iterator", coreTypes.getObjectType());
+      iteratorType.addMemberVariable("current", coreTypes.getNumberType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("number iterator", "start:"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".start", Symbol.DotVariable)
+                    )
+                )
+            ),
+            Arrays.asList("start"));
+        iteratorType.addStaticMethod("start:", createFn, coreTypes.getVoidType(), coreTypes.getNumberType());
+        ExecutableFunction atEndFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("number iterator", ".at end"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                        new Token.SimpleToken(">=", Symbol.Ge),
+                        new Token.SimpleToken("4", Symbol.Number)
+                    )
+                )
+            ),
+            Arrays.asList());
+        iteratorType.addMethod("at end", atEndFn, coreTypes.getBooleanType());
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("number iterator", "value"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable)
+                    )
+                )
+            ),
+            Arrays.asList());
+        iteratorType.addMethod("value", valFn, coreTypes.getNumberType());
+        ExecutableFunction nextFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("number iterator", "next"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("1", Symbol.Number)
+                    ),
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.SimpleToken("this", Symbol.This)
+                    )
+                )
+            ),
+            Arrays.asList());
+        iteratorType.addMethod("next", nextFn, iteratorType);
+        scope.addType(iteratorType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                    new Token.SimpleToken(":", Symbol.Colon),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType),
+                    new Token.SimpleToken("in", Symbol.In),
+                    Token.ParameterToken.fromContents("@number iterator", Symbol.AtType),
+                    Token.ParameterToken.fromContents(".start:", Symbol.DotVariable, 
+                        new TokenContainer(
+                            new Token.SimpleToken("2", Symbol.Number)
+                            ))
+                    ),
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable)
+                        )))
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
 }
