@@ -13,6 +13,9 @@
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
+ function . {range from: . { from } @ {number }to: . { to } @ {number } } @ {number iterator } {
+ return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
+ }
  function . {test: . { arg1 } @ {number } } @ {number } {
  }
  class @ { JS object } extends @ {object } {
@@ -111,6 +114,37 @@
  }
  function . {/: . { val } @ {number } } @ {number } {
  primitive
+ }
+ }
+ class @ { number iterator } extends @ {object } {
+ function . {at end } @ {boolean } {
+ return true
+ }
+ function . {next } @ {number iterator } {
+ return this
+ }
+ function . {value } @ {number } {
+ return null
+ }
+ }
+ class @ { number range iterator } extends @ {number iterator } {
+ var . { current } @ {number }
+ var . { end } @ {number }
+ var . { start } @ {number }
+ function . {at end } @ {boolean } {
+ return . {current } > . {end }
+ }
+ function . {next } @ {number } {
+ . {current } := . {current } + 1
+ return this
+ }
+ function . {value } @ {number } {
+ return . {current }
+ }
+ constructor . {from: . { from } @ {number }to: . { to } @ {number } } {
+ . {start } := . {from }
+ . {end } := . {to }
+ . {current } := . {start }
  }
  }
  class @ { object } {

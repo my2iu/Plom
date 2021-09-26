@@ -104,7 +104,8 @@ public class PlomTextReader
       regex = RegExp.compile("^[\\p{ID_Start}][\\p{ID_Continue}]*$", "u");
     else
       // This regex doesn't match ID_Start and ID_Continue, but it's good enough for testing
-      regex = RegExp.compile("^[\\p{L}][\\p{L}\\p{N}]*$", "");
+      // By default, the Java version of the regex can match \n with $, so we need to use \z instead (JS version is ok though)
+      regex = RegExp.compile("^[\\p{L}][\\p{L}\\p{N}]*\\z", "");
     return regex.exec(toMatch) != null;
 //    if (!Character.isUnicodeIdentifierStart(toMatch.charAt(0)))
 //      return false;
