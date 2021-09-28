@@ -100,8 +100,8 @@
         });
     <xsl:if test="@cutpaste='false'">codePanel.setHasCutAndPaste(false);</xsl:if>
     <xsl:for-each select="token-filter">
-   		<xsl:if test="@exclude='control flow' or @exclude='statements' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE"]);</xsl:if>
-   		<xsl:if test="@include='control flow' or @include='statements' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE"]);</xsl:if>
+   		<xsl:if test="@exclude='control flow' or @exclude='statements' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE", "COMPOUND_FOR"]);</xsl:if>
+   		<xsl:if test="@include='control flow' or @include='statements' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["COMPOUND_IF", "COMPOUND_ELSEIF", "COMPOUND_WHILE", "COMPOUND_FOR"]);</xsl:if>
    		<xsl:if test="@exclude='statements' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["DUMMY_COMMENT", "Return", "Var"]);</xsl:if>
    		<xsl:if test="@include='statements' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["DUMMY_COMMENT", "Return", "Var"]);</xsl:if>
    		<xsl:if test="@exclude='math operators' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["Plus", "Minus", "Multiply", "Divide"]);</xsl:if>

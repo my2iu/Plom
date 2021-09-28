@@ -28,13 +28,13 @@ public class CodeNestingCounterTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
             ),
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents(".boolean", Symbol.DotVariable)
             ),
         new TokenContainer(
@@ -74,7 +74,7 @@ public class CodeNestingCounterTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents(".number", Symbol.DotVariable)
             ),
         new TokenContainer(

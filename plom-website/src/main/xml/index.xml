@@ -95,7 +95,7 @@
 		
 		<p>A real program will have multiple lines of code. Below is a Plom program that asks the user to type their name. The program then says hello to the user:</p>
 
-<plomcode>var .name : @string := "User"
+<plomcode>var .name @string := "User"
 .name := .input: <arg>"What is your name?"</arg>
 .print: <arg>"Hello, " + .name</arg></plomcode>
 		
@@ -121,7 +121,7 @@
 		</ol>
 		
         <plom-tutorial-code-panel lines="5" choicelines="3" cutpaste="false">
-			<code>var .{name} : @{string} := "User"
+			<code>var .{name} @{string} := "User"
 			.{print: {"Hello, " + .{name}}}</code>
         	<suggestion token=".print:"/>
         	<token-filter exclude="all"/> 

@@ -63,7 +63,7 @@ public class Rule
 	public final static List<Symbol> AfterIf_COMPOUND_ELSE = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSE);
 	public final static List<Symbol> AfterIf = Arrays.asList(Symbol.AfterIf);
 	public final static List<Symbol> VarStatement_Var_DotDeclareIdentifier_VarType_VarAssignment = Arrays.asList(Symbol.VarStatement, Symbol.Var, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.VarAssignment);
-	public final static List<Symbol> VarType_Colon_AtType = Arrays.asList(Symbol.VarType, Symbol.Colon, Symbol.AtType);
+	public final static List<Symbol> VarType_AtType = Arrays.asList(Symbol.VarType, Symbol.AtType);
 	public final static List<Symbol> VarType = Arrays.asList(Symbol.VarType);
 	public final static List<Symbol> DotDeclareIdentifier_DotVariable = Arrays.asList(Symbol.DotDeclareIdentifier, Symbol.DotVariable);
 	public final static List<Symbol> DotMember_DotVariable = Arrays.asList(Symbol.DotMember, Symbol.DotVariable);
@@ -83,7 +83,6 @@ public class Rule
 	public final static List<Symbol> DotVariable = Arrays.asList(Symbol.DotVariable);
 	public final static List<Symbol> AtType = Arrays.asList(Symbol.AtType);
 	public final static List<Symbol> Var = Arrays.asList(Symbol.Var);
-	public final static List<Symbol> Colon = Arrays.asList(Symbol.Colon);
 	public final static List<Symbol> Assignment = Arrays.asList(Symbol.Assignment);
 	public final static List<Symbol> Retype = Arrays.asList(Symbol.Retype);
 	public final static List<Symbol> Lt = Arrays.asList(Symbol.Lt);

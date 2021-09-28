@@ -129,7 +129,7 @@ public class SimpleInterpreterTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents("@number", Symbol.AtType)
             )
         );
@@ -344,7 +344,7 @@ public class SimpleInterpreterTest extends TestCase
                     new TokenContainer(
                         new Token.SimpleToken("var", Symbol.Var),
                         Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                        new Token.SimpleToken(":", Symbol.Colon),
+//                        new Token.SimpleToken(":", Symbol.Colon),
                         Token.ParameterToken.fromContents("@number", Symbol.AtType)
                         ),
                     new TokenContainer(
@@ -444,7 +444,7 @@ public class SimpleInterpreterTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents("@number", Symbol.AtType),
             new Token.SimpleToken(":=", Symbol.Assignment),
             new Token.SimpleToken("1", Symbol.Number),
@@ -887,7 +887,7 @@ public class SimpleInterpreterTest extends TestCase
             new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR,
                 new TokenContainer(
                     Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-                    new Token.SimpleToken(":", Symbol.Colon),
+//                    new Token.SimpleToken(":", Symbol.Colon),
                     Token.ParameterToken.fromContents("@number", Symbol.AtType),
                     new Token.SimpleToken("in", Symbol.In),
                     Token.ParameterToken.fromContents("@number iterator", Symbol.AtType),

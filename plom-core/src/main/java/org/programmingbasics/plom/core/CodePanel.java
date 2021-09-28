@@ -227,7 +227,7 @@ public class CodePanel
         Symbol.COMPOUND_ELSE,
         Symbol.Return,
         Symbol.Retype,
-        Symbol.Colon,
+//        Symbol.Colon,
         Symbol.In,
     };
     for (int n = 0; n < symbolOrder.length; n++)
@@ -669,7 +669,7 @@ public class CodePanel
       case Number: text = "123..."; break;
       case String: text = "\"...\""; break;
       case Var: text = "var"; break;
-      case Colon: text = ":"; break;
+//      case Colon: text = ":"; break;
       case In: text = "in"; break;
       case COMPOUND_IF: text = "if"; break;
       case COMPOUND_ELSE: text = "else"; break;

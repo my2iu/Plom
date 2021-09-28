@@ -285,7 +285,7 @@ public class Parser
 		parsingTable.get(Symbol.VarStatement).put(Symbol.Var, new Symbol[] {Symbol.Var, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.VarAssignment, });
 		parsingTable.put(Symbol.VarType, new HashMap<>());
 		parsingTable.get(Symbol.VarType).put(Symbol.Assignment, new Symbol[] {});
-		parsingTable.get(Symbol.VarType).put(Symbol.Colon, new Symbol[] {Symbol.Colon, Symbol.AtType, });
+		parsingTable.get(Symbol.VarType).put(Symbol.AtType, new Symbol[] {Symbol.AtType, });
 		parsingTable.get(Symbol.VarType).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.get(Symbol.VarType).put(Symbol.In, new Symbol[] {});
 		parsingTable.put(Symbol.WideStatement, new HashMap<>());

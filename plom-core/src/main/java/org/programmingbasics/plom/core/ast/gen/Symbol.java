@@ -47,7 +47,6 @@ public enum Symbol
 	DotVariable,
 	AtType,
 	Var,
-	Colon,
 	Assignment,
 	Retype,
 	Lt,
@@ -92,7 +91,6 @@ public enum Symbol
 		case DotVariable:
 		case AtType:
 		case Var:
-		case Colon:
 		case Assignment:
 		case Retype:
 		case Lt:

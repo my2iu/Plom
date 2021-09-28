@@ -66,7 +66,7 @@ public class PlomTextWriterTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents("@number", Symbol.AtType)
             ),
         new TokenContainer(
@@ -76,7 +76,7 @@ public class PlomTextWriterTest extends TestCase
                     new TokenContainer(
                         new Token.SimpleToken("var", Symbol.Var),
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-                        new Token.SimpleToken(":", Symbol.Colon),
+//                        new Token.SimpleToken(":", Symbol.Colon),
                         Token.ParameterToken.fromContents("@string", Symbol.AtType)
                         ),
                     new TokenContainer(
@@ -89,7 +89,7 @@ public class PlomTextWriterTest extends TestCase
                         ))),
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
-            new Token.SimpleToken(":", Symbol.Colon),
+//            new Token.SimpleToken(":", Symbol.Colon),
             Token.ParameterToken.fromContents("@string", Symbol.AtType)
             )
         );
@@ -97,16 +97,16 @@ public class PlomTextWriterTest extends TestCase
     StringBuilder out = new StringBuilder();
     writer.writeStatementContainer(new PlomCodeOutputFormatter(out), code);
 
-    Assert.assertEquals(" var . {a } : @ {number }\n" + 
+    Assert.assertEquals(" var . {a } @ {number }\n" + 
         " if { } {\n" + 
-        " var . {b } : @ {string }\n" + 
+        " var . {b } @ {string }\n" + 
         " . {b }\n" + 
         " }\n" + 
         " else {\n" + 
         " //Comment\\nComment line 2\n" + 
         "\n" + 
         " }\n" + 
-        " var . {c } : @ {string }\n" + 
+        " var . {c } @ {string }\n" + 
         "", out.toString());
 
     // Check if we can read back the output

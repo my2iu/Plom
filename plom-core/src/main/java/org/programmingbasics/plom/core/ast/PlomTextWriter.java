@@ -42,7 +42,7 @@ public class PlomTextWriter
     symbolTokenMap.put(Symbol.DotVariable, ".");
     symbolTokenMap.put(Symbol.AtType, "@");
     symbolTokenMap.put(Symbol.Var, "var");
-    symbolTokenMap.put(Symbol.Colon, ":");
+//    symbolTokenMap.put(Symbol.Colon, ":");
     symbolTokenMap.put(Symbol.Assignment, ":=");
     symbolTokenMap.put(Symbol.Retype, "retype");
     symbolTokenMap.put(Symbol.Lt, "<");

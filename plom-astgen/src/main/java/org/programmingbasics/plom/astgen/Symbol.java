@@ -47,7 +47,7 @@ enum Symbol
   DotVariable(true),
   AtType(true),
   Var(true),
-  Colon(true),
+//  Colon(true),
   Assignment(true),
   Retype(true),
   Lt(true),

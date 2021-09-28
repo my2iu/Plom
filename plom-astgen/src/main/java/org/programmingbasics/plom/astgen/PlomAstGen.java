@@ -85,7 +85,7 @@ public class PlomAstGen
       rule(AfterIf, COMPOUND_ELSE),
       rule(AfterIf),
       rule(VarStatement, Var, DotDeclareIdentifier, VarType, VarAssignment),
-      rule(VarType, Colon, AtType), 
+      rule(VarType, AtType), 
       rule(VarType),
       rule(DotDeclareIdentifier, DotVariable),
       rule(DotMember, DotVariable),

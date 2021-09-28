@@ -76,7 +76,7 @@ public class LL1ParserTest extends TestCase
      Assert.assertTrue(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
      Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotMember));
      new SimpleToken("", Symbol.DotVariable).visit(parser);
-     new SimpleToken("", Symbol.Colon).visit(parser);
+//     new SimpleToken("", Symbol.Colon).visit(parser);
      new SimpleToken("", Symbol.AtType).visit(parser);
      new SimpleToken("", Symbol.Assignment).visit(parser);
      Assert.assertFalse(parser.peekExpandedSymbols(Symbol.DotVariable).contains(Symbol.DotDeclareIdentifier));
