@@ -227,6 +227,8 @@ public class CodePanel
         Symbol.COMPOUND_ELSE,
         Symbol.Return,
         Symbol.Retype,
+        Symbol.Is,
+        Symbol.As,
 //        Symbol.Colon,
         Symbol.In,
     };
@@ -645,6 +647,8 @@ public class CodePanel
       {
       case Assignment: text = ":="; break;
       case Retype: text = "retype"; break;
+      case Is: text = "is"; break;
+      case As: text = "as"; break;
       case Gt: text = ">"; break;
       case Ge: text = ">="; break;
       case Lt: text = "<"; break;

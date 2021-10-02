@@ -45,9 +45,13 @@ public class Rule
 	public final static List<Symbol> MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore, Symbol.Multiply, Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore, Symbol.Divide, Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore);
-	public final static List<Symbol> MemberExpression_ParenthesisExpression_MemberExpressionMore = Arrays.asList(Symbol.MemberExpression, Symbol.ParenthesisExpression, Symbol.MemberExpressionMore);
+	public final static List<Symbol> MemberExpression_IsAsExpression_MemberExpressionMore = Arrays.asList(Symbol.MemberExpression, Symbol.IsAsExpression, Symbol.MemberExpressionMore);
 	public final static List<Symbol> MemberExpressionMore_DotMember_MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore, Symbol.DotMember, Symbol.MemberExpressionMore);
 	public final static List<Symbol> MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore);
+	public final static List<Symbol> IsAsExpression_ParenthesisExpression_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpression, Symbol.ParenthesisExpression, Symbol.IsAsExpressionMore);
+	public final static List<Symbol> IsAsExpressionMore_Is_AtType_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore, Symbol.Is, Symbol.AtType, Symbol.IsAsExpressionMore);
+	public final static List<Symbol> IsAsExpressionMore_As_AtType_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore, Symbol.As, Symbol.AtType, Symbol.IsAsExpressionMore);
+	public final static List<Symbol> IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore);
 	public final static List<Symbol> ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis = Arrays.asList(Symbol.ParenthesisExpression, Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis);
 	public final static List<Symbol> ParenthesisExpression_ValueExpression = Arrays.asList(Symbol.ParenthesisExpression, Symbol.ValueExpression);
 	public final static List<Symbol> ValueExpression_This = Arrays.asList(Symbol.ValueExpression, Symbol.This);
@@ -85,6 +89,8 @@ public class Rule
 	public final static List<Symbol> Var = Arrays.asList(Symbol.Var);
 	public final static List<Symbol> Assignment = Arrays.asList(Symbol.Assignment);
 	public final static List<Symbol> Retype = Arrays.asList(Symbol.Retype);
+	public final static List<Symbol> As = Arrays.asList(Symbol.As);
+	public final static List<Symbol> Is = Arrays.asList(Symbol.Is);
 	public final static List<Symbol> Lt = Arrays.asList(Symbol.Lt);
 	public final static List<Symbol> Gt = Arrays.asList(Symbol.Gt);
 	public final static List<Symbol> Le = Arrays.asList(Symbol.Le);

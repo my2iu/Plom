@@ -30,6 +30,8 @@ public enum Symbol
 	AdditiveExpressionMore,
 	MultiplicativeExpression,
 	MultiplicativeExpressionMore,
+	IsAsExpression,
+	IsAsExpressionMore,
 	MemberExpression,
 	MemberExpressionMore,
 	ParenthesisExpression,
@@ -49,6 +51,8 @@ public enum Symbol
 	Var,
 	Assignment,
 	Retype,
+	As,
+	Is,
 	Lt,
 	Gt,
 	Le,
@@ -93,6 +97,8 @@ public enum Symbol
 		case Var:
 		case Assignment:
 		case Retype:
+		case As:
+		case Is:
 		case Lt:
 		case Gt:
 		case Le:

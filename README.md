@@ -48,6 +48,20 @@ Below are some other unique aspects of Plom. More information about these aspect
 - LL1 grammar also forces the grammar to have a distinct keyword to start any special code structure. There is no ambiguity about whether ( is the start of a function call or a parenthesis in an expression or start of a lambda. The LL1 grammar does not allow for such ambiguity, which makes it easier for beginner programmers to type in code since they just have to look for a key on the keyboard that matches the start of the next part of the code listing that they want to type. Programmers don't need to be able to recognize the difference between a ( used for a parenthesis or lambda.
 - The grammar is defined for individual statements, not for a complete program
 
+- Plom mixes two editing styles in a single editor
+    - a traditional-style text editor based around inputting tokens instead of characters
+    - a structure editor that allows the input and manipulation of entire code structures
+- Plom primarily uses the more traditional text-style editing based on tokens
+    - but certain tokens represent entire code structures and those structures can be edited using structure editing
+- There is a tension in how Plom represents Plom code
+    - code structures can be represented using tokens and grammars
+    - code structures can also be represented directly as a special token that can be edited with structure editing
+- Plom only represents mutli-line code structures directly
+    - includes if-statements, loops, method calls
+    - these structures are time-consuming for programmers to format nicely on a screen
+    - changing the location of a brace can alter the indentation of many lines of code
+    - by representing these structures directly instead of through a grammar, Plom can take responsibility for formatting these structures correctly
+
 
 ### Other Beginner Programming Languages
 

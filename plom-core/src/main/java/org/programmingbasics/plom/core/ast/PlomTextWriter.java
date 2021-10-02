@@ -45,6 +45,8 @@ public class PlomTextWriter
 //    symbolTokenMap.put(Symbol.Colon, ":");
     symbolTokenMap.put(Symbol.Assignment, ":=");
     symbolTokenMap.put(Symbol.Retype, "retype");
+    symbolTokenMap.put(Symbol.As, "as");
+    symbolTokenMap.put(Symbol.Is, "is");
     symbolTokenMap.put(Symbol.Lt, "<");
     symbolTokenMap.put(Symbol.Gt, ">");
     symbolTokenMap.put(Symbol.Le, "<=");

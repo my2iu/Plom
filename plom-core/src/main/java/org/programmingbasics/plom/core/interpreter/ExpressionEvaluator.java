@@ -127,6 +127,16 @@ public class ExpressionEvaluator
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMoreForMethodPassthrough("<=:")
       )
+      .add(Rule.IsAsExpressionMore_As_AtType_IsAsExpressionMore,
+          (machine, node, idx) -> {
+            throw new IllegalArgumentException("Not implemented yet");
+          }
+      )
+      .add(Rule.IsAsExpressionMore_Is_AtType_IsAsExpressionMore,
+          (machine, node, idx) -> {
+            throw new IllegalArgumentException("Not implemented yet");
+          }
+      )
       .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
           (machine, node, idx) -> {
             GatheredTypeInfo typeInfo = new GatheredTypeInfo();
@@ -453,6 +463,8 @@ public class ExpressionEvaluator
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore, lValueInvalid())
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
+      .add(Rule.IsAsExpressionMore_As_AtType_IsAsExpressionMore, lValueInvalid())
+      .add(Rule.IsAsExpressionMore_Is_AtType_IsAsExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
