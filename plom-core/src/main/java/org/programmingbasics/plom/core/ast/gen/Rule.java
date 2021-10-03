@@ -36,6 +36,7 @@ public class Rule
 	public final static List<Symbol> RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Le, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Eq, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Ne, Symbol.AdditiveExpression, Symbol.RelationalExpressionMore);
+	public final static List<Symbol> RelationalExpressionMore_Is_AtType_RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore, Symbol.Is, Symbol.AtType, Symbol.RelationalExpressionMore);
 	public final static List<Symbol> RelationalExpressionMore = Arrays.asList(Symbol.RelationalExpressionMore);
 	public final static List<Symbol> AdditiveExpression_MultiplicativeExpression_AdditiveExpressionMore = Arrays.asList(Symbol.AdditiveExpression, Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore);
 	public final static List<Symbol> AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore = Arrays.asList(Symbol.AdditiveExpressionMore, Symbol.Plus, Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore);
@@ -45,13 +46,10 @@ public class Rule
 	public final static List<Symbol> MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore, Symbol.Multiply, Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore, Symbol.Divide, Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore);
 	public final static List<Symbol> MultiplicativeExpressionMore = Arrays.asList(Symbol.MultiplicativeExpressionMore);
-	public final static List<Symbol> MemberExpression_IsAsExpression_MemberExpressionMore = Arrays.asList(Symbol.MemberExpression, Symbol.IsAsExpression, Symbol.MemberExpressionMore);
+	public final static List<Symbol> MemberExpression_ParenthesisExpression_MemberExpressionMore = Arrays.asList(Symbol.MemberExpression, Symbol.ParenthesisExpression, Symbol.MemberExpressionMore);
 	public final static List<Symbol> MemberExpressionMore_DotMember_MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore, Symbol.DotMember, Symbol.MemberExpressionMore);
+	public final static List<Symbol> MemberExpressionMore_As_AtType_MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore, Symbol.As, Symbol.AtType, Symbol.MemberExpressionMore);
 	public final static List<Symbol> MemberExpressionMore = Arrays.asList(Symbol.MemberExpressionMore);
-	public final static List<Symbol> IsAsExpression_ParenthesisExpression_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpression, Symbol.ParenthesisExpression, Symbol.IsAsExpressionMore);
-	public final static List<Symbol> IsAsExpressionMore_Is_AtType_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore, Symbol.Is, Symbol.AtType, Symbol.IsAsExpressionMore);
-	public final static List<Symbol> IsAsExpressionMore_As_AtType_IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore, Symbol.As, Symbol.AtType, Symbol.IsAsExpressionMore);
-	public final static List<Symbol> IsAsExpressionMore = Arrays.asList(Symbol.IsAsExpressionMore);
 	public final static List<Symbol> ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis = Arrays.asList(Symbol.ParenthesisExpression, Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis);
 	public final static List<Symbol> ParenthesisExpression_ValueExpression = Arrays.asList(Symbol.ParenthesisExpression, Symbol.ValueExpression);
 	public final static List<Symbol> ValueExpression_This = Arrays.asList(Symbol.ValueExpression, Symbol.This);

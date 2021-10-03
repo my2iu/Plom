@@ -241,11 +241,11 @@ public class CodeSuggestExpressionTyper
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryTypeToMethodHandler("<=:")
       )
-      .add(Rule.IsAsExpressionMore_As_AtType_IsAsExpressionMore, 
+      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore, 
           (triggers, node, context, param) -> {
             throw new IllegalArgumentException("Not implemented yet");
           })
-      .add(Rule.IsAsExpressionMore_Is_AtType_IsAsExpressionMore, 
+      .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore, 
           (triggers, node, context, param) -> {
             throw new IllegalArgumentException("Not implemented yet");
           })

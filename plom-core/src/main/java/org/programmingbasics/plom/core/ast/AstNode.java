@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import com.google.gwt.core.shared.GwtIncompatible;
+
 /**
  * Simple node for the abstract syntax tree
  */
@@ -67,6 +69,24 @@ public class AstNode
   public boolean matchesRule(List<Symbol> rule)
   {
     return symbols.equals(rule);
+  }
+
+  @GwtIncompatible
+  public String getDebugTreeString(int indent)
+  {
+    String toReturn = "";
+    for (int n = 0; n < indent; n++)
+      toReturn += " ";
+    for (int n = 0; n < symbols.size(); n++)
+    {
+      if (n != 0)
+        toReturn += " ";
+      toReturn += symbols.get(n).toString(); 
+    }
+    toReturn += "\n";
+    for (AstNode child: children)
+      toReturn += child.getDebugTreeString(indent + 1); 
+    return toReturn;
   }
 
   public <U, V, E extends Throwable> void recursiveVisit(VisitorTriggers<U, V, E> triggers, U param1, V param2) throws E
