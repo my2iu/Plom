@@ -129,12 +129,36 @@ public class ExpressionEvaluator
       )
       .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore,
           (machine, node, idx) -> {
-            throw new IllegalArgumentException("Not implemented yet");
+            switch(idx)
+            {
+            case 0:
+              machine.ip.pushAndAdvanceIdx(node.children.get(2), expressionHandlers);
+              break;
+            case 1:
+              machine.ip.pop();
+              break;
+            }
           }
       )
       .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore,
           (machine, node, idx) -> {
-            throw new IllegalArgumentException("Not implemented yet");
+            switch(idx)
+            {
+            case 0:
+            {
+              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+              node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
+              Type isType = typeInfo.type;
+              Value left = machine.popValue();
+              machine.pushValue(Value.createBooleanValue(machine.coreTypes(), left.type.isInstanceOf(isType)));
+              // Handle the "...More" part 
+              machine.ip.pushAndAdvanceIdx(node.children.get(1), expressionHandlers);
+              break;
+            }
+            case 1:
+              machine.ip.pop();
+              break;
+            }
           }
       )
       .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 

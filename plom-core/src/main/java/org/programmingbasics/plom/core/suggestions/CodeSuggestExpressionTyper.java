@@ -210,6 +210,8 @@ public class CodeSuggestExpressionTyper
       .add(Rule.Le, clearLastUsedType)
       .add(Rule.And, clearLastUsedType)
       .add(Rule.Or, clearLastUsedType)
+      .add(Rule.Is, clearLastUsedType)
+      .add(Rule.As, clearLastUsedType)
       
       .add(Rule.AdditiveExpressionMore_Plus_MultiplicativeExpression_AdditiveExpressionMore,
           createBinaryTypeToMethodHandler("+:")
@@ -241,13 +243,39 @@ public class CodeSuggestExpressionTyper
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryTypeToMethodHandler("<=:")
       )
-      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore, 
-          (triggers, node, context, param) -> {
-            throw new IllegalArgumentException("Not implemented yet");
-          })
       .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore, 
           (triggers, node, context, param) -> {
-            throw new IllegalArgumentException("Not implemented yet");
+//            if (node.children.get(0) == null)
+//              return true;
+//            node.children.get(0).recursiveVisit(triggers, context, param);
+            if (node.children.get(1) == null)
+              return true;
+            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
+            context.popType();
+            context.pushType(context.coreTypes.getBooleanType());
+            context.setLastTypeUsed(context.coreTypes.getBooleanType());
+            if (node.children.get(2) != null)
+            {
+              node.children.get(2).recursiveVisit(triggers, context, param);
+            }              
+            return true;
+          })
+      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore, 
+          (triggers, node, context, param) -> {
+            if (node.children.get(1) == null)
+              return true;
+            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
+            Type castedType = typeInfo.type;
+            context.popType();
+            context.pushType(castedType);
+            context.setLastTypeUsed(castedType);
+            if (node.children.get(2) != null)
+            {
+              node.children.get(2).recursiveVisit(triggers, context, param);
+            }              
+            return true;
           })
       .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
           (triggers, node, context, param) -> {

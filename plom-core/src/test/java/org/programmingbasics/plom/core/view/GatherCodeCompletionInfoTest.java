@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
@@ -487,6 +488,62 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertFalse(suggestions.contains("a"));
+  }
+
+  @Test
+  public void testAs() throws ParseException, RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("5", Symbol.Number),
+            Token.ParameterToken.fromContents(".ceiling", Symbol.DotVariable),
+            new Token.SimpleToken("as", Symbol.As),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType),
+            Token.ParameterToken.fromContents(".to string", Symbol.DotVariable)
+            )
+        );
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 4));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 5));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+  }
+
+  @Test
+  public void testIs() throws ParseException, RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("5", Symbol.Number),
+            new Token.SimpleToken("is", Symbol.Is),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType),
+            new Token.SimpleToken("and", Symbol.And),
+            new Token.SimpleToken("true", Symbol.TrueLiteral)
+            )
+        );
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 1));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getBooleanType(), context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 4));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 5));
+    Assert.assertEquals(context.coreTypes().getBooleanType(), context.getLastTypeUsed());
   }
 
   @Test

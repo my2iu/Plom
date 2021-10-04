@@ -176,6 +176,13 @@ public class Type
     return "Function".equals(name);
   }
   
+  public boolean isInstanceOf(Type otherType)
+  {
+    if (this == otherType) return true;
+    if (parent == null) return false;
+    return parent.isInstanceOf(otherType);
+  }
+  
   public static class TypeSignature extends Type
   {
     public Type returnType;

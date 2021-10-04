@@ -288,6 +288,44 @@ public class ExpressionEvaluatorTest extends TestCase
   }
 
   @Test
+  public void testAs() throws ParseException, RunException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("5", Symbol.Number),
+        Token.ParameterToken.fromContents(".to string", Symbol.DotVariable),
+        new Token.SimpleToken("as", Symbol.As),
+        Token.ParameterToken.fromContents("@string", Symbol.AtType),
+        Token.ParameterToken.fromContents(".+:", Symbol.DotVariable,
+            new TokenContainer(new Token.SimpleToken("\"2\"", Symbol.String)))
+        );
+    Value val = evalTest(line, new SimpleInterpreterTest.TestScopeWithTypes(coreTypes));
+    Assert.assertEquals(coreTypes.getStringType(), val.type);
+    Assert.assertEquals("5.02", val.getStringValue());
+  }
+
+  @Test
+  public void testIs() throws ParseException, RunException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("5", Symbol.Number),
+        new Token.SimpleToken("is", Symbol.Is),
+        Token.ParameterToken.fromContents("@string", Symbol.AtType)
+        );
+    Value val = evalTest(line, new SimpleInterpreterTest.TestScopeWithTypes(coreTypes));
+    Assert.assertEquals(coreTypes.getBooleanType(), val.type);
+    Assert.assertEquals(false, val.getBooleanValue());
+    
+    line = new TokenContainer(
+        new Token.SimpleToken("5", Symbol.Number),
+        new Token.SimpleToken("is", Symbol.Is),
+        Token.ParameterToken.fromContents("@object", Symbol.AtType)
+        );
+    val = evalTest(line, new SimpleInterpreterTest.TestScopeWithTypes(coreTypes));
+    Assert.assertEquals(coreTypes.getBooleanType(), val.type);
+    Assert.assertEquals(true, val.getBooleanValue());
+  }
+
+  @Test
   public void testRetype() throws ParseException, RunException
   {
     // Retype is just a hack needed to support JS objects easily
