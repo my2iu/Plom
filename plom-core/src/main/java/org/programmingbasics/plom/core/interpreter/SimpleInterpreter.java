@@ -25,7 +25,8 @@ public class SimpleInterpreter
   private static final ParameterToken AT_END_METHOD = Token.ParameterToken.fromContents(".at end", Symbol.DotVariable);
   private static final ParameterToken VALUE_METHOD = Token.ParameterToken.fromContents(".value", Symbol.DotVariable);
   private static final ParameterToken NEXT_METHOD = Token.ParameterToken.fromContents(".next", Symbol.DotVariable);
-
+  private static final ParameterToken NUMBER_ITERATOR_TYPE = Token.ParameterToken.fromContents("@number iterator", Symbol.AtType);
+  
   public SimpleInterpreter(StatementContainer code)
   {
     this.code = code;
@@ -231,7 +232,8 @@ public class SimpleInterpreter
             case 1: // If it's a list, get an iterator from it
             {
               Value val = machine.popValue();
-              // TODO: Check if val is of iterator type
+              if (!val.type.isInstanceOf(machine.currentScope().typeFromToken(NUMBER_ITERATOR_TYPE)))
+                throw new RunException("Expecting an iterator");
               // Leave the iterator on the stack and start the iteration
               machine.pushValue(val);
               machine.ip.advanceIdx();
