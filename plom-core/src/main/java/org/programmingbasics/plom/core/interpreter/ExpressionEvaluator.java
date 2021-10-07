@@ -362,9 +362,6 @@ public class ExpressionEvaluator
                 {
                   // Create empty object
                   Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
-                  // We need to do adjust the return value of the constructor so that
-                  // it points to the new object
-                  machine.ip.advanceIdx();
                   // Call constructor on the empty object to configure it
                   callMethodOrFunction(machine, methodNode, self, method, true);
                 }
@@ -377,11 +374,7 @@ public class ExpressionEvaluator
             }
             else  // idx == methodNode.internalChildren.size() + 1
             {
-              // For constructors, we get control after returning from the constructor
-              // so that we can pop off the result of the constructor method (i.e. void),
-              // leaving only the constructed object
-              machine.popValue();
-              machine.ip.pop();
+              throw new IllegalArgumentException("This should be unreachable");
             }
       });
   }
@@ -401,10 +394,7 @@ public class ExpressionEvaluator
     else
       machine.popValues(methodNode.internalChildren.size());
 
-    if (!isConstructor)
-      machine.ip.pop();
-    else
-      machine.pushValue(self);
+    machine.ip.pop();
     machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
     if (self != null)
       machine.pushObjectScope(self);

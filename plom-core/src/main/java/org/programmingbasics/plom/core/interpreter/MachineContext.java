@@ -475,7 +475,16 @@ public class MachineContext
           return false;
         
         // Finished executing the current stack frame, so exit it
-        popStackFrameReturning(Value.createVoidValue(coreTypes()));
+        if (!topStackFrame.codeUnit.isConstructor)
+        {
+          // If there's no return value, return void
+          popStackFrameReturning(Value.createVoidValue(coreTypes()));
+        }
+        else
+        {
+          // Constructors should return the constructed object
+          popStackFrameReturning(currentScope().lookupThis());
+        }
       }
       return true;
     } 

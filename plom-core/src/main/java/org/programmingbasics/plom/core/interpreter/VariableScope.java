@@ -114,6 +114,20 @@ public class VariableScope
 //  {
 //    this.thisValue = thisValue;
 //  }
+  
+  /**
+   * In constructors, we may need to overwrite the "this" value 
+   * so that it can later be returned by the constructor
+   */
+  public void overwriteThis(Value thisValue) throws RunException
+  {
+    if (parent != null)
+    {
+      parent.overwriteThis(thisValue);
+      return;
+    }
+    throw new RunException("Cannot find a this value");
+  }
 
   
   // Overwrites a variable in this scope

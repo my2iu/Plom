@@ -1,7 +1,5 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.List;
-
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ObjectScope extends VariableScope
@@ -9,9 +7,14 @@ public class ObjectScope extends VariableScope
   public ObjectScope(Value thisValue)
   {
     this.thisValue = thisValue;
-    if (thisValue.val instanceof PlomObject)
-      obj = (PlomObject)thisValue.val;
-    type = thisValue.type;
+    // For constructors, we create an empty object scope with no
+    // "this" value and then set it later in the constructor
+    if (thisValue != null)
+    {
+      if (thisValue.val instanceof PlomObject)
+        obj = (PlomObject)thisValue.val;
+      type = thisValue.type;
+    }
   }
   Value thisValue;
   PlomObject obj;
@@ -25,38 +28,46 @@ public class ObjectScope extends VariableScope
     return thisValue;
   }
 
+  public void overwriteThis(Value thisValue) throws RunException
+  {
+    this.thisValue = thisValue;
+    if (thisValue.val instanceof PlomObject)
+      obj = (PlomObject)thisValue.val;
+    type = thisValue.type;
+  }
+
   public Value lookup(String name) throws RunException
   {
-    int slot = type.lookupMemberVariable(name);
-    if (slot >= 0)
+    if (type != null)
     {
-      return Value.createCopy(obj.slots[slot]);
+      int slot = type.lookupMemberVariable(name);
+      if (slot >= 0)
+      {
+        return Value.createCopy(obj.slots[slot]);
+      }
     }
-    else
-    {
-      if (getParent() != null)
-        return getParent().lookup(name);
-      throw new RunException("Cannot find value " + name);
-    }
+    if (getParent() != null)
+      return getParent().lookup(name);
+    throw new RunException("Cannot find value " + name);
   }
   public LValue lookupLValue(String name) throws RunException
   {
-    int slot = type.lookupMemberVariable(name);
-    if (slot >= 0)
+    if (type != null)
     {
-      return LValue.readFromScope(this, name, Value.createCopy(obj.slots[slot]));
+      int slot = type.lookupMemberVariable(name);
+      if (slot >= 0)
+      {
+        return LValue.readFromScope(this, name, Value.createCopy(obj.slots[slot]));
+      }
     }
-    else
-    {
-      if (getParent() != null)
-        return getParent().lookupLValue(name);
-      throw new RunException("Cannot find value " + name);
-    }
+    if (getParent() != null)
+      return getParent().lookupLValue(name);
+    throw new RunException("Cannot find value " + name);
   }
   /** Looks up the type of a variable */
   public Type lookupType(String name)
   {
-    Type toReturn = type.lookupMemberVariableType(name);
+    Type toReturn = type != null ? type.lookupMemberVariableType(name) : null;
     if (toReturn == null)
     {
       if (getParent() != null)
@@ -68,25 +79,27 @@ public class ObjectScope extends VariableScope
   @Override
   public void lookupSuggestions(GatheredSuggestions suggestions)
   {
-    type.lookupMemberVarSuggestions(suggestions);
+    if (type != null)
+      type.lookupMemberVarSuggestions(suggestions);
   }
   
   
   // Overwrites a variable in this scope
   public void assignTo(String name, Value val) throws RunException
   {
-    int slot = type.lookupMemberVariable(name);
-    if (slot >= 0)
+    if (type != null)
     {
-      obj.slots[slot] = val;
+      int slot = type.lookupMemberVariable(name);
+      if (slot >= 0)
+      {
+        obj.slots[slot] = val;
+      }
+      return;
     }
+    if (getParent() != null)
+      getParent().assignTo(name, val);
     else
-    {
-      if (getParent() != null)
-        getParent().assignTo(name, val);
-      else
-        throw new RunException();
-    }
+      throw new RunException();
   }
 
 }
