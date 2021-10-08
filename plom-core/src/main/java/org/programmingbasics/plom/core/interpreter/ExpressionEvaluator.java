@@ -77,10 +77,9 @@ public class ExpressionEvaluator
             throw new RunException();
           Value self = left;
           machine.ip.advanceIdx();
-          machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-          machine.pushObjectScope(self);
-          machine.pushNewScope();
-          machine.currentScope().addVariable(method.argPosToName.get(0), right.type, right);
+          machine.pushValue(self);
+          machine.pushValue(right);
+          callMethodOrFunction(machine, self, method, false);
           break;
         }
       case 2:
@@ -273,7 +272,8 @@ public class ExpressionEvaluator
               if (toReturn.type.isNormalFunction())
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
-                callMethodOrFunction(machine, node, null, fn, false);
+                machine.ip.pop();
+                callMethodOrFunction(machine, null, fn, false);
                 return;
               }
               List<Value> args = new ArrayList<>();
@@ -317,7 +317,8 @@ public class ExpressionEvaluator
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
-                callMethodOrFunction(machine, methodNode, self, method, false);
+                machine.ip.pop();
+                callMethodOrFunction(machine, self, method, false);
                 return;
               }
               else
@@ -356,14 +357,16 @@ public class ExpressionEvaluator
               {
                 if (method.codeUnit.isStatic)
                 {
-                  callMethodOrFunction(machine, methodNode, null, method, false);
+                  machine.ip.pop();
+                  callMethodOrFunction(machine, null, method, false);
                 }
                 else if (method.codeUnit.isConstructor)
                 {
                   // Create empty object
                   Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
+                  machine.ip.pop();
                   // Call constructor on the empty object to configure it
-                  callMethodOrFunction(machine, methodNode, self, method, true);
+                  callMethodOrFunction(machine, self, method, true);
                 }
                 return;
               }
@@ -381,30 +384,32 @@ public class ExpressionEvaluator
 
 
 
-  static void callMethodOrFunction(MachineContext machine, AstNode methodNode,
-      Value self, ExecutableFunction method, boolean isConstructor)
+  static void callMethodOrFunction(MachineContext machine, Value self,
+      ExecutableFunction method, boolean isConstructor)
   {
+    // Transfer arguments off of the value stack 
+    int numArgs = method.argPosToName.size();
     List<Value> args = new ArrayList<>();
-    for (int n = 0; n < methodNode.internalChildren.size(); n++)
+    for (int n = 0; n < numArgs; n++)
     {
-      args.add(machine.readValue(methodNode.internalChildren.size() - n - 1));
+      args.add(machine.readValue(numArgs - n - 1));
     }
     if (self != null && !isConstructor)
-      machine.popValues(methodNode.internalChildren.size() + 1);
+      machine.popValues(numArgs + 1);
     else
-      machine.popValues(methodNode.internalChildren.size());
+      machine.popValues(numArgs);
 
-    machine.ip.pop();
-    machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-    if (self != null)
+    // Push a new stack frame for the function and set up the arguments and other variable scope
+    machine.pushStackFrame(method.code, method.codeUnit, null, SimpleInterpreter.statementHandlers);
+    if (isConstructor)
+      machine.pushConstructorScope(self);
+    else if (self != null)
       machine.pushObjectScope(self);
     machine.pushNewScope();
     for (int n = 0; n < method.argPosToName.size(); n++)
     {
       machine.currentScope().addVariable(method.argPosToName.get(n), machine.coreTypes().getObjectType(), args.get(n));
     }
-//    if (self != null)
-//      machine.currentScope().setThis(self);
   }
 
   

@@ -26,7 +26,7 @@ public class ExpressionEvaluatorTest extends TestCase
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
     // Start running the code
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), ExpressionEvaluator.expressionHandlers);
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, ExpressionEvaluator.expressionHandlers);
     machine.pushScope(scope);
     machine.runToCompletion();
     // Result of the expression should be on the top of the stack
@@ -44,7 +44,7 @@ public class ExpressionEvaluatorTest extends TestCase
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
     // Start running the code
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), ExpressionEvaluator.assignmentLValueHandlers);
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, ExpressionEvaluator.assignmentLValueHandlers);
     machine.pushScope(scope);
     machine.runToCompletion();
   }

@@ -243,13 +243,10 @@ public class SimpleInterpreter
             {
               Value iterator = machine.readValue(0);
               Value self = iterator;
-              machine.pushValue(self); 
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(AT_END_METHOD.getLookupName());
-              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-              if (self != null)
-                machine.pushObjectScope(self);
-              machine.pushNewScope();  // For parameters
+              machine.pushValue(self); 
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
               break;
             }
             case 3: // We have result of calling "at end", so decide if we should break out of the loop or not
@@ -271,13 +268,11 @@ public class SimpleInterpreter
             {
               Value iterator = machine.readValue(0);
               Value self = iterator;
-              machine.pushValue(self); 
+              
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(VALUE_METHOD.getLookupName());
-              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-              if (self != null)
-                machine.pushObjectScope(self);
-              machine.pushNewScope();  // For parameters
+              machine.pushValue(self); 
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
               break;
             } 
             case 5: // Have the value for the loop, store it in a variable
@@ -304,13 +299,10 @@ public class SimpleInterpreter
               machine.popScope();
               Value iterator = machine.readValue(0);
               Value self = iterator;
-              machine.pushValue(self); 
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(NEXT_METHOD.getLookupName());
-              machine.pushStackFrame(method.code, method.codeUnit, SimpleInterpreter.statementHandlers);
-              if (self != null)
-                machine.pushObjectScope(self);
-              machine.pushNewScope();  // For parameters
+              machine.pushValue(self); 
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
               break;
             } 
             case 8: // Go back and run the loop again
@@ -370,7 +362,7 @@ public class SimpleInterpreter
       if (parsedCode == null)
         parsedCode = ParseToAst.parseStatementContainer(code);
       
-      ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), statementHandlers);
+      ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), null, statementHandlers);
       ctx.runToCompletion();
     }
     catch (Throwable e)
@@ -391,7 +383,7 @@ public class SimpleInterpreter
     if (parsedCode == null)
       parsedCode = ParseToAst.parseStatementContainer(code);
     
-    ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), statementHandlers);
+    ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), null, statementHandlers);
     if (scope != null)
       ctx.pushScope(scope);
     ctx.runToEndOfFrame();

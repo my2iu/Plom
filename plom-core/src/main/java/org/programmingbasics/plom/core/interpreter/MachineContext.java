@@ -71,6 +71,11 @@ public class MachineContext
     VariableScope scope = new ObjectScope(self);
     pushScope(scope);
   }
+  public void pushConstructorScope(Value self)
+  {
+    VariableScope scope = new ObjectScope(self);
+    pushScope(scope);
+  }
   public void pushNewScope()
   {
     VariableScope scope = new VariableScope();
@@ -245,16 +250,23 @@ public class MachineContext
     // TODO: Change LValue stuff to have a Value pool and to overwrite values
     // instead of passing around references
     private List<LValue> lvalueStack;
+    
+    /**
+     * When calling a constructor, we need to know the concrete type
+     * that needs to be created in the constructor.
+     */
+    Type constructorConcreteType;
   }
   private List<StackFrame> stackFrames = new ArrayList<>();
   private StackFrame topStackFrame;
   
-  public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, NodeHandlers instructionHandlers)
+  public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, Type constructorType, NodeHandlers instructionHandlers)
   {
     StackFrame frame = new StackFrame();
     frame.ip.push(node, instructionHandlers);
     frame.topScope = getGlobalScope();
     frame.codeUnit = codeUnit;
+    frame.constructorConcreteType = constructorType;
     
     stackFrames.add(frame);
     topStackFrame = frame;

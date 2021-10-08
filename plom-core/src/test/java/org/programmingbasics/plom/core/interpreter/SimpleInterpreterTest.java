@@ -907,7 +907,9 @@ public class SimpleInterpreterTest extends TestCase
                         )))
             )
         );
-    new SimpleInterpreter(code).runNoReturn(vars);
+    SimpleInterpreter interpreter = new SimpleInterpreter(code);
+    interpreter.runNoReturn(vars);
+    Assert.assertEquals(0, interpreter.ctx.valueStackSize());
     Assert.assertEquals(5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 }
