@@ -44,8 +44,9 @@ public class SimpleInterpreterTest extends TestCase
         case "number": return coreTypes.getNumberType(); 
         case "string": return coreTypes.getStringType(); 
         case "boolean": return coreTypes.getBooleanType(); 
-        case "object": return coreTypes.getObjectType(); 
+        case "object": return coreTypes.getObjectType();
         case "null": return coreTypes.getNullType(); 
+        case "object array": return coreTypes.getObjectArrayType();
         case "void": return coreTypes.getVoidType(); 
       }
       throw new RunException("Unknown class");

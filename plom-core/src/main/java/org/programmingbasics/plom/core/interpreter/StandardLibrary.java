@@ -109,7 +109,8 @@ public class StandardLibrary
       new StdLibClass("number", "object"),
       new StdLibClass("string", "object"),
       new StdLibClass("boolean", "object"),
-      new StdLibClass("null", "object")
+      new StdLibClass("null", "object"),
+      new StdLibClass("object array", "object")
   );
   
   public static List<StdLibMethod> stdLibMethods = Arrays.asList(
@@ -270,7 +271,19 @@ public class StandardLibrary
               blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), false));
             else
               blockWait.unblockAndReturn(Value.createBooleanValue(machine.coreTypes(), true));
-          })
+          }),
+
+      // some object array methods
+      StdLibMethod.constructor("object array", "new", 
+          (blockWait, machine) -> {
+            Value array = Value.createEmptyArray(machine.coreTypes(), machine.coreTypes().getObjectArrayType());
+            machine.currentScope().overwriteThis(array);
+            blockWait.unblockAndReturn(array);
+          },
+          "void", Collections.emptyList(), Collections.emptyList(), 
+          new StatementContainer(
+              new TokenContainer(
+                  new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))))
       );
   
   public static void createCoreTypes(CoreTypeLibrary coreTypes)
@@ -281,6 +294,7 @@ public class StandardLibrary
     coreTypes.nullType = new Type("null", coreTypes.objectType);
     coreTypes.numberType = new Type("number", coreTypes.objectType);
     coreTypes.stringType = new Type("string", coreTypes.objectType);
+    coreTypes.objectArrayType = new Type("object array", coreTypes.objectType);
     coreTypes.voidType = new Type("void");
 
     // Create some literals
@@ -352,6 +366,7 @@ public class StandardLibrary
       case "number": return coreTypes.getNumberType();
       case "boolean": return coreTypes.getBooleanType();
       case "null": return coreTypes.getNullType();
+      case "object array": return coreTypes.getObjectArrayType();
     }
     return null;
   }

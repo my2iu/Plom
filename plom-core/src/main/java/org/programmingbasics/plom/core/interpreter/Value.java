@@ -69,6 +69,13 @@ public class Value
     newVal.val = new PlomObject(coreTypes, type.numValueSlots);
     return newVal;
   }
+  public static Value createEmptyArray(CoreTypeLibrary coreTypes, Type type)
+  {
+    Value newVal = new Value();
+    newVal.type = type;
+    newVal.val = new PlomArray(coreTypes, type.numValueSlots);
+    return newVal;
+  }
   public static Value createCopy(Value v)
   {
     Value newVal = new Value();

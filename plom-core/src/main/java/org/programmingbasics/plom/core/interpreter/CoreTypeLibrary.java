@@ -17,12 +17,14 @@ public class CoreTypeLibrary
   public Type getBooleanType() { return booleanType; }
   public Type getVoidType() { return voidType; }
   public Type getNullType() { return nullType; }
+  public Type getObjectArrayType() { return objectArrayType; }
   protected Type objectType; 
   protected Type numberType; 
   protected Type stringType; 
   protected Type booleanType; 
   protected Type voidType; 
   protected Type nullType;
+  protected Type objectArrayType;
   
   public Value getNullValue() { return nullVal; }
   public Value getTrueValue() { return trueVal; }

@@ -3,6 +3,7 @@
  primitive
  }
  function . {+: . { val } @ {number } } @ {number } {
+ primitive
  }
  function . {-: . { val } @ {number } } @ {number } {
  primitive
