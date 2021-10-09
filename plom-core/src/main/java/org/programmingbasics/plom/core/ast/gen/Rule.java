@@ -53,6 +53,7 @@ public class Rule
 	public final static List<Symbol> ParenthesisExpression_OpenParenthesis_Expression_ClosedParenthesis = Arrays.asList(Symbol.ParenthesisExpression, Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis);
 	public final static List<Symbol> ParenthesisExpression_ValueExpression = Arrays.asList(Symbol.ParenthesisExpression, Symbol.ValueExpression);
 	public final static List<Symbol> ValueExpression_This = Arrays.asList(Symbol.ValueExpression, Symbol.This);
+	public final static List<Symbol> ValueExpression_SuperCallExpression = Arrays.asList(Symbol.ValueExpression, Symbol.SuperCallExpression);
 	public final static List<Symbol> ValueExpression_NullLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.NullLiteral);
 	public final static List<Symbol> ValueExpression_TrueLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.TrueLiteral);
 	public final static List<Symbol> ValueExpression_FalseLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.FalseLiteral);
@@ -61,6 +62,7 @@ public class Rule
 	public final static List<Symbol> ValueExpression_DotVariable = Arrays.asList(Symbol.ValueExpression, Symbol.DotVariable);
 	public final static List<Symbol> ValueExpression_String = Arrays.asList(Symbol.ValueExpression, Symbol.String);
 	public final static List<Symbol> StaticMethodCallExpression_AtType_DotMember = Arrays.asList(Symbol.StaticMethodCallExpression, Symbol.AtType, Symbol.DotMember);
+	public final static List<Symbol> SuperCallExpression_Super_DotSuperMember = Arrays.asList(Symbol.SuperCallExpression, Symbol.Super, Symbol.DotSuperMember);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSEIF_AfterIf = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSEIF, Symbol.AfterIf);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSE = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSE);
 	public final static List<Symbol> AfterIf = Arrays.asList(Symbol.AfterIf);
@@ -69,6 +71,7 @@ public class Rule
 	public final static List<Symbol> VarType = Arrays.asList(Symbol.VarType);
 	public final static List<Symbol> DotDeclareIdentifier_DotVariable = Arrays.asList(Symbol.DotDeclareIdentifier, Symbol.DotVariable);
 	public final static List<Symbol> DotMember_DotVariable = Arrays.asList(Symbol.DotMember, Symbol.DotVariable);
+	public final static List<Symbol> DotSuperMember_DotVariable = Arrays.asList(Symbol.DotSuperMember, Symbol.DotVariable);
 	public final static List<Symbol> VarAssignment_Assignment_Expression = Arrays.asList(Symbol.VarAssignment, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> VarAssignment = Arrays.asList(Symbol.VarAssignment);
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
@@ -77,6 +80,7 @@ public class Rule
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
 	public final static List<Symbol> This = Arrays.asList(Symbol.This);
+	public final static List<Symbol> Super = Arrays.asList(Symbol.Super);
 	public final static List<Symbol> NullLiteral = Arrays.asList(Symbol.NullLiteral);
 	public final static List<Symbol> TrueLiteral = Arrays.asList(Symbol.TrueLiteral);
 	public final static List<Symbol> FalseLiteral = Arrays.asList(Symbol.FalseLiteral);

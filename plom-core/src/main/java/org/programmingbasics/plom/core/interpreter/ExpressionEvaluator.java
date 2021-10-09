@@ -79,7 +79,7 @@ public class ExpressionEvaluator
           machine.ip.advanceIdx();
           machine.pushValue(self);
           machine.pushValue(right);
-          callMethodOrFunction(machine, self, method, false);
+          callMethodOrFunction(machine, self, method, false, null);
           break;
         }
       case 2:
@@ -273,7 +273,7 @@ public class ExpressionEvaluator
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
                 machine.ip.pop();
-                callMethodOrFunction(machine, null, fn, false);
+                callMethodOrFunction(machine, null, fn, false, null);
                 return;
               }
               List<Value> args = new ArrayList<>();
@@ -318,7 +318,7 @@ public class ExpressionEvaluator
               if (method != null)
               {
                 machine.ip.pop();
-                callMethodOrFunction(machine, self, method, false);
+                callMethodOrFunction(machine, self, method, false, null);
                 return;
               }
               else
@@ -358,15 +358,15 @@ public class ExpressionEvaluator
                 if (method.codeUnit.isStatic)
                 {
                   machine.ip.pop();
-                  callMethodOrFunction(machine, null, method, false);
+                  callMethodOrFunction(machine, null, method, false, null);
                 }
                 else if (method.codeUnit.isConstructor)
                 {
                   // Create empty object
-                  Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
+//                  Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
                   machine.ip.pop();
                   // Call constructor on the empty object to configure it
-                  callMethodOrFunction(machine, self, method, true);
+                  callMethodOrFunction(machine, null, method, true, calleeType);
                 }
                 return;
               }
@@ -383,9 +383,12 @@ public class ExpressionEvaluator
   }
 
 
-
+  /**
+   * @param constructorType when the method is a constructor, this parameter
+   *   gives the concrete type that should be constructed by the constructor
+   */
   static void callMethodOrFunction(MachineContext machine, Value self,
-      ExecutableFunction method, boolean isConstructor)
+      ExecutableFunction method, boolean isConstructor, Type constructorType)
   {
     // Transfer arguments off of the value stack 
     int numArgs = method.argPosToName.size();
@@ -400,9 +403,9 @@ public class ExpressionEvaluator
       machine.popValues(numArgs);
 
     // Push a new stack frame for the function and set up the arguments and other variable scope
-    machine.pushStackFrame(method.code, method.codeUnit, null, SimpleInterpreter.statementHandlers);
+    machine.pushStackFrame(method.code, method.codeUnit, constructorType, SimpleInterpreter.statementHandlers);
     if (isConstructor)
-      machine.pushConstructorScope(self);
+      machine.pushConstructorScope();
     else if (self != null)
       machine.pushObjectScope(self);
     machine.pushNewScope();

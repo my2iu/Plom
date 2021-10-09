@@ -71,9 +71,9 @@ public class MachineContext
     VariableScope scope = new ObjectScope(self);
     pushScope(scope);
   }
-  public void pushConstructorScope(Value self)
+  public void pushConstructorScope()
   {
-    VariableScope scope = new ObjectScope(self);
+    VariableScope scope = new ObjectScope(null);
     pushScope(scope);
   }
   public void pushNewScope()

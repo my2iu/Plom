@@ -37,10 +37,12 @@ enum Symbol
   ParenthesisExpression(false),
   ValueExpression(false),
   StaticMethodCallExpression(false),
+  SuperCallExpression(false),
   ForExpression(false),
   ForExpressionOnly(false),
   EndStatement(true),
   This(true),
+  Super(true),
   NullLiteral(true),
   TrueLiteral(true),
   FalseLiteral(true),
@@ -74,6 +76,7 @@ enum Symbol
   
   DotDeclareIdentifier(false),  // Expands to DotVariable
   DotMember(false),             // Expands to DotVariable
+  DotSuperMember(false),        // Expands to DotVariable
   
   DUMMY_COMMENT(true),
   COMPOUND_IF(true),

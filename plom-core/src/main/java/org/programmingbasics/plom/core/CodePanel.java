@@ -203,6 +203,7 @@ public class CodePanel
         Symbol.FalseLiteral,
         Symbol.NullLiteral,
         Symbol.This,
+        Symbol.Super,
         Symbol.Assignment,
         Symbol.Plus,
         Symbol.Minus,
@@ -667,6 +668,7 @@ public class CodePanel
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
       case This: text = "this"; break;
+      case Super: text = "super"; break;
       case TrueLiteral: text = "true"; break;
       case FalseLiteral: text = "false"; break;
       case NullLiteral: text = "null"; break;

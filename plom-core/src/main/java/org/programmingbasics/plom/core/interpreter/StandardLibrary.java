@@ -134,8 +134,17 @@ public class StandardLibrary
                   new Token.SimpleToken(")", Symbol.ClosedParenthesis),
                   Token.ParameterToken.fromContents(".not", Symbol.DotVariable)
                   ))),
-      StdLibMethod.constructor("object", "new", null, "void", Collections.emptyList(), Collections.emptyList(),
-          new StatementContainer()),
+      StdLibMethod.constructor("object", "new", 
+          (blockWait, machine) -> {
+            Type constructedType = machine.getTopStackFrame().constructorConcreteType;
+            Value obj = Value.createEmptyObject(machine.coreTypes(), constructedType);
+            machine.currentScope().overwriteThis(obj);
+            blockWait.unblockAndReturn(obj);
+          },
+          "void", Collections.emptyList(), Collections.emptyList(), 
+          new StatementContainer(
+              new TokenContainer(
+                  new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough)))),
       
       // some number methods
       StdLibMethod.primitiveNoArg("number", "abs", "Comment", "number", 

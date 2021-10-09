@@ -246,7 +246,7 @@ public class SimpleInterpreter
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(AT_END_METHOD.getLookupName());
               machine.pushValue(self); 
-              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false, null);
               break;
             }
             case 3: // We have result of calling "at end", so decide if we should break out of the loop or not
@@ -272,7 +272,7 @@ public class SimpleInterpreter
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(VALUE_METHOD.getLookupName());
               machine.pushValue(self); 
-              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false, null);
               break;
             } 
             case 5: // Have the value for the loop, store it in a variable
@@ -302,7 +302,7 @@ public class SimpleInterpreter
               machine.ip.advanceIdx();  // on return from the method call, we need to be in a different state to look at the result
               ExecutableFunction method = self.type.lookupMethod(NEXT_METHOD.getLookupName());
               machine.pushValue(self); 
-              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false);
+              ExpressionEvaluator.callMethodOrFunction(machine, self, method, false, null);
               break;
             } 
             case 8: // Go back and run the loop again

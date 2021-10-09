@@ -37,10 +37,12 @@ public enum Symbol
 	ParenthesisExpression,
 	ValueExpression,
 	StaticMethodCallExpression,
+	SuperCallExpression,
 	ForExpression,
 	ForExpressionOnly,
 	EndStatement,
 	This,
+	Super,
 	NullLiteral,
 	TrueLiteral,
 	FalseLiteral,
@@ -72,6 +74,7 @@ public enum Symbol
 	In,
 	DotDeclareIdentifier,
 	DotMember,
+	DotSuperMember,
 	DUMMY_COMMENT,
 	COMPOUND_IF,
 	COMPOUND_ELSE,
@@ -87,6 +90,7 @@ public enum Symbol
 		case EMPTY:
 		case EndStatement:
 		case This:
+		case Super:
 		case NullLiteral:
 		case TrueLiteral:
 		case FalseLiteral:
