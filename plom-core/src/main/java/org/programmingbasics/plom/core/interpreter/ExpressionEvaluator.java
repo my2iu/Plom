@@ -6,6 +6,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
@@ -259,6 +260,15 @@ public class ExpressionEvaluator
             machine.pushValue(machine.currentScope().lookupThis());
             machine.ip.pop();
       })
+      .add(Rule.Super, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            // Get the current type of the method that we're inside
+            Type currentType = getClassFromStackFrame(machine);
+            // Make a special version of "this" that has been coerced to be of the parent type 
+            Value retypedValue = Value.create(machine.currentScope().lookupThis(), currentType.parent);
+            machine.pushValue(retypedValue);
+            machine.ip.pop();
+      })
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx < node.internalChildren.size())
@@ -351,7 +361,6 @@ public class ExpressionEvaluator
               GatheredTypeInfo typeInfo = new GatheredTypeInfo();
               node.children.get(0).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
               Type calleeType = typeInfo.type;
-//              Value self = machine.readValue(methodNode.internalChildren.size());
               ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
@@ -362,8 +371,6 @@ public class ExpressionEvaluator
                 }
                 else if (method.codeUnit.isConstructor)
                 {
-                  // Create empty object
-//                  Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
                   machine.ip.pop();
                   // Call constructor on the empty object to configure it
                   callMethodOrFunction(machine, null, method, true, calleeType);
@@ -379,7 +386,96 @@ public class ExpressionEvaluator
             {
               throw new IllegalArgumentException("This should be unreachable");
             }
+      })
+      .add(Rule.DotSuperMember_DotVariable, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            // Currently we only support constructor chaining, so check if we're in a constructor
+            if (machine.getTopStackFrame().constructorConcreteType != null)
+            {
+              Type constructorType = getClassFromStackFrame(machine).parent;
+              AstNode methodNode = node.children.get(0);
+              if (idx < methodNode.internalChildren.size())
+              {
+                machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
+                return;
+              }
+              else if (idx == methodNode.internalChildren.size()) 
+              {
+                ExecutableFunction method = constructorType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+                if (method != null)
+                {
+                  if (method.codeUnit.isConstructor)
+                  {
+                    machine.ip.advanceIdx();
+                    callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType);
+                  }
+                  else
+                    throw new RunException("Can only use super to call other constructors from within a constructor");
+                  return;
+                }
+                else
+                {
+                  throw new RunException();
+                }
+              }
+              else  // idx == methodNode.internalChildren.size() + 1
+              {
+                // Upon returning from calling a chained constructor, we should use the
+                // returned value to set the current "this" object
+                Value thisValue = machine.popValue(); 
+                machine.currentScope().overwriteThis(thisValue);
+                machine.ip.pop();
+              }
+              return;
+            }
+            throw new IllegalArgumentException("super is only supported for use in constructor chaining at the moment");
+            
+//            AstNode methodNode = node.children.get(1).children.get(0);
+//            if (idx < methodNode.internalChildren.size())
+//            {
+//              machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
+//              return;
+//            }
+//            else if (idx == methodNode.internalChildren.size()) 
+//            {
+//              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+//              node.children.get(0).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
+//              Type calleeType = typeInfo.type;
+////              Value self = machine.readValue(methodNode.internalChildren.size());
+//              ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+//              if (method != null)
+//              {
+//                if (method.codeUnit.isStatic)
+//                {
+//                  machine.ip.pop();
+//                  callMethodOrFunction(machine, null, method, false, null);
+//                }
+//                else if (method.codeUnit.isConstructor)
+//                {
+//                  // Create empty object
+////                  Value self = Value.createEmptyObject(machine.coreTypes(), calleeType);
+//                  machine.ip.pop();
+//                  // Call constructor on the empty object to configure it
+//                  callMethodOrFunction(machine, null, method, true, calleeType);
+//                }
+//                return;
+//              }
+//              else
+//              {
+//                throw new RunException();
+//              }
+//            }
+//            else  // idx == methodNode.internalChildren.size() + 1
+//            {
+//              throw new IllegalArgumentException("This should be unreachable");
+//            }
       });
+  }
+
+
+  private static Type getClassFromStackFrame(MachineContext machine) throws RunException
+  {
+    return machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + machine.getTopStackFrame().codeUnit.className, Symbol.AtType));
   }
 
 

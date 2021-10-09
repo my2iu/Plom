@@ -810,6 +810,94 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testConstructorChaining() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type childType = new Type("child", coreTypes.getObjectType());
+      childType.addMemberVariable("childVar", coreTypes.getStringType());
+      Type subChildType = new Type("subchild", childType);
+      subChildType.addMemberVariable("subchildVar", coreTypes.getStringType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("child", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".childVar", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"2\"", Symbol.String)
+                    )
+                )
+            ),
+            Arrays.asList());
+        childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
+        scope.addType(childType);
+
+        ExecutableFunction subCreateFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("subchild", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".subchildVar", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"3\"", Symbol.String)
+                    )
+                )
+            ),
+            Arrays.asList());
+        subChildType.addStaticMethod("new", subCreateFn, coreTypes.getVoidType());
+        scope.addType(subChildType);
+
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("test", "get"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".childVar", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".subbchildVar", Symbol.DotVariable)
+                    )
+                )
+            ),
+            Arrays.asList());
+        subChildType.addMethod("get", valFn, coreTypes.getNumberType());
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@subchild", Symbol.AtType),
+            Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
+  
+  @Test
   public void testForLoop() throws RunException, ParseException
   {
     // Create a fake iterator and use it in a loop
