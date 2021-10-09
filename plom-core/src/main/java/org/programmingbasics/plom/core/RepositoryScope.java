@@ -194,10 +194,7 @@ public class RepositoryScope extends VariableScope
       {
         toReturn.parent = typeFromToken(cls.parent); 
       }
-      for (VariableDescription var: cls.variables)
-      {
-        toReturn.addMemberVariable(var.name, typeFromToken(var.type));
-      }
+      addMemberVarsFromClass(toReturn, cls);
       for (FunctionDescription fn: cls.methods)
       {
         if (fn.sig.isBuiltIn) continue;
@@ -245,6 +242,20 @@ public class RepositoryScope extends VariableScope
     return toReturn;
   }
 
+  private void addMemberVarsFromClass(Type toReturn, ClassDescription cls) throws RunException
+  {
+    if (cls.parent != null)
+    {
+      String name = cls.parent.getLookupName();
+      ClassDescription parentCls = codeRepositoryClasses.get(name);
+      addMemberVarsFromClass(toReturn, parentCls);
+    }
+    for (VariableDescription var: cls.variables)
+    {
+      toReturn.addMemberVariable(var.name, typeFromToken(var.type));
+    }
+  }
+  
   @Override
   public List<Type> getAllKnownTypes()
   {

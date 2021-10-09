@@ -767,6 +767,10 @@ public class SimpleInterpreterTest extends TestCase
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
                     new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
                         Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable),
                         new Token.SimpleToken(":=", Symbol.Assignment),
                         new Token.SimpleToken("2", Symbol.Number)
@@ -816,11 +820,13 @@ public class SimpleInterpreterTest extends TestCase
     // any data
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
       StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getStringType(), coreTypes.getNullValue());
       scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
       
       Type childType = new Type("child", coreTypes.getObjectType());
       childType.addMemberVariable("childVar", coreTypes.getStringType());
       Type subChildType = new Type("subchild", childType);
+      subChildType.addMemberVariable("childVar", coreTypes.getStringType());
       subChildType.addMemberVariable("subchildVar", coreTypes.getStringType());
       try {
         ExecutableFunction createFn = ExecutableFunction.forCode(
@@ -869,7 +875,7 @@ public class SimpleInterpreterTest extends TestCase
                         new Token.SimpleToken("return", Symbol.Return),
                         Token.ParameterToken.fromContents(".childVar", Symbol.DotVariable),
                         new Token.SimpleToken("+", Symbol.Plus),
-                        Token.ParameterToken.fromContents(".subbchildVar", Symbol.DotVariable)
+                        Token.ParameterToken.fromContents(".subchildVar", Symbol.DotVariable)
                     )
                 )
             ),
@@ -893,7 +899,7 @@ public class SimpleInterpreterTest extends TestCase
             )
         );
     new SimpleInterpreter(code).runNoReturn(vars);
-    Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
+    Assert.assertEquals("23", vars.globalScope.lookup("a").getStringValue());
   }
 
   
@@ -913,6 +919,10 @@ public class SimpleInterpreterTest extends TestCase
             CodeUnitLocation.forConstructorMethod("number iterator", "start:"), 
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                        ),
                     new TokenContainer(
                         Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
                         new Token.SimpleToken(":=", Symbol.Assignment),

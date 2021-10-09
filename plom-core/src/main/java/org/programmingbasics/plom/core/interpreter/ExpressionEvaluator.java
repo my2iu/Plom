@@ -260,15 +260,6 @@ public class ExpressionEvaluator
             machine.pushValue(machine.currentScope().lookupThis());
             machine.ip.pop();
       })
-      .add(Rule.Super, 
-          (MachineContext machine, AstNode node, int idx) -> {
-            // Get the current type of the method that we're inside
-            Type currentType = getClassFromStackFrame(machine);
-            // Make a special version of "this" that has been coerced to be of the parent type 
-            Value retypedValue = Value.create(machine.currentScope().lookupThis(), currentType.parent);
-            machine.pushValue(retypedValue);
-            machine.ip.pop();
-      })
       .add(Rule.DotVariable, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx < node.internalChildren.size())
@@ -424,6 +415,7 @@ public class ExpressionEvaluator
                 // returned value to set the current "this" object
                 Value thisValue = machine.popValue(); 
                 machine.currentScope().overwriteThis(thisValue);
+                machine.pushValue(Value.createVoidValue(machine.coreTypes()));
                 machine.ip.pop();
               }
               return;
