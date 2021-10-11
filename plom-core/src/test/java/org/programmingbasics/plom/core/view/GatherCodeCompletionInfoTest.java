@@ -64,28 +64,24 @@ public class GatherCodeCompletionInfoTest extends TestCase
 
   private CodeCompletionContext codeCompletionForPosition(StatementContainer code, String thisTypeString, CodePosition pos) throws RunException
   {
-    return codeCompletionForPosition(code, thisTypeString, false, false, pos);
+    return codeCompletionForPosition(code, thisTypeString, null, pos);
   }
   
-  private CodeCompletionContext codeCompletionForPosition(StatementContainer code, String thisTypeString, boolean isStatic, boolean isConstructor, CodePosition pos) throws RunException    
+  private CodeCompletionContext codeCompletionForPosition(StatementContainer code, String thisTypeString, ConfigureForCodeCompletion configuration, CodePosition pos) throws RunException    
   {
     CodeCompletionContext context = new CodeCompletionContext();
     StandardLibrary.createCoreTypes(context.coreTypes());
     SimpleInterpreterTest.TestScopeWithTypes globalScope = new SimpleInterpreterTest.TestScopeWithTypes(context.coreTypes());
     context.currentScope().setParent(globalScope);
     
-    Type childType = new Type("child", context.coreTypes().getObjectType());
-    globalScope.addType(childType);
+    if (configuration != null)
+      configuration.configure(context, globalScope);
     
     if (thisTypeString != null)
     {
       Value thisValue = new Value();
       thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + thisTypeString, Symbol.AtType));
       context.pushObjectScope(thisValue);
-      
-      context.setDefinedClassOfMethod(thisValue.type);
-      context.setIsConstructorMethod(isConstructor);
-      context.setIsStaticMethod(isStatic);
     }
     context.pushNewScope();
     
@@ -93,6 +89,11 @@ public class GatherCodeCompletionInfoTest extends TestCase
     return context;
   }
 
+  static interface ConfigureForCodeCompletion
+  {
+    public void configure(CodeCompletionContext context, SimpleInterpreterTest.TestScopeWithTypes globalScope);
+  }
+  
   @Test
   public void testLastTypeInExpression() throws RunException
   {
@@ -401,7 +402,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1));
     Assert.assertNull(context.getLastTypeUsed());
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeForStaticCall());
-    List<String> suggestions = new StaticMemberSuggester(context).gatherSuggestions("");
+    List<String> suggestions = new StaticMemberSuggester(context, true, true).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("parse US number:"));
     Assert.assertFalse(suggestions.contains("new"));
     
@@ -460,6 +461,14 @@ public class GatherCodeCompletionInfoTest extends TestCase
   @Test
   public void testSuperForConstructorChaining() throws RunException
   {
+    ConfigureForCodeCompletion configuration = (ctx, globalScope) -> { 
+      Type childType = new Type("child", ctx.coreTypes().getObjectType());
+      globalScope.addType(childType);
+      ctx.setDefinedClassOfMethod(childType);
+      ctx.setIsConstructorMethod(true);
+      ctx.setIsStaticMethod(true);
+    };
+    
     StatementContainer code = new StatementContainer(
         new TokenContainer(
             new Token.SimpleToken("return", Symbol.Return),
@@ -467,19 +476,19 @@ public class GatherCodeCompletionInfoTest extends TestCase
             Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
             ));
     
-    CodeCompletionContext context = codeCompletionForPosition(code, "child", true, true, CodePosition.fromOffsets(0, 0));
+    CodeCompletionContext context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 0));
     Assert.assertNull(context.getLastTypeUsed());
 
-    context = codeCompletionForPosition(code, "child", true, true, CodePosition.fromOffsets(0, 1));
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 1));
     Assert.assertNull(context.getLastTypeUsed());
 
-    context = codeCompletionForPosition(code, "child", true, true, CodePosition.fromOffsets(0, 2));
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 2));
     Assert.assertNull(context.getLastTypeUsed());
     Assert.assertEquals(context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@object", Symbol.AtType)), context.getLastTypeForStaticCall());
-    List<String> suggestions = new StaticMemberSuggester(context).gatherSuggestions("");
+    List<String> suggestions = new StaticMemberSuggester(context, true, true).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("new"));
 
-    context = codeCompletionForPosition(code, "child", true, true, CodePosition.fromOffsets(0, 3));
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 3));
     Assert.assertEquals(context.coreTypes().getVoidType(), context.getLastTypeUsed());
     Assert.assertNull(context.getLastTypeForStaticCall());
   }

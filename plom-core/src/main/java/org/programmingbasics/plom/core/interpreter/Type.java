@@ -105,10 +105,12 @@ public class Type
   {
     return staticMethodTypeSigs.get(name);
   }
-  public void lookupStaticMemberSuggestions(GatheredSuggestions suggestions)
+  public void lookupStaticMemberSuggestions(GatheredSuggestions suggestions, boolean includeNonConstructors, boolean includeConstructors)
   {
     for (String memberName: staticMethodTypeSigs.keySet())
     {
+      if (staticMethods.get(memberName).codeUnit.isConstructor ? !includeConstructors : !includeNonConstructors)
+        continue;
       suggestions.addSuggestion(memberName);
     }
   }

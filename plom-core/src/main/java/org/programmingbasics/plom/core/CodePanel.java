@@ -379,13 +379,13 @@ public class CodePanel
     {
       if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
       {
-        suggester = new StaticMemberSuggester(suggestionContext);
+        suggester = new StaticMemberSuggester(suggestionContext, true, true);
       }
       else if (parentSymbols.contains(Symbol.SuperCallExpression))
       {
         if (suggestionContext.getIsConstructorMethod())
         {
-          suggester = new StaticMemberSuggester(suggestionContext);
+          suggester = new StaticMemberSuggester(suggestionContext, false, true);
         }
         else
         {
