@@ -381,6 +381,18 @@ public class CodePanel
       {
         suggester = new StaticMemberSuggester(suggestionContext);
       }
+      else if (parentSymbols.contains(Symbol.SuperCallExpression))
+      {
+        if (suggestionContext.getIsConstructorMethod())
+        {
+          suggester = new StaticMemberSuggester(suggestionContext);
+        }
+        else
+        {
+          // We only support super being used for constructor chaining right now
+          suggester = null;
+        }
+      }
       else if (parentSymbols.contains(Symbol.DotMember))
       {
         suggester = new MemberSuggester(suggestionContext);

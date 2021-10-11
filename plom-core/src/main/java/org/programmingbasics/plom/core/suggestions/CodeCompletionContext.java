@@ -23,6 +23,18 @@ public class CodeCompletionContext
   Type lastTypeUsed;
   Type lastTypeForStaticCall;
   
+  /** Class where the code is defined on (or null if not applicable) */
+  Type definedClassOfMethod;
+  /** If the code is from a static method */
+  boolean isStaticMethod;
+  /** If the code is from a constructor method */
+  boolean isConstructorMethod;
+
+  public CodeCompletionContext()
+  {
+    
+  }
+  
   /**
    * Used internally to lookup types and do type checking when computing 
    * which types are used (returns a type object for a type with a given name).
@@ -96,4 +108,11 @@ public class CodeCompletionContext
   // Provides easy access to the core types
   CoreTypeLibrary coreTypes = new CoreTypeLibrary();
   public CoreTypeLibrary coreTypes() { return coreTypes; }
+  
+  public Type getDefinedClassOfMethod() { return definedClassOfMethod; }
+  public void setDefinedClassOfMethod(Type t) { definedClassOfMethod = t; }
+  public boolean getIsStaticMethod() { return isStaticMethod; }
+  public void setIsStaticMethod(boolean val) { isStaticMethod = val; }
+  public boolean getIsConstructorMethod() { return isConstructorMethod; }
+  public void setIsConstructorMethod(boolean val) { isConstructorMethod = val; }
 }

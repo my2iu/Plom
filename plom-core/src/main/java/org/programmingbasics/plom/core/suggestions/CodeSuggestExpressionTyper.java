@@ -157,6 +157,64 @@ public class CodeSuggestExpressionTyper
         }
         return true;
       })
+      .add(Rule.SuperCallExpression_Super_DotSuperMember, (triggers, node, context, param) -> {
+//        // This rule wouldn't be matched unless we have at least the first child 
+//        // (i.e. the Type that the static call is being made on)
+//        GatheredTypeInfo typeInfo = new GatheredTypeInfo();
+//        node.children.get(0).recursiveVisit(typeParsingHandlers, typeInfo, context);
+//        Type type = typeInfo.type;
+//        
+        // See setLastTypeForStaticCall() for more info about what's going on here
+        if (node.children.get(1) == null)
+        {
+          // No member is defined, so we should provide a type that can be used for suggestions
+          if (context.getIsConstructorMethod())
+          {
+            context.setLastTypeForStaticCall(context.getDefinedClassOfMethod().parent);
+          }
+          else
+          {
+            // We only support super being used for constructor chaining
+            // at the moment
+          }
+        }
+        else
+        {
+          // Figure out the return type of the method being called 
+          if (context.getIsConstructorMethod())
+          {
+            context.setLastTypeUsed(context.coreTypes().getVoidType());
+            context.pushType(context.coreTypes().getVoidType());
+          }
+          else
+          {
+            // We only support super being used for constructor chaining at the moment
+          }
+//          // We have a static call, and all the parts are there, so we probably aren't being
+//          // used to suggest completions for the static call, but for something further on 
+//          // in the code, so just return the type of the static call
+//          if (type != null)
+//          {
+//            Type.TypeSignature sig = type.lookupStaticMethodSignature(((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName());
+//            if (sig != null)
+//            {
+//              context.setLastTypeUsed(sig.returnType);
+//              context.pushType(sig.returnType);
+//            }
+//            else
+//            {
+//              context.setLastTypeUsed(context.coreTypes().getVoidType());
+//              context.pushType(context.coreTypes().getVoidType());
+//            }
+//          }
+//          else
+//          {
+//            context.setLastTypeUsed(context.coreTypes().getVoidType());
+//            context.pushType(context.coreTypes().getVoidType());
+//          }
+        }
+        return true;
+      })
       .add(Rule.Number, (triggers, node, context, param) -> {
         context.pushType(context.coreTypes().getNumberType());
         context.setLastTypeUsed(context.coreTypes().getNumberType());

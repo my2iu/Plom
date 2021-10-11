@@ -505,6 +505,19 @@ public class Main
 
           if (currentMethodClassBeingViewed != null)
           {
+            if (currentMethodBeingViewed != null)
+            {
+              context.setIsStaticMethod(currentMethodBeingViewed.sig.isStatic);
+              context.setIsConstructorMethod(currentMethodBeingViewed.sig.isConstructor);
+            }
+            try {
+              context.setDefinedClassOfMethod(context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.getName(), Symbol.AtType)));
+            }
+            catch (RunException e)
+            {
+              // Ignore any errors when setting this
+            }
+            
             // Create an object scope that will handle this and instance variables
             try {
               Value thisValue = new Value();

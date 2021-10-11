@@ -1,6 +1,5 @@
 package org.programmingbasics.plom.core.suggestions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
