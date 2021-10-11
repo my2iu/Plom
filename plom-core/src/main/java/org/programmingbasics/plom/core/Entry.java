@@ -23,10 +23,7 @@ TODO:
 - do type checking of arguments of a function
 - type checking of return type of a function
 - object super
-- constructor chaining
-- separate constructor list
-- call constructor from instance method
-- constructors cannot return a value
+- if no constructor is defined on a class, inherit the parent's constructors 
 - autogeneration of getter and setters for instance data members
 - calls to the repository will eventually be asynchronous on iOS 
 - generics
