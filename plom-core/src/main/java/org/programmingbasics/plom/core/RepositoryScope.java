@@ -244,7 +244,7 @@ public class RepositoryScope extends VariableScope
 
   private void addMemberVarsFromClass(Type toReturn, ClassDescription cls) throws RunException
   {
-    if (cls.parent != null)
+    if (cls.parent != null && !cls.getName().equals("object"))
     {
       String name = cls.parent.getLookupName();
       ClassDescription parentCls = codeRepositoryClasses.get(name);
