@@ -8,4 +8,7 @@
  function . {value } @ {number } {
  return null
  }
+ constructor . {new } {
+ super . {new }
+ }
  }
