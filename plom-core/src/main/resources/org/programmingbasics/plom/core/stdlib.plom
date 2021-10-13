@@ -127,6 +127,9 @@
  function . {value } @ {number } {
  return null
  }
+ constructor . {new } {
+ super . {new }
+ }
  }
  class @ { number range iterator } extends @ {number iterator } {
  var . { current } @ {number }
@@ -143,6 +146,7 @@
  return . {current }
  }
  constructor . {from: . { from } @ {number }to: . { to } @ {number } } {
+ super . {new }
  . {start } := . {from }
  . {end } := . {to }
  . {current } := . {start }
@@ -156,6 +160,9 @@
  primitive
  }
  function . {to string } @ {string } {
+ primitive
+ }
+ constructor . {new } {
  primitive
  }
  }
