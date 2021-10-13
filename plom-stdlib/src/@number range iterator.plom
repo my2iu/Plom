@@ -13,6 +13,7 @@
  return . {current }
  }
  constructor . {from: . { from } @ {number }to: . { to } @ {number } } {
+ super . {new }
  . {start } := . {from }
  . {end } := . {to }
  . {current } := . {start }
