@@ -175,6 +175,7 @@ public class RepositoryScope extends VariableScope
       case "object": toReturn = coreTypes.getObjectType(); break;
       case "null": toReturn = coreTypes.getNullType(); break;
       case "void": toReturn = coreTypes.getVoidType(); break;
+      case "object array": toReturn = coreTypes.getObjectArrayType(); break;
       default: 
       {
         if (codeRepositoryClasses.containsKey(name))

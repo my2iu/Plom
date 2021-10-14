@@ -93,6 +93,17 @@ public class StandardLibrary
             primitive.execute(blockWait, machine, machine.currentScope().lookupThis(), machine.currentScope().lookup("val"));
           });
     }
+    public static interface TwoArgsPrimitive
+    {
+      public void execute(MachineContext.PrimitiveBlockingFunctionReturn blockWait, MachineContext machine, Value thisVal, Value val1, Value val2) throws RunException;
+    }
+    public static StdLibMethod primitiveTwoArgs(String className, String methodName, String comment, String returnType, String argType1, String argType2, TwoArgsPrimitive primitive)
+    {
+      return primitive(className, methodName, comment, returnType, Arrays.asList("val1", "val2"), Arrays.asList(argType1, argType2),
+          (blockWait, machine) -> {
+            primitive.execute(blockWait, machine, machine.currentScope().lookupThis(), machine.currentScope().lookup("val1"), machine.currentScope().lookup("val2"));
+          });
+    }
     public static StdLibMethod primitiveStaticOneArg(String className, String methodName, String comment, String returnType, String argType, OneArgPrimitive primitive)
     {
       StdLibMethod m = primitive(className, methodName, comment, returnType, Arrays.asList("val"), Arrays.asList(argType),
@@ -292,8 +303,35 @@ public class StandardLibrary
           "void", Collections.emptyList(), Collections.emptyList(), 
           new StatementContainer(
               new TokenContainer(
-                  new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough))))
+                  new Token.SimpleToken("primitive", Symbol.PrimitivePassthrough)))
+          ),
+      StdLibMethod.primitiveNoArg("object array", "size", "Comment", "number", 
+          (blockWait, machine, self) -> {
+            blockWait.unblockAndReturn(Value.createNumberValue(machine.coreTypes(), ((PlomArray)self.val).size()));
+          }),
+      StdLibMethod.primitiveOneArg("object array", "at:", "Comment", "object", "number", 
+          (blockWait, machine, self, val) -> {
+            Value v = ((PlomArray)self.val).get((int)val.getNumberValue());
+            blockWait.unblockAndReturn(Value.create(v.val, v.type));
+          }),
+      StdLibMethod.primitiveTwoArgs("object array", "at:set:", "Comment", "object", "number", "object", 
+          (blockWait, machine, self, val1, val2) -> {
+            Value v = ((PlomArray)self.val).get((int)val1.getNumberValue());
+            v.type = val2.type;
+            v.val = val2.val;
+            blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
+          }),
+      StdLibMethod.primitiveOneArg("object array", "append:", "Comment", "object array", "object", 
+          (blockWait, machine, self, val) -> {
+            ((PlomArray)self.val).expand(machine.coreTypes());
+            int lastIdx = ((PlomArray)self.val).size() - 1; 
+            Value v = ((PlomArray)self.val).get(lastIdx);
+            v.type = val.type;
+            v.val = val.val;
+            blockWait.unblockAndReturn(self);
+          })
       );
+  
   
   public static void createCoreTypes(CoreTypeLibrary coreTypes)
   {
@@ -376,6 +414,7 @@ public class StandardLibrary
       case "boolean": return coreTypes.getBooleanType();
       case "null": return coreTypes.getNullType();
       case "object array": return coreTypes.getObjectArrayType();
+      case "void": return coreTypes.getVoidType();
     }
     return null;
   }
