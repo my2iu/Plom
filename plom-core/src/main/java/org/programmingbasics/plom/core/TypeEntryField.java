@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.programmingbasics.plom.core.CodePanel.VariableContextConfigurator;
+import org.programmingbasics.plom.core.CodeWidgetBase.VariableContextConfigurator;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;

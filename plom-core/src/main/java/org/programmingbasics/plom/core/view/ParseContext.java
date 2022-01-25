@@ -19,16 +19,21 @@ public class ParseContext
     public Symbol baseContext;
     public List<Token> tokens = new ArrayList<>();
   }
-  
+
   public static ParseContextForCursor findPredictiveParseContextForStatements(StatementContainer statements, CodePosition pos, int level)
+  {
+    return findPredictiveParseContextForStatements(Symbol.FullStatement, statements, pos, level);
+  }
+  
+  public static ParseContextForCursor findPredictiveParseContextForStatements(Symbol baseContext, StatementContainer statements, CodePosition pos, int level)
   {
     if (pos.getOffset(level) < statements.statements.size())
     {
       TokenContainer line = statements.statements.get(pos.getOffset(level));
-      return findPredictiveParseContextForLine(line, Symbol.FullStatement, pos, level + 1);
+      return findPredictiveParseContextForLine(line, baseContext, pos, level + 1);
     }
     ParseContextForCursor toReturn = new ParseContextForCursor();
-    toReturn.baseContext = Symbol.FullStatement;
+    toReturn.baseContext = baseContext;
     return toReturn;
   }
   

@@ -16,53 +16,45 @@ import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsType;
 
 /**
- * Coding area that takes up the full screen
+ * Coding area that's just part of a larger page
  */
 @JsType
-public class CodePanel extends CodeWidgetBase
+public class SubCodeArea extends CodeWidgetBase
 {
-  public CodePanel(DivElement mainDiv, boolean useSvg)
+  public SubCodeArea(Element mainDiv, DivElement choicesDiv,
+      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element codeDivInteriorForScrollPadding)
   {
-    this.useSvg = useSvg;
+    this.useSvg = true;
     
-    if (useSvg)
-    {
-      mainDiv.setInnerHTML(UIResources.INSTANCE.getSvgCodePanelHtml().getText());
-      codeSvg = (SVGSVGElement)mainDiv.querySelector("div.code svg");
-      widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
-    }
-    else
-      mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
+    codeSvg = (SVGSVGElement)mainDiv.querySelector("svg.codeareasvg");
+    widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
 
-    codeDiv = (DivElement)mainDiv.querySelector("div.code");
-    codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
-    if (useSvg)
-      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
-    else
-      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
-    choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
-    simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-        (DivElement)mainDiv.querySelector("div.sidechoices"));
+    codeDiv = (DivElement)mainDiv;
+//    codeDivInterior = (DivElement)codeDiv.querySelector(".scrollable-interior");
+    this.codeDivInteriorForScrollPadding = codeDivInteriorForScrollPadding;
+    
+    this.choicesDiv = choicesDiv;
+    cursorOverlayEl = cursorOverlay;
+    simpleEntry = new SimpleEntry((DivElement)simpleEntryDiv,
+        (DivElement)sideChoices);
 
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     simpleEntry.setVisible(false);
     
     updateCodeView(true);
     showPredictedTokenInput(choicesDiv);
-    hookCodeScroller(codeDiv);
-    hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
+    CodePanel.hookCodeScroller(codeDiv);
+    hookCodeClick((DivElement)codeDiv);
     
 //    SvgCodeRenderer.test();
 //    hookTestCodeClick();
   }
 
-  
+ 
   DivElement codeDiv;
-  DivElement codeDivInterior;
+//  DivElement codeDivInterior;
   Element codeDivInteriorForScrollPadding;
-  
-  
 
   @Override CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle)
   {
@@ -72,10 +64,10 @@ public class CodePanel extends CodeWidgetBase
       xOffset = cursorHandle.xOffset;
       yOffset = cursorHandle.yOffset;
     }
-    if (useSvg)
+//    if (useSvg)
       return HitDetect.detectHitBoxes((int)(x + xOffset - leftPadding), (int)(y + yOffset - topPadding), codeList, svgHitBoxes);
-    else
-      return HitDetect.renderAndHitDetect((int)(x + xOffset), (int)(y + yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
+//    else
+//      return HitDetect.renderAndHitDetect((int)(x + xOffset), (int)(y + yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
   }
 
 //  void hookTestCodeClick()
@@ -108,15 +100,12 @@ public class CodePanel extends CodeWidgetBase
   {
     simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
   }
-
   
   @Override void updateCodeView(boolean isCodeChanged)
   {
     if (listener != null)
       listener.onUpdate(isCodeChanged);
-    if (!useSvg)
-      codeDivInterior.setInnerHTML("");
-    RenderedHitBox renderedHitBoxes = renderTokens(codeDivInterior, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
+    RenderedHitBox renderedHitBoxes = CodePanel.renderTokens((DivElement)codeDivInteriorForScrollPadding, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
     if (useSvg)
       svgHitBoxes = renderedHitBoxes;
     updateCursor(renderedHitBoxes);
@@ -167,9 +156,12 @@ public class CodePanel extends CodeWidgetBase
   // the cursor is
   void updateCursor(RenderedHitBox renderedHitBoxes)
   {
+    DivElement cursorDiv = null;
+    double x = 0, y = 0;
     if (useSvg)
     {
       CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, cursorPos, 0, renderedHitBoxes);
+      // Draw caret for the secondary cursor
       Element caretCursor = cursorOverlayEl.querySelector(".maincursorcaret"); 
       if (cursorRect != null)
       {
@@ -179,61 +171,48 @@ public class CodePanel extends CodeWidgetBase
         caretCursor.setAttribute("y1", "" + cursorRect.top);
         caretCursor.setAttribute("y2", "" + cursorRect.bottom);
       }
-      double x = cursorRect.left;
-      double y = cursorRect.bottom;
-      
-      // Handle scrolling
-      updateForScroll();
-      
-      // Draw cursors
-      updatePrimaryCursor(x, y, 0, 0, 0);
-      updateSecondaryCursor(renderedHitBoxes, x, y, 0);
+      x = cursorRect.left;
+      y = cursorRect.bottom;
     }
     else
     {
-      DivElement cursorDiv = null;
       cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
       if (cursorDiv == null) return;
-      double x = 0, y = 0;
       for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
       {
         x += el.getOffsetLeft();
         y += el.getOffsetTop();
       }
-      
-      // Handle scrolling
-      updateForScroll();
-      
-      // Draw cursors
-      final int caretYOffset = cursorDiv.getOffsetHeight();
-      final double caretOriginXOffset = (double)cursorDiv.getOffsetWidth() / 2;
-      final double caretOriginYOffset = (double)cursorDiv.getOffsetHeight() * 0.8;
-      updatePrimaryCursor(x, y, caretYOffset, caretOriginXOffset,
-          caretOriginYOffset);
-      updateSecondaryCursor(renderedHitBoxes, x, y, caretYOffset);
     }
+    // Handle scrolling
+    updateForScroll();
 
-  }
-
-  void updatePrimaryCursor(double x, double y, final int caretYOffset,
-      final double caretOriginXOffset, final double caretOriginYOffset)
-  {
+    // Main cursor
     if (pointerDownHandle == 1)
     {
       ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
     }
     else
     {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + caretYOffset + HANDLE_SIZE) + ")");
+      if (!useSvg)
+        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + cursorDiv.getOffsetHeight() + HANDLE_SIZE) + ")");
+      else
+        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y /*+ cursorDiv.getOffsetHeight()*/ + HANDLE_SIZE) + ")");
     }
-    cursorHandle1.x = x;
-    cursorHandle1.y = y + caretYOffset + HANDLE_SIZE + 2;
-    cursorHandle1.xOffset = (x + caretOriginXOffset) - cursorHandle1.x; 
-    cursorHandle1.yOffset = (y + caretOriginYOffset) - cursorHandle1.y;
-  }
-
-  void updateSecondaryCursor(RenderedHitBox renderedHitBoxes, double x, double y, int caretYOffset)
-  {
+    if (!useSvg)
+    {
+      cursorHandle1.x = x;
+      cursorHandle1.y = y + cursorDiv.getOffsetHeight() + HANDLE_SIZE + 2;
+      cursorHandle1.xOffset = (x + (double)cursorDiv.getOffsetWidth() / 2) - cursorHandle1.x; 
+      cursorHandle1.yOffset = (y + (double)cursorDiv.getOffsetHeight() * 0.8) - cursorHandle1.y;
+    }
+    else
+    {
+      cursorHandle1.x = x;
+      cursorHandle1.y = y /*+ cursorDiv.getOffsetHeight()*/ + HANDLE_SIZE + 2;
+      cursorHandle1.xOffset = (x /*+ (double)cursorDiv.getOffsetWidth() / 2*/) - cursorHandle1.x; 
+      cursorHandle1.yOffset = (y /*+ (double)cursorDiv.getOffsetHeight() * 0.8*/) - cursorHandle1.y;
+    }
     // Secondary cursor
     CursorRect selectionCursorRect = null;
     if (selectionCursorPos != null)
@@ -259,7 +238,10 @@ public class CodePanel extends CodeWidgetBase
     {
       // If there is no secondary cursor to draw a handle around, draw
       // the handle relative to the main cursor instead
-      selectionCursorRect = new CursorRect(x, y, y + caretYOffset);
+      if (!useSvg)
+        selectionCursorRect = new CursorRect(x, y, y + cursorDiv.getOffsetHeight());
+      else
+        selectionCursorRect = new CursorRect(x, y, y);
     }
     x = selectionCursorRect.left;
     y = selectionCursorRect.top;
