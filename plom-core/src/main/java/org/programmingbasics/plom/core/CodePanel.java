@@ -1,9 +1,12 @@
 package org.programmingbasics.plom.core;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.programmingbasics.plom.core.ast.ErrorList;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.view.CodePosition;
+import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.HitDetect;
-import org.programmingbasics.plom.core.view.RenderedCursorPosition;
-import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
@@ -19,23 +22,16 @@ import jsinterop.annotations.JsType;
  * Coding area that takes up the full screen
  */
 @JsType
-public class CodePanel extends CodeWidgetBase
+public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 {
   public CodePanel(DivElement mainDiv, boolean useSvg)
   {
-    this.useSvg = useSvg;
-    
-    if (useSvg)
-    {
-      mainDiv.setInnerHTML(UIResources.INSTANCE.getSvgCodePanelHtml().getText());
-      codeSvg = (SVGSVGElement)mainDiv.querySelector("div.code svg");
-      widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
-    }
-    else
-      mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
+    mainDiv.setInnerHTML(UIResources.INSTANCE.getSvgCodePanelHtml().getText());
+    codeSvg = (SVGSVGElement)mainDiv.querySelector("div.code svg");
+    widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
-    codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
+    divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     if (useSvg)
       codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     else
@@ -56,140 +52,90 @@ public class CodePanel extends CodeWidgetBase
 //    SvgCodeRenderer.test();
 //    hookTestCodeClick();
   }
-
   
-  DivElement codeDiv;
-  DivElement codeDivInterior;
-  Element codeDivInteriorForScrollPadding;
-  
-  
-
-  @Override CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle)
+  // DOM Variant of the CodePanel
+  public static class CodePanelDom extends CodeWidgetBase
   {
-    double xOffset = 0, yOffset = 0;
-    if (cursorHandle != null)
+    DivElement codeDiv;
+    DivElement codeDivInterior;
+    Element codeDivInteriorForScrollPadding;
+    
+    public CodePanelDom(DivElement mainDiv)
     {
-      xOffset = cursorHandle.xOffset;
-      yOffset = cursorHandle.yOffset;
+      mainDiv.setInnerHTML(UIResources.INSTANCE.getCodePanelHtml().getText());
+      
+      codeDiv = (DivElement)mainDiv.querySelector("div.code");
+      codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
+      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
+      choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
+      cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
+      simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
+          (DivElement)mainDiv.querySelector("div.sidechoices"));
+
+      choicesDiv.getStyle().setDisplay(Display.BLOCK);
+      simpleEntry.setVisible(false);
+      
+      updateCodeView(true);
+      showPredictedTokenInput(choicesDiv);
+      hookCodeScroller(codeDiv);
+      hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
+      
+//      SvgCodeRenderer.test();
+//      hookTestCodeClick();
+
     }
-    if (useSvg)
-      return HitDetect.detectHitBoxes((int)(x + xOffset - leftPadding), (int)(y + yOffset - topPadding), codeList, svgHitBoxes);
-    else
-      return HitDetect.renderAndHitDetect((int)(x + xOffset), (int)(y + yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
-  }
-
-//  void hookTestCodeClick()
-//  {
-////    div.addEventListener(Event.SCROLL, (evt) -> {
-////      cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")");
-////    }, false);
-////    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
-////    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
-//    
-//    DivElement div = SvgCodeRenderer.testDiv; 
-//    
-//    div.addEventListener(Event.CLICK, (evt) -> {
-//      PointerEvent pevt = (PointerEvent)evt;
-//      double x = pointerToRelativeX(pevt, div);
-//      double y = pointerToRelativeY(pevt, div);
-//      CodePosition newPos = 
-//          HitDetect.testHitDetect(x, y, codeList, SvgCodeRenderer.testHitBox, 0);
-//      if (newPos == null)
-//        newPos = new CodePosition();
-//      cursorPos = newPos;
-//      selectionCursorPos = null;
-//
-//      updateCodeView(false);
-//      showPredictedTokenInput(choicesDiv);
-//    }, false);
-//  }
-
-  @Override void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight)
-  {
-    simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
-  }
-
-  
-  @Override void updateCodeView(boolean isCodeChanged)
-  {
-    if (listener != null)
-      listener.onUpdate(isCodeChanged);
-    if (!useSvg)
-      codeDivInterior.setInnerHTML("");
-    RenderedHitBox renderedHitBoxes = renderTokens(codeDivInterior, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
-    if (useSvg)
-      svgHitBoxes = renderedHitBoxes;
-    updateCursor(renderedHitBoxes);
-//    addCursorOverlay();
-  }
-  
-//  void addCursorOverlay()
-//  {
-//    // Add an svg overlay
-//    SVGSVGElement svg = Browser.getDocument().createSVGElement();
-//    svg.getStyle().setLeft("0");
-//    svg.getStyle().setTop("0");
-//    svg.getStyle().setWidth(codeDiv.getScrollWidth(), Unit.PX);
-////    svg.getStyle().setRight("0");
-////    svg.getStyle().setBottom("0");
-//    svg.getStyle().setHeight(codeDiv.getScrollHeight(), Unit.PX);
-//    svg.setAttribute("width", "100%");
-//    svg.setAttribute("height", "100%");
-//    svg.getStyle().setPosition(Position.ABSOLUTE);
-//    svg.getStyle().setProperty("pointer-events", "none");
-//    codeDiv.appendChild(svg);
-//    
-//    // Find where the cursor should be placed
-//    DivElement cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
-//    if (cursorDiv == null) return;
-//    double x = 0, y = 0;
-//    for (Element el = cursorDiv; el != codeDiv; el = el.getOffsetParent())
-//    {
-//      x += el.getOffsetLeft();
-//      y += el.getOffsetTop();
-//    }
-//    
-//    // Draw a handle under the cursor
-////    updateCursor();
-//
-////    createCursorHandleSvg(svg, cursorHandle1);
-//  }
-
-  @Override void updateForScroll()
-  {
-     String cssScrollTranslate = "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")";
-     if (useSvg)
-         cssScrollTranslate += " translate(" + leftPadding + ", " + topPadding + ")";
-     cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
-  }
-  
-  // We need the renderedhitboxes of the code to figure out where
-  // the cursor is
-  void updateCursor(RenderedHitBox renderedHitBoxes)
-  {
-    if (useSvg)
+    
+    @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {
-      CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, cursorPos, 0, renderedHitBoxes);
-      Element caretCursor = cursorOverlayEl.querySelector(".maincursorcaret"); 
-      if (cursorRect != null)
+      // Not used in Dom version of code
+    }
+
+    @Override CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle)
+    {
+      double xOffset = 0, yOffset = 0;
+      if (cursorHandle != null)
       {
-        caretCursor.getStyle().clearDisplay();
-        caretCursor.setAttribute("x1", "" + cursorRect.left);
-        caretCursor.setAttribute("x2", "" + cursorRect.left);
-        caretCursor.setAttribute("y1", "" + cursorRect.top);
-        caretCursor.setAttribute("y2", "" + cursorRect.bottom);
+        xOffset = cursorHandle.xOffset;
+        yOffset = cursorHandle.yOffset;
       }
-      double x = cursorRect.left;
-      double y = cursorRect.bottom;
-      
-      // Handle scrolling
-      updateForScroll();
-      
-      // Draw cursors
-      updatePrimaryCursor(x, y, 0, 0, 0);
-      updateSecondaryCursor(renderedHitBoxes, x, y, 0);
+      return HitDetect.renderAndHitDetect((int)(x + xOffset), (int)(y + yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
     }
-    else
+
+    @Override void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight)
+    {
+      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
+    }
+    
+    @Override void updateCodeView(boolean isCodeChanged)
+    {
+      if (listener != null)
+        listener.onUpdate(isCodeChanged);
+      codeDivInterior.setInnerHTML("");
+      RenderedHitBox renderedHitBoxes = renderTokensDom(codeDivInterior, codeList, cursorPos, selectionCursorPos, codeErrors);
+      updateCursor(renderedHitBoxes);
+    }
+
+    /**
+     * Returns a mapping of divs for each line and their line numbers
+     */
+    private static RenderedHitBox renderTokensDom(DivElement codeDiv, StatementContainer codeList,
+        CodePosition pos, CodePosition selectionPos, ErrorList codeErrors)
+    {
+      if (selectionPos != null)
+        return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, pos, selectionPos, codeErrors);
+      else
+        return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
+    }
+
+    @Override void updateForScroll()
+    {
+       String cssScrollTranslate = "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")";
+       cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
+    }
+    
+    // We need the renderedhitboxes of the code to figure out where
+    // the cursor is
+    void updateCursor(RenderedHitBox renderedHitBoxes)
     {
       DivElement cursorDiv = null;
       cursorDiv = (DivElement)codeDiv.querySelector(".codecursor");
@@ -212,91 +158,5 @@ public class CodePanel extends CodeWidgetBase
           caretOriginYOffset);
       updateSecondaryCursor(renderedHitBoxes, x, y, caretYOffset);
     }
-
   }
-
-  void updatePrimaryCursor(double x, double y, final int caretYOffset,
-      final double caretOriginXOffset, final double caretOriginYOffset)
-  {
-    if (pointerDownHandle == 1)
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
-    }
-    else
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + caretYOffset + HANDLE_SIZE) + ")");
-    }
-    cursorHandle1.x = x;
-    cursorHandle1.y = y + caretYOffset + HANDLE_SIZE + 2;
-    cursorHandle1.xOffset = (x + caretOriginXOffset) - cursorHandle1.x; 
-    cursorHandle1.yOffset = (y + caretOriginYOffset) - cursorHandle1.y;
-  }
-
-  void updateSecondaryCursor(RenderedHitBox renderedHitBoxes, double x, double y, int caretYOffset)
-  {
-    // Secondary cursor
-    CursorRect selectionCursorRect = null;
-    if (selectionCursorPos != null)
-    {
-      selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
-    }
-    // Draw caret for the secondary cursor
-    Element caretCursor = cursorOverlayEl.querySelector(".cursorcaret"); 
-    if (selectionCursorRect != null)
-    {
-      caretCursor.getStyle().clearDisplay();
-      caretCursor.setAttribute("x1", "" + selectionCursorRect.left);
-      caretCursor.setAttribute("x2", "" + selectionCursorRect.left);
-      caretCursor.setAttribute("y1", "" + selectionCursorRect.top);
-      caretCursor.setAttribute("y2", "" + selectionCursorRect.bottom);
-    }
-    else
-    {
-        caretCursor.getStyle().setDisplay(Display.NONE);
-    }
-    // Secondary cursor handle
-    if (selectionCursorRect == null)
-    {
-      // If there is no secondary cursor to draw a handle around, draw
-      // the handle relative to the main cursor instead
-      selectionCursorRect = new CursorRect(x, y, y + caretYOffset);
-    }
-    x = selectionCursorRect.left;
-    y = selectionCursorRect.top;
-    if (pointerDownHandle == 2)
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
-//      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
-//      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
-    }
-    else
-    {
-      if (selectionCursorPos != null)
-      {
-        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      }
-      else
-      {
-        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      }
-      cursorHandle2.x = x;
-      cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
-      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
-      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
-    }
-  }
-  
-//  void createCursorHandleSvg(SVGElement parent, CursorHandle handle)
-//  {
-//    SVGCircleElement handleSvg = Browser.getDocument().createSVGCircleElement();
-//    parent.appendChild(handleSvg);
-//    handleSvg.setAttribute("cx", "" + handle.x);
-//    handleSvg.setAttribute("cy", "" + handle.y);
-//    handleSvg.setAttribute("r", "" + HANDLE_SIZE);
-//    handleSvg.getStyle().setProperty("fill", "none");
-//    handleSvg.getStyle().setProperty("stroke", "#000");
-//    handleSvg.getStyle().setProperty("stroke-width", "1px");
-//    
-//  }
-  
 }
