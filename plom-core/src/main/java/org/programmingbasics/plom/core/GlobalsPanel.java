@@ -161,6 +161,15 @@ public class GlobalsPanel
     {
       addGlobalVarEntry(mainDiv, v, globalVarDivs);
     }
+    
+    // Testing out having a code panel for variables
+    SubCodeArea variableArea = new SubCodeArea(mainDiv.querySelector(".globalVarsCode"), 
+        (DivElement)mainDiv.querySelector("div.choices"),
+        (Element)mainDiv.querySelector("svg.cursoroverlay"),
+        (Element)mainDiv.querySelector("div.simpleentry"),
+        (Element)mainDiv.querySelector("div.sidechoices"),
+        (Element)mainDiv.querySelector(".scrollable-interior .classesHeading"),
+        (Element)mainDiv.querySelector(".classesHeading"));
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)

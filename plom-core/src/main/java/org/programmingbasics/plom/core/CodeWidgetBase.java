@@ -186,12 +186,6 @@ public abstract class CodeWidgetBase
       buttonOrderPriority.put(symbolOrder[n], n);
   }
 
-  static final double leftPadding = 10;
-  static final double rightPadding = 10;
-  static final double topPadding = 10;
-  static final double bottomPadding = 10;
-
-
   void showPredictedTokenInput(DivElement choicesDiv)
   {
     choicesDiv.setInnerHTML("");
@@ -1116,6 +1110,12 @@ public abstract class CodeWidgetBase
     DivElement divForDeterminingWindowWidth;
     Element codeDivInteriorForScrollPadding;
 
+    static final double leftPadding = 10;
+    static final double rightPadding = 10;
+    static final double topPadding = 10;
+    static final double bottomPadding = 10;
+
+
     
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {
@@ -1162,7 +1162,6 @@ public abstract class CodeWidgetBase
       simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
     }
 
-    
     @Override void updateCodeView(boolean isCodeChanged)
     {
       if (listener != null)
