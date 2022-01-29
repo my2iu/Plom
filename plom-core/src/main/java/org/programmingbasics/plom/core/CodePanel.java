@@ -24,7 +24,50 @@ import jsinterop.annotations.JsType;
 @JsType
 public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 {
-  public CodePanel(DivElement mainDiv, boolean useSvg)
+  /**
+   * Creates a code widget that takes up a full window area and includes
+   * all extra UI elements like the choices keyboard, side options,
+   * and simple entry area
+   */
+  public static CodeWidgetBase forFullScreen(DivElement mainDiv, boolean useSvg)
+  {
+    if (useSvg)
+      return forFullScreenSvg(mainDiv);
+    else
+      return forFullScreenDom(mainDiv);
+  }
+  
+  public static CodeWidgetBase forFullScreenSvg(DivElement mainDiv)
+  {
+    CodeWidgetBase toReturn = new CodePanel(mainDiv);
+    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true, true);
+    return toReturn;
+  }
+  
+  public static CodeWidgetBase forFullScreenDom(DivElement mainDiv)
+  {
+    CodeWidgetBase toReturn = new CodePanelDom(mainDiv);
+    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true, true);
+    return toReturn;
+  }
+
+  static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean handleTouchScrolling, boolean hasFocus)
+  {
+    if (hasFocus)
+      codePanel.showChoicesDiv();
+    codePanel.simpleEntry.setVisible(false);
+    
+    codePanel.updateCodeView(true);
+    if (hasFocus)
+      codePanel.showPredictedTokenInput();
+    codePanel.hookCodeScroller(codeDiv, handleTouchScrolling);
+    codePanel.hookCodeClick(codeDiv);
+    
+//    SvgCodeRenderer.test();
+//    hookTestCodeClick();
+  }
+  
+  public CodePanel(DivElement mainDiv)
   {
     mainDiv.setInnerHTML(UIResources.INSTANCE.getSvgCodePanelHtml().getText());
     codeSvg = (SVGSVGElement)mainDiv.querySelector("div.code svg");
@@ -32,25 +75,11 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
     divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
-    if (useSvg)
-      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
-    else
-      codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
+    codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
     cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
         (DivElement)mainDiv.querySelector("div.sidechoices"));
-
-    choicesDiv.getStyle().setDisplay(Display.BLOCK);
-    simpleEntry.setVisible(false);
-    
-    updateCodeView(true);
-    showPredictedTokenInput(choicesDiv);
-    hookCodeScroller(codeDiv);
-    hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
-    
-//    SvgCodeRenderer.test();
-//    hookTestCodeClick();
   }
   
   // DOM Variant of the CodePanel
@@ -71,18 +100,6 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
       simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
           (DivElement)mainDiv.querySelector("div.sidechoices"));
-
-      choicesDiv.getStyle().setDisplay(Display.BLOCK);
-      simpleEntry.setVisible(false);
-      
-      updateCodeView(true);
-      showPredictedTokenInput(choicesDiv);
-      hookCodeScroller(codeDiv);
-      hookCodeClick((DivElement)mainDiv.querySelector("div.code"));
-      
-//      SvgCodeRenderer.test();
-//      hookTestCodeClick();
-
     }
     
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)

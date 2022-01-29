@@ -28,7 +28,7 @@ import jsinterop.annotations.JsFunction;
 /**
  * UI code for listing global variables
  */
-public class GlobalsPanel
+public class GlobalsPanel implements AutoCloseable
 {
   Document doc = Browser.getDocument();
   SimpleEntry simpleEntry;
@@ -169,7 +169,8 @@ public class GlobalsPanel
         (Element)mainDiv.querySelector("div.simpleentry"),
         (Element)mainDiv.querySelector("div.sidechoices"),
         (Element)mainDiv.querySelector(".scrollable-interior .classesHeading"),
-        (Element)mainDiv.querySelector(".classesHeading"));
+        (Element)mainDiv.querySelector(".classesHeading"),
+        widthCalculator);
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)
@@ -242,5 +243,9 @@ public class GlobalsPanel
   public static interface LoadFunctionCodeViewCallback
   {
     void load(FunctionDescription fnName);
+  }
+  
+  @Override public void close()
+  {
   }
 }

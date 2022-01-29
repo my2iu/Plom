@@ -90,7 +90,7 @@ public class Main
   
   public ModuleCodeRepository repository;
   
-  CodePanel codePanel;
+  CodeWidgetBase codePanel;
   MethodPanel methodPanel;
   ClassPanel classPanel;
   GlobalsPanel globalsPanel;
@@ -480,6 +480,11 @@ public class Main
     currentMethodBeingViewed = null;
     currentMethodClassBeingViewed = null;
     codePanel = null;
+    if (globalsPanel != null)
+    {
+      globalsPanel.close();
+      globalsPanel = null;
+    }
   }
   
   private void closeCodePanelIfOpen()
@@ -490,7 +495,7 @@ public class Main
   
   private void showCodePanel(StatementContainer code)
   {
-    codePanel = new CodePanel(getMainDiv(), true);
+    codePanel = CodePanel.forFullScreen(getMainDiv(), true);
     if (repository.isNoStdLibFlag)
       // Normally, the "primitive" keyword isn't available unless we're editing a standard library
       codePanel.setExcludeTokens(Collections.emptyList());

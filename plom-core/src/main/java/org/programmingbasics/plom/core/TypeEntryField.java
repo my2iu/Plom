@@ -140,6 +140,7 @@ public class TypeEntryField
     {
       cursorPos = null;
       simpleEntry.setVisible(false);
+      simpleEntry.forceSafariBlur();
     }
     render();
     if (listener != null)

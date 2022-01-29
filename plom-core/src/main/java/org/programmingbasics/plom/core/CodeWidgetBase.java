@@ -112,7 +112,7 @@ public abstract class CodeWidgetBase
   {
     this.codeList = code;
     updateCodeView(true);
-    showPredictedTokenInput(choicesDiv);
+    showPredictedTokenInput();
 //    hookCodeScroller(codeDiv);
 //    hookCodeClick(codeDiv);
   }
@@ -186,10 +186,20 @@ public abstract class CodeWidgetBase
       buttonOrderPriority.put(symbolOrder[n], n);
   }
 
-  void showPredictedTokenInput(DivElement choicesDiv)
+  void showChoicesDiv()
+  {
+    choicesDiv.getStyle().setDisplay(Display.BLOCK);
+  }
+
+  void hideChoicesDiv()
+  {
+    choicesDiv.getStyle().setDisplay(Display.NONE);
+  }
+
+  void showPredictedTokenInput()
   {
     choicesDiv.setInnerHTML("");
-    choicesDiv.getStyle().setDisplay(Display.BLOCK);
+    showChoicesDiv();
     simpleEntry.setVisible(false);
 
     // We have some buttons that float to the right, but on wide displays, those
@@ -212,7 +222,7 @@ public abstract class CodeWidgetBase
     // specific to working with selections 
     if (selectionCursorPos != null) 
     {
-      contentDiv.appendChild(makeButton("Copy", true, () -> {
+      contentDiv.appendChild(makeButton("Copy", true, choicesDiv, () -> {
         // There's some weird bug in ios14 that I can't figure out
         // where after the pointer events for dragging some handles to
         // make a selection, if I then create a new anchor element
@@ -238,7 +248,7 @@ public abstract class CodeWidgetBase
         String fragment = CodeFragmentExtractor.extractFromStatements(codeList, start, end);
         Clipboard.instance.putCodeFragment(fragment);
       }));
-      contentDiv.appendChild(makeButton("Erase", true, () -> {
+      contentDiv.appendChild(makeButton("Erase", true, choicesDiv, () -> {
         CodePosition start;
         CodePosition end;
         if (cursorPos.isBefore(selectionCursorPos))
@@ -254,7 +264,7 @@ public abstract class CodeWidgetBase
         EraseSelection.fromStatements(codeList, start, end);
         cursorPos = start;
         selectionCursorPos = null;
-        showPredictedTokenInput(choicesDiv);
+        showPredictedTokenInput();
         updateCodeView(true);
       }));
       return;
@@ -278,44 +288,44 @@ public abstract class CodeWidgetBase
     // Backspace button
     DivElement floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
-    floatDivLine.appendChild(makeButton("\u232B", true, () -> {
+    floatDivLine.appendChild(makeButton("\u232B", true, choicesDiv, () -> {
       EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
       updateCodeView(true);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
     })); 
     // newline button
     floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
     if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly)
     {
-      floatDivLine.appendChild(makeButton("\u21b5", true, () -> {
+      floatDivLine.appendChild(makeButton("\u21b5", true, choicesDiv, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
 
         updateCodeView(true);
-        showPredictedTokenInput(choicesDiv);
+        showPredictedTokenInput();
       }));
     }
     else
-      floatDivLine.appendChild(makeButton("\u21b5", false, () -> {  }));
+      floatDivLine.appendChild(makeButton("\u21b5", false, choicesDiv, () -> {  }));
     
     // Buttons for next and edit buttons
     // Next button
-    contentDiv.appendChild(makeButton("\u27a0", true, () -> {
+    contentDiv.appendChild(makeButton("\u27a0", true, choicesDiv, () -> {
       NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(false);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
     }));
     // Edit button for certain tokens
     Token currentToken = GetToken.inStatements(codeList, cursorPos, 0);
     boolean showEditButton = isTokenEditable(currentToken);
     if (showEditButton)
     {
-      contentDiv.appendChild(makeButton("\u270e", true, () -> {
+      contentDiv.appendChild(makeButton("\u270e", true, choicesDiv, () -> {
         showSimpleEntryForToken(currentToken, true, null, cursorPos);
       }));
     }
     else
-      contentDiv.appendChild(makeButton("\u270e", false, () -> {  }));
+      contentDiv.appendChild(makeButton("\u270e", false, choicesDiv, () -> {  }));
 
     
     // Just some random tokens for initial prototyping
@@ -375,9 +385,9 @@ public abstract class CodeWidgetBase
       // Instead we show all normally allowed symbols, but disable the ones that
       // aren't valid for this particular context
       if (isValidSymbol)
-        contentDiv.appendChild(makeButton(tokenText, true, () -> { insertToken(cursorPos, tokenText, sym); }));
+        contentDiv.appendChild(makeButton(tokenText, true, choicesDiv, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
-        contentDiv.appendChild(makeButton(tokenText, false, () -> {  }));
+        contentDiv.appendChild(makeButton(tokenText, false, choicesDiv, () -> {  }));
     }
     
     // Show quick suggestions
@@ -395,14 +405,14 @@ public abstract class CodeWidgetBase
         {
           // Check if variable would have been suggested here 
           if (dotSuggester != null && dotSuggester.gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
-            contentDiv.appendChild(makeButton(suggestion.display, true, () -> {
+            contentDiv.appendChild(makeButton(suggestion.display, true, choicesDiv, () -> {
               Token newToken = new Token.ParameterToken(
                   Token.ParameterToken.splitVarAtColons(suggestion.code), 
                   Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
                   Symbol.DotVariable);
               InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
               NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-              showPredictedTokenInput(choicesDiv);
+              showPredictedTokenInput();
               updateCodeView(true);
               }));
         }
@@ -411,14 +421,14 @@ public abstract class CodeWidgetBase
         {
           // Check if type would have been suggested here 
           if (new TypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
-            contentDiv.appendChild(makeButton(suggestion.display, true, () -> { 
+            contentDiv.appendChild(makeButton(suggestion.display, true, choicesDiv, () -> { 
               Token newToken = new Token.ParameterToken(
                   Token.ParameterToken.splitVarAtColons(suggestion.code), 
                   Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
                   Symbol.AtType);
               InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
               NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-              showPredictedTokenInput(choicesDiv);
+              showPredictedTokenInput();
               updateCodeView(true);
               }));
         }
@@ -428,7 +438,7 @@ public abstract class CodeWidgetBase
     // Show a paste button
     if (hasCutAndPaste)
     {
-      contentDiv.appendChild(makeButton("\uD83D\uDCCB Paste", true, () -> {
+      contentDiv.appendChild(makeButton("\uD83D\uDCCB Paste", true, choicesDiv, () -> {
         doPaste();
       }));
     }
@@ -508,7 +518,7 @@ public abstract class CodeWidgetBase
       break;
     default:
       NextPosition.nextPositionOfStatements(codeList, pos, 0);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
       updateCodeView(true);
       break;
     }
@@ -570,7 +580,7 @@ public abstract class CodeWidgetBase
           InsertToken.insertTokenIntoStatementContainer(codeList, tok, cursorPos, 0, true);
         }
       }
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
       updateCodeView(true);
     }
     catch (PlomReadException e)
@@ -598,24 +608,24 @@ public abstract class CodeWidgetBase
     switch (tokenType)
     {
     case DotVariable:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
+      hideChoicesDiv();
       initialValue = initialValue.substring(1);
       simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
+      hideChoicesDiv();
       initialValue = initialValue.substring(1);
       simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
+      hideChoicesDiv();
       simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case String:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
+      hideChoicesDiv();
       if (isEdit)
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
@@ -624,7 +634,7 @@ public abstract class CodeWidgetBase
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
-      choicesDiv.getStyle().setDisplay(Display.NONE);
+      hideChoicesDiv();
       initialValue = initialValue.substring(3);
       simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
@@ -675,9 +685,12 @@ public abstract class CodeWidgetBase
     }
     if (isFinal)
     {
-      choicesDiv.getStyle().setDisplay(Display.BLOCK);
+      showChoicesDiv();
       simpleEntry.setVisible(false);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
+      // Force safari to blur, but do it after we've given ourselves the chance to
+      // move focus somewhere else first.
+      simpleEntry.forceSafariBlur();
     }
   }
 
@@ -689,9 +702,9 @@ public abstract class CodeWidgetBase
     NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
     EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
     updateCodeView(true);
-    choicesDiv.getStyle().setDisplay(Display.BLOCK);
+    showChoicesDiv();
     simpleEntry.setVisible(false);
-    showPredictedTokenInput(choicesDiv);
+    showPredictedTokenInput();
     return false;
   }
 
@@ -795,14 +808,14 @@ public abstract class CodeWidgetBase
       evt.stopPropagation();
       pointerDownHandle = 0;
       updateCodeView(false);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
     }, false);
     cursorHandleEl.addEventListener("pointercancel", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       pointerDownHandle = 0;
       releasePointerCapture(cursorHandleEl, pevt.getPointerId());
       updateCodeView(false);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
     }, false);
     
   }
@@ -897,11 +910,11 @@ public abstract class CodeWidgetBase
       selectionCursorPos = null;
 
       updateCodeView(false);
-      showPredictedTokenInput(choicesDiv);
+      showPredictedTokenInput();
     }, false);
   }
 
-  protected static void hookCodeScroller(DivElement div)
+  protected static void hookCodeScroller(DivElement div, boolean handleTouchScrolling)
   {
       class PointerScrollInfo {
         boolean isPointerDown;
@@ -960,8 +973,11 @@ public abstract class CodeWidgetBase
             && (Math.abs(x - pointer.pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
             || Math.abs(y - pointer.pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
         {
-          pointer.isScrolling = true;
-          pointer.scrollingEl = div;
+          if (handleTouchScrolling)
+          {
+            pointer.isScrolling = true;
+            pointer.scrollingEl = div;
+          }
           // TODO: Allow scrolling of parent elements if it has already scrolled 
           // to its full extent
           // TODO: inertial/momentum scrolling
@@ -1073,7 +1089,7 @@ public abstract class CodeWidgetBase
     }, 2000);
   }
 
-  static Element makeButton(String text, boolean enabled, Runnable onclick)
+  static Element makeButton(String text, boolean enabled, Element refocusElement, Runnable onclick)
   {
     Document doc = Browser.getDocument();
     DivElement div = doc.createDivElement();
@@ -1089,6 +1105,11 @@ public abstract class CodeWidgetBase
       a.appendChild(div);
       a.addEventListener(Event.CLICK, (evt)-> {
         evt.preventDefault();
+        // After a click, we often remove all the buttons, which causes
+        // focus to be lost, which we want to manage. Instead, we force 
+        // focus onto a known element (usually the entire div that holds
+        // all the choices). 
+        refocusElement.focus();
         onclick.run();
       }, false);
       return a;

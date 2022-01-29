@@ -87,7 +87,7 @@ public class SimpleEntry
       container.querySelector(".simpleentry_erase").getStyle().setDisplay(Display.NONE);
   }
   
-  private void forceSafariBlur()
+  public void forceSafariBlur()
   {
     // Safari seems like it sometimes doesn't close the soft keyboard if the
     // user hits "return"/"enter" on the soft keyboard, so we'll force a blur to close it 
@@ -97,9 +97,6 @@ public class SimpleEntry
   
   void simpleEntryInput(String val, boolean isFinal)
   {
-    if (isFinal)
-      forceSafariBlur();
-      
     if (callback != null)
     {
       callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken, isEdit);
