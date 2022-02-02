@@ -166,13 +166,22 @@ public class ParseToAst
 
   public static AstNode parseStatementContainer(StatementContainer code, ErrorList errorGatherer) throws ParseException 
   {
+    return parseStatementContainer(Symbol.StatementOrEmpty, code, errorGatherer);
+  }
+
+  /**
+   * The grammar for each line/statement should end with a EndStatement.
+   * The Symbol to match for each line/statement should be specified using the parameter statementContent 
+   */
+  public static AstNode parseStatementContainer(Symbol statementContent, StatementContainer code, ErrorList errorGatherer) throws ParseException 
+  {
     AstNode node = new AstNode(Symbol.ASSEMBLED_STATEMENTS_BLOCK);
     node.internalChildren = new ArrayList<>();
     for (TokenContainer line: code.statements)
     {
       ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, errorGatherer);
       try {
-        AstNode parsed = parser.parseToEnd(Symbol.StatementOrEmpty);
+        AstNode parsed = parser.parseToEnd(statementContent);
         node.internalChildren.add(parsed);
       }
       catch (ParseException e)

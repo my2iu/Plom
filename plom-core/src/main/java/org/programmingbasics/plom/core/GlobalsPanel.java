@@ -7,10 +7,15 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.Value;
+import org.programmingbasics.plom.core.view.LineForPosition;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -172,6 +177,42 @@ public class GlobalsPanel implements AutoCloseable
         (Element)mainDiv.querySelector(".scrollable-interior .classesHeading"),
         (Element)mainDiv.querySelector(".classesHeading"),
         widthCalculator);
+    variableArea.setVariableContextConfigurator(
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {
+          return;
+        });
+    variableArea.setListener((isCodeChanged) -> {
+      if (isCodeChanged)
+      {
+        // Update error list
+        variableArea.codeErrors.clear();
+        try {
+          ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, variableArea.codeList, variableArea.codeErrors);
+        }
+        catch (Exception e)
+        {
+          // No errors should be thrown
+        }
+        // Update line numbers
+//        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
+      }
+//      if (codePanel.cursorPos != null)
+//      {
+//        int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
+//        Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+//        if (lineEl != null)
+//        {
+//          lineEl.getStyle().clearDisplay();
+//          lineEl.setTextContent("L" + lineNo);
+//        }
+//      }
+    });
+
+    
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)

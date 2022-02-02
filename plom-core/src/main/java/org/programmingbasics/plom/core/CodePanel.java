@@ -11,7 +11,6 @@ import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;

@@ -49,7 +49,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     return codeArea;
   }
   
-  public SubCodeArea(Element mainDiv, DivElement choicesDiv,
+  private SubCodeArea(Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
