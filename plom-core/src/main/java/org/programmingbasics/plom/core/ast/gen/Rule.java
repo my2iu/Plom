@@ -77,6 +77,12 @@ public class Rule
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
 	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression);
 	public final static List<Symbol> ForExpressionOnly_ForExpression_EndStatement = Arrays.asList(Symbol.ForExpressionOnly, Symbol.ForExpression, Symbol.EndStatement);
+	public final static List<Symbol> FullVariableDeclaration_VariableDeclarationOrEmpty_EndStatement = Arrays.asList(Symbol.FullVariableDeclaration, Symbol.VariableDeclarationOrEmpty, Symbol.EndStatement);
+	public final static List<Symbol> VariableDeclarationOrEmpty_VariableDeclaration = Arrays.asList(Symbol.VariableDeclarationOrEmpty, Symbol.VariableDeclaration);
+	public final static List<Symbol> VariableDeclarationOrEmpty = Arrays.asList(Symbol.VariableDeclarationOrEmpty);
+	public final static List<Symbol> VariableDeclaration_VarDeclarationStatement = Arrays.asList(Symbol.VariableDeclaration, Symbol.VarDeclarationStatement);
+	public final static List<Symbol> VariableDeclaration_DUMMY_COMMENT_VariableDeclarationOrEmpty = Arrays.asList(Symbol.VariableDeclaration, Symbol.DUMMY_COMMENT, Symbol.VariableDeclarationOrEmpty);
+	public final static List<Symbol> VarDeclarationStatement_Var_DotDeclareIdentifier_VarType = Arrays.asList(Symbol.VarDeclarationStatement, Symbol.Var, Symbol.DotDeclareIdentifier, Symbol.VarType);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
 	public final static List<Symbol> This = Arrays.asList(Symbol.This);

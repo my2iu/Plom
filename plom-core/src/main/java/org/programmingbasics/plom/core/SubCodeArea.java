@@ -1,16 +1,14 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
-import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
-import elemental.events.UIEvent;
 import elemental.html.DivElement;
 import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsType;
@@ -26,36 +24,47 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 {
   EventRemover docFocusListener;
   
+  public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
+      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element codeDivInteriorForScrollPadding, Element divForWindowWidth,
+      SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
+  {
+    SubCodeArea codeArea = new SubCodeArea(mainDiv, choicesDiv,
+        cursorOverlay, simpleEntryDiv, sideChoices,
+        codeDivInteriorForScrollPadding, divForWindowWidth,
+        widthCalculator);
+    codeArea.defaultParseContext = Symbol.FullVariableDeclaration;
+    
+    CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false, false);
+    codeArea.docFocusListener = Browser.getDocument().addEventListener(Event.BLUR, (evt) -> {
+      // Listen for what has focus across the document so that if focus
+      // is outside the coding area or related input elements
+      boolean hasFocus = codeArea.isFocusInCodingArea((Node)((MouseEvent)evt).getRelatedTarget());
+      if (!hasFocus)
+      {
+        codeArea.hideChoicesDiv();
+        codeArea.simpleEntry.setVisible(false);
+      }
+    }, true);
+    return codeArea;
+  }
+  
   public SubCodeArea(Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
-    codeSvg = (SVGSVGElement)mainDiv.querySelector("svg.codeareasvg");
+    this.codeSvg = (SVGSVGElement)mainDiv.querySelector("svg.codeareasvg");
     this.widthCalculator = widthCalculator;
 
-    codeDiv = (DivElement)mainDiv;
-    divForDeterminingWindowWidth = (DivElement)divForWindowWidth;
+    this.codeDiv = (DivElement)mainDiv;
+    this.divForDeterminingWindowWidth = (DivElement)divForWindowWidth;
     this.codeDivInteriorForScrollPadding = codeDivInteriorForScrollPadding;
     
     this.choicesDiv = choicesDiv;
-    cursorOverlayEl = cursorOverlay;
-    simpleEntry = new SimpleEntry((DivElement)simpleEntryDiv,
+    this.cursorOverlayEl = cursorOverlay;
+    this.simpleEntry = new SimpleEntry((DivElement)simpleEntryDiv,
         (DivElement)sideChoices);
-
-    CodePanel.startHookCodeWidget(this, codeDiv, false, false);
-    docFocusListener = Browser.getDocument().addEventListener(Event.BLUR, (evt) -> {
-      // Listen for what has focus across the document so that if focus
-      // is outside the coding area or related input elements
-      boolean hasFocus = isFocusInCodingArea((Node)((MouseEvent)evt).getRelatedTarget());
-      Browser.getWindow().getConsole().log((Node)((MouseEvent)evt).getTarget());
-      Browser.getWindow().getConsole().log((Node)((MouseEvent)evt).getRelatedTarget());
-      if (!hasFocus)
-      {
-        hideChoicesDiv();
-        simpleEntry.setVisible(false);
-      }
-    }, true);
   }
 
   private boolean isFocusInCodingArea(Node target)

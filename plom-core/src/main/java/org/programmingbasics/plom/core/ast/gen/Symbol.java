@@ -83,6 +83,10 @@ public enum Symbol
 	COMPOUND_FOR,
 	DUMMY_BEGIN,
 	DUMMY_END,
+	FullVariableDeclaration,
+	VariableDeclaration,
+	VariableDeclarationOrEmpty,
+	VarDeclarationStatement,
 	ASSEMBLED_STATEMENTS_BLOCK;
 	public boolean isTerminal()
 	{

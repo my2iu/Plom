@@ -72,6 +72,8 @@ public abstract class CodeWidgetBase
   CursorHandle cursorHandle2 = new CursorHandle();
   final static int HANDLE_SIZE = 20;
 
+  Symbol defaultParseContext = Symbol.FullStatement;
+  
   /** 
    * Allows for the configuration of what global variables/types there are
    * for type checking.
@@ -271,7 +273,7 @@ public abstract class CodeWidgetBase
     }
     
     // Parse the current statement up to the cursor position
-    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
     LL1Parser stmtParser = new LL1Parser();
     stmtParser.addToParse(parseContext.baseContext);
     for (Token tok: parseContext.tokens)
@@ -450,7 +452,7 @@ public abstract class CodeWidgetBase
     // options to show some more
     
     // Parse the current statement up to the cursor position
-    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
     LL1Parser stmtParser = new LL1Parser();
     stmtParser.addToParse(parseContext.baseContext);
     for (Token tok: parseContext.tokens)
@@ -557,7 +559,7 @@ public abstract class CodeWidgetBase
     String fragmentStr = Clipboard.instance.getCodeFragment();
     if (fragmentStr == null) return;
     
-    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(codeList, cursorPos, 0);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
     boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly); 
     try {
       PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
@@ -1135,8 +1137,6 @@ public abstract class CodeWidgetBase
     static final double rightPadding = 10;
     static final double topPadding = 10;
     static final double bottomPadding = 10;
-
-
     
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {

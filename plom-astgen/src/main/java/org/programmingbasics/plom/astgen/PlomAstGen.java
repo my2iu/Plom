@@ -99,6 +99,14 @@ public class PlomAstGen
       rule(ReturnStatement, Return, Expression),
       rule(ForExpression, DotDeclareIdentifier, VarType, In, Expression),
       rule(ForExpressionOnly, ForExpression, EndStatement),
+
+      rule(FullVariableDeclaration, VariableDeclarationOrEmpty, EndStatement),
+      rule(VariableDeclarationOrEmpty, VariableDeclaration),
+      rule(VariableDeclarationOrEmpty),
+      rule(VariableDeclaration, VarDeclarationStatement),
+      rule(VariableDeclaration, DUMMY_COMMENT, VariableDeclarationOrEmpty),
+      rule(VarDeclarationStatement, Var, DotDeclareIdentifier, VarType),
+
 //      rule(IfMore, COMPOUND_ELSEIF, OptionalComm ent, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),
 //      rule(OptionalComment),
