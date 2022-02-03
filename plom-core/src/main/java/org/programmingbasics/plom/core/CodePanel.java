@@ -52,6 +52,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
   static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean handleTouchScrolling, boolean hasFocus)
   {
+    codePanel.hasFocus = hasFocus;
     if (hasFocus)
       codePanel.showChoicesDiv();
     codePanel.simpleEntry.setVisible(false);

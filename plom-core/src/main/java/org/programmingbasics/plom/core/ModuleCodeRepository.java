@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
@@ -297,6 +298,9 @@ public class ModuleCodeRepository
   /** Special flag for when this module is being used to develop the standard library */
   public boolean isNoStdLibFlag = false;
 
+  /** Code for global variable declarations */
+  StatementContainer variableDeclarationCode = new StatementContainer();
+  
   public ModuleCodeRepository()
   {
 //    // Create a basic main function that can be filled in
@@ -532,6 +536,32 @@ public class ModuleCodeRepository
     if (module != this)
       throw new IllegalArgumentException("Not deleting global var from correct chained module");
     globalVars.remove(id);
+  }
+  
+  public StatementContainer getVariableDeclarationCode()
+  {
+    return variableDeclarationCode;
+  }
+  
+  public void setVariableDeclarationCode(StatementContainer code)
+  {
+    variableDeclarationCode = code;
+  }
+
+  private void fillChainedVariableDeclarationCode(StatementContainer mergedCode)
+  {
+    if (chainedRepository != null)
+      chainedRepository.fillChainedVariableDeclarationCode(mergedCode);
+    for (TokenContainer tokens: variableDeclarationCode.statements)
+      mergedCode.statements.add(tokens.copy());
+  }
+  
+  public StatementContainer getImportedVariableDeclarationCode()
+  {
+    StatementContainer mergedCode = new StatementContainer();
+    if (chainedRepository != null)
+      chainedRepository.fillChainedVariableDeclarationCode(mergedCode);
+    return mergedCode;
   }
   
   private void fillChainedClasses(List<ClassDescription> mergedClassList)

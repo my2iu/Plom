@@ -188,6 +188,12 @@ public class GlobalsPanel implements AutoCloseable
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {
+        // Updates the code in the repository (this is not actually
+        // necessary since the StatementContainer in the variable area
+        // is set to the same object as the one in the repository, but
+        // I'm doing an explicit update in case that changes)
+        repository.setVariableDeclarationCode(variableArea.codeList);
+        
         // Update error list
         variableArea.codeErrors.clear();
         try {
@@ -211,8 +217,7 @@ public class GlobalsPanel implements AutoCloseable
 //        }
 //      }
     });
-
-    
+    variableArea.setCode(repository.getVariableDeclarationCode());
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)

@@ -13,16 +13,13 @@ import elemental.html.DivElement;
 import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsType;
 
-// - loss of focus
-// - change in grammar
-
 /**
  * Coding area that's just part of a larger page
  */
 @JsType
 public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 {
-  EventRemover docFocusListener;
+  EventRemover docBlurListener;
   
   public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
@@ -36,7 +33,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     codeArea.defaultParseContext = Symbol.FullVariableDeclaration;
     
     CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false, false);
-    codeArea.docFocusListener = Browser.getDocument().addEventListener(Event.BLUR, (evt) -> {
+    codeArea.docBlurListener = Browser.getDocument().addEventListener(Event.BLUR, (evt) -> {
       // Listen for what has focus across the document so that if focus
       // is outside the coding area or related input elements
       boolean hasFocus = codeArea.isFocusInCodingArea((Node)((MouseEvent)evt).getRelatedTarget());
@@ -44,8 +41,10 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       {
         codeArea.hideChoicesDiv();
         codeArea.simpleEntry.setVisible(false);
+        codeArea.hasFocus = false;
       }
     }, true);
+    
     return codeArea;
   }
   
@@ -101,7 +100,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 
   @Override public void close()
   {
-    docFocusListener.remove();
+    docBlurListener.remove();
     super.close();
   }
 }

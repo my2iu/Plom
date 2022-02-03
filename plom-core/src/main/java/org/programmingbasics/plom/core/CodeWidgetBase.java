@@ -74,6 +74,8 @@ public abstract class CodeWidgetBase
 
   Symbol defaultParseContext = Symbol.FullStatement;
   
+  boolean hasFocus = true;
+  
   /** 
    * Allows for the configuration of what global variables/types there are
    * for type checking.
@@ -114,7 +116,8 @@ public abstract class CodeWidgetBase
   {
     this.codeList = code;
     updateCodeView(true);
-    showPredictedTokenInput();
+    if (hasFocus)
+      showPredictedTokenInput();
 //    hookCodeScroller(codeDiv);
 //    hookCodeClick(codeDiv);
   }
@@ -200,6 +203,7 @@ public abstract class CodeWidgetBase
 
   void showPredictedTokenInput()
   {
+    hasFocus = true;
     choicesDiv.setInnerHTML("");
     showChoicesDiv();
     simpleEntry.setVisible(false);
