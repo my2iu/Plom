@@ -40,8 +40,11 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       if (!hasFocus)
       {
         codeArea.hideChoicesDiv();
+        // Careful here. On losing focus, the simple entry will close
+        // but won't fire an event saying that text entry has completed
         codeArea.simpleEntry.setVisible(false);
         codeArea.hasFocus = false;
+        codeArea.updateCursorVisibilityIfFocused();
       }
     }, true);
     

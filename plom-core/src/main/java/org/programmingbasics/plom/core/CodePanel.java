@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;
@@ -168,6 +169,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       updateForScroll();
       
       // Draw cursors
+      updateCursorVisibilityIfFocused();
       final int caretYOffset = cursorDiv.getOffsetHeight();
       final double caretOriginXOffset = (double)cursorDiv.getOffsetWidth() / 2;
       final double caretOriginYOffset = (double)cursorDiv.getOffsetHeight() * 0.8;

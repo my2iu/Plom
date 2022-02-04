@@ -204,6 +204,7 @@ public abstract class CodeWidgetBase
   void showPredictedTokenInput()
   {
     hasFocus = true;
+    updateCursorVisibilityIfFocused();
     choicesDiv.setInnerHTML("");
     showChoicesDiv();
     simpleEntry.setVisible(false);
@@ -552,7 +553,8 @@ public abstract class CodeWidgetBase
       if (currentToken instanceof Token.TokenWithSymbol)
         tokenType = ((Token.TokenWithSymbol)currentToken).getType();
       
-      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT)
+      if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT
+          || tokenType == Symbol.AtType || tokenType == Symbol.DotVariable)
         return true;
     }
     return false;
@@ -920,6 +922,14 @@ public abstract class CodeWidgetBase
     }, false);
   }
 
+  void updateCursorVisibilityIfFocused()
+  {
+    if (hasFocus)
+      cursorOverlayEl.getStyle().clearDisplay();
+    else
+      cursorOverlayEl.getStyle().setDisplay(Display.NONE);
+  }
+  
   protected static void hookCodeScroller(DivElement div, boolean handleTouchScrolling)
   {
       class PointerScrollInfo {
@@ -1224,6 +1234,7 @@ public abstract class CodeWidgetBase
       updateForScroll();
       
       // Draw cursors
+      updateCursorVisibilityIfFocused();
       updatePrimaryCursor(x, y, 0, 0, 0);
       updateSecondaryCursor(renderedHitBoxes, x, y, 0);
     }
