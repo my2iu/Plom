@@ -673,6 +673,12 @@ public class ModuleCodeRepository
     {
       saveVariable(out, v);
     }
+    out.token("vardecls");
+    out.token("{");
+    out.newline();
+    PlomTextWriter.writeStatementContainer(out, variableDeclarationCode);
+    out.token("}");
+    out.newline();
     
     // Output global functions
     List<FunctionDescription> sortedFunctions = new ArrayList<>(functions);
@@ -825,6 +831,17 @@ public class ModuleCodeRepository
       else if ("stdlib".equals(peek))
       {
         loadModuleStdLibFlag(lexer);
+      }
+      else if ("vardecls".equals(peek))
+      {
+        lexer.expectToken("vardecls");
+        lexer.swallowOptionalNewlineToken();
+        lexer.expectToken("{");
+        lexer.swallowOptionalNewlineToken();
+        StatementContainer code = PlomTextReader.readStatementContainer(lexer);
+        variableDeclarationCode = code;
+        lexer.expectToken("}");
+        lexer.swallowOptionalNewlineToken();
       }
       else
         throw new PlomReadException("Unexpected module contents", lexer);

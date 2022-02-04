@@ -1,6 +1,9 @@
  module .{program} {
  stdlib { -1 }
  var . { var } @ {object }
+ vardecls {
+ var . {test global var } @ {object }
+ }
  function . {input: . { prompt } @ {string } } @ {string } {
  // Displays a prompt asking for input and returns the value entered by the user
  primitive

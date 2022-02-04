@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,6 +24,8 @@ public class ModuleCodeRepositoryTest extends TestCase
   static ModuleCodeRepository repository = new ModuleCodeRepository();
   static {
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.setVariableDeclarationCode(new StatementContainer(new TokenContainer(
+        Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
     repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "get"),
@@ -143,7 +146,10 @@ public class ModuleCodeRepositoryTest extends TestCase
 
     repository.saveModule(out, true);
     Assert.assertEquals(" module .{program} {\n" + 
-        " var . { var } @ {string }\n" + 
+        " var . { var } @ {string }\n" +
+        " vardecls {\n" +
+        " var\n" +
+        " }\n" +
         " function . {get } @ {number } {\n" + 
         " return 3\n" + 
         " }\n" + 
@@ -164,6 +170,9 @@ public class ModuleCodeRepositoryTest extends TestCase
   {
     String codeStr = " module .{program} {\n" + 
         " var . { variable } @ {string }\n" + 
+        " vardecls {\n" +
+        " var\n" +
+        " }\n" +
         " function . {get } @ {number } {\n" + 
         " return 3\n" + 
         " }\n" + 
@@ -191,6 +200,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertTrue(loaded.getFunctionWithName("get") != null);
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
+    Assert.assertEquals(loaded.getVariableDeclarationCode().statements.size(), 1);
+    Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.size(), 1);
+    Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
     // If a class already exists, just augment that class, don't create a completely new class with the same name
     Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class 2")).count());
