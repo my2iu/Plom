@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.interpreter.ExpressionEvaluatorTest;
 import org.programmingbasics.plom.core.interpreter.MachineContextTest;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.interpreter.StandardLibraryTest;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreterTest;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractorTest;
 import org.programmingbasics.plom.core.view.CodeNestingCounterTest;
 import org.programmingbasics.plom.core.view.CodePositionTest;
@@ -42,6 +43,7 @@ public class CoreTestSuite extends TestSuite
       suite.addTestSuite(MachineContextTest.class);
       suite.addTestSuite(ExpressionEvaluatorTest.class);
       suite.addTestSuite(SimpleInterpreterTest.class);
+      suite.addTestSuite(VariableDeclarationInterpreterTest.class);
       suite.addTestSuite(StandardLibraryTest.class);
       suite.addTestSuite(InsertNewLineTest.class);
       suite.addTestSuite(InsertTokenTest.class);

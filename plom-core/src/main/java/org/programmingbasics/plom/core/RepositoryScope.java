@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -21,6 +22,7 @@ import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 import jsinterop.annotations.JsType;
@@ -36,6 +38,7 @@ public class RepositoryScope extends VariableScope
   private ModuleCodeRepository repository;
   private CoreTypeLibrary coreTypes;
   private Map<String, ClassDescription> codeRepositoryClasses;
+  private List<String> globalVariableSuggestions = new ArrayList<>();
   
   public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes)
   {
@@ -96,6 +99,27 @@ public class RepositoryScope extends VariableScope
         }
       }
     }
+    ErrorList errors = new ErrorList();
+    VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
+        (name, type) -> {
+          if (type == null) type = coreTypes.getVoidType();
+          addVariable(name, type, coreTypes.getNullValue());
+          globalVariableSuggestions.add(name);
+        };
+    VariableDeclarationInterpreter.TypeLookup typeLookup =
+        token -> {
+          try {
+            return typeFromToken(token);
+          } catch (RunException e) {
+            // skip any errors
+            return null;
+          }
+        };
+    VariableDeclarationInterpreter.fromStatements(repository.getImportedVariableDeclarationCode(),
+        variableDeclarer, typeLookup, errors);
+    VariableDeclarationInterpreter.fromStatements(repository.getVariableDeclarationCode(),
+        variableDeclarer, typeLookup, errors);
+    globalVariableSuggestions.sort(null);
   }
   
   private Type makeFunctionType(FunctionDescription func) throws RunException
@@ -290,5 +314,7 @@ public class RepositoryScope extends VariableScope
         suggestions.addSuggestion(v.name);
       }
     }
+    for (String name: globalVariableSuggestions)
+      suggestions.addSuggestion(name);
   }
 }
