@@ -177,7 +177,8 @@ public class GlobalsPanel implements AutoCloseable
         (Element)mainDiv.querySelector("svg.cursoroverlay"),
         (Element)mainDiv.querySelector("div.simpleentry"),
         (Element)mainDiv.querySelector("div.sidechoices"),
-        (Element)mainDiv.querySelector(".scrollable-interior .classesHeading"),
+        (Element)mainDiv.querySelector(".scrollable-interior"),
+        mainDiv.querySelector(".globaldetails"), 
         (Element)mainDiv.querySelector(".classesHeading"),
         widthCalculator);
     variableArea.setVariableContextConfigurator(

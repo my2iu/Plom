@@ -75,6 +75,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
 
     codeDiv = (DivElement)mainDiv.querySelector("div.code");
+    scrollingDivForDoNotCover = codeDiv;
     divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");

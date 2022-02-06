@@ -23,12 +23,14 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
   
   public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
-      Element codeDivInteriorForScrollPadding, Element divForWindowWidth,
+      Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
+      Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
     SubCodeArea codeArea = new SubCodeArea(mainDiv, choicesDiv,
         cursorOverlay, simpleEntryDiv, sideChoices,
-        codeDivInteriorForScrollPadding, divForWindowWidth,
+        codeDivInteriorForScrollPadding, scrollingDivForDoNotCover,
+        divForWindowWidth,
         widthCalculator);
     codeArea.defaultParseContext = Symbol.FullVariableDeclaration;
     
@@ -53,7 +55,8 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
   
   private SubCodeArea(Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
-      Element codeDivInteriorForScrollPadding, Element divForWindowWidth,
+      Element codeDivInteriorForScrollPadding, 
+      Element scrollingDivForDoNotCover, Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
     this.codeSvg = (SVGSVGElement)mainDiv.querySelector("svg.codeareasvg");
@@ -62,6 +65,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     this.codeDiv = (DivElement)mainDiv;
     this.divForDeterminingWindowWidth = (DivElement)divForWindowWidth;
     this.codeDivInteriorForScrollPadding = codeDivInteriorForScrollPadding;
+    this.scrollingDivForDoNotCover = scrollingDivForDoNotCover;
     
     this.choicesDiv = choicesDiv;
     this.cursorOverlayEl = cursorOverlay;

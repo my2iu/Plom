@@ -209,6 +209,11 @@ a.breadcrumb-item:visited {
 	overflow-y: auto;
 }
 
+.choices:focus {
+	border: 0px solid transparent;
+	border-top: 1px solid black;
+}
+
 .simpleentry {
 	background-color: #fff;
 	flex-grow: 0;

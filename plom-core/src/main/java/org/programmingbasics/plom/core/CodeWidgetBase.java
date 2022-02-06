@@ -1146,6 +1146,7 @@ public abstract class CodeWidgetBase
     DivElement codeDiv;
     DivElement divForDeterminingWindowWidth;
     Element codeDivInteriorForScrollPadding;
+    Element scrollingDivForDoNotCover;
 
     static final double leftPadding = 10;
     static final double rightPadding = 10;
@@ -1194,7 +1195,7 @@ public abstract class CodeWidgetBase
 
     @Override void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight)
     {
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
+      simpleEntry.scrollForDoNotCover(scrollingDivForDoNotCover, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
     }
 
     @Override void updateCodeView(boolean isCodeChanged)
