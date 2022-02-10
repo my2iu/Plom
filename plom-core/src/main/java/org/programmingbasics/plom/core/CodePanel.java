@@ -81,7 +81,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    cursorOverlay = new CursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
+    cursorOverlay = new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
         (DivElement)mainDiv.querySelector("div.sidechoices"));
   }
@@ -101,7 +101,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
       codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-      cursorOverlay = new CursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
+      cursorOverlay = new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
       simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
           (DivElement)mainDiv.querySelector("div.sidechoices"));
     }
