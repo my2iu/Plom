@@ -7,8 +7,10 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.HitDetect;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -79,7 +81,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
     choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
+    cursorOverlay = new CursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
         (DivElement)mainDiv.querySelector("div.sidechoices"));
   }
@@ -99,7 +101,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
       codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
       choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-      cursorOverlayEl = (Element)mainDiv.querySelector("svg.cursoroverlay");
+      cursorOverlay = new CursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
       simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
           (DivElement)mainDiv.querySelector("div.sidechoices"));
     }
@@ -109,14 +111,9 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       // Not used in Dom version of code
     }
 
-    @Override CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle)
+    @Override CodePosition hitDetectPointer(double x, double y, double cursorHandleXOffset, double cursorHandleYOffset)
     {
-      double xOffset = 0, yOffset = 0;
-      if (cursorHandle != null)
-      {
-        xOffset = cursorHandle.xOffset;
-        yOffset = cursorHandle.yOffset;
-      }
+      double xOffset = cursorHandleXOffset, yOffset = cursorHandleYOffset;
       return HitDetect.renderAndHitDetect((int)(x + xOffset), (int)(y + yOffset), codeDivInterior, codeList, cursorPos, codeErrors);
     }
 
@@ -148,8 +145,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
     @Override void updateForScroll()
     {
-       String cssScrollTranslate = "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")";
-       cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
+      cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()), (- codeDiv.getScrollTop()));
     }
     
     // We need the renderedhitboxes of the code to figure out where
@@ -174,9 +170,15 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       final int caretYOffset = cursorDiv.getOffsetHeight();
       final double caretOriginXOffset = (double)cursorDiv.getOffsetWidth() / 2;
       final double caretOriginYOffset = (double)cursorDiv.getOffsetHeight() * 0.8;
-      updatePrimaryCursor(x, y, caretYOffset, caretOriginXOffset,
+      cursorOverlay.updatePrimaryCursor(x, y, caretYOffset, caretOriginXOffset,
           caretOriginYOffset);
-      updateSecondaryCursor(renderedHitBoxes, x, y, caretYOffset);
+      // Secondary cursor
+      CursorRect selectionCursorRect = null;
+      if (selectionCursorPos != null)
+      {
+        selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
+      }
+      cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, caretYOffset);
     }
   }
 }

@@ -68,7 +68,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     this.scrollingDivForDoNotCover = scrollingDivForDoNotCover;
     
     this.choicesDiv = choicesDiv;
-    this.cursorOverlayEl = cursorOverlay;
+    this.cursorOverlay = new CursorOverlay(this, cursorOverlay);
     this.simpleEntry = new SimpleEntry((DivElement)simpleEntryDiv,
         (DivElement)sideChoices);
   }

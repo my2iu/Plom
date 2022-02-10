@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,6 +51,7 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.events.EventTarget;
+import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
@@ -57,20 +59,16 @@ import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
-public abstract class CodeWidgetBase
+public abstract class CodeWidgetBase 
 {
   // References to other parts of the UI (possibly outside the coding area)
   SimpleEntry simpleEntry;
   DivElement choicesDiv;
-  Element cursorOverlayEl;
-
+  CursorOverlay cursorOverlay;
+  
   StatementContainer codeList = new StatementContainer();
   CodePosition cursorPos = new CodePosition();
   CodePosition selectionCursorPos = null;
-
-  CursorHandle cursorHandle1 = new CursorHandle();
-  CursorHandle cursorHandle2 = new CursorHandle();
-  final static int HANDLE_SIZE = 20;
 
   Symbol defaultParseContext = Symbol.FullStatement;
   
@@ -110,6 +108,231 @@ public abstract class CodeWidgetBase
   }
   List<QuickSuggestion> suggestions = new ArrayList<>();
   public void setQuickSuggestions(Collection<QuickSuggestion> newSuggestions) { suggestions = new ArrayList<>(newSuggestions); }
+
+  
+  static class CursorOverlay
+  {
+    Element el;
+
+    CodeWidgetBase codeWidget;
+    
+    CursorOverlay(CodeWidgetBase codeWidget, Element cursorOverlayEl)
+    {
+      this.codeWidget = codeWidget;
+      this.el = cursorOverlayEl;
+    }
+    
+    CursorHandle cursorHandle1 = new CursorHandle();
+    CursorHandle cursorHandle2 = new CursorHandle();
+    final static int HANDLE_SIZE = 20;
+
+    int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
+    double pointerDownX = 0;
+    double pointerDownY = 0;
+
+    // When in full-screen, the code div can scroll, but the cursor overlay
+    // spans the coding area and does not scroll, so we need to move the cursors
+    // to match the scrolling of the coding area
+    void adjustForCodeDivScrolling(double dx, double dy)
+    {
+      String cssScrollTranslate = "translate(" + (dx) + " " + (dy) + ")";
+      el.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
+
+    }
+    
+    void hookCursorHandles(DivElement codeDiv)
+    {
+      // The codeDiv should not be a parent of the 
+      // cursorOverlayEl (svg element containing the cursor overlay).
+      // Otherwise, dragging of the cursors on the cursor overlay will
+      // send click events to the codeDiv.
+      hookCursorHandle(codeDiv, (Element)el.querySelectorAll(".cursorhandle").item(0), 1);
+      hookCursorHandle(codeDiv, (Element)el.querySelectorAll(".cursorhandle").item(1), 2);
+    }
+    
+    void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
+    {
+      addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
+        PointerEvent pevt = (PointerEvent)evt;
+        setPointerCapture(cursorHandleEl, pevt.getPointerId());
+//        setPointerCapture(Browser.getDocument().querySelector(".asd"),
+//            pevt.getPointerId());
+        evt.preventDefault();
+        evt.stopPropagation();
+        pointerDownHandle = cursorId;
+        double x = pointerToRelativeX(pevt, div);
+        double y = pointerToRelativeY(pevt, div);
+        pointerDownX = x;
+        pointerDownY = y;
+      }, false);
+      addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
+        PointerEvent pevt = (PointerEvent)evt;
+        if (pointerDownHandle != 0)
+        {
+          double x = pointerToRelativeX(pevt, div);
+          double y = pointerToRelativeY(pevt, div);
+          pointerDownX = x;
+          pointerDownY = y;
+          if (pointerDownHandle == 1)
+          {
+            double xOffset = 0, yOffset = 0;
+            if (cursorHandle1 != null)
+            {
+              xOffset = cursorHandle1.xOffset;
+              yOffset = cursorHandle1.yOffset;
+            }
+            codeWidget.cursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
+          }
+          else if (pointerDownHandle == 2)
+          {
+            double xOffset = 0, yOffset = 0;
+            if (cursorHandle2 != null)
+            {
+              xOffset = cursorHandle2.xOffset;
+              yOffset = cursorHandle2.yOffset;
+            }
+            codeWidget.cursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
+
+          }
+        }
+        evt.preventDefault();
+        evt.stopPropagation();
+      }, false);
+      cursorHandleEl.addEventListener("pointerup", (evt) -> {
+        PointerEvent pevt = (PointerEvent)evt;
+        releasePointerCapture(cursorHandleEl, pevt.getPointerId());
+        evt.preventDefault();
+        evt.stopPropagation();
+        pointerDownHandle = 0;
+        codeWidget.cursorHandleEndMove();
+      }, false);
+      cursorHandleEl.addEventListener("pointercancel", (evt) -> {
+        PointerEvent pevt = (PointerEvent)evt;
+        pointerDownHandle = 0;
+        releasePointerCapture(cursorHandleEl, pevt.getPointerId());
+        codeWidget.cursorHandleEndMove();
+      }, false);
+      
+    }
+
+    void updatePrimaryCursor(double x, double y, final int caretYOffset,
+        final double caretOriginXOffset, final double caretOriginYOffset)
+    {
+      if (pointerDownHandle == 1)
+      {
+        ((Element)el.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
+      }
+      else
+      {
+        ((Element)el.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + caretYOffset + HANDLE_SIZE) + ")");
+      }
+      cursorHandle1.x = x;
+      cursorHandle1.y = y + caretYOffset + HANDLE_SIZE + 2;
+      cursorHandle1.xOffset = (x + caretOriginXOffset) - cursorHandle1.x; 
+      cursorHandle1.yOffset = (y + caretOriginYOffset) - cursorHandle1.y;
+    }
+
+    void updateSecondaryCursor(CursorRect selectionCursorRect, CodePosition selectionCursorPos, double x, double y, int caretYOffset)
+    {
+      // Draw caret for the secondary cursor
+      Element caretCursor = el.querySelector(".cursorcaret"); 
+      if (selectionCursorRect != null)
+      {
+        caretCursor.getStyle().clearDisplay();
+        caretCursor.setAttribute("x1", "" + selectionCursorRect.left);
+        caretCursor.setAttribute("x2", "" + selectionCursorRect.left);
+        caretCursor.setAttribute("y1", "" + selectionCursorRect.top);
+        caretCursor.setAttribute("y2", "" + selectionCursorRect.bottom);
+      }
+      else
+      {
+          caretCursor.getStyle().setDisplay(Display.NONE);
+      }
+      // Secondary cursor handle
+      if (selectionCursorRect == null)
+      {
+        // If there is no secondary cursor to draw a handle around, draw
+        // the handle relative to the main cursor instead
+        selectionCursorRect = new CursorRect(x, y, y + caretYOffset);
+      }
+      x = selectionCursorRect.left;
+      y = selectionCursorRect.top;
+      if (pointerDownHandle == 2)
+      {
+        ((Element)el.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
+//        cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
+//        cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
+      }
+      else
+      {
+        if (selectionCursorPos != null)
+        {
+          ((Element)el.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+        }
+        else
+        {
+          ((Element)el.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
+        }
+        cursorHandle2.x = x;
+        cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
+        cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
+        cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
+      }
+    }
+
+    void updateCursorVisibilityIfFocused(boolean hasFocus)
+    {
+      if (hasFocus)
+        el.getStyle().clearDisplay();
+      else
+        el.getStyle().setDisplay(Display.NONE);
+    }
+
+    void updateCaret(CursorRect cursorRect)
+    {
+      Element caretCursor = el.querySelector(".maincursorcaret"); 
+      if (cursorRect != null)
+      {
+        caretCursor.getStyle().clearDisplay();
+        caretCursor.setAttribute("x1", "" + cursorRect.left);
+        caretCursor.setAttribute("x2", "" + cursorRect.left);
+        caretCursor.setAttribute("y1", "" + cursorRect.top);
+        caretCursor.setAttribute("y2", "" + cursorRect.bottom);
+      }
+    }
+
+    /**
+     * For on-screen cursor handle that user can drag to move the cursor
+     */
+    protected static class CursorHandle
+    {
+      double x, y;
+      double xOffset, yOffset;
+    }
+  }
+
+  // Callback from the cursor overlay when the user has stopped dragging a cursor
+  void cursorHandleEndMove()
+  {
+    updateCodeView(false);
+    showPredictedTokenInput();
+  }
+
+  // Callback from the cursor overlay when the user is dragging a cursor by its handle
+  void cursorHandleMoving(double x, double y, int pointerDownHandle, double cursorHandleXOffset, double cursorHandleYOffset)
+  {
+    CodePosition newPos = hitDetectPointer(x, y, cursorHandleXOffset, cursorHandleYOffset);
+    if (newPos == null)
+      newPos = new CodePosition();
+    if (pointerDownHandle == 1)
+      cursorPos = newPos;
+    else if (pointerDownHandle == 2)
+      selectionCursorPos = newPos;
+    if (Objects.equals(selectionCursorPos, cursorPos))
+      selectionCursorPos = null;
+    updateCodeView(false);
+//        showPredictedTokenInput(choicesDiv);
+  }
 
   
   public void setCode(StatementContainer code)
@@ -718,7 +941,7 @@ public abstract class CodeWidgetBase
 
   abstract void updateCodeView(boolean isCodeChanged);
   abstract void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight);
-  abstract CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle);
+  abstract CodePosition hitDetectPointer(double x, double y, double cursorHandleXOffset, double cursorHandleYOffset);
   abstract void updateForScroll();
   abstract void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef);
   
@@ -734,169 +957,18 @@ public abstract class CodeWidgetBase
   }
   
 
-  /**
-   * For on-screen cursor handle that user can drag to move the cursor
-   */
-  protected static class CursorHandle
-  {
-    double x, y;
-    double xOffset, yOffset;
-  }
-  
-  int pointerDownHandle = 0;  // 0 - pointer was not pressed on a handle
-  double pointerDownX = 0;
-  double pointerDownY = 0;
-
   
   // Map single touch position to be relative to the code panel 
-  private double pointerToRelativeX(PointerEvent evt, DivElement div)
+  private static double pointerToRelativeX(MouseEvent evt, DivElement div)
   {
     ClientRect rect = div.getBoundingClientRect();
     return (evt.getClientX() - rect.getLeft()) + div.getScrollLeft();
   }
 
-  private double pointerToRelativeY(PointerEvent evt, DivElement div)
+  private static double pointerToRelativeY(MouseEvent evt, DivElement div)
   {
     ClientRect rect = div.getBoundingClientRect();   
     return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
-  }
-
-  void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
-  {
-    addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      setPointerCapture(cursorHandleEl, pevt.getPointerId());
-//      setPointerCapture(Browser.getDocument().querySelector(".asd"),
-//          pevt.getPointerId());
-      evt.preventDefault();
-      evt.stopPropagation();
-      pointerDownHandle = cursorId;
-      double x = pointerToRelativeX(pevt, div);
-      double y = pointerToRelativeY(pevt, div);
-      pointerDownX = x;
-      pointerDownY = y;
-    }, false);
-    addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      if (pointerDownHandle != 0)
-      {
-        double x = pointerToRelativeX(pevt, div);
-        double y = pointerToRelativeY(pevt, div);
-        pointerDownX = x;
-        pointerDownY = y;
-        if (pointerDownHandle == 1)
-        {
-          CodePosition newPos = hitDetectPointer(x, y, cursorHandle1);
-          if (newPos == null)
-            newPos = new CodePosition();
-          cursorPos = newPos;
-          if (cursorPos.equals(selectionCursorPos))
-            selectionCursorPos = null;
-        }
-        else if (pointerDownHandle == 2)
-        {
-          CodePosition newPos = hitDetectPointer(x, y, cursorHandle2);
-          if (newPos == null)
-            newPos = new CodePosition();
-          if (newPos.equals(cursorPos))
-            selectionCursorPos = null;
-          else
-            selectionCursorPos = newPos;
-        }
-        updateCodeView(false);
-//        showPredictedTokenInput(choicesDiv);
-      }
-      evt.preventDefault();
-      evt.stopPropagation();
-    }, false);
-    cursorHandleEl.addEventListener("pointerup", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      releasePointerCapture(cursorHandleEl, pevt.getPointerId());
-      evt.preventDefault();
-      evt.stopPropagation();
-      pointerDownHandle = 0;
-      updateCodeView(false);
-      showPredictedTokenInput();
-    }, false);
-    cursorHandleEl.addEventListener("pointercancel", (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
-      pointerDownHandle = 0;
-      releasePointerCapture(cursorHandleEl, pevt.getPointerId());
-      updateCodeView(false);
-      showPredictedTokenInput();
-    }, false);
-    
-  }
-  
-  void updatePrimaryCursor(double x, double y, final int caretYOffset,
-      final double caretOriginXOffset, final double caretOriginYOffset)
-  {
-    if (pointerDownHandle == 1)
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
-    }
-    else
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0)).setAttribute("transform", "translate(" + (x) + " " + (y + caretYOffset + HANDLE_SIZE) + ")");
-    }
-    cursorHandle1.x = x;
-    cursorHandle1.y = y + caretYOffset + HANDLE_SIZE + 2;
-    cursorHandle1.xOffset = (x + caretOriginXOffset) - cursorHandle1.x; 
-    cursorHandle1.yOffset = (y + caretOriginYOffset) - cursorHandle1.y;
-  }
-
-  void updateSecondaryCursor(RenderedHitBox renderedHitBoxes, double x, double y, int caretYOffset)
-  {
-    // Secondary cursor
-    CursorRect selectionCursorRect = null;
-    if (selectionCursorPos != null)
-    {
-      selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
-    }
-    // Draw caret for the secondary cursor
-    Element caretCursor = cursorOverlayEl.querySelector(".cursorcaret"); 
-    if (selectionCursorRect != null)
-    {
-      caretCursor.getStyle().clearDisplay();
-      caretCursor.setAttribute("x1", "" + selectionCursorRect.left);
-      caretCursor.setAttribute("x2", "" + selectionCursorRect.left);
-      caretCursor.setAttribute("y1", "" + selectionCursorRect.top);
-      caretCursor.setAttribute("y2", "" + selectionCursorRect.bottom);
-    }
-    else
-    {
-        caretCursor.getStyle().setDisplay(Display.NONE);
-    }
-    // Secondary cursor handle
-    if (selectionCursorRect == null)
-    {
-      // If there is no secondary cursor to draw a handle around, draw
-      // the handle relative to the main cursor instead
-      selectionCursorRect = new CursorRect(x, y, y + caretYOffset);
-    }
-    x = selectionCursorRect.left;
-    y = selectionCursorRect.top;
-    if (pointerDownHandle == 2)
-    {
-      ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (pointerDownX) + " " + (pointerDownY) + ")");
-//      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
-//      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
-    }
-    else
-    {
-      if (selectionCursorPos != null)
-      {
-        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      }
-      else
-      {
-        ((Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1)).setAttribute("transform", "translate(" + (x + 2.5 * HANDLE_SIZE) + " " + (selectionCursorRect.bottom + HANDLE_SIZE) + ")");
-      }
-      cursorHandle2.x = x;
-      cursorHandle2.y = selectionCursorRect.bottom + HANDLE_SIZE + 2;
-      cursorHandle2.xOffset = selectionCursorRect.left - cursorHandle2.x; 
-      cursorHandle2.yOffset = (selectionCursorRect.top * 0.2 + selectionCursorRect.bottom * 0.8) - cursorHandle2.y;
-    }
   }
 
   void hookCodeClick(DivElement div)
@@ -904,14 +976,13 @@ public abstract class CodeWidgetBase
     div.addEventListener(Event.SCROLL, (evt) -> {
        updateForScroll();
     }, false);
-    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(0), 1);
-    hookCursorHandle(div, (Element)cursorOverlayEl.querySelectorAll(".cursorhandle").item(1), 2);
+    cursorOverlay.hookCursorHandles(div);
     
     div.addEventListener(Event.CLICK, (evt) -> {
-      PointerEvent pevt = (PointerEvent)evt;
+      MouseEvent pevt = (MouseEvent)evt;
       double x = pointerToRelativeX(pevt, div);
       double y = pointerToRelativeY(pevt, div);
-      CodePosition newPos = hitDetectPointer(x, y, null);
+      CodePosition newPos = hitDetectPointer(x, y, 0, 0);
       if (newPos == null)
         newPos = new CodePosition();
       cursorPos = newPos;
@@ -924,10 +995,7 @@ public abstract class CodeWidgetBase
 
   void updateCursorVisibilityIfFocused()
   {
-    if (hasFocus)
-      cursorOverlayEl.getStyle().clearDisplay();
-    else
-      cursorOverlayEl.getStyle().setDisplay(Display.NONE);
+    cursorOverlay.updateCursorVisibilityIfFocused(hasFocus);
   }
   
   protected static void hookCodeScroller(DivElement div, boolean handleTouchScrolling)
@@ -1182,14 +1250,9 @@ public abstract class CodeWidgetBase
       }
     }
 
-    @Override CodePosition hitDetectPointer(double x, double y, CursorHandle cursorHandle)
+    @Override CodePosition hitDetectPointer(double x, double y, double cursorHandleXOffset, double cursorHandleYOffset)
     {
-      double xOffset = 0, yOffset = 0;
-      if (cursorHandle != null)
-      {
-        xOffset = cursorHandle.xOffset;
-        yOffset = cursorHandle.yOffset;
-      }
+      double xOffset = cursorHandleXOffset, yOffset = cursorHandleYOffset;
       return HitDetect.detectHitBoxes((int)(x + xOffset - leftPadding), (int)(y + yOffset - topPadding), codeList, svgHitBoxes);
     }
 
@@ -1209,9 +1272,7 @@ public abstract class CodeWidgetBase
 
     @Override void updateForScroll()
     {
-       String cssScrollTranslate = "translate(" + (- codeDiv.getScrollLeft()) + " " + (- codeDiv.getScrollTop()) + ")";
-       cssScrollTranslate += " translate(" + leftPadding + ", " + topPadding + ")";
-       cursorOverlayEl.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
+      cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
     }
     
     // We need the renderedhitboxes of the code to figure out where
@@ -1219,15 +1280,7 @@ public abstract class CodeWidgetBase
     void updateCursor(RenderedHitBox renderedHitBoxes)
     {
       CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, cursorPos, 0, renderedHitBoxes);
-      Element caretCursor = cursorOverlayEl.querySelector(".maincursorcaret"); 
-      if (cursorRect != null)
-      {
-        caretCursor.getStyle().clearDisplay();
-        caretCursor.setAttribute("x1", "" + cursorRect.left);
-        caretCursor.setAttribute("x2", "" + cursorRect.left);
-        caretCursor.setAttribute("y1", "" + cursorRect.top);
-        caretCursor.setAttribute("y2", "" + cursorRect.bottom);
-      }
+      cursorOverlay.updateCaret(cursorRect);
       double x = cursorRect.left;
       double y = cursorRect.bottom;
       
@@ -1236,8 +1289,14 @@ public abstract class CodeWidgetBase
       
       // Draw cursors
       updateCursorVisibilityIfFocused();
-      updatePrimaryCursor(x, y, 0, 0, 0);
-      updateSecondaryCursor(renderedHitBoxes, x, y, 0);
+      cursorOverlay.updatePrimaryCursor(x, y, 0, 0, 0);
+      // Secondary cursor
+      CursorRect selectionCursorRect = null;
+      if (selectionCursorPos != null)
+      {
+        selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
+      }
+      cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, 0);
     }
 
   }
