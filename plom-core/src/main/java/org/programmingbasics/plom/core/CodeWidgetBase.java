@@ -74,6 +74,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   
   boolean hasFocus = true;
   
+  /** Does the codeDiv area used for getting x,y positions*/
+  boolean codeAreaScrolls = true;
+  
   /** 
    * Allows for the configuration of what global variables/types there are
    * for type checking.
@@ -770,11 +773,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
   }
 
-  void hookCodeClick(DivElement div)
+  void hookScrollUpdateCursor(Element div)
   {
     div.addEventListener(Event.SCROLL, (evt) -> {
-       updateForScroll();
+      updateForScroll();
     }, false);
+  }
+  
+  void hookCodeClick(DivElement div)
+  {
     cursorOverlay.hookCursorHandles(div);
     
     div.addEventListener(Event.CLICK, (evt) -> {
@@ -797,7 +804,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     cursorOverlay.updateCursorVisibilityIfFocused(hasFocus);
   }
   
-  protected static void hookCodeScroller(DivElement div, boolean handleTouchScrolling)
+  // I can't remember why I needed to provide my own implementation
+  // of touch scrolling. It must be something to due with DOM rendering
+  // or maybe ios or something
+  protected static void provideCustomDivScrolling(DivElement div)
   {
       class PointerScrollInfo {
         boolean isPointerDown;
@@ -856,11 +866,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
             && (Math.abs(x - pointer.pointerStartX) > POINTER_SCROLL_TRIGGER_DIST
             || Math.abs(y - pointer.pointerStartY) > POINTER_SCROLL_TRIGGER_DIST))
         {
-          if (handleTouchScrolling)
-          {
-            pointer.isScrolling = true;
-            pointer.scrollingEl = div;
-          }
+          pointer.isScrolling = true;
+          pointer.scrollingEl = div;
           // TODO: Allow scrolling of parent elements if it has already scrolled 
           // to its full extent
           // TODO: inertial/momentum scrolling
@@ -893,8 +900,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           releasePointerCapture(div, pointer.pointerStartId);
         }
       }, false);
-      
-    }
+  }
 
   Suggester getDotSuggester(CodeCompletionContext suggestionContext, List<Symbol> parentSymbols)
   {
@@ -1071,7 +1077,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
     @Override void updateForScroll()
     {
-      cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
+      if (codeAreaScrolls)
+        cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
+      else
+      {
+        ClientRect codeAreaRect = codeDiv.getBoundingClientRect();
+        ClientRect scrollingAreaRect = scrollingDivForDoNotCover.getBoundingClientRect();
+//        return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
+        cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
+      }
     }
     
     // We need the renderedhitboxes of the code to figure out where

@@ -42,18 +42,20 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
   public static CodeWidgetBase forFullScreenSvg(DivElement mainDiv)
   {
     CodeWidgetBase toReturn = new CodePanel(mainDiv);
-    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true, true);
+    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true);
+    toReturn.hookScrollUpdateCursor((DivElement)mainDiv.querySelector("div.code"));
     return toReturn;
   }
   
   public static CodeWidgetBase forFullScreenDom(DivElement mainDiv)
   {
     CodeWidgetBase toReturn = new CodePanelDom(mainDiv);
-    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true, true);
+    startHookCodeWidget(toReturn, (DivElement)mainDiv.querySelector("div.code"), true);
+    toReturn.hookScrollUpdateCursor((DivElement)mainDiv.querySelector("div.code"));
     return toReturn;
   }
 
-  static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean handleTouchScrolling, boolean hasFocus)
+  static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean hasFocus)
   {
     codePanel.hasFocus = hasFocus;
     if (hasFocus)
@@ -63,7 +65,8 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     codePanel.updateCodeView(true);
     if (hasFocus)
       codePanel.showPredictedTokenInput();
-    codePanel.hookCodeScroller(codeDiv, handleTouchScrolling);
+    if (codePanel.codeAreaScrolls)
+      codePanel.provideCustomDivScrolling(codeDiv);
     codePanel.hookCodeClick(codeDiv);
     
 //    SvgCodeRenderer.test();

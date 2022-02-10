@@ -33,8 +33,10 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         divForWindowWidth,
         widthCalculator);
     codeArea.defaultParseContext = Symbol.FullVariableDeclaration;
+    codeArea.codeAreaScrolls = false;
     
-    CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false, false);
+    CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false);
+    codeArea.hookScrollUpdateCursor(scrollingDivForDoNotCover);
     codeArea.docBlurListener = Browser.getDocument().addEventListener(Event.BLUR, (evt) -> {
       // Listen for what has focus across the document so that if focus
       // is outside the coding area or related input elements
