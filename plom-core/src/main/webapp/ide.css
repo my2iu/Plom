@@ -151,7 +151,8 @@ a.breadcrumb-item:visited {
 }
 
 .codesidesplit svg.cursoroverlay,
-.globalsidesplit svg.cursoroverlay {
+.globalsidesplit svg.cursoroverlay,
+.classsidesplit svg.cursoroverlay {
 	position: absolute;
 	left: 0;
 	right: 0;
@@ -162,7 +163,8 @@ a.breadcrumb-item:visited {
 }
 
 .codesidesplit svg.cursoroverlay .cursorhandle,
-.globalsidesplit svg.cursoroverlay .cursorhandle {
+.globalsidesplit svg.cursoroverlay .cursorhandle,
+.classsidesplit svg.cursoroverlay .cursorhandle {
 	pointer-events: auto;
 	touch-action: none;
 	fill: transparent;
@@ -171,7 +173,8 @@ a.breadcrumb-item:visited {
 }
 
 .codesidesplit svg.cursoroverlay .cursorcaret,
-.globalsidesplit svg.cursoroverlay .cursorcaret {
+.globalsidesplit svg.cursoroverlay .cursorcaret,
+.classsidesplit svg.cursoroverlay .cursorcaret {
 	pointer-events: auto;
 	touch-action: none;
 	fill: transparent;
@@ -180,7 +183,8 @@ a.breadcrumb-item:visited {
 }
 
 .codesidesplit svg.cursoroverlay .maincursorcaret,
-.globalsidesplit svg.cursoroverlay .maincursorcaret {
+.globalsidesplit svg.cursoroverlay .maincursorcaret,
+.classsidesplit svg.cursoroverlay .maincursorcaret {
 	pointer-events: auto;
 	touch-action: none;
 	fill: transparent;
@@ -309,12 +313,14 @@ a.breadcrumb-item:visited {
 }
 
 .codemain .choices,
-.globalspanel .choices {
+.globalspanel .choices,
+.classpanel .choices {
 	line-height: 2.5em;
 }
 
 .codemain .choices div.tokenchoice,
-.globalspanel .choices div.tokenchoice {
+.globalspanel .choices div.tokenchoice,
+.classpanel .choices div.tokenchoice {
 	background-color: #fff;
 	display: inline-block;
 	padding: 0.2em;
@@ -327,7 +333,8 @@ a.breadcrumb-item:visited {
 }
 
 .codemain .choices div.tokenchoicedisabled,
-.globalspanel .choices div.tokenchoicedisabled {
+.globalspanel .choices div.tokenchoicedisabled,
+.classpanel .choices div.tokenchoicedisabled {
 	color: #999;
 	/*background-color: #ddd;*/
 	display: inline-block;

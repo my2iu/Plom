@@ -60,6 +60,8 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     codePanel.hasFocus = hasFocus;
     if (hasFocus)
       codePanel.showChoicesDiv();
+    else
+      codePanel.hideChoicesDiv();
     codePanel.simpleEntry.setVisible(false);
     
     codePanel.updateCodeView(true);

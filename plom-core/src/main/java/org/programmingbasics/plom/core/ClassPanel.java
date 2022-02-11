@@ -7,6 +7,8 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
+import org.programmingbasics.plom.core.ast.ErrorList;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -23,6 +25,7 @@ import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
 import elemental.svg.SVGDocument;
+import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -169,6 +172,59 @@ public class ClassPanel
     {
       addVarEntry(mainDiv, v, varDivs);
     }
+    
+    // Code panel for variables
+    SubCodeArea variableArea = SubCodeArea.forVariableDeclaration(
+        mainDiv.querySelector(".varsCode"), 
+        (DivElement)mainDiv.querySelector("div.choices"),
+        (Element)mainDiv.querySelector("svg.cursoroverlay"),
+        (Element)mainDiv.querySelector("div.simpleentry"),
+        (Element)mainDiv.querySelector("div.sidechoices"),
+        (Element)mainDiv.querySelector(".scrollable-interior"),
+        mainDiv.querySelector(".classdetails"), 
+        (Element)mainDiv.querySelector(".methodsHeading"),
+        widthCalculator);
+    variableArea.setVariableContextConfigurator(
+        (scope, coreTypes) -> {
+          StandardLibrary.createGlobals(null, scope, coreTypes);
+          scope.setParent(new RepositoryScope(repository, coreTypes));
+        },
+        (context) -> {
+          return;
+        });
+    variableArea.setListener((isCodeChanged) -> {
+      if (isCodeChanged)
+      {
+        // Updates the code in the repository (this is not actually
+        // necessary since the StatementContainer in the variable area
+        // is set to the same object as the one in the repository, but
+        // I'm doing an explicit update in case that changes)
+        cls.setVariableDeclarationCode(variableArea.codeList);
+        
+        // Update error list
+        variableArea.codeErrors.clear();
+        try {
+          ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, variableArea.codeList, variableArea.codeErrors);
+        }
+        catch (Exception e)
+        {
+          // No errors should be thrown
+        }
+        // Update line numbers
+//        lineNumbers.calculateLineNumbersForStatements(codePanel.codeList, 1);
+      }
+//      if (codePanel.cursorPos != null)
+//      {
+//        int lineNo = LineForPosition.inCode(codePanel.codeList, codePanel.cursorPos, lineNumbers);
+//        Element lineEl = Browser.getDocument().querySelector(".lineIndicator");
+//        if (lineEl != null)
+//        {
+//          lineEl.getStyle().clearDisplay();
+//          lineEl.setTextContent("L" + lineNo);
+//        }
+//      }
+    });
+    variableArea.setCode(cls.getVariableDeclarationCode());
     
     // When creating a new class, the name should initially be highlight, so that
     // you can immediately set a name for the class

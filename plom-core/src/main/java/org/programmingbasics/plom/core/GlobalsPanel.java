@@ -12,12 +12,7 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.Type;
-import org.programmingbasics.plom.core.interpreter.Value;
-import org.programmingbasics.plom.core.view.CodePosition;
-import org.programmingbasics.plom.core.view.LineForPosition;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -170,7 +165,7 @@ public class GlobalsPanel implements AutoCloseable
       addGlobalVarEntry(mainDiv, v, globalVarDivs);
     }
     
-    // Testing out having a code panel for variables
+    // Code panel for variables
     SubCodeArea variableArea = SubCodeArea.forVariableDeclaration(
         mainDiv.querySelector(".globalVarsCode"), 
         (DivElement)mainDiv.querySelector("div.choices"),
@@ -229,14 +224,6 @@ public class GlobalsPanel implements AutoCloseable
         (SVGSVGElement)mainDiv.querySelector("svg.globalImportedVarsCode"), 
         repository.getImportedVariableDeclarationCode(), 
         null, null, null, new ErrorList(), widthCalculator, clientWidth, 0, 0, 0, 0);
-    ;    
-//    if (selectionPos != null)
-//      return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
-//    else
-//    {
-//    }
-
-    
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)

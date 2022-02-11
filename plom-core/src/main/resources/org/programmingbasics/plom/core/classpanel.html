@@ -1,7 +1,7 @@
 <div class="classpanel">
 	<div class="classsidesplit">
 		<div class="classdetails">
-			<div class="scrollable-interior">
+			<div class="scrollable-interior" style="padding-bottom: 50vh;">
 				<div class="className">@<plom-autoresizing-input></plom-autoresizing-input> <a href="#" aria-label="delete" class="delete_class plomUiRemoveButton"></a></div>
 				<div class="extends">extends <div class="typeEntry">&nbsp;</div></div>
 				<h3 class="methodsHeading">Methods <a class="plomUiAddButton" aria-label="add" href="#"></a></h3>
@@ -12,9 +12,25 @@
 				<div class="staticMethodsList"></div>
 				<h3 class="varsHeading">Variables <a class="plomUiAddButton" aria-label="add" href="#"></a></h3>
 				<div class="varsList"></div>
+				<div class="varsCode codesvg" tabindex="0" style="position: relative; border: 1px solid black; min-width: calc(100% - 2px); padding-bottom: 2em; overflow-x: visible; overflow-y:hidden; margin-bottom: 0.5em;">
+					<svg class="codeareasvg"></svg>
+				</div>
+				<div>
+				  <svg class="importedVarsCode" width="0" height="0"></svg>
+				</div>
 			</div>
 		</div>
 		<div class="sidechoices">&nbsp;</div>
+		<div style="display: none;" class="lineIndicator">L2</div>
+		<svg class="cursoroverlay" width="100%" height="100%">
+			<g class="cursorscrolltransform">
+				<circle class="cursorhandle" cx="0" cy="0" r="20"/>
+				<path class="cursorhandle" d="M-20,-20 L 20, 0 L -20 20 z"/>
+				<line class="cursorcaret" x1="0" y1="0" x2="0" y2="0"/>
+				<line class="maincursorcaret" x1="0" y1="0" x2="0" y2="0"/>
+			</g>
+		</svg>
 	</div>
+	<div class="choices" tabindex="0">&nbsp;</div>
 	<div class="simpleentry"></div>
 </div>

@@ -188,6 +188,10 @@ public class ModuleCodeRepository
     Token.ParameterToken parent;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
+    
+    /** Code for class variable declarations */
+    StatementContainer variableDeclarationCode = new StatementContainer();
+
     public boolean isBuiltIn = false;
     public boolean isImported;
     ModuleCodeRepository module;
@@ -255,6 +259,15 @@ public class ModuleCodeRepository
     public void updateVariable(VariableDescription v)
     {
       variables.set(v.id, v);
+    }
+    public StatementContainer getVariableDeclarationCode()
+    {
+      return variableDeclarationCode;
+    }
+    
+    public void setVariableDeclarationCode(StatementContainer code)
+    {
+      variableDeclarationCode = code;
     }
     public void updateMethod(FunctionDescription m)
     {
