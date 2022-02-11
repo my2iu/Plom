@@ -1,6 +1,5 @@
  module .{program} {
  stdlib { -1 }
- var . { var } @ {object }
  vardecls {
  var . {test global var } @ {object }
  }
@@ -22,6 +21,8 @@
  function . {test: . { arg1 } @ {number } } @ {number } {
  }
  class @ { JS object } extends @ {object } {
+ vardecls {
+ }
  function . {as boolean } @ {boolean } {
  primitive
  }
@@ -81,10 +82,14 @@
  }
  }
  class @ { Test } extends @ {object } {
+ vardecls {
+ }
  constructor . {new } {
  }
  }
  class @ { boolean } extends @ {object } {
+ vardecls {
+ }
  function . {=: . { val } @ {object } } @ {boolean } {
  primitive
  }
@@ -102,11 +107,15 @@
  }
  }
  class @ { null } extends @ {object } {
+ vardecls {
+ }
  function . {= } @ {boolean } {
  primitive
  }
  }
  class @ { number } extends @ {object } {
+ vardecls {
+ }
  function . {*: . { val } @ {number } } @ {number } {
  primitive
  }
@@ -121,6 +130,8 @@
  }
  }
  class @ { number iterator } extends @ {object } {
+ vardecls {
+ }
  function . {at end } @ {boolean } {
  return true
  }
@@ -135,9 +146,13 @@
  }
  }
  class @ { number range iterator } extends @ {number iterator } {
- var . { current } @ {number }
- var . { end } @ {number }
- var . { start } @ {number }
+ vardecls {
+ var . {current } @ {number }
+
+ var . {start } @ {number }
+
+ var . {end } @ {number }
+ }
  function . {at end } @ {boolean } {
  return . {current } > . {end }
  }
@@ -156,6 +171,8 @@
  }
  }
  class @ { object } {
+ vardecls {
+ }
  function . {!=: . { val } @ {object } } @ {boolean } {
  return ( this = . {val } ) . {not }
  }
@@ -170,6 +187,8 @@
  }
  }
  class @ { string } extends @ {object } {
+ vardecls {
+ }
  function . {+: . { val } @ {string } } @ {boolean } {
  primitive
  }
