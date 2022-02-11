@@ -150,6 +150,11 @@ a.breadcrumb-item:visited {
 	min-width: 8em;	
 }
 
+.sidechoices:focus {
+	outline: 0px none;
+	border: 0px none;
+}
+
 .codesidesplit svg.cursoroverlay,
 .globalsidesplit svg.cursoroverlay,
 .classsidesplit svg.cursoroverlay {
@@ -214,7 +219,8 @@ a.breadcrumb-item:visited {
 }
 
 .choices:focus {
-	border: 0px solid transparent;
+	outline: 0px none;
+	border: 0px none transparent;
 	border-top: 1px solid black;
 }
 
@@ -223,6 +229,11 @@ a.breadcrumb-item:visited {
 	flex-grow: 0;
 	flex-shrink: 0;
 	padding: 3px;
+}
+
+.simpleentry:focus {
+	outline: 0px none;
+	border: 0px none transparent;
 }
 
 .simpleentry form {
@@ -238,7 +249,7 @@ a.breadcrumb-item:visited {
 
 .simpleentry input:active,
 .simpleentry input:focus {
-	outline: none;
+	outline: 0px none;
 }
 
 .simpleentry form:focus-within {

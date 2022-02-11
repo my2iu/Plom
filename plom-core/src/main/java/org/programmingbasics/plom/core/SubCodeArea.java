@@ -41,6 +41,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       // Listen for what has focus across the document so that if focus
       // is outside the coding area or related input elements
       boolean hasFocus = codeArea.isFocusInCodingArea((Node)((MouseEvent)evt).getRelatedTarget());
+      Browser.getWindow().getConsole().log(((MouseEvent)evt).getRelatedTarget());
       if (!hasFocus)
       {
         codeArea.hideChoicesDiv();
