@@ -1,4 +1,6 @@
  class @ { number iterator } extends @ {object } {
+ vardecls {
+ }
  function . {at end } @ {boolean } {
  return true
  }

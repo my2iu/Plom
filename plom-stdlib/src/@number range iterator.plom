@@ -1,7 +1,11 @@
  class @ { number range iterator } extends @ {number iterator } {
- var . { current } @ {number }
- var . { end } @ {number }
- var . { start } @ {number }
+ vardecls {
+ var . {current } @ {number }
+
+ var . {start } @ {number }
+
+ var . {end } @ {number }
+ }
  function . {at end } @ {boolean } {
  return . {current } > . {end }
  }

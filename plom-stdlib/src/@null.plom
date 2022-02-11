@@ -1,4 +1,6 @@
  class @ { null } extends @ {object } {
+ vardecls {
+ }
  function . {= } @ {boolean } {
  primitive
  }

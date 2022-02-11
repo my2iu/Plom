@@ -1,4 +1,6 @@
  class @ { object } extends @ {object } {
+ vardecls {
+ }
  function . {!=: . { val } @ {object } } @ {boolean } {
  return ( this = . {val } ) . {not }
  }

@@ -1,4 +1,6 @@
  class @ { number } extends @ {object } {
+ vardecls {
+ }
  function . {*: . { val } @ {number } } @ {number } {
  primitive
  }
