@@ -732,6 +732,13 @@ public class ModuleCodeRepository
     out.token("{");
     out.newline();
 
+    out.token("vardecls");
+    out.token("{");
+    out.newline();
+    PlomTextWriter.writeStatementContainer(out, c.getVariableDeclarationCode());
+    out.token("}");
+    out.newline();
+
     for (VariableDescription v: c.getAllVars())
     {
       saveVariable(out, v);
@@ -901,6 +908,7 @@ public class ModuleCodeRepository
       {
         cls.addVarAndResetIds(v.name, v.type);
       }
+      cls.setVariableDeclarationCode(loaded.getVariableDeclarationCode());
     }
 new_methods:
     for (FunctionDescription fn: loaded.methods)
@@ -956,6 +964,17 @@ new_methods:
       else if ("classfunction".equals(peek) || "function".equals(peek) || "constructor".equals(peek))
       {
         cls.addMethod(loadFunction(lexer));
+      }
+      else if ("vardecls".equals(peek))
+      {
+        lexer.expectToken("vardecls");
+        lexer.swallowOptionalNewlineToken();
+        lexer.expectToken("{");
+        lexer.swallowOptionalNewlineToken();
+        StatementContainer code = PlomTextReader.readStatementContainer(lexer);
+        cls.setVariableDeclarationCode(code);
+        lexer.expectToken("}");
+        lexer.swallowOptionalNewlineToken();
       }
       else
         throw new PlomReadException("Unexpected class contents", lexer);

@@ -48,6 +48,8 @@ public class ModuleCodeRepositoryTest extends TestCase
             .setIsConstructor(true),
         new StatementContainer()));
     testClass.addVarAndResetIds("test var", Token.ParameterToken.fromContents("@test class", Symbol.AtType));
+    testClass.setVariableDeclarationCode(new StatementContainer(new TokenContainer(
+        Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
   }
   
   @Test
@@ -58,6 +60,9 @@ public class ModuleCodeRepositoryTest extends TestCase
 
     ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.getName().equals("test class")).findFirst().get());
     Assert.assertEquals(" class @ { test class } {\n" + 
+        " vardecls {\n" + 
+        " var\n" +
+        " }\n" +
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -78,6 +83,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     c.setSuperclass(Token.ParameterToken.fromContents("@object", Symbol.AtType));
     ModuleCodeRepository.saveClass(out, c);
     Assert.assertEquals(" class @ { test class } extends @ {object } {\n" + 
+        " vardecls {\n" + 
+        " var\n" +
+        " }\n" + 
         " var . { test var } @ {test class }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -94,6 +102,9 @@ public class ModuleCodeRepositoryTest extends TestCase
   {
     String codeStr = "class @{test class} {\n"
         + "  var .{test var} @{test class}\n"
+        + "  vardecls {\n" 
+        + "    var .{var decl} @{test class}\n"
+        + "  }\n"
         + "  function . {at x:.{x} @{number} y: .{ y} @{number} } @{number} {\n" 
         + "    return . {x }\n" 
         + "  }\n" 
@@ -107,6 +118,11 @@ public class ModuleCodeRepositoryTest extends TestCase
     ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
     Assert.assertEquals("test class", cls.getName());
     Assert.assertNull(cls.parent);
+    Assert.assertEquals(1, cls.getVariableDeclarationCode().statements.size());
+    Assert.assertEquals(new TokenContainer(
+        new Token.SimpleToken("var", Symbol.Var),
+        Token.ParameterToken.fromContents(".var decl", Symbol.DotVariable),
+        Token.ParameterToken.fromContents("@test class", Symbol.AtType)), cls.getVariableDeclarationCode().statements.get(0));
     Assert.assertEquals(1, cls.variables.size());
     Assert.assertEquals("test var", cls.variables.get(0).name);
     Assert.assertEquals("test class", cls.variables.get(0).type.getLookupName());
@@ -154,6 +170,9 @@ public class ModuleCodeRepositoryTest extends TestCase
         " return 3\n" + 
         " }\n" + 
         " class @ { test class } {\n" + 
+        " vardecls {\n" + 
+        " var\n" +
+        " }\n" +
         " var . { test var } @ {test class }\n" + 
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
@@ -182,6 +201,9 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" + 
         " class @ { test class } {\n" + 
         " var . { test var } @ {test class }\n" + 
+        " vardecls {\n" +
+        " var\n" +
+        " }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
@@ -204,6 +226,10 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.size(), 1);
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
+    ClassDescription loadedTestClass = loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class")).findFirst().get();
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.size(), 1);
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(0).tokens.size(), 1);
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(0).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
     // If a class already exists, just augment that class, don't create a completely new class with the same name
     Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class 2")).count());
   }
