@@ -279,6 +279,25 @@ public class RepositoryScope extends VariableScope
     {
       toReturn.addMemberVariable(var.name, typeFromToken(var.type));
     }
+    // Also run the variable declaration code to get members from there
+    ErrorList errors = new ErrorList();
+    VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
+        (name, type) -> {
+          if (type == null) type = coreTypes.getVoidType();
+          toReturn.addMemberVariable(name, type);
+        };
+    VariableDeclarationInterpreter.TypeLookup typeLookup =
+        token -> {
+          try {
+            return typeFromToken(token);
+          } catch (RunException e) {
+            // skip any errors
+            return null;
+          }
+        };
+    VariableDeclarationInterpreter.fromStatements(
+        cls.getVariableDeclarationCode(),
+        variableDeclarer, typeLookup, errors);
   }
   
   @Override
