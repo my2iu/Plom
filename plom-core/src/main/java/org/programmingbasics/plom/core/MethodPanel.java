@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
@@ -108,6 +109,49 @@ public class MethodPanel
         notifyOfChanges();
       });
       returnTypeField.render();
+      
+      
+      SubCodeArea returnArea = SubCodeArea.forVariableDeclaration(
+          containerDiv.querySelector(".methodReturnCode"), 
+          (DivElement)containerDiv.querySelector("div.choices"),
+          (Element)containerDiv.querySelector("svg.cursoroverlay"),
+          (Element)containerDiv.querySelector("div.simpleentry"),
+          (Element)containerDiv.querySelector("div.sidechoices"),
+          (Element)containerDiv.querySelector(".scrollable-interior"),
+          containerDiv.querySelector(".methoddetails"), 
+          (Element)containerDiv.querySelector(".nameHeading"),
+          widthCalculator);
+      returnArea.setVariableContextConfigurator(
+          (scope, coreTypes) -> {
+            StandardLibrary.createGlobals(null, scope, coreTypes);
+            scope.setParent(new RepositoryScope(repository, coreTypes));
+          },
+          (context) -> {
+            return;
+          });
+//      returnArea.setListener((isCodeChanged) -> {
+//        if (isCodeChanged)
+//        {
+//          // Updates the code in the repository (this is not actually
+//          // necessary since the StatementContainer in the variable area
+//          // is set to the same object as the one in the repository, but
+//          // I'm doing an explicit update in case that changes)
+//          repository.setVariableDeclarationCode(returnArea.codeList);
+//          
+//          // Update error list
+//          returnArea.codeErrors.clear();
+//          try {
+//            ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, returnArea.codeList, returnArea.codeErrors);
+//          }
+//          catch (Exception e)
+//          {
+//            // No errors should be thrown
+//          }
+//          // Update line numbers
+//        }
+//      });
+//      returnArea.setCode(repository.getVariableDeclarationCode());
+
     }
     else
       // Constructors have no return type
