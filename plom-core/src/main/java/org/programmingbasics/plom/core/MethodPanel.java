@@ -111,7 +111,7 @@ public class MethodPanel
       returnTypeField.render();
       
       
-      SubCodeArea returnArea = SubCodeArea.forVariableDeclaration(
+      SubCodeArea returnArea = SubCodeArea.forTypeField(
           containerDiv.querySelector(".methodReturnCode"), 
           (DivElement)containerDiv.querySelector("div.choices"),
           (Element)containerDiv.querySelector("svg.cursoroverlay"),

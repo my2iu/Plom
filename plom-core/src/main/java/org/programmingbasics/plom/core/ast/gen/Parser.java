@@ -86,6 +86,9 @@ public class Parser
 		parsingTable.put(Symbol.AssignmentExpressionMore, new HashMap<>());
 		parsingTable.get(Symbol.AssignmentExpressionMore).put(Symbol.Assignment, new Symbol[] {Symbol.Assignment, Symbol.Expression, });
 		parsingTable.get(Symbol.AssignmentExpressionMore).put(Symbol.EndStatement, new Symbol[] {});
+		parsingTable.put(Symbol.CommentOrEmpty, new HashMap<>());
+		parsingTable.get(Symbol.CommentOrEmpty).put(Symbol.DUMMY_COMMENT, new Symbol[] {Symbol.DUMMY_COMMENT, });
+		parsingTable.get(Symbol.CommentOrEmpty).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.put(Symbol.DotDeclareIdentifier, new HashMap<>());
 		parsingTable.get(Symbol.DotDeclareIdentifier).put(Symbol.DotVariable, new Symbol[] {Symbol.DotVariable, });
 		parsingTable.put(Symbol.DotMember, new HashMap<>());
@@ -296,6 +299,8 @@ public class Parser
 		parsingTable.get(Symbol.StaticMethodCallExpression).put(Symbol.AtType, new Symbol[] {Symbol.AtType, Symbol.DotMember, });
 		parsingTable.put(Symbol.SuperCallExpression, new HashMap<>());
 		parsingTable.get(Symbol.SuperCallExpression).put(Symbol.Super, new Symbol[] {Symbol.Super, Symbol.DotSuperMember, });
+		parsingTable.put(Symbol.TypeField, new HashMap<>());
+		parsingTable.get(Symbol.TypeField).put(Symbol.AtType, new Symbol[] {Symbol.AtType, Symbol.CommentOrEmpty, Symbol.EndStatement, });
 		parsingTable.put(Symbol.ValueExpression, new HashMap<>());
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.AtType, new Symbol[] {Symbol.StaticMethodCallExpression, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.DotVariable, });

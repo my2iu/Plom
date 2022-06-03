@@ -107,6 +107,10 @@ public class PlomAstGen
       rule(VariableDeclaration, DUMMY_COMMENT, VariableDeclarationOrEmpty),
       rule(VarDeclarationStatement, Var, DotDeclareIdentifier, VarType),
 
+      rule(TypeField, AtType, CommentOrEmpty, EndStatement),
+      rule(CommentOrEmpty, DUMMY_COMMENT),
+      rule(CommentOrEmpty),
+      
 //      rule(IfMore, COMPOUND_ELSEIF, OptionalComm ent, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),
 //      rule(OptionalComment),

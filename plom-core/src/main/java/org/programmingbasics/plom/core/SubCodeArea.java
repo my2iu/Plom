@@ -20,8 +20,34 @@ import jsinterop.annotations.JsType;
 public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 {
   EventRemover docBlurListener;
-  
+
+  public static SubCodeArea forTypeField(Element mainDiv, DivElement choicesDiv,
+      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
+      Element divForWindowWidth,
+      SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
+  {
+    return create(Symbol.TypeField, 
+        mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
+        codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
+        divForWindowWidth, widthCalculator);
+  }
+
   public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
+      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
+      Element divForWindowWidth,
+      SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
+  {
+    return create(Symbol.FullVariableDeclaration, 
+        mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
+        codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
+        divForWindowWidth, widthCalculator);
+  }
+  
+  private static SubCodeArea create(
+      Symbol grammar, 
+      Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       Element divForWindowWidth,
@@ -32,7 +58,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover,
         divForWindowWidth,
         widthCalculator);
-    codeArea.defaultParseContext = Symbol.FullVariableDeclaration;
+    codeArea.defaultParseContext = grammar;
     codeArea.codeAreaScrolls = false;
     
     CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false);
@@ -41,7 +67,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       // Listen for what has focus across the document so that if focus
       // is outside the coding area or related input elements
       boolean hasFocus = codeArea.isFocusInCodingArea((Node)((MouseEvent)evt).getRelatedTarget());
-      Browser.getWindow().getConsole().log(((MouseEvent)evt).getRelatedTarget());
+//      Browser.getWindow().getConsole().log(((MouseEvent)evt).getRelatedTarget());
       if (!hasFocus)
       {
         codeArea.hideChoicesDiv();
