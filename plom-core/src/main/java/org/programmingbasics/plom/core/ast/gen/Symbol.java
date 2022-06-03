@@ -87,8 +87,7 @@ public enum Symbol
 	VariableDeclaration,
 	VariableDeclarationOrEmpty,
 	VarDeclarationStatement,
-	TypeField,
-	CommentOrEmpty,
+	ReturnTypeField,
 	ASSEMBLED_STATEMENTS_BLOCK;
 	public boolean isTerminal()
 	{

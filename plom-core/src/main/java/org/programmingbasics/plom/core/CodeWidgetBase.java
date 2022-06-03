@@ -530,7 +530,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, false), pos);
+      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), pos);
       break;
     }
 

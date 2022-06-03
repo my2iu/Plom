@@ -92,8 +92,7 @@ enum Symbol
   VariableDeclarationOrEmpty(false),
   VarDeclarationStatement(false),
   
-  TypeField(false),
-  CommentOrEmpty(false),
+  ReturnTypeField(false),
   
   ASSEMBLED_STATEMENTS_BLOCK(true);  // Not a true symbol and not used by parsing, but used by the AST to repesent a bunch of statements put together in a block 
   Symbol(boolean isTerminal)

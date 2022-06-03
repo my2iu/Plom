@@ -27,7 +27,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
-    return create(Symbol.TypeField, 
+    return create(Symbol.ReturnTypeField, 
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         divForWindowWidth, widthCalculator);
