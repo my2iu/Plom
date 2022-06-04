@@ -30,7 +30,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     SubCodeArea codeArea = create(Symbol.ReturnTypeField, true,
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
-        3, 3, 3, 3,
+        20, 3, 3, 3,
         divForWindowWidth, widthCalculator);
     return codeArea;
   }

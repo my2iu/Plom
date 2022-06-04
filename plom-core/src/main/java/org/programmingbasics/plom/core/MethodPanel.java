@@ -16,6 +16,7 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
@@ -45,6 +46,7 @@ public class MethodPanel
   ModuleCodeRepository repository;
   SimpleEntry simpleEntry;
   MethodNameWidget methodWidget;
+  MethodNameWidget2 methodWidget2;
   FunctionSignature originalSig;
   TypeEntryField returnTypeField = null;
   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
@@ -80,7 +82,18 @@ public class MethodPanel
     methodWidget.setListener((nameSig) -> {
       notifyOfChanges();
     });
-    
+
+    methodWidget2 = new MethodNameWidget2(sig, simpleEntry, 
+        (scope, coreTypes) -> {
+      StandardLibrary.createGlobals(null, scope, coreTypes);
+      scope.setParent(new RepositoryScope(repository, coreTypes));
+    }, widthCalculator, maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
+    containerDiv.querySelector(".method_name2").setInnerHTML("");
+    containerDiv.querySelector(".method_name2").appendChild(methodWidget2.getBaseElement());
+    methodWidget2.setListener((nameSig) -> {
+      notifyOfChanges();
+    });
+
 //    // Fill in the function name
 //    nameEls.add((DivElement)containerDiv.querySelector("div.method_name"));
 //    ((InputElement)nameEls.get(0).querySelector("input")).setValue(sig.nameParts.get(0));
@@ -92,6 +105,12 @@ public class MethodPanel
     containerDiv.querySelector(".method_args_add a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       methodWidget.addArgumentToEnd();
+    }, false);
+
+    // Add argument button
+    containerDiv.querySelector(".method_args_add2 a").addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      methodWidget2.addArgumentToEnd();
     }, false);
 
     // Render the return type
@@ -154,8 +173,15 @@ public class MethodPanel
 
     }
     else
+    {
       // Constructors have no return type
-      containerDiv.querySelector(".method_return").getStyle().setDisplay(Display.NONE);      
+      NodeList returnDivs = containerDiv.querySelectorAll(".method_return");
+      for (int n = 0; n < returnDivs.length(); n++)
+      {
+        ((Element)returnDivs.item(n)).getStyle().setDisplay(Display.NONE);      
+      }
+      
+    }
 
     // Ok Button
     AnchorElement okButton = (AnchorElement)containerDiv.querySelector("a.done");
@@ -454,4 +480,211 @@ public class MethodPanel
       this.changeListener = listener;
     }
   }
+  
+  static class MethodNameWidget2
+  {
+    final Document doc;
+    final SimpleEntry simpleEntry;
+    final ConfigureGlobalScope globalScopeForTypeLookup;
+    final DivElement baseDiv;
+    FunctionSignature sig;
+    List<InputElement> nameEls;
+    List<InputElement> argEls;
+    List<TypeEntryField> argTypeFields;
+    Element firstColonEl;
+    Consumer<FunctionSignature> changeListener;
+    SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
+    int maxTypeWidth;
+    Element scrollableDiv;
+    Element scrollableInterior;
+    
+    public MethodNameWidget2(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup,   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
+    {
+      doc = Browser.getDocument();
+      this.simpleEntry = simpleEntry;
+      this.globalScopeForTypeLookup = globalScopeForTypeLookup;
+      this.sig = FunctionSignature.copyOf(sig);
+      this.widthCalculator = widthCalculator;
+      this.maxTypeWidth = maxTypeWidth;
+      this.scrollableDiv = scrollableDiv;
+      this.scrollableInterior = scrollableInterior;
+      
+      // Create initial layout
+      baseDiv = doc.createDivElement();
+//      baseDiv.setClassName("flexloosewrappinggroup");
+//      baseDiv.getStyle().setProperty("row-gap", "0.25em");
+      rebuild();
+    }
+    
+    public void rebuild() 
+    {
+      nameEls = new ArrayList<>();
+      argEls = new ArrayList<>();
+      argTypeFields = new ArrayList<>();
+      
+      baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
+      firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
+
+      InputElement firstNamePartEl = (InputElement)baseDiv.querySelectorAll("plom-autoresizing-input").item(0);
+      firstNamePartEl.addEventListener(Event.CHANGE, (evt) -> {
+        onCommittedChangeInUi();
+      }, false);
+      nameEls.add(firstNamePartEl);
+      firstNamePartEl.setValue(sig.nameParts.get(0));
+
+      // Don't show a colon after the method name if there is no argument coming after it
+      if (sig.argNames.isEmpty())
+        baseDiv.querySelector(".method_name_colon").getStyle().setDisplay("none");
+      
+      // Show the first argument if there is one
+      if (!sig.argNames.isEmpty())
+      {
+        DivElement dummyDiv = doc.createDivElement();
+        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgument2Html().getText());
+        InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
+        argNameEl.setValue(sig.argNames.get(0));
+        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
+        argEls.add(argNameEl);
+        
+        // argument type
+        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
+        argTypeFields.add(typeField);
+        typeField.setChangeListener((token, isFinal) -> {
+          onCommittedChangeInUi();
+        });
+        typeField.render();
+
+        // Remove button
+        dummyDiv.querySelector(".plomUiRemoveButton").addEventListener(Event.CLICK, (evt) -> {
+          evt.preventDefault();
+          deleteArg(0);
+        });
+        
+        // Copy markup for the arguments into the UI
+        while (dummyDiv.getFirstChild() != null)
+          baseDiv.appendChild(dummyDiv.getFirstChild());
+      }
+      
+      // Handle the rest of the arguments
+      for (int n = 1; n < sig.argNames.size(); n++)
+      {
+        DivElement dummyDiv = doc.createDivElement();
+        dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePart2Html().getText());
+        InputElement namePartEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(0); 
+        namePartEl.setValue(sig.nameParts.get(n));
+        namePartEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
+        nameEls.add(namePartEl);
+        InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
+        argNameEl.setValue(sig.argNames.get(n));
+        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+          onCommittedChangeInUi();
+        }, false);
+        argEls.add(argNameEl);
+        
+        // argument type
+        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
+        argTypeFields.add(typeField);
+        typeField.setChangeListener((token, isFinal) -> {
+          onCommittedChangeInUi();
+        });
+        typeField.render();
+
+        // Remove button
+        final int argIdx = n;
+        dummyDiv.querySelector(".plomUiRemoveButton").addEventListener(Event.CLICK, (evt) -> {
+          evt.preventDefault();
+          deleteArg(argIdx);
+        });
+
+        // Copy markup for the arguments into the UI
+        while (dummyDiv.getFirstChild() != null)
+          baseDiv.appendChild(dummyDiv.getFirstChild());
+      }
+    }
+    
+    /** User changed values in one of the input fields (this is a final, committed change) */
+    private void onCommittedChangeInUi()
+    {
+      syncFromUi();
+      if (changeListener != null)
+        changeListener.accept(sig);
+    }
+    
+    public Element getBaseElement() { return baseDiv; }
+    
+    public void addArgumentToEnd()
+    {
+      syncFromUi();
+      sig.argNames.add("val");
+      sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      if (sig.argNames.size() > 1)
+        sig.nameParts.add("with");
+      rebuild();
+      if (nameEls.size() == 1)
+      {
+        argEls.get(argEls.size() - 1).focus();
+        argEls.get(argEls.size() - 1).select();
+      }
+      else
+      {
+        nameEls.get(nameEls.size() - 1).focus();
+        nameEls.get(nameEls.size() - 1).select();
+      }
+      onCommittedChangeInUi();
+    }
+
+    public void deleteArg(int index)
+    {
+      syncFromUi();
+      if (index == 0)
+      {
+        sig.argNames.remove(index);
+        sig.argTypes.remove(index);
+        if (sig.nameParts.size() > 1)
+        sig.nameParts.remove(index + 1);
+      }
+      else
+      {
+        sig.argNames.remove(index);
+        sig.argTypes.remove(index);
+        sig.nameParts.remove(index);
+      }
+      rebuild();
+      onCommittedChangeInUi();
+    }
+
+    public void syncFromUi()
+    {
+      for (int n = 0; n < nameEls.size(); n++)
+        sig.nameParts.set(n, nameEls.get(n).getValue());
+      for (int n = 0; n < argEls.size(); n++)
+        sig.argNames.set(n, argEls.get(n).getValue());
+      for (int n = 0; n < argTypeFields.size(); n++)
+        sig.argTypes.set(n, argTypeFields.get(n).type);
+    }
+    
+    public void focusAndSelectFirstName()
+    {
+      nameEls.get(0).focus();  // Documentation is unclear as to whether select() also sets focus or not
+      nameEls.get(0).select();
+    }
+    
+    public FunctionSignature getNameSig()
+    {
+      syncFromUi();
+      return sig;
+    }
+
+    public void setListener(Consumer<FunctionSignature> listener)
+    {
+      this.changeListener = listener;
+    }
+  }
+
 }
