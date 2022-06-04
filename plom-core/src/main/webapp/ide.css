@@ -134,7 +134,7 @@ a.breadcrumb-item:visited {
 	padding-bottom: 100vh;  /* So that the code area won't scroll when the keyboard pops in and out */ 
 }
 
-.globalVarsCode.codesvg svg {
+.codesvg.subcodesvg svg {
 	/* In a coding area that's not full-screen, we add the extra padding to the whole page, not just for the coding area  */
 	padding-bottom: 0;
 }

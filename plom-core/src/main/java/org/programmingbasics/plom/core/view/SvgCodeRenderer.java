@@ -203,11 +203,9 @@ public class SvgCodeRenderer
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
     CodePosition currentTokenPos = new CodePosition();
     SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-    
-//    svgEl.setInnerHTML(returned.svgString);
-    svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
-    svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
-    svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+   
+    fillSvgWithContent(svgEl, returned.svgString, returned.width, returned.height, leftPadding, topPadding, rightPadding,
+        bottomPadding, extraWidth);
     RenderedHitBox hitBox = returned.hitBox;
     return hitBox;
   }
@@ -232,13 +230,10 @@ public class SvgCodeRenderer
       SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
       CodePosition currentTokenPos = new CodePosition();
       tokenRenderer.renderEmptyFillIn(returned, positioning, 1, currentTokenPos, tokenRenderer, supplementalInfo, 0);
-//      void renderEmptyFillIn(TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderSupplementalInfo supplement, int minPaddingNesting)
 //      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
-      
-//      svgEl.setInnerHTML(returned.svgString);
-      svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
-      svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
-      svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+
+      fillSvgWithContent(svgEl, returned.svgString, returned.width, returned.height, leftPadding, topPadding, rightPadding,
+          bottomPadding, extraWidth);
       RenderedHitBox hitBox = returned.hitBox;
       return hitBox;
       
@@ -247,6 +242,17 @@ public class SvgCodeRenderer
     {
       return renderSvgWithHitBoxes(svgEl, codeList, activeHighlightPos, selectionPos1, selectionPos2, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
     }
+  }
+
+  private static void fillSvgWithContent(SVGSVGElement svgEl,
+      String svgString,
+      double width, double height,
+      double leftPadding, double topPadding, double rightPadding,
+      double bottomPadding, final double extraWidth)
+  {
+    svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + svgString + "</g>");
+    svgEl.getStyle().setHeight(height + topPadding + bottomPadding, Unit.PX);
+    svgEl.getStyle().setWidth(width + extraWidth + leftPadding + rightPadding, Unit.PX);
   }
   
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth)
@@ -295,9 +301,8 @@ public class SvgCodeRenderer
 //      Element el = returnedRenderedToken.el;
       div.setInnerHTML("<svg></svg>");
       SVGSVGElement svgEl = (SVGSVGElement)div.querySelector("svg");
-      svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
-      svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
-      svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+      fillSvgWithContent(svgEl, returned.svgString, returned.width, returned.height, leftPadding, topPadding, rightPadding,
+          bottomPadding, extraWidth);
 //      div.appendChild(el);
 //      if (pos != null && !pos.hasOffset(1))
 //        el.getClassList().add("typeTokenSelected");

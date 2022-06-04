@@ -27,10 +27,12 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
-    return create(Symbol.ReturnTypeField, true,
+    SubCodeArea codeArea = create(Symbol.ReturnTypeField, true,
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
+        3, 3, 3, 3,
         divForWindowWidth, widthCalculator);
+    return codeArea;
   }
 
   public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
@@ -42,6 +44,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     return create(Symbol.FullVariableDeclaration, false, 
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
+        10, 10, 10, 10,
         divForWindowWidth, widthCalculator);
   }
   
@@ -50,6 +53,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
+      double leftPadding, double rightPadding, double topPadding, double bottomPadding,
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
@@ -59,6 +63,10 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         divForWindowWidth,
         widthCalculator);
     codeArea.defaultParseContext = grammar;
+    codeArea.leftPadding = leftPadding;
+    codeArea.rightPadding = rightPadding;
+    codeArea.topPadding = topPadding;
+    codeArea.bottomPadding = bottomPadding;
     codeArea.isSingleLineMode = isSingleLineMode;
     codeArea.codeAreaScrolls = false;
     

@@ -1028,10 +1028,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     Element codeDivInteriorForScrollPadding;
     Element scrollingDivForDoNotCover;
 
-    static final double leftPadding = 10;
-    static final double rightPadding = 10;
-    static final double topPadding = 10;
-    static final double bottomPadding = 10;
+    double leftPadding = 10;
+    double rightPadding = 10;
+    double topPadding = 10;
+    double bottomPadding = 10;
     
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {
@@ -1052,6 +1052,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
      */
     protected static RenderedHitBox renderTokensSvg(DivElement divForDeterminingCodeWidth, SVGSVGElement codeSvg, StatementContainer codeList,
         CodePosition pos, CodePosition selectionPos, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator,
+        double leftPadding, double rightPadding, double topPadding, double bottomPadding,
         boolean isSingleLineMode)
     {
       double clientWidth = divForDeterminingCodeWidth.getClientWidth();
@@ -1086,7 +1087,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (listener != null)
         listener.onUpdate(isCodeChanged);
-      RenderedHitBox renderedHitBoxes = renderTokensSvg(divForDeterminingWindowWidth, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator, isSingleLineMode);
+      RenderedHitBox renderedHitBoxes = renderTokensSvg(divForDeterminingWindowWidth, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator,
+          leftPadding, rightPadding, topPadding, bottomPadding,
+          isSingleLineMode);
       svgHitBoxes = renderedHitBoxes;
       updateCursor(renderedHitBoxes);
     }
