@@ -27,7 +27,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
-    return create(Symbol.ReturnTypeField, 
+    return create(Symbol.ReturnTypeField, true,
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         divForWindowWidth, widthCalculator);
@@ -39,14 +39,14 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
-    return create(Symbol.FullVariableDeclaration, 
+    return create(Symbol.FullVariableDeclaration, false, 
         mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         divForWindowWidth, widthCalculator);
   }
   
   private static SubCodeArea create(
-      Symbol grammar, 
+      Symbol grammar, boolean isSingleLineMode,
       Element mainDiv, DivElement choicesDiv,
       Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
@@ -59,6 +59,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         divForWindowWidth,
         widthCalculator);
     codeArea.defaultParseContext = grammar;
+    codeArea.isSingleLineMode = isSingleLineMode;
     codeArea.codeAreaScrolls = false;
     
     CodePanel.startHookCodeWidget(codeArea, codeArea.codeDiv, false);

@@ -76,6 +76,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   
   /** Does the codeDiv area used for getting x,y positions*/
   boolean codeAreaScrolls = true;
+
+  /**
+   * Special mode for entering small code fields (e.g. expressions etc). 
+   */
+  boolean isSingleLineMode = false;
   
   /** 
    * Allows for the configuration of what global variables/types there are
@@ -328,7 +333,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     // newline button
     floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
-    if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly)
+    if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
+        && parseContext.baseContext != Symbol.ReturnTypeField)
     {
       floatDivLine.appendChild(makeButton("\u21b5", true, choicesDiv, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
@@ -591,7 +597,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (fragmentStr == null) return;
     
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
-    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly); 
+    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
+        && parseContext.baseContext != Symbol.ReturnTypeField); 
     try {
       PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
       PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(strReader); 
@@ -1044,14 +1051,23 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
      * Returns a mapping of divs for each line and their line numbers
      */
     protected static RenderedHitBox renderTokensSvg(DivElement divForDeterminingCodeWidth, SVGSVGElement codeSvg, StatementContainer codeList,
-        CodePosition pos, CodePosition selectionPos, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator)
+        CodePosition pos, CodePosition selectionPos, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator,
+        boolean isSingleLineMode)
     {
       double clientWidth = divForDeterminingCodeWidth.getClientWidth();
-      if (selectionPos != null)
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+      if (!isSingleLineMode)
+      {
+        if (selectionPos != null)
+          return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, null, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+        else
+          return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+      }
       else
       {
-        return SvgCodeRenderer.renderSvgWithHitBoxes(codeSvg, codeList, pos, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+        if (selectionPos != null)
+          return SvgCodeRenderer.renderSvgSingleLineWithHitBoxes(codeSvg, codeList, null, pos, selectionPos, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+        else
+          return SvgCodeRenderer.renderSvgSingleLineWithHitBoxes(codeSvg, codeList, pos, null, null, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
       }
     }
 
@@ -1070,7 +1086,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (listener != null)
         listener.onUpdate(isCodeChanged);
-      RenderedHitBox renderedHitBoxes = renderTokensSvg(divForDeterminingWindowWidth, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator);
+      RenderedHitBox renderedHitBoxes = renderTokensSvg(divForDeterminingWindowWidth, codeSvg, codeList, cursorPos, selectionCursorPos, codeErrors, widthCalculator, isSingleLineMode);
       svgHitBoxes = renderedHitBoxes;
       updateCursor(renderedHitBoxes);
     }

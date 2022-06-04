@@ -212,6 +212,43 @@ public class SvgCodeRenderer
     return hitBox;
   }
 
+  // Special renderer for expressions or other pieces of code that are only a single line
+  public static RenderedHitBox renderSvgSingleLineWithHitBoxes(SVGSVGElement svgEl, StatementContainer codeList, CodePosition activeHighlightPos, CodePosition selectionPos1, CodePosition selectionPos2, ErrorList codeErrors, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth, double leftPadding, double topPadding, double rightPadding, double bottomPadding)
+  {
+    // Check for an empty line, in which case, we'll render an empty box that can be filled in
+    if (codeList == null || codeList.statements.isEmpty() || codeList.statements.get(0).tokens.isEmpty())
+    {
+      final double extraWidth = 0.5; // Slightly larger to accommodate width of lines     
+      
+      SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+      supplementalInfo.codeErrors = codeErrors;
+      supplementalInfo.nesting = new CodeNestingCounter();
+      supplementalInfo.activeHighlightPos = activeHighlightPos;
+      supplementalInfo.selectionStart = selectionPos1;
+      supplementalInfo.selectionEnd = selectionPos2;
+      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
+      SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
+      positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
+      SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+      CodePosition currentTokenPos = new CodePosition();
+      tokenRenderer.renderEmptyFillIn(returned, positioning, 1, currentTokenPos, tokenRenderer, supplementalInfo, 0);
+//      void renderEmptyFillIn(TokenRendererReturn toReturn, TokenRendererPositioning positioning, int level, CodePosition currentTokenPos, TokenRenderer renderer, RenderSupplementalInfo supplement, int minPaddingNesting)
+//      SvgCodeRenderer.renderStatementContainer(codeList, returned, positioning, new CodePosition(), 0, currentTokenPos, tokenRenderer, null, supplementalInfo);
+      
+//      svgEl.setInnerHTML(returned.svgString);
+      svgEl.setInnerHTML(GRADIENT_DEFS + "<g transform=\"translate("   + leftPadding + ", " + topPadding + ")\">" + returned.svgString + "</g>");
+      svgEl.getStyle().setHeight(returned.height + topPadding + bottomPadding, Unit.PX);
+      svgEl.getStyle().setWidth(returned.width + extraWidth + leftPadding + rightPadding, Unit.PX);
+      RenderedHitBox hitBox = returned.hitBox;
+      return hitBox;
+      
+    }
+    else
+    {
+      return renderSvgWithHitBoxes(svgEl, codeList, activeHighlightPos, selectionPos1, selectionPos2, codeErrors, widthCalculator, clientWidth, leftPadding, topPadding, rightPadding, bottomPadding);
+    }
+  }
+  
   public static RenderedHitBox renderTypeToken(DivElement div, Token type, CodePosition pos, SvgCodeRenderer.TextWidthCalculator widthCalculator, double clientWidth)
   {
     final double leftPadding = 0;
