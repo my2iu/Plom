@@ -84,6 +84,7 @@ public class Rule
 	public final static List<Symbol> VariableDeclaration_DUMMY_COMMENT_VariableDeclarationOrEmpty = Arrays.asList(Symbol.VariableDeclaration, Symbol.DUMMY_COMMENT, Symbol.VariableDeclarationOrEmpty);
 	public final static List<Symbol> VarDeclarationStatement_Var_DotDeclareIdentifier_VarType = Arrays.asList(Symbol.VarDeclarationStatement, Symbol.Var, Symbol.DotDeclareIdentifier, Symbol.VarType);
 	public final static List<Symbol> ReturnTypeField_AtType_EndStatement = Arrays.asList(Symbol.ReturnTypeField, Symbol.AtType, Symbol.EndStatement);
+	public final static List<Symbol> ParameterField_DotDeclareIdentifier_AtType_EndStatement = Arrays.asList(Symbol.ParameterField, Symbol.DotDeclareIdentifier, Symbol.AtType, Symbol.EndStatement);
 	public final static List<Symbol> EMPTY = Arrays.asList(Symbol.EMPTY);
 	public final static List<Symbol> EndStatement = Arrays.asList(Symbol.EndStatement);
 	public final static List<Symbol> This = Arrays.asList(Symbol.This);

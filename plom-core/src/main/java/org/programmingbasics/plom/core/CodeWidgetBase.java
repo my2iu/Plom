@@ -334,7 +334,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
     if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
-        && parseContext.baseContext != Symbol.ReturnTypeField)
+        && parseContext.baseContext != Symbol.ReturnTypeField && parseContext.baseContext != Symbol.ParameterField)
     {
       floatDivLine.appendChild(makeButton("\u21b5", true, choicesDiv, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
@@ -536,7 +536,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
-      showSimpleEntryForToken(newToken, false, new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), pos);
+      showSimpleEntryForToken(newToken, false, 
+          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField) || parentSymbols.contains(Symbol.ParameterField)), 
+          pos);
       break;
     }
 
@@ -598,7 +600,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
     boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
-        && parseContext.baseContext != Symbol.ReturnTypeField); 
+        && parseContext.baseContext != Symbol.ReturnTypeField && parseContext.baseContext != Symbol.ParameterField); 
     try {
       PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
       PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(strReader); 

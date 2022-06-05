@@ -21,14 +21,28 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 {
   EventRemover docBlurListener;
 
+  public static SubCodeArea forMethodParameterField(Element mainDiv, DivElement choicesDiv,
+      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
+      Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
+      Element divForWindowWidth,
+      SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
+  {
+    SubCodeArea codeArea = create(Symbol.ParameterField, true,
+        mainDiv, choicesDiv, cursorOverlay, simpleEntry, sideChoices, 
+        codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
+        20, 3, 3, 3,
+        divForWindowWidth, widthCalculator);
+    return codeArea;
+  }
+
   public static SubCodeArea forTypeField(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
     SubCodeArea codeArea = create(Symbol.ReturnTypeField, true,
-        mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
+        mainDiv, choicesDiv, cursorOverlay, simpleEntry, sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         20, 3, 3, 3,
         divForWindowWidth, widthCalculator);
@@ -42,7 +56,10 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
     return create(Symbol.FullVariableDeclaration, false, 
-        mainDiv, choicesDiv, cursorOverlay, simpleEntryDiv, sideChoices, 
+        mainDiv, choicesDiv, cursorOverlay, 
+        new SimpleEntry((DivElement)simpleEntryDiv,
+            (DivElement)sideChoices), 
+        sideChoices, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         10, 10, 10, 10,
         divForWindowWidth, widthCalculator);
@@ -51,14 +68,14 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
   private static SubCodeArea create(
       Symbol grammar, boolean isSingleLineMode,
       Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       double leftPadding, double rightPadding, double topPadding, double bottomPadding,
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
     SubCodeArea codeArea = new SubCodeArea(mainDiv, choicesDiv,
-        cursorOverlay, simpleEntryDiv, sideChoices,
+        cursorOverlay, simpleEntry, sideChoices,
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover,
         divForWindowWidth,
         widthCalculator);
@@ -92,7 +109,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
   }
   
   private SubCodeArea(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
       Element codeDivInteriorForScrollPadding, 
       Element scrollingDivForDoNotCover, Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
@@ -107,8 +124,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     
     this.choicesDiv = choicesDiv;
     this.cursorOverlay = new CodeWidgetCursorOverlay(this, cursorOverlay);
-    this.simpleEntry = new SimpleEntry((DivElement)simpleEntryDiv,
-        (DivElement)sideChoices);
+    this.simpleEntry = simpleEntry;
   }
 
   private boolean isFocusInCodingArea(Node target)

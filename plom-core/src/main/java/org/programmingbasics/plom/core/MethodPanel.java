@@ -84,10 +84,15 @@ public class MethodPanel
     });
 
     methodWidget2 = new MethodNameWidget2(sig, simpleEntry, 
+        (DivElement)containerDiv.querySelector("div.choices"),
+        (Element)containerDiv.querySelector("div.sidechoices"),
+        (Element)containerDiv.querySelector("svg.cursoroverlay"),
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
       scope.setParent(new RepositoryScope(repository, coreTypes));
-    }, widthCalculator, maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
+    }, widthCalculator, 
+        (Element)containerDiv.querySelector(".nameHeading"),
+        maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
     containerDiv.querySelector(".method_name2").setInnerHTML("");
     containerDiv.querySelector(".method_name2").appendChild(methodWidget2.getBaseElement());
     methodWidget2.setListener((nameSig) -> {
@@ -134,7 +139,7 @@ public class MethodPanel
           containerDiv.querySelector(".methodReturnCode"), 
           (DivElement)containerDiv.querySelector("div.choices"),
           (Element)containerDiv.querySelector("svg.cursoroverlay"),
-          (Element)containerDiv.querySelector("div.simpleentry"),
+          simpleEntry,
           (Element)containerDiv.querySelector("div.sidechoices"),
           (Element)containerDiv.querySelector(".scrollable-interior"),
           containerDiv.querySelector(".methoddetails"), 
@@ -485,29 +490,39 @@ public class MethodPanel
   {
     final Document doc;
     final SimpleEntry simpleEntry;
+    ModuleCodeRepository repository;
     final ConfigureGlobalScope globalScopeForTypeLookup;
     final DivElement baseDiv;
     FunctionSignature sig;
     List<InputElement> nameEls;
-    List<InputElement> argEls;
-    List<TypeEntryField> argTypeFields;
+    List<SubCodeArea> argCodeAreas;
+//    List<InputElement> argEls;
+//    List<TypeEntryField> argTypeFields;
     Element firstColonEl;
     Consumer<FunctionSignature> changeListener;
     SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
+    Element divForDeterminingWindowWidth;
     int maxTypeWidth;
+    Element sideChoicesDiv;
+    DivElement choicesDiv;
     Element scrollableDiv;
     Element scrollableInterior;
+    Element cursorOverlay;
     
-    public MethodNameWidget2(FunctionSignature sig, SimpleEntry simpleEntry, ConfigureGlobalScope globalScopeForTypeLookup,   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
+    public MethodNameWidget2(FunctionSignature sig, SimpleEntry simpleEntry, DivElement choices, Element sideChoices, Element cursorOverlay, ConfigureGlobalScope globalScopeForTypeLookup,   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
     {
       doc = Browser.getDocument();
       this.simpleEntry = simpleEntry;
       this.globalScopeForTypeLookup = globalScopeForTypeLookup;
       this.sig = FunctionSignature.copyOf(sig);
       this.widthCalculator = widthCalculator;
+      this.divForDeterminingWindowWidth = divForDeterminingWindowWidth;
       this.maxTypeWidth = maxTypeWidth;
       this.scrollableDiv = scrollableDiv;
       this.scrollableInterior = scrollableInterior;
+      this.sideChoicesDiv = sideChoices;
+      this.choicesDiv = choices;
+      this.cursorOverlay = cursorOverlay;
       
       // Create initial layout
       baseDiv = doc.createDivElement();
@@ -519,8 +534,7 @@ public class MethodPanel
     public void rebuild() 
     {
       nameEls = new ArrayList<>();
-      argEls = new ArrayList<>();
-      argTypeFields = new ArrayList<>();
+      argCodeAreas = new ArrayList<>();
       
       baseDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameBaseHtml().getText());
       firstColonEl = (Element)baseDiv.querySelectorAll(".method_name_colon").item(0);
@@ -541,21 +555,25 @@ public class MethodPanel
       {
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgument2Html().getText());
-        InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
-        argNameEl.setValue(sig.argNames.get(0));
-        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
-          onCommittedChangeInUi();
-        }, false);
-        argEls.add(argNameEl);
-        
-        // argument type
-        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
-            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
-        argTypeFields.add(typeField);
-        typeField.setChangeListener((token, isFinal) -> {
-          onCommittedChangeInUi();
-        });
-        typeField.render();
+
+        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"));
+        argCodeAreas.add(codeArea);
+
+//        InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
+//        argNameEl.setValue(sig.argNames.get(0));
+//        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+//          onCommittedChangeInUi();
+//        }, false);
+//        argEls.add(argNameEl);
+//        
+//        // argument type
+//        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(0), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+//            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
+//        argTypeFields.add(typeField);
+//        typeField.setChangeListener((token, isFinal) -> {
+//          onCommittedChangeInUi();
+//        });
+//        typeField.render();
 
         // Remove button
         dummyDiv.querySelector(".plomUiRemoveButton").addEventListener(Event.CLICK, (evt) -> {
@@ -579,21 +597,25 @@ public class MethodPanel
           onCommittedChangeInUi();
         }, false);
         nameEls.add(namePartEl);
-        InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
-        argNameEl.setValue(sig.argNames.get(n));
-        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
-          onCommittedChangeInUi();
-        }, false);
-        argEls.add(argNameEl);
+
+        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"));
+        argCodeAreas.add(codeArea);
         
-        // argument type
-        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
-            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
-        argTypeFields.add(typeField);
-        typeField.setChangeListener((token, isFinal) -> {
-          onCommittedChangeInUi();
-        });
-        typeField.render();
+//        InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
+//        argNameEl.setValue(sig.argNames.get(n));
+//        argNameEl.addEventListener(Event.CHANGE, (evt) -> {
+//          onCommittedChangeInUi();
+//        }, false);
+//        argEls.add(argNameEl);
+//        
+//        // argument type
+//        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+//            globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
+//        argTypeFields.add(typeField);
+//        typeField.setChangeListener((token, isFinal) -> {
+//          onCommittedChangeInUi();
+//        });
+//        typeField.render();
 
         // Remove button
         final int argIdx = n;
@@ -606,6 +628,48 @@ public class MethodPanel
         while (dummyDiv.getFirstChild() != null)
           baseDiv.appendChild(dummyDiv.getFirstChild());
       }
+    }
+
+    private SubCodeArea createCodeArea(Element div)
+    {
+      SubCodeArea returnArea = SubCodeArea.forMethodParameterField(
+          div, 
+          choicesDiv,
+          cursorOverlay,
+          simpleEntry,
+          sideChoicesDiv,
+          scrollableInterior,
+          scrollableDiv, 
+          divForDeterminingWindowWidth,
+          widthCalculator);
+      returnArea.setVariableContextConfigurator(
+          globalScopeForTypeLookup,
+          (context) -> {
+            return;
+          });
+//        returnArea.setListener((isCodeChanged) -> {
+//          if (isCodeChanged)
+//          {
+//            // Updates the code in the repository (this is not actually
+//            // necessary since the StatementContainer in the variable area
+//            // is set to the same object as the one in the repository, but
+//            // I'm doing an explicit update in case that changes)
+//            repository.setVariableDeclarationCode(returnArea.codeList);
+//            
+//            // Update error list
+//            returnArea.codeErrors.clear();
+//            try {
+//              ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, returnArea.codeList, returnArea.codeErrors);
+//            }
+//            catch (Exception e)
+//            {
+//              // No errors should be thrown
+//            }
+//            // Update line numbers
+//          }
+//        });
+//        returnArea.setCode(repository.getVariableDeclarationCode());
+      return returnArea;
     }
     
     /** User changed values in one of the input fields (this is a final, committed change) */
@@ -628,8 +692,10 @@ public class MethodPanel
       rebuild();
       if (nameEls.size() == 1)
       {
-        argEls.get(argEls.size() - 1).focus();
-        argEls.get(argEls.size() - 1).select();
+        // TODO: Get this code working again
+//        argCodeAreas.get(0).showPredictedTokenInput();
+//        argEls.get(argEls.size() - 1).focus();
+//        argEls.get(argEls.size() - 1).select();
       }
       else
       {
@@ -663,10 +729,11 @@ public class MethodPanel
     {
       for (int n = 0; n < nameEls.size(); n++)
         sig.nameParts.set(n, nameEls.get(n).getValue());
-      for (int n = 0; n < argEls.size(); n++)
-        sig.argNames.set(n, argEls.get(n).getValue());
-      for (int n = 0; n < argTypeFields.size(); n++)
-        sig.argTypes.set(n, argTypeFields.get(n).type);
+      for (int n = 0; n < argCodeAreas.size(); n++)
+      {
+//        sig.argNames.set(n, argEls.get(n).getValue());
+//        sig.argTypes.set(n, argTypeFields.get(n).type);
+      }
     }
     
     public void focusAndSelectFirstName()

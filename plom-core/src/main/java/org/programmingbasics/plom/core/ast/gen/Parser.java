@@ -217,6 +217,8 @@ public class Parser
 		parsingTable.get(Symbol.OrExpressionMore).put(Symbol.ClosedParenthesis, new Symbol[] {});
 		parsingTable.get(Symbol.OrExpressionMore).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.get(Symbol.OrExpressionMore).put(Symbol.Or, new Symbol[] {Symbol.Or, Symbol.AndExpression, Symbol.OrExpressionMore, });
+		parsingTable.put(Symbol.ParameterField, new HashMap<>());
+		parsingTable.get(Symbol.ParameterField).put(Symbol.DotVariable, new Symbol[] {Symbol.DotDeclareIdentifier, Symbol.AtType, Symbol.EndStatement, });
 		parsingTable.put(Symbol.ParenthesisExpression, new HashMap<>());
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.AtType, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.ValueExpression, });
