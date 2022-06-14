@@ -151,7 +151,22 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 //    hookCodeScroller(codeDiv);
 //    hookCodeClick(codeDiv);
   }
+  
+  public void setSingleLineCode(TokenContainer code)
+  {
+    if (code == null) code = new TokenContainer();
+    setCode(new StatementContainer(code));
+  }
 
+  public TokenContainer getSingleLineCode()
+  {
+    if (codeList == null) 
+      return new TokenContainer();
+    if (codeList.statements.isEmpty())
+      return new TokenContainer();
+    return codeList.statements.get(0);
+  }
+  
   @JsFunction
   public static interface VariableContextConfigurator {
     public void accept(CodeCompletionContext context);

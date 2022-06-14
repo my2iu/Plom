@@ -31,6 +31,7 @@ public class ModuleCodeRepository
     public List<String> nameParts = new ArrayList<>();
     public List<String> argNames = new ArrayList<>();
     public List<Token.ParameterToken> argTypes = new ArrayList<>();
+    public List<TokenContainer> argCode = new ArrayList<>();
     public Token.ParameterToken returnType;
     public boolean isBuiltIn = false;
     public boolean isStatic = false;

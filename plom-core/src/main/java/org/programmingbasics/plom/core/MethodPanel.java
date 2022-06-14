@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -556,7 +557,7 @@ public class MethodPanel
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgument2Html().getText());
 
-        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"));
+        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"), 0);
         argCodeAreas.add(codeArea);
 
 //        InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
@@ -598,7 +599,7 @@ public class MethodPanel
         }, false);
         nameEls.add(namePartEl);
 
-        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"));
+        SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"), n);
         argCodeAreas.add(codeArea);
         
 //        InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
@@ -630,7 +631,7 @@ public class MethodPanel
       }
     }
 
-    private SubCodeArea createCodeArea(Element div)
+    private SubCodeArea createCodeArea(Element div, int argIdx)
     {
       SubCodeArea returnArea = SubCodeArea.forMethodParameterField(
           div, 
@@ -647,28 +648,28 @@ public class MethodPanel
           (context) -> {
             return;
           });
-//        returnArea.setListener((isCodeChanged) -> {
-//          if (isCodeChanged)
-//          {
-//            // Updates the code in the repository (this is not actually
-//            // necessary since the StatementContainer in the variable area
-//            // is set to the same object as the one in the repository, but
-//            // I'm doing an explicit update in case that changes)
-//            repository.setVariableDeclarationCode(returnArea.codeList);
-//            
-//            // Update error list
-//            returnArea.codeErrors.clear();
-//            try {
-//              ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, returnArea.codeList, returnArea.codeErrors);
-//            }
-//            catch (Exception e)
-//            {
-//              // No errors should be thrown
-//            }
-//            // Update line numbers
-//          }
-//        });
-//        returnArea.setCode(repository.getVariableDeclarationCode());
+        returnArea.setListener((isCodeChanged) -> {
+          if (isCodeChanged)
+          {
+            // Updates the code in the repository (this is not actually
+            // necessary since the StatementContainer in the variable area
+            // is set to the same object as the one in the repository, but
+            // I'm doing an explicit update in case that changes)
+            sig.argCode.set(argIdx, returnArea.getSingleLineCode());
+            
+            // Update error list
+            returnArea.codeErrors.clear();
+            try {
+              ParseToAst.parseStatementContainer(Symbol.ParameterField, returnArea.codeList, returnArea.codeErrors);
+            }
+            catch (Exception e)
+            {
+              // No errors should be thrown
+            }
+            // Update line numbers
+          }
+        });
+        returnArea.setSingleLineCode(sig.argCode.get(argIdx));
       return returnArea;
     }
     
@@ -685,6 +686,7 @@ public class MethodPanel
     public void addArgumentToEnd()
     {
       syncFromUi();
+      sig.argCode.add(new TokenContainer());
       sig.argNames.add("val");
       sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
       if (sig.argNames.size() > 1)
@@ -710,13 +712,15 @@ public class MethodPanel
       syncFromUi();
       if (index == 0)
       {
+        sig.argCode.remove(index);
         sig.argNames.remove(index);
         sig.argTypes.remove(index);
         if (sig.nameParts.size() > 1)
-        sig.nameParts.remove(index + 1);
+          sig.nameParts.remove(index + 1);
       }
       else
       {
+        sig.argCode.remove(index);
         sig.argNames.remove(index);
         sig.argTypes.remove(index);
         sig.nameParts.remove(index);
@@ -731,6 +735,7 @@ public class MethodPanel
         sig.nameParts.set(n, nameEls.get(n).getValue());
       for (int n = 0; n < argCodeAreas.size(); n++)
       {
+        sig.argCode.set(n, argCodeAreas.get(n).getSingleLineCode());
 //        sig.argNames.set(n, argEls.get(n).getValue());
 //        sig.argTypes.set(n, argTypeFields.get(n).type);
       }
