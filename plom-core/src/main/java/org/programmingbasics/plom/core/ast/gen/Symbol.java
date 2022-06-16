@@ -89,6 +89,7 @@ public enum Symbol
 	VarDeclarationStatement,
 	ReturnTypeField,
 	ParameterField,
+	ParameterFieldOnly,
 	ASSEMBLED_STATEMENTS_BLOCK;
 	public boolean isTerminal()
 	{

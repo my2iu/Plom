@@ -7,16 +7,22 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
+import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
@@ -31,7 +37,7 @@ public class ModuleCodeRepository
     public List<String> nameParts = new ArrayList<>();
     public List<String> argNames = new ArrayList<>();
     public List<Token.ParameterToken> argTypes = new ArrayList<>();
-    public List<TokenContainer> argCode = new ArrayList<>();
+    private List<TokenContainer> argCode = new ArrayList<>();
     public Token.ParameterToken returnType;
     public boolean isBuiltIn = false;
     public boolean isStatic = false;
@@ -82,6 +88,34 @@ public class ModuleCodeRepository
       isStatic = val;
       return this;
     }
+    public void addNewArgCode() { argCode.add(new TokenContainer()); }
+    public void removeArgCode(int idx) { argCode.remove(idx); }
+    public TokenContainer getArgCode(int idx) { return argCode.get(idx); }
+    public void setArgCode(int idx, TokenContainer argCode)
+    {
+      this.argCode.set(idx, argCode);
+      class NameAndType {
+        String name;
+        Type type;
+      }
+      NameAndType nameAndType = new NameAndType();
+      MethodArgumentExtractor.fromParameterField(argCode, 
+          (name, t) -> {
+            nameAndType.name = name;
+            nameAndType.type = t;
+          },
+          (token) -> {
+            // Just pass the raw type name through unchanged
+            return new Type(((Token.ParameterToken)token).getLookupName());
+          },
+          null);
+      if (nameAndType.name != null)
+      {
+        argNames.set(idx, nameAndType.name);
+        argTypes.set(idx, ParameterToken.fromContents(nameAndType.type.name, Symbol.AtType));
+      }
+    }
+    // Does a function signature match another one (i.e. do they refer to the same function)
     public boolean canReplace(FunctionSignature fn)
     {
 //      if (isBuiltIn != fn.isBuiltIn) return false;
@@ -147,6 +181,9 @@ public class ModuleCodeRepository
       sig.argTypes = new ArrayList<>();
       for (Token.ParameterToken argType: oldSig.argTypes)
         sig.argTypes.add(argType.copy());
+      sig.argCode = new ArrayList<>();
+      for (TokenContainer argCode: oldSig.argCode)
+        sig.argCode.add(argCode.copy());
       sig.isConstructor = oldSig.isConstructor;
       sig.isBuiltIn = oldSig.isBuiltIn;
       sig.isStatic = oldSig.isStatic;

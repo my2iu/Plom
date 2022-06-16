@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -655,7 +654,7 @@ public class MethodPanel
             // necessary since the StatementContainer in the variable area
             // is set to the same object as the one in the repository, but
             // I'm doing an explicit update in case that changes)
-            sig.argCode.set(argIdx, returnArea.getSingleLineCode());
+            sig.setArgCode(argIdx, returnArea.getSingleLineCode());
             
             // Update error list
             returnArea.codeErrors.clear();
@@ -669,7 +668,7 @@ public class MethodPanel
             // Update line numbers
           }
         });
-        returnArea.setSingleLineCode(sig.argCode.get(argIdx));
+        returnArea.setSingleLineCode(sig.getArgCode(argIdx));
       return returnArea;
     }
     
@@ -686,7 +685,7 @@ public class MethodPanel
     public void addArgumentToEnd()
     {
       syncFromUi();
-      sig.argCode.add(new TokenContainer());
+      sig.addNewArgCode();
       sig.argNames.add("val");
       sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
       if (sig.argNames.size() > 1)
@@ -712,7 +711,7 @@ public class MethodPanel
       syncFromUi();
       if (index == 0)
       {
-        sig.argCode.remove(index);
+        sig.removeArgCode(index);
         sig.argNames.remove(index);
         sig.argTypes.remove(index);
         if (sig.nameParts.size() > 1)
@@ -720,7 +719,7 @@ public class MethodPanel
       }
       else
       {
-        sig.argCode.remove(index);
+        sig.removeArgCode(index);
         sig.argNames.remove(index);
         sig.argTypes.remove(index);
         sig.nameParts.remove(index);
@@ -735,7 +734,7 @@ public class MethodPanel
         sig.nameParts.set(n, nameEls.get(n).getValue());
       for (int n = 0; n < argCodeAreas.size(); n++)
       {
-        sig.argCode.set(n, argCodeAreas.get(n).getSingleLineCode());
+        sig.setArgCode(n, argCodeAreas.get(n).getSingleLineCode());
 //        sig.argNames.set(n, argEls.get(n).getValue());
 //        sig.argTypes.set(n, argTypeFields.get(n).type);
       }

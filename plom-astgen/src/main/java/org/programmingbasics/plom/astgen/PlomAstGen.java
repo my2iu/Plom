@@ -108,7 +108,8 @@ public class PlomAstGen
       rule(VarDeclarationStatement, Var, DotDeclareIdentifier, VarType),
 
       rule(ReturnTypeField, AtType, EndStatement),
-      rule(ParameterField, DotDeclareIdentifier, AtType, EndStatement),
+      rule(ParameterField, DotDeclareIdentifier, AtType),
+      rule(ParameterFieldOnly, ParameterField, EndStatement),
       
 //      rule(IfMore, COMPOUND_ELSEIF, OptionalComm ent, AfterIf),
 //      rule(IfMore, COMPOUND_ELSE),

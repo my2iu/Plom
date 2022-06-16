@@ -1,20 +1,14 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
-import org.programmingbasics.plom.core.interpreter.MachineContext.NodeHandlers;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
 
 /**
