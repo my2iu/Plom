@@ -206,7 +206,7 @@ public class MethodPanel
 //        argTypes.add(typeField.type);
       if (returnTypeField != null)
         returnType = returnTypeField.type;
-      FunctionSignature nameSig = methodWidget.getNameSig();
+      FunctionSignature nameSig = methodWidget2.getNameSig();
       FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
       if (listener != null)
         listener.onSignatureChange(newSig, true);
@@ -271,7 +271,7 @@ public class MethodPanel
 
   private void notifyOfChanges()
   {
-    FunctionSignature nameSig = methodWidget.getNameSig();
+    FunctionSignature nameSig = methodWidget2.getNameSig();
     Token.ParameterToken returnType = null;
     if (returnTypeField != null)
       returnType = returnTypeField.type;
@@ -332,16 +332,16 @@ public class MethodPanel
       firstNamePartEl.setValue(sig.nameParts.get(0));
 
       // Don't show a colon after the method name if there is no argument coming after it
-      if (sig.argNames.isEmpty())
+      if (sig.getNumArgs() == 0)
         baseDiv.querySelector(".method_name_colon").getStyle().setDisplay("none");
       
       // Show the first argument if there is one
-      if (!sig.argNames.isEmpty())
+      if (sig.getNumArgs() != 0)
       {
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgumentHtml().getText());
         InputElement argNameEl = (InputElement)dummyDiv.querySelector("plom-autoresizing-input");
-        argNameEl.setValue(sig.argNames.get(0));
+        argNameEl.setValue(sig.getArgName(0));
         argNameEl.addEventListener(Event.CHANGE, (evt) -> {
           onCommittedChangeInUi();
         }, false);
@@ -368,7 +368,7 @@ public class MethodPanel
       }
       
       // Handle the rest of the arguments
-      for (int n = 1; n < sig.argNames.size(); n++)
+      for (int n = 1; n < sig.getNumArgs(); n++)
       {
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePartHtml().getText());
@@ -379,14 +379,14 @@ public class MethodPanel
         }, false);
         nameEls.add(namePartEl);
         InputElement argNameEl = (InputElement)dummyDiv.querySelectorAll("plom-autoresizing-input").item(1); 
-        argNameEl.setValue(sig.argNames.get(n));
+        argNameEl.setValue(sig.getArgName(n));
         argNameEl.addEventListener(Event.CHANGE, (evt) -> {
           onCommittedChangeInUi();
         }, false);
         argEls.add(argNameEl);
         
         // argument type
-        TypeEntryField typeField = new TypeEntryField(sig.argTypes.get(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
+        TypeEntryField typeField = new TypeEntryField(sig.getArgType(n), (DivElement)dummyDiv.querySelector(".typeEntry"), simpleEntry, false,
             globalScopeForTypeLookup, (context) -> {}, widthCalculator, maxTypeWidth, scrollableDiv, scrollableInterior);
         argTypeFields.add(typeField);
         typeField.setChangeListener((token, isFinal) -> {
@@ -547,11 +547,11 @@ public class MethodPanel
       firstNamePartEl.setValue(sig.nameParts.get(0));
 
       // Don't show a colon after the method name if there is no argument coming after it
-      if (sig.argNames.isEmpty())
+      if (sig.getNumArgs() == 0)
         baseDiv.querySelector(".method_name_colon").getStyle().setDisplay("none");
       
       // Show the first argument if there is one
-      if (!sig.argNames.isEmpty())
+      if (sig.getNumArgs() != 0)
       {
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNameFirstArgument2Html().getText());
@@ -587,7 +587,7 @@ public class MethodPanel
       }
       
       // Handle the rest of the arguments
-      for (int n = 1; n < sig.argNames.size(); n++)
+      for (int n = 1; n < sig.getNumArgs(); n++)
       {
         DivElement dummyDiv = doc.createDivElement();
         dummyDiv.setInnerHTML(UIResources.INSTANCE.getMethodNamePart2Html().getText());
@@ -655,6 +655,7 @@ public class MethodPanel
             // is set to the same object as the one in the repository, but
             // I'm doing an explicit update in case that changes)
             sig.setArgCode(argIdx, returnArea.getSingleLineCode());
+            onCommittedChangeInUi();
             
             // Update error list
             returnArea.codeErrors.clear();

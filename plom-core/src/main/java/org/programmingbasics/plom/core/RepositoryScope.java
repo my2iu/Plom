@@ -124,9 +124,9 @@ public class RepositoryScope extends VariableScope
   
   private Type makeFunctionType(FunctionDescription func) throws RunException
   {
-    Type [] argTypes = new Type[func.sig.argTypes.size()];
-    for (int n = 0; n < func.sig.argTypes.size(); n++)
-      argTypes[n] = typeFromToken(func.sig.argTypes.get(n));
+    Type [] argTypes = new Type[func.sig.getNumArgs()];
+    for (int n = 0; n < func.sig.getNumArgs(); n++)
+      argTypes[n] = typeFromToken(func.sig.getArgType(n));
     return Type.makeFunctionType(typeFromToken(func.sig.returnType), argTypes);    
   }
   
@@ -149,9 +149,9 @@ public class RepositoryScope extends VariableScope
         throw new RunException(e);
       }
       List<String> argPosToName = new ArrayList<>();
-      for (int n = 0; n < func.sig.argNames.size(); n++)
+      for (int n = 0; n < func.sig.getNumArgs(); n++)
       {
-        argPosToName.add(func.sig.argNames.get(n));
+        argPosToName.add(func.sig.getArgName(n));
       }
       val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), code, argPosToName);
       return val;
@@ -223,9 +223,9 @@ public class RepositoryScope extends VariableScope
       for (FunctionDescription fn: cls.methods)
       {
         if (fn.sig.isBuiltIn) continue;
-        Type[] args = new Type[fn.sig.argTypes.size()];
-        for (int n = 0; n < fn.sig.argTypes.size(); n++)
-          args[n] = typeFromToken(fn.sig.argTypes.get(n));
+        Type[] args = new Type[fn.sig.getNumArgs()];
+        for (int n = 0; n < fn.sig.getNumArgs(); n++)
+          args[n] = typeFromToken(fn.sig.getArgType(n));
         try {
           AstNode code = ParseToAst.parseStatementContainer(fn.code);
           if (fn.sig.isStatic)

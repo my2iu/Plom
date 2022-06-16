@@ -128,8 +128,8 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals("test class", cls.variables.get(0).type.getLookupName());
     Assert.assertEquals(2, cls.methods.size());
     Assert.assertEquals("at x:y:", cls.methods.get(0).sig.getLookupName());
-    Assert.assertEquals("y", cls.methods.get(0).sig.argNames.get(1));
-    Assert.assertEquals("number", cls.methods.get(0).sig.argTypes.get(1).getLookupName());
+    Assert.assertEquals("y", cls.methods.get(0).sig.getArgName(1));
+    Assert.assertEquals("number", cls.methods.get(0).sig.getArgType(1).getLookupName());
     Assert.assertEquals("number", cls.methods.get(0).sig.returnType.getLookupName());
     Assert.assertEquals("new", cls.methods.get(1).sig.getLookupName());
     Assert.assertEquals("void", cls.methods.get(1).sig.returnType.getLookupName());

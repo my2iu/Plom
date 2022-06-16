@@ -88,6 +88,9 @@ public class ModuleCodeRepository
       isStatic = val;
       return this;
     }
+    public int getNumArgs() { return argTypes.size(); }
+    public String getArgName(int idx) { return argNames.get(idx); }
+    public Token.ParameterToken getArgType(int idx) { return argTypes.get(idx); }
     public void addNewArgCode() { argCode.add(new TokenContainer()); }
     public void removeArgCode(int idx) { argCode.remove(idx); }
     public TokenContainer getArgCode(int idx) { return argCode.get(idx); }
@@ -112,7 +115,7 @@ public class ModuleCodeRepository
       if (nameAndType.name != null)
       {
         argNames.set(idx, nameAndType.name);
-        argTypes.set(idx, ParameterToken.fromContents(nameAndType.type.name, Symbol.AtType));
+        argTypes.set(idx, ParameterToken.fromContents("@" + nameAndType.type.name, Symbol.AtType));
       }
     }
     // Does a function signature match another one (i.e. do they refer to the same function)
@@ -123,16 +126,15 @@ public class ModuleCodeRepository
       if (isConstructor != fn.isConstructor) return false;
       if (!returnType.equals(fn.returnType)) return false;
       if (nameParts.size() != fn.nameParts.size()) return false;
-      if (argNames.size() != fn.argNames.size()) return false;
-      if (argTypes.size() != fn.argTypes.size()) return false;
+      if (getNumArgs() != fn.getNumArgs()) return false;
       for (int n = 0; n < nameParts.size(); n++)
       {
         if (!nameParts.get(n).equals(fn.nameParts.get(n))) return false;
       }
-      for (int n = 0; n < argNames.size(); n++)
+      for (int n = 0; n < getNumArgs(); n++)
       {
-        if (!argNames.get(n).equals(fn.argNames.get(n))) return false;
-        if (!argTypes.get(n).equals(fn.argTypes.get(n))) return false;
+        if (!getArgName(n).equals(fn.getArgName(n))) return false;
+        if (!getArgType(n).equals(fn.getArgType(n))) return false;
         
       }
       return true;
@@ -164,6 +166,14 @@ public class ModuleCodeRepository
       sig.nameParts = nameParts;
       sig.argNames = argNames;
       sig.argTypes = argTypes;
+      for (int n = 0; n < argNames.size(); n++)
+      {
+        TokenContainer code = new TokenContainer(
+            Token.ParameterToken.fromContents("." + argNames.get(n), Symbol.DotVariable),
+            argTypes.get(n));
+        sig.addNewArgCode();
+        sig.setArgCode(n, code);
+      }
       if (oldSig != null)
       {
         sig.isConstructor = oldSig.isConstructor;
@@ -827,20 +837,20 @@ public class ModuleCodeRepository
     
     out.token(".");
     out.token("{");
-    if (fn.sig.argNames.isEmpty())
+    if (fn.sig.getNumArgs() == 0)
     {
       out.append(fn.sig.nameParts.get(0));
     }
     else
     {
-      for (int n = 0; n < fn.sig.argNames.size(); n++)
+      for (int n = 0; n < fn.sig.getNumArgs(); n++)
       {
         out.append(fn.sig.nameParts.get(n) + ":");
         out.token(".");
         out.token("{");
-        out.token(fn.sig.argNames.get(n));
+        out.token(fn.sig.getArgName(n));
         out.token("}");
-        PlomTextWriter.writeToken(out, fn.sig.argTypes.get(n));
+        PlomTextWriter.writeToken(out, fn.sig.getArgType(n));
       }
     }
     out.token("}");

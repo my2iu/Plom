@@ -544,10 +544,10 @@ public class Main
           if (fd != null)
           {
             context.pushNewScope();
-            for (int n = 0; n < fd.sig.argNames.size(); n++)
+            for (int n = 0; n < fd.sig.getNumArgs(); n++)
             {
-              String name = fd.sig.argNames.get(n);
-              Token.ParameterToken typeToken = fd.sig.argTypes.get(n);
+              String name = fd.sig.getArgName(n);
+              Token.ParameterToken typeToken = fd.sig.getArgType(n);
               try {
                 Type type = context.currentScope().typeFromToken(typeToken);
                 context.currentScope().addVariable(name, type, new Value());
