@@ -93,6 +93,7 @@ enum Symbol
   VarDeclarationStatement(false),
   
   ReturnTypeField(false),
+  ReturnTypeFieldOnly(false),
   ParameterField(false),
   ParameterFieldOnly(false),
   

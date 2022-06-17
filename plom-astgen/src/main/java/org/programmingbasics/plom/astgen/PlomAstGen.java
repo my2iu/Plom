@@ -107,7 +107,8 @@ public class PlomAstGen
       rule(VariableDeclaration, DUMMY_COMMENT, VariableDeclarationOrEmpty),
       rule(VarDeclarationStatement, Var, DotDeclareIdentifier, VarType),
 
-      rule(ReturnTypeField, AtType, EndStatement),
+      rule(ReturnTypeField, AtType),
+      rule(ReturnTypeFieldOnly, ReturnTypeField, EndStatement),
       rule(ParameterField, DotDeclareIdentifier, AtType),
       rule(ParameterFieldOnly, ParameterField, EndStatement),
       

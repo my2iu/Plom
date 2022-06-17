@@ -7,9 +7,12 @@ import java.util.function.Consumer;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
+import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -49,6 +52,7 @@ public class MethodPanel
   MethodNameWidget2 methodWidget2;
   FunctionSignature originalSig;
   TypeEntryField returnTypeField = null;
+  SubCodeArea returnTypeArea;
   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
   public static interface SignatureListener
@@ -135,7 +139,7 @@ public class MethodPanel
       returnTypeField.render();
       
       
-      SubCodeArea returnArea = SubCodeArea.forTypeField(
+      returnTypeArea = SubCodeArea.forTypeField(
           containerDiv.querySelector(".methodReturnCode"), 
           (DivElement)containerDiv.querySelector("div.choices"),
           (Element)containerDiv.querySelector("svg.cursoroverlay"),
@@ -145,7 +149,7 @@ public class MethodPanel
           containerDiv.querySelector(".methoddetails"), 
           (Element)containerDiv.querySelector(".nameHeading"),
           widthCalculator);
-      returnArea.setVariableContextConfigurator(
+      returnTypeArea.setVariableContextConfigurator(
           (scope, coreTypes) -> {
             StandardLibrary.createGlobals(null, scope, coreTypes);
             scope.setParent(new RepositoryScope(repository, coreTypes));
@@ -153,29 +157,28 @@ public class MethodPanel
           (context) -> {
             return;
           });
-//      returnArea.setListener((isCodeChanged) -> {
-//        if (isCodeChanged)
-//        {
+      returnTypeArea.setListener((isCodeChanged) -> {
+        if (isCodeChanged)
+        {
 //          // Updates the code in the repository (this is not actually
 //          // necessary since the StatementContainer in the variable area
 //          // is set to the same object as the one in the repository, but
 //          // I'm doing an explicit update in case that changes)
 //          repository.setVariableDeclarationCode(returnArea.codeList);
 //          
-//          // Update error list
-//          returnArea.codeErrors.clear();
-//          try {
-//            ParseToAst.parseStatementContainer(Symbol.VariableDeclarationOrEmpty, returnArea.codeList, returnArea.codeErrors);
-//          }
-//          catch (Exception e)
-//          {
-//            // No errors should be thrown
-//          }
-//          // Update line numbers
-//        }
-//      });
-//      returnArea.setCode(repository.getVariableDeclarationCode());
-
+          // Update error list
+          returnTypeArea.codeErrors.clear();
+          try {
+            ParseToAst.parseStatementContainer(Symbol.ReturnTypeField, returnTypeArea.codeList, returnTypeArea.codeErrors);
+          }
+          catch (Exception e)
+          {
+            // No errors should be thrown
+          }
+          // Update line numbers
+        }
+      });
+      returnTypeArea.setSingleLineCode(new TokenContainer(sig.returnType.copy()));
     }
     else
     {
@@ -206,6 +209,8 @@ public class MethodPanel
 //        argTypes.add(typeField.type);
       if (returnTypeField != null)
         returnType = returnTypeField.type;
+      if (returnTypeArea != null)
+        returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(returnTypeArea.getSingleLineCode());
       FunctionSignature nameSig = methodWidget2.getNameSig();
       FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
       if (listener != null)
@@ -275,7 +280,13 @@ public class MethodPanel
     Token.ParameterToken returnType = null;
     if (returnTypeField != null)
       returnType = returnTypeField.type;
-    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
+    if (returnTypeArea != null)
+      returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(returnTypeArea.getSingleLineCode());
+//    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
+    List<TokenContainer> argCodes = new ArrayList<>();
+    for (int n = 0; n < nameSig.getNumArgs(); n++)
+      argCodes.add(nameSig.getArgCode(n));
+    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, argCodes, originalSig);
     if (listener != null)
       listener.onSignatureChange(newSig, false);
   }
@@ -687,8 +698,6 @@ public class MethodPanel
     {
       syncFromUi();
       sig.addNewArgCode();
-      sig.argNames.add("val");
-      sig.argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
       if (sig.argNames.size() > 1)
         sig.nameParts.add("with");
       rebuild();

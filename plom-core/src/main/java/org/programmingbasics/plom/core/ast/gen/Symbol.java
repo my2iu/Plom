@@ -88,6 +88,7 @@ public enum Symbol
 	VariableDeclarationOrEmpty,
 	VarDeclarationStatement,
 	ReturnTypeField,
+	ReturnTypeFieldOnly,
 	ParameterField,
 	ParameterFieldOnly,
 	ASSEMBLED_STATEMENTS_BLOCK;

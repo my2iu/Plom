@@ -260,7 +260,9 @@ public class Parser
 		parsingTable.put(Symbol.ReturnStatement, new HashMap<>());
 		parsingTable.get(Symbol.ReturnStatement).put(Symbol.Return, new Symbol[] {Symbol.Return, Symbol.Expression, });
 		parsingTable.put(Symbol.ReturnTypeField, new HashMap<>());
-		parsingTable.get(Symbol.ReturnTypeField).put(Symbol.AtType, new Symbol[] {Symbol.AtType, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ReturnTypeField).put(Symbol.AtType, new Symbol[] {Symbol.AtType, });
+		parsingTable.put(Symbol.ReturnTypeFieldOnly, new HashMap<>());
+		parsingTable.get(Symbol.ReturnTypeFieldOnly).put(Symbol.AtType, new Symbol[] {Symbol.ReturnTypeField, Symbol.EndStatement, });
 		parsingTable.put(Symbol.Statement, new HashMap<>());
 		parsingTable.get(Symbol.Statement).put(Symbol.AtType, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });

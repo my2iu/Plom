@@ -91,7 +91,15 @@ public class ModuleCodeRepository
     public int getNumArgs() { return argTypes.size(); }
     public String getArgName(int idx) { return argNames.get(idx); }
     public Token.ParameterToken getArgType(int idx) { return argTypes.get(idx); }
-    public void addNewArgCode() { argCode.add(new TokenContainer()); }
+    public void addNewArgCode() 
+    { 
+      argCode.add(new TokenContainer());
+      if (argNames.size() < argCode.size())
+      {
+        argNames.add("val");
+        argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+      }
+    }
     public void removeArgCode(int idx) { argCode.remove(idx); }
     public TokenContainer getArgCode(int idx) { return argCode.get(idx); }
     public void setArgCode(int idx, TokenContainer argCode)
@@ -173,6 +181,24 @@ public class ModuleCodeRepository
             argTypes.get(n));
         sig.addNewArgCode();
         sig.setArgCode(n, code);
+      }
+      if (oldSig != null)
+      {
+        sig.isConstructor = oldSig.isConstructor;
+        sig.isBuiltIn = oldSig.isBuiltIn;
+        sig.isStatic = oldSig.isStatic;
+      }
+      return sig;
+    }
+    public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<TokenContainer> argCodes, FunctionSignature oldSig)
+    {
+      FunctionSignature sig = new FunctionSignature();
+      sig.returnType = returnType;
+      sig.nameParts = nameParts;
+      for (int n = 0; n < argCodes.size(); n++)
+      {
+        sig.addNewArgCode();
+        sig.setArgCode(n, argCodes.get(n).copy());
       }
       if (oldSig != null)
       {
