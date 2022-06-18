@@ -374,7 +374,30 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (showEditButton)
     {
       contentDiv.appendChild(makeButton("\u270e", true, choicesDiv, () -> {
-        showSimpleEntryForToken(currentToken, true, null, cursorPos);
+        Suggester suggester = null;
+        if (currentToken instanceof Token.TokenWithSymbol)
+        {
+          CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+          switch (((Token.TokenWithSymbol)currentToken).getType())
+          {
+            case AtType:
+            {
+              List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
+              suggester = new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly));
+              break;
+              
+            }
+
+            case DotVariable:
+            {
+              List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.DotVariable);
+              suggester = getDotSuggester(suggestionContext, parentSymbols);
+              break;
+              
+            }
+          }
+        }
+        showSimpleEntryForToken(currentToken, true, suggester, cursorPos);
       }));
     }
     else
