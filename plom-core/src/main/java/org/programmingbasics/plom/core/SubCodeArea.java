@@ -96,12 +96,12 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 //      Browser.getWindow().getConsole().log(((MouseEvent)evt).getRelatedTarget());
       if (!hasFocus)
       {
-        codeArea.hideChoicesDiv();
+        codeArea.focus.hideChoicesDiv();
         // Careful here. On losing focus, the simple entry will close
         // but won't fire an event saying that text entry has completed
-        codeArea.simpleEntry.setVisible(false);
+        codeArea.focus.hideSimpleEntry();
         codeArea.hasFocus = false;
-        codeArea.updateCursorVisibilityIfFocused();
+        codeArea.focus.updateCursorVisibilityIfFocused(hasFocus);
       }
     }, true);
     
@@ -122,9 +122,10 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     this.codeDivInteriorForScrollPadding = codeDivInteriorForScrollPadding;
     this.scrollingDivForDoNotCover = scrollingDivForDoNotCover;
     
-    this.choicesDiv = choicesDiv;
-    this.cursorOverlay = new CodeWidgetCursorOverlay(this, cursorOverlay);
-    this.simpleEntry = simpleEntry;
+    this.focus = new CodeWidgetInputPanels(
+        choicesDiv, simpleEntry,
+        new CodeWidgetCursorOverlay(this, cursorOverlay),
+        true);
   }
 
   private boolean isFocusInCodingArea(Node target)
@@ -133,22 +134,9 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     {
       if (target == codeDiv)
         return true;
-      if (target == simpleEntry.container)
-        return true;
-      if (target == choicesDiv)
-        return true;
-      if (target == simpleEntry.suggestionsContainer)
-        return true;
       target = target.getParentNode();
     }
-    return false;
-  }
-  
-  @Override void showChoicesDiv()
-  {
-    super.showChoicesDiv();
-    // Also assign focus to the coding area so that focus isn't lost
-    choicesDiv.focus();
+    return focus.isFocusInInputPanels(target);
   }
   
   @Override void updateCodeView(boolean isCodeChanged)

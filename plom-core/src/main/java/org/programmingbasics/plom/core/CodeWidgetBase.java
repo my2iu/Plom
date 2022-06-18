@@ -62,9 +62,7 @@ import jsinterop.annotations.JsType;
 public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMovingCallback 
 {
   // References to other parts of the UI (possibly outside the coding area)
-  SimpleEntry simpleEntry;
-  DivElement choicesDiv;
-  CodeWidgetCursorOverlay cursorOverlay;
+  CodeWidgetInputPanels focus;
   
   StatementContainer codeList = new StatementContainer();
   CodePosition cursorPos = new CodePosition();
@@ -236,23 +234,14 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       buttonOrderPriority.put(symbolOrder[n], n);
   }
 
-  void showChoicesDiv()
-  {
-    choicesDiv.getStyle().setDisplay(Display.BLOCK);
-  }
-
-  void hideChoicesDiv()
-  {
-    choicesDiv.getStyle().setDisplay(Display.NONE);
-  }
-
   void showPredictedTokenInput()
   {
     hasFocus = true;
-    updateCursorVisibilityIfFocused();
+    focus.updateCursorVisibilityIfFocused(hasFocus);
+    DivElement choicesDiv = focus.choicesDiv;
     choicesDiv.setInnerHTML("");
-    showChoicesDiv();
-    simpleEntry.setVisible(false);
+    focus.showChoicesDiv();
+    focus.hideSimpleEntry();
 
     // We have some buttons that float to the right, but on wide displays, those
     // buttons are too far to the right and get lost, so we put everything into
@@ -688,35 +677,35 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     switch (tokenType)
     {
     case DotVariable:
-      hideChoicesDiv();
+      focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
-      hideChoicesDiv();
+      focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
-      simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
-      hideChoicesDiv();
-      simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.hideChoicesDiv();
+      focus.simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case String:
-      hideChoicesDiv();
+      focus.hideChoicesDiv();
       if (isEdit)
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
-      hideChoicesDiv();
+      focus.hideChoicesDiv();
       initialValue = initialValue.substring(3);
-      simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     default:
       return;
@@ -765,12 +754,12 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
     if (isFinal)
     {
-      showChoicesDiv();
-      simpleEntry.setVisible(false);
+      focus.showChoicesDiv();
+      focus.hideSimpleEntry();
       showPredictedTokenInput();
       // Force safari to blur, but do it after we've given ourselves the chance to
       // move focus somewhere else first.
-      simpleEntry.forceSafariBlur();
+      focus.simpleEntry.forceSafariBlur();
     }
   }
 
@@ -782,8 +771,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
     EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
     updateCodeView(true);
-    showChoicesDiv();
-    simpleEntry.setVisible(false);
+    focus.showChoicesDiv();
+    focus.hideSimpleEntry();
     showPredictedTokenInput();
     return false;
   }
@@ -829,7 +818,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   
   void hookCodeClick(DivElement div)
   {
-    cursorOverlay.hookCursorHandles(div);
+    focus.cursorOverlay.hookCursorHandles(div);
     
     div.addEventListener(Event.CLICK, (evt) -> {
       MouseEvent pevt = (MouseEvent)evt;
@@ -846,11 +835,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }, false);
   }
 
-  void updateCursorVisibilityIfFocused()
-  {
-    cursorOverlay.updateCursorVisibilityIfFocused(hasFocus);
-  }
-  
   // I can't remember why I needed to provide my own implementation
   // of touch scrolling. It must be something to due with DOM rendering
   // or maybe ios or something
@@ -1120,7 +1104,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
     @Override void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight)
     {
-      simpleEntry.scrollForDoNotCover(scrollingDivForDoNotCover, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
+      focus.simpleEntry.scrollForDoNotCover(scrollingDivForDoNotCover, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
     }
 
     @Override void updateCodeView(boolean isCodeChanged)
@@ -1137,13 +1121,13 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     @Override void updateForScroll()
     {
       if (codeAreaScrolls)
-        cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
+        focus.cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
       else
       {
         ClientRect codeAreaRect = codeDiv.getBoundingClientRect();
         ClientRect scrollingAreaRect = scrollingDivForDoNotCover.getBoundingClientRect();
 //        return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
-        cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
+        focus.cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
       }
     }
     
@@ -1152,7 +1136,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     void updateCursor(RenderedHitBox renderedHitBoxes)
     {
       CursorRect cursorRect = RenderedCursorPosition.inStatements(codeList, cursorPos, 0, renderedHitBoxes);
-      cursorOverlay.updateSvgCaret(cursorRect);
+      focus.cursorOverlay.updateSvgCaret(cursorRect);
       double x = cursorRect.left;
       double y = cursorRect.bottom;
       
@@ -1160,15 +1144,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateForScroll();
       
       // Draw cursors
-      updateCursorVisibilityIfFocused();
-      cursorOverlay.updatePrimaryCursor(x, y, 0, 0, 0);
+      focus.updateCursorVisibilityIfFocused(hasFocus);
+      focus.cursorOverlay.updatePrimaryCursor(x, y, 0, 0, 0);
       // Secondary cursor
       CursorRect selectionCursorRect = null;
       if (selectionCursorPos != null)
       {
         selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
       }
-      cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, 0);
+      focus.cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, 0);
     }
 
   }

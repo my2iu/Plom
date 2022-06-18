@@ -63,7 +63,7 @@ class CodeWidgetCursorOverlay
     hookCursorHandle(codeDiv, (Element)el.querySelectorAll(".cursorhandle").item(1), 2);
   }
   
-  void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
+  private void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
   {
     CodeWidgetBase.addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;

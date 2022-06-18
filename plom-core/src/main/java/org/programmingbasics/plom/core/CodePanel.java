@@ -59,10 +59,10 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
   {
     codePanel.hasFocus = hasFocus;
     if (hasFocus)
-      codePanel.showChoicesDiv();
+      codePanel.focus.showChoicesDiv();
     else
-      codePanel.hideChoicesDiv();
-    codePanel.simpleEntry.setVisible(false);
+      codePanel.focus.hideChoicesDiv();
+    codePanel.focus.hideSimpleEntry();
     
     codePanel.updateCodeView(true);
     if (hasFocus)
@@ -85,10 +85,12 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     scrollingDivForDoNotCover = codeDiv;
     divForDeterminingWindowWidth = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
     codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior svg");
-    choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-    cursorOverlay = new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
-    simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-        (DivElement)mainDiv.querySelector("div.sidechoices"));
+    focus = new CodeWidgetInputPanels(
+        (DivElement)mainDiv.querySelector("div.choices"),
+        new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
+            (DivElement)mainDiv.querySelector("div.sidechoices")),
+        new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay")),
+        false);
   }
   
   // DOM Variant of the CodePanel
@@ -105,10 +107,12 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       codeDiv = (DivElement)mainDiv.querySelector("div.code");
       codeDivInterior = (DivElement)mainDiv.querySelector("div.code .scrollable-interior");
       codeDivInteriorForScrollPadding = (Element)mainDiv.querySelector("div.code .scrollable-interior");
-      choicesDiv = (DivElement)mainDiv.querySelector("div.choices");
-      cursorOverlay = new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay"));
-      simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-          (DivElement)mainDiv.querySelector("div.sidechoices"));
+      focus = new CodeWidgetInputPanels(
+          (DivElement)mainDiv.querySelector("div.choices"),
+          new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
+              (DivElement)mainDiv.querySelector("div.sidechoices")),
+          new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay")),
+          false);
     }
     
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
@@ -124,7 +128,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
     @Override void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight)
     {
-      simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
+      focus.simpleEntry.scrollForDoNotCover(codeDiv, codeDivInteriorForScrollPadding, doNotCoverLeft, doNotCoverRight);
     }
     
     @Override void updateCodeView(boolean isCodeChanged)
@@ -150,7 +154,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
     @Override void updateForScroll()
     {
-      cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()), (- codeDiv.getScrollTop()));
+      focus.cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()), (- codeDiv.getScrollTop()));
     }
     
     // We need the renderedhitboxes of the code to figure out where
@@ -171,11 +175,11 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       updateForScroll();
       
       // Draw cursors
-      updateCursorVisibilityIfFocused();
+      focus.updateCursorVisibilityIfFocused(hasFocus);
       final int caretYOffset = cursorDiv.getOffsetHeight();
       final double caretOriginXOffset = (double)cursorDiv.getOffsetWidth() / 2;
       final double caretOriginYOffset = (double)cursorDiv.getOffsetHeight() * 0.8;
-      cursorOverlay.updatePrimaryCursor(x, y, caretYOffset, caretOriginXOffset,
+      focus.cursorOverlay.updatePrimaryCursor(x, y, caretYOffset, caretOriginXOffset,
           caretOriginYOffset);
       // Secondary cursor
       CursorRect selectionCursorRect = null;
@@ -183,7 +187,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       {
         selectionCursorRect = RenderedCursorPosition.inStatements(codeList, selectionCursorPos, 0, renderedHitBoxes);
       }
-      cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, caretYOffset);
+      focus.cursorOverlay.updateSecondaryCursor(selectionCursorRect, selectionCursorPos, x, y, caretYOffset);
     }
   }
 }
