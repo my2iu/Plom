@@ -127,7 +127,7 @@ public class RepositoryScope extends VariableScope
     Type [] argTypes = new Type[func.sig.getNumArgs()];
     for (int n = 0; n < func.sig.getNumArgs(); n++)
       argTypes[n] = typeFromToken(func.sig.getArgType(n));
-    return Type.makeFunctionType(typeFromToken(func.sig.returnType), argTypes);    
+    return Type.makeFunctionType(typeFromToken(func.sig.getReturnType()), argTypes);    
   }
   
   @Override
@@ -233,7 +233,7 @@ public class RepositoryScope extends VariableScope
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
-                typeFromToken(fn.sig.returnType), args);
+                typeFromToken(fn.sig.getReturnType()), args);
           }
           else if (fn.sig.isConstructor)
           {
@@ -248,7 +248,7 @@ public class RepositoryScope extends VariableScope
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addMethod(fn.sig.getLookupName(), execFn, 
-                typeFromToken(fn.sig.returnType), args);
+                typeFromToken(fn.sig.getReturnType()), args);
           }
         } 
         catch (ParseException e)

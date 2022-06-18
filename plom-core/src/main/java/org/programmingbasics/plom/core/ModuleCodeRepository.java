@@ -7,12 +7,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.programmingbasics.plom.core.ast.AstNode;
-import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
@@ -22,11 +19,11 @@ import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
-import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
+import org.programmingbasics.plom.core.interpreter.Type;
 
-import elemental.client.Browser;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -38,7 +35,8 @@ public class ModuleCodeRepository
     public List<String> argNames = new ArrayList<>();
     public List<Token.ParameterToken> argTypes = new ArrayList<>();
     private List<TokenContainer> argCode = new ArrayList<>();
-    public Token.ParameterToken returnType;
+    private Token.ParameterToken returnType;
+    private TokenContainer returnTypeCode = new TokenContainer();
     public boolean isBuiltIn = false;
     public boolean isStatic = false;
     public boolean isConstructor = false;
@@ -72,9 +70,9 @@ public class ModuleCodeRepository
           name += ")";
         }
       }
-      if (returnType != null)
+      if (getReturnType() != null)
       {
-        name += " @" + returnType.getLookupName();
+        name += " @" + getReturnType().getLookupName();
       }
       return name;
     }
@@ -126,13 +124,19 @@ public class ModuleCodeRepository
         argTypes.set(idx, ParameterToken.fromContents("@" + nameAndType.type.name, Symbol.AtType));
       }
     }
+    public Token.ParameterToken getReturnType() { return returnType; }
+    public void setReturnTypeCode(TokenContainer code)
+    {
+      returnTypeCode = code;
+      returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(code);
+    }
     // Does a function signature match another one (i.e. do they refer to the same function)
     public boolean canReplace(FunctionSignature fn)
     {
 //      if (isBuiltIn != fn.isBuiltIn) return false;
       if (isStatic != fn.isStatic) return false; 
       if (isConstructor != fn.isConstructor) return false;
-      if (!returnType.equals(fn.returnType)) return false;
+      if (!getReturnType().equals(fn.getReturnType())) return false;
       if (nameParts.size() != fn.nameParts.size()) return false;
       if (getNumArgs() != fn.getNumArgs()) return false;
       for (int n = 0; n < nameParts.size(); n++)
@@ -170,7 +174,7 @@ public class ModuleCodeRepository
     public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<String> argNames, List<Token.ParameterToken> argTypes, FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.returnType = returnType;
+      sig.setReturnTypeCode(new TokenContainer(returnType));
       sig.nameParts = nameParts;
       sig.argNames = argNames;
       sig.argTypes = argTypes;
@@ -190,10 +194,10 @@ public class ModuleCodeRepository
       }
       return sig;
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<TokenContainer> argCodes, FunctionSignature oldSig)
+    public static FunctionSignature from(TokenContainer returnTypeCode, List<String> nameParts, List<TokenContainer> argCodes, FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.returnType = returnType;
+      sig.setReturnTypeCode(returnTypeCode);
       sig.nameParts = nameParts;
       for (int n = 0; n < argCodes.size(); n++)
       {
@@ -211,7 +215,7 @@ public class ModuleCodeRepository
     public static FunctionSignature copyOf(FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.returnType = oldSig.returnType;
+      sig.setReturnTypeCode(oldSig.returnTypeCode);
       sig.nameParts = new ArrayList<>(oldSig.nameParts);
       sig.argNames = new ArrayList<>(oldSig.argNames);
       sig.argTypes = new ArrayList<>();
@@ -883,7 +887,7 @@ public class ModuleCodeRepository
     
     if (!fn.sig.isConstructor)
     {
-      PlomTextWriter.writeToken(out, fn.sig.returnType);
+      PlomTextWriter.writeToken(out, fn.sig.getReturnType());
     }
     
     out.token("{");

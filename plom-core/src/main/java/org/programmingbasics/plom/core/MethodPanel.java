@@ -126,7 +126,7 @@ public class MethodPanel
     if (!sig.isConstructor)
     {
       int maxReturnTypeWidth = containerDiv.querySelector(".method_return").getClientWidth();
-      returnTypeField = new TypeEntryField(sig.returnType.copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
+      returnTypeField = new TypeEntryField(sig.getReturnType().copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
           (scope, coreTypes) -> {
             StandardLibrary.createGlobals(null, scope, coreTypes);
             scope.setParent(new RepositoryScope(repository, coreTypes));
@@ -178,7 +178,7 @@ public class MethodPanel
           // Update line numbers
         }
       });
-      returnTypeArea.setSingleLineCode(new TokenContainer(sig.returnType.copy()));
+      returnTypeArea.setSingleLineCode(new TokenContainer(sig.getReturnType().copy()));
     }
     else
     {
@@ -195,24 +195,8 @@ public class MethodPanel
     AnchorElement okButton = (AnchorElement)containerDiv.querySelector("a.done");
     okButton.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-//      // TODO: Remove OK button and just have changes automatically be applied
-//      // TODO: Check validity of function name
-//      List<String> nameParts = new ArrayList<>();
-//      List<String> argNames = new ArrayList<>();
-//      List<Token.ParameterToken> argTypes = new ArrayList<>();
-      Token.ParameterToken returnType = null;
-//      for (DivElement div: nameEls)
-//        nameParts.add(((InputElement)div.querySelector("input")).getValue());
-//      for (DivElement div: argEls)
-//        argNames.add(((InputElement)div.querySelector("plom-autoresizing-input")).getValue());
-//      for (TypeEntryField typeField: argTypeFields)
-//        argTypes.add(typeField.type);
-      if (returnTypeField != null)
-        returnType = returnTypeField.type;
-      if (returnTypeArea != null)
-        returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(returnTypeArea.getSingleLineCode());
-      FunctionSignature nameSig = methodWidget2.getNameSig();
-      FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, sig);
+      // TODO: Remove OK button and just have changes automatically be applied
+      FunctionSignature newSig = getCurrentSignature();
       if (listener != null)
         listener.onSignatureChange(newSig, true);
     }, false);
@@ -276,19 +260,30 @@ public class MethodPanel
 
   private void notifyOfChanges()
   {
+    FunctionSignature newSig = getCurrentSignature();
+    if (listener != null)
+      listener.onSignatureChange(newSig, false);
+  }
+  
+  private FunctionSignature getCurrentSignature()
+  {
     FunctionSignature nameSig = methodWidget2.getNameSig();
-    Token.ParameterToken returnType = null;
-    if (returnTypeField != null)
-      returnType = returnTypeField.type;
-    if (returnTypeArea != null)
-      returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(returnTypeArea.getSingleLineCode());
-//    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
     List<TokenContainer> argCodes = new ArrayList<>();
     for (int n = 0; n < nameSig.getNumArgs(); n++)
       argCodes.add(nameSig.getArgCode(n));
-    FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, argCodes, originalSig);
-    if (listener != null)
-      listener.onSignatureChange(newSig, false);
+//    Token.ParameterToken returnType = null;
+//    if (returnTypeField != null)
+//      returnType = returnTypeField.type;
+//    if (returnTypeField != null)
+//      returnType = returnTypeField.type;
+
+  // TODO: Check validity of function name
+//  List<String> nameParts = new ArrayList<>();
+//  List<String> argNames = new ArrayList<>();
+//  List<Token.ParameterToken> argTypes = new ArrayList<>();
+//  FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
+    FunctionSignature newSig = FunctionSignature.from(returnTypeArea.getSingleLineCode(), nameSig.nameParts, argCodes, originalSig);
+    return newSig;
   }
   
   static class MethodNameWidget

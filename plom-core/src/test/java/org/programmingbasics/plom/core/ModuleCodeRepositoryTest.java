@@ -130,9 +130,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals("at x:y:", cls.methods.get(0).sig.getLookupName());
     Assert.assertEquals("y", cls.methods.get(0).sig.getArgName(1));
     Assert.assertEquals("number", cls.methods.get(0).sig.getArgType(1).getLookupName());
-    Assert.assertEquals("number", cls.methods.get(0).sig.returnType.getLookupName());
+    Assert.assertEquals("number", cls.methods.get(0).sig.getReturnType().getLookupName());
     Assert.assertEquals("new", cls.methods.get(1).sig.getLookupName());
-    Assert.assertEquals("void", cls.methods.get(1).sig.returnType.getLookupName());
+    Assert.assertEquals("void", cls.methods.get(1).sig.getReturnType().getLookupName());
   }
 
   @Test
@@ -151,7 +151,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals("object", cls.parent.getLookupName());
     Assert.assertEquals(1, cls.methods.size());
     Assert.assertEquals("new", cls.methods.get(0).sig.getLookupName());
-    Assert.assertEquals("void", cls.methods.get(0).sig.returnType.getLookupName());
+    Assert.assertEquals("void", cls.methods.get(0).sig.getReturnType().getLookupName());
   }
 
   @Test
