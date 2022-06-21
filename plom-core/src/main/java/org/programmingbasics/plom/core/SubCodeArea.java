@@ -100,7 +100,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         // Careful here. On losing focus, the simple entry will close
         // but won't fire an event saying that text entry has completed
         codeArea.focus.hideSimpleEntry();
-        codeArea.hasFocus = false;
+        codeArea.focus.current = null;
         codeArea.focus.updateCursorVisibilityIfFocused(hasFocus);
       }
     }, true);
@@ -128,15 +128,16 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         true);
   }
 
-  private boolean isFocusInCodingArea(Node target)
+  private boolean isFocusInCodingArea(Node originalTarget)
   {
+    Node target = originalTarget;
     while (target != null)
     {
       if (target == codeDiv)
         return true;
       target = target.getParentNode();
     }
-    return focus.isFocusInInputPanels(target);
+    return focus.isFocusInInputPanels(originalTarget);
   }
   
   @Override void updateCodeView(boolean isCodeChanged)

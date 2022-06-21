@@ -57,7 +57,8 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
 
   static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean hasFocus)
   {
-    codePanel.hasFocus = hasFocus;
+    if (hasFocus)
+      codePanel.focus.current = codePanel;
     if (hasFocus)
       codePanel.focus.showChoicesDiv();
     else
@@ -175,7 +176,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       updateForScroll();
       
       // Draw cursors
-      focus.updateCursorVisibilityIfFocused(hasFocus);
+      focus.updateCursorVisibilityIfFocused(hasFocus());
       final int caretYOffset = cursorDiv.getOffsetHeight();
       final double caretOriginXOffset = (double)cursorDiv.getOffsetWidth() / 2;
       final double caretOriginYOffset = (double)cursorDiv.getOffsetHeight() * 0.8;

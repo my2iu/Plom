@@ -27,6 +27,20 @@ class CodeWidgetCursorOverlay
     void cursorHandleMoving(double x, double y, int pointerDownHandle, double cursorHandleXOffset, double cursorHandleYOffset);
   }
 
+  // Sends a notification of the cursor handle ending its move
+  private void fireCursorHandleEndMove()
+  {
+    if (codeWidget != null)
+      codeWidget.cursorHandleEndMove();
+  }
+  // Sends a notification of the cursor handle moving
+  private void fireCursorHandleMoving(double x, double y, int pointerDownHandle, double cursorHandleXOffset, double cursorHandleYOffset)
+  {
+    if (codeWidget != null)
+      codeWidget.cursorHandleMoving(x, y, pointerDownHandle, cursorHandleXOffset, cursorHandleYOffset);
+  }
+
+  
   /**
    * For on-screen cursor handle that user can drag to move the cursor
    */
@@ -94,7 +108,7 @@ class CodeWidgetCursorOverlay
             xOffset = cursorHandle1.xOffset;
             yOffset = cursorHandle1.yOffset;
           }
-          codeWidget.cursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
+          fireCursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
         }
         else if (pointerDownHandle == 2)
         {
@@ -104,7 +118,7 @@ class CodeWidgetCursorOverlay
             xOffset = cursorHandle2.xOffset;
             yOffset = cursorHandle2.yOffset;
           }
-          codeWidget.cursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
+          fireCursorHandleMoving(x, y, pointerDownHandle, xOffset, yOffset);
 
         }
       }
@@ -117,13 +131,13 @@ class CodeWidgetCursorOverlay
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = 0;
-      codeWidget.cursorHandleEndMove();
+      fireCursorHandleEndMove();
     }, false);
     cursorHandleEl.addEventListener("pointercancel", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
       pointerDownHandle = 0;
       CodeWidgetBase.releasePointerCapture(cursorHandleEl, pevt.getPointerId());
-      codeWidget.cursorHandleEndMove();
+      fireCursorHandleEndMove();
     }, false);
     
   }

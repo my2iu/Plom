@@ -70,7 +70,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   Symbol defaultParseContext = Symbol.FullStatement;
   
-  boolean hasFocus = true;
+  boolean hasFocus() { return focus.current == this; };
   
   /** Does the codeDiv area used for getting x,y positions*/
   boolean codeAreaScrolls = true;
@@ -144,7 +144,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   {
     this.codeList = code;
     updateCodeView(true);
-    if (hasFocus)
+    if (hasFocus())
       showPredictedTokenInput();
 //    hookCodeScroller(codeDiv);
 //    hookCodeClick(codeDiv);
@@ -236,8 +236,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   void showPredictedTokenInput()
   {
-    hasFocus = true;
-    focus.updateCursorVisibilityIfFocused(hasFocus);
+    focus.current = this;
+    focus.updateCursorVisibilityIfFocused(hasFocus());
     DivElement choicesDiv = focus.choicesDiv;
     choicesDiv.setInnerHTML("");
     focus.showChoicesDiv();
@@ -679,18 +679,18 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case DotVariable:
       focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
-      focus.simpleEntry.showFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
       focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
-      focus.simpleEntry.showFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
       focus.hideChoicesDiv();
-      focus.simpleEntry.showFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case String:
@@ -699,13 +699,13 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
         initialValue = "";
-      focus.simpleEntry.showFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryFor("\"", "\"", "", initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
       focus.hideChoicesDiv();
       initialValue = initialValue.substring(3);
-      focus.simpleEntry.showMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
     default:
       return;
@@ -1144,7 +1144,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateForScroll();
       
       // Draw cursors
-      focus.updateCursorVisibilityIfFocused(hasFocus);
+      focus.updateCursorVisibilityIfFocused(hasFocus());
       focus.cursorOverlay.updatePrimaryCursor(x, y, 0, 0, 0);
       // Secondary cursor
       CursorRect selectionCursorRect = null;

@@ -1,5 +1,10 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.SimpleEntry.BackspaceAllCallback;
+import org.programmingbasics.plom.core.SimpleEntry.InputCallback;
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.suggestions.Suggester;
+
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Node;
 import elemental.html.DivElement;
@@ -15,6 +20,9 @@ public class CodeWidgetInputPanels
   SimpleEntry simpleEntry;
   DivElement choicesDiv;
   CodeWidgetCursorOverlay cursorOverlay;
+  
+  // Current code widget that has focus (or null if nothing has focus)
+  CodeWidgetBase current;
   
   /** When showing the choices div, force it to gain focus. Needed with SubCodingArea 
    * so that when user switches between the actual SubCodingArea and the choices div
@@ -55,6 +63,16 @@ public class CodeWidgetInputPanels
       target = target.getParentNode();
     }
     return false;
+  }
+
+  <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  {
+    simpleEntry.showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback);
+  }
+
+  <U extends Token> void showSimpleEntryMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  {
+    simpleEntry.showMultilineFor(prefix, postfix, prompt, initialValue, token, isEdit, callback, bkspCallback);
   }
 
   void hideSimpleEntry()
