@@ -85,11 +85,12 @@ public class MethodPanel
       notifyOfChanges();
     });
 
-    CodeWidgetCursorOverlay cursorOverlay = new CodeWidgetCursorOverlay((Element)containerDiv.querySelector("svg.cursoroverlay"));
-    methodWidget2 = new MethodNameWidget2(sig, simpleEntry, 
+    CodeWidgetInputPanels inputPanels = new CodeWidgetInputPanels(
         (DivElement)containerDiv.querySelector("div.choices"),
-        (Element)containerDiv.querySelector("div.sidechoices"),
-        cursorOverlay,
+        simpleEntry,
+        new CodeWidgetCursorOverlay((Element)containerDiv.querySelector("svg.cursoroverlay")),
+        true);
+    methodWidget2 = new MethodNameWidget2(sig, inputPanels, 
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
       scope.setParent(new RepositoryScope(repository, coreTypes));
@@ -139,12 +140,8 @@ public class MethodPanel
       
       
       returnTypeArea = SubCodeArea.forTypeField(
-          containerDiv.querySelector(".methodReturnCode"), 
-          new CodeWidgetInputPanels(
-              (DivElement)containerDiv.querySelector("div.choices"),
-              simpleEntry,
-              cursorOverlay,
-              true),
+          containerDiv.querySelector(".methodReturnCode"),
+          inputPanels,
           (Element)containerDiv.querySelector(".scrollable-interior"),
           containerDiv.querySelector(".methoddetails"), 
           (Element)containerDiv.querySelector(".nameHeading"),
@@ -495,7 +492,6 @@ public class MethodPanel
   static class MethodNameWidget2
   {
     final Document doc;
-    final SimpleEntry simpleEntry;
     ModuleCodeRepository repository;
     final ConfigureGlobalScope globalScopeForTypeLookup;
     final DivElement baseDiv;
@@ -509,16 +505,13 @@ public class MethodPanel
     SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
     Element divForDeterminingWindowWidth;
     int maxTypeWidth;
-    Element sideChoicesDiv;
-    DivElement choicesDiv;
     Element scrollableDiv;
     Element scrollableInterior;
-    CodeWidgetCursorOverlay cursorOverlay;
+    CodeWidgetInputPanels inputPanels;
     
-    public MethodNameWidget2(FunctionSignature sig, SimpleEntry simpleEntry, DivElement choices, Element sideChoices, CodeWidgetCursorOverlay cursorOverlay, ConfigureGlobalScope globalScopeForTypeLookup, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
+    public MethodNameWidget2(FunctionSignature sig, CodeWidgetInputPanels inputPanels, ConfigureGlobalScope globalScopeForTypeLookup, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
     {
       doc = Browser.getDocument();
-      this.simpleEntry = simpleEntry;
       this.globalScopeForTypeLookup = globalScopeForTypeLookup;
       this.sig = FunctionSignature.copyOf(sig);
       this.widthCalculator = widthCalculator;
@@ -526,10 +519,7 @@ public class MethodPanel
       this.maxTypeWidth = maxTypeWidth;
       this.scrollableDiv = scrollableDiv;
       this.scrollableInterior = scrollableInterior;
-      this.sideChoicesDiv = sideChoices;
-      this.choicesDiv = choices;
-      this.cursorOverlay = cursorOverlay;
-      
+      this.inputPanels = inputPanels;
       
       // Create initial layout
       baseDiv = doc.createDivElement();
@@ -641,11 +631,7 @@ public class MethodPanel
     {
       SubCodeArea returnArea = SubCodeArea.forMethodParameterField(
           div,
-          new CodeWidgetInputPanels(
-              choicesDiv,
-              simpleEntry,
-              cursorOverlay,
-              true),
+          inputPanels,
           scrollableInterior,
           scrollableDiv, 
           divForDeterminingWindowWidth,

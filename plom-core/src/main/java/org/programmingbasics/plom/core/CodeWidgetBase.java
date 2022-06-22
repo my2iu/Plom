@@ -235,12 +235,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   void showPredictedTokenInput()
   {
-    focus.setCurrent(this);
-    focus.updateCursorVisibilityIfFocused(hasFocus());
+    focus.showChoicesDivAndTakeFocus(this);
     DivElement choicesDiv = focus.choicesDiv;
     choicesDiv.setInnerHTML("");
-    focus.showChoicesDiv();
-    focus.hideSimpleEntry();
 
     // We have some buttons that float to the right, but on wide displays, those
     // buttons are too far to the right and get lost, so we put everything into
@@ -676,24 +673,20 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     switch (tokenType)
     {
     case DotVariable:
-      focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
       focus.showSimpleEntryFor(".", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case AtType:
-      focus.hideChoicesDiv();
       initialValue = initialValue.substring(1);
       focus.showSimpleEntryFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
-      focus.hideChoicesDiv();
       focus.showSimpleEntryFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case String:
-      focus.hideChoicesDiv();
       if (isEdit)
         initialValue = initialValue.substring(1, initialValue.length() - 1);
       else
@@ -702,7 +695,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case DUMMY_COMMENT:
-      focus.hideChoicesDiv();
       initialValue = initialValue.substring(3);
       focus.showSimpleEntryMultilineFor("// ", "", "", initialValue, newToken, isEdit, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       break;
@@ -753,8 +745,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
     if (isFinal)
     {
-      focus.showChoicesDiv();
-      focus.hideSimpleEntry();
+//      focus.showChoicesDiv();
+//      focus.hideSimpleEntry();
       showPredictedTokenInput();
       // Force safari to blur, but do it after we've given ourselves the chance to
       // move focus somewhere else first.
@@ -770,8 +762,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
     EraseLeft.eraseLeftFromStatementContainer(codeList, cursorPos, 0);
     updateCodeView(true);
-    focus.showChoicesDiv();
-    focus.hideSimpleEntry();
+//    focus.showChoicesDiv();
+//    focus.hideSimpleEntry();
     showPredictedTokenInput();
     return false;
   }
@@ -1146,7 +1138,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateForScroll();
       
       // Draw cursors
-      focus.updateCursorVisibilityIfFocused(hasFocus());
+      focus.updateCursorVisibilityIfFocused();
       focus.cursorOverlay.updatePrimaryCursor(x, y, 0, 0, 0);
       // Secondary cursor
       CursorRect selectionCursorRect = null;

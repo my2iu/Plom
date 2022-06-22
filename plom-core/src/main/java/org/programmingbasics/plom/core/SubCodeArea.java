@@ -99,7 +99,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         // but won't fire an event saying that text entry has completed
         codeArea.focus.hideSimpleEntry();
         codeArea.focus.setCurrent(null);
-        codeArea.focus.updateCursorVisibilityIfFocused(hasFocus);
+        codeArea.focus.updateCursorVisibilityIfFocused();
       }
     }, true);
     

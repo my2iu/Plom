@@ -42,8 +42,11 @@ public class CodeWidgetInputPanels
     choicesDiv.getStyle().setDisplay(Display.NONE);
   }
   
-  void showChoicesDiv()
+  void showChoicesDivAndTakeFocus(CodeWidgetBase currentFocus)
   {
+    setCurrent(currentFocus);
+    hideSimpleEntry();
+    updateCursorVisibilityIfFocused();
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     // Also assign focus to the coding area so that focus isn't lost
     if (forceChoicesDivFocus)
@@ -67,11 +70,23 @@ public class CodeWidgetInputPanels
 
   <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
+    // A simple entry is triggered from the choices div, and the choices div
+    // automatically shows the cursor overlay, so the only visibility that
+    // needs to change when starting up the simpleEntry is to hide the
+    // choices div
+    hideChoicesDiv();
+
     simpleEntry.showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback);
   }
 
   <U extends Token> void showSimpleEntryMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
+    // A simple entry is triggered from the choices div, and the choices div
+    // automatically shows the cursor overlay, so the only visibility that
+    // needs to change when starting up the simpleEntry is to hide the
+    // choices div
+    hideChoicesDiv();
+
     simpleEntry.showMultilineFor(prefix, postfix, prompt, initialValue, token, isEdit, callback, bkspCallback);
   }
 
@@ -80,9 +95,9 @@ public class CodeWidgetInputPanels
     simpleEntry.setVisible(false);
   }
   
-  void updateCursorVisibilityIfFocused(boolean hasFocus)
+  void updateCursorVisibilityIfFocused()
   {
-    cursorOverlay.updateCursorVisibilityIfFocused(hasFocus);
+    cursorOverlay.updateCursorVisibilityIfFocused(getCurrent() != null);
   }
 
   CodeWidgetBase getCurrent()
