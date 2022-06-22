@@ -201,7 +201,7 @@ public class MethodPanel
     // When creating a new function/method, the name should be selected so that you can immediately give it a new name 
     if (isNew)
     {
-      methodWidget.focusAndSelectFirstName();
+      methodWidget2.focusAndSelectFirstName();
     }
   }
 

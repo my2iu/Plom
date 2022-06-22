@@ -68,6 +68,25 @@ public class CodeWidgetInputPanels
     return false;
   }
 
+  /** 
+   * Changes the focus away from the old coding area, hiding input panels, if  
+   * the old coding area currently has focus. If the old coding area doesn't 
+   * have focus (e.g. the user switched focus to another coding area), then it 
+   * doesn't do anything. 
+   */
+  void loseFocusFrom(CodeWidgetBase old)
+  {
+    if (getCurrent() == old)
+    {
+      hideChoicesDiv();
+      // Careful here. On losing focus, the simple entry will close
+      // but won't fire an event saying that text entry has completed
+      hideSimpleEntry();
+      setCurrent(null);
+      updateCursorVisibilityIfFocused();
+    }
+  }
+  
   <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     // A simple entry is triggered from the choices div, and the choices div

@@ -94,12 +94,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 //      Browser.getWindow().getConsole().log(((MouseEvent)evt).getRelatedTarget());
       if (!hasFocus)
       {
-        codeArea.focus.hideChoicesDiv();
-        // Careful here. On losing focus, the simple entry will close
-        // but won't fire an event saying that text entry has completed
-        codeArea.focus.hideSimpleEntry();
-        codeArea.focus.setCurrent(null);
-        codeArea.focus.updateCursorVisibilityIfFocused();
+        codeArea.focus.loseFocusFrom(codeArea);
       }
     }, true);
     
