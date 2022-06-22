@@ -13,10 +13,10 @@ class CodeWidgetCursorOverlay
 
   CursorMovingCallback codeWidget;
   
-  CodeWidgetCursorOverlay(CursorMovingCallback codeWidget, Element cursorOverlayEl)
+  CodeWidgetCursorOverlay(Element cursorOverlayEl)
   {
-    this.codeWidget = codeWidget;
     this.el = cursorOverlayEl;
+    hookCursorHandles();
   }
 
   static interface CursorMovingCallback
@@ -25,6 +25,8 @@ class CodeWidgetCursorOverlay
     void cursorHandleEndMove();
     // Callback from the cursor overlay when the user is dragging a cursor by its handle
     void cursorHandleMoving(double x, double y, int pointerDownHandle, double cursorHandleXOffset, double cursorHandleYOffset);
+    // Returns the div that all x and y coordinates should be relative to (i.e. the div that provides the origin for coordinates)
+    DivElement getBaseCodeDiv();
   }
 
   // Sends a notification of the cursor handle ending its move
@@ -67,19 +69,20 @@ class CodeWidgetCursorOverlay
 
   }
   
-  void hookCursorHandles(DivElement codeDiv)
+  void hookCursorHandles()
   {
     // The codeDiv should not be a parent of the 
     // cursorOverlayEl (svg element containing the cursor overlay).
     // Otherwise, dragging of the cursors on the cursor overlay will
     // send click events to the codeDiv.
-    hookCursorHandle(codeDiv, (Element)el.querySelectorAll(".cursorhandle").item(0), 1);
-    hookCursorHandle(codeDiv, (Element)el.querySelectorAll(".cursorhandle").item(1), 2);
+    hookCursorHandle((Element)el.querySelectorAll(".cursorhandle").item(0), 1);
+    hookCursorHandle((Element)el.querySelectorAll(".cursorhandle").item(1), 2);
   }
   
-  private void hookCursorHandle(DivElement div, Element cursorHandleEl, int cursorId)
+  private void hookCursorHandle(Element cursorHandleEl, int cursorId)
   {
     CodeWidgetBase.addActiveEventListenerTo(cursorHandleEl, "pointerdown", (evt) -> {
+      if (codeWidget == null) return;
       PointerEvent pevt = (PointerEvent)evt;
       CodeWidgetBase.setPointerCapture(cursorHandleEl, pevt.getPointerId());
 //        setPointerCapture(Browser.getDocument().querySelector(".asd"),
@@ -87,6 +90,7 @@ class CodeWidgetCursorOverlay
       evt.preventDefault();
       evt.stopPropagation();
       pointerDownHandle = cursorId;
+      DivElement div = codeWidget.getBaseCodeDiv();
       double x = CodeWidgetBase.pointerToRelativeX(pevt, div);
       double y = CodeWidgetBase.pointerToRelativeY(pevt, div);
       pointerDownX = x;
@@ -94,8 +98,9 @@ class CodeWidgetCursorOverlay
     }, false);
     CodeWidgetBase.addActiveEventListenerTo(cursorHandleEl, "pointermove", (evt) -> {
       PointerEvent pevt = (PointerEvent)evt;
-      if (pointerDownHandle != 0)
+      if (pointerDownHandle != 0 && codeWidget != null)
       {
+        DivElement div = codeWidget.getBaseCodeDiv();
         double x = CodeWidgetBase.pointerToRelativeX(pevt, div);
         double y = CodeWidgetBase.pointerToRelativeY(pevt, div);
         pointerDownX = x;

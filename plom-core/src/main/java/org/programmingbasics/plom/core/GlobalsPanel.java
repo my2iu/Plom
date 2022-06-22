@@ -168,10 +168,12 @@ public class GlobalsPanel implements AutoCloseable
     // Code panel for variables
     SubCodeArea variableArea = SubCodeArea.forVariableDeclaration(
         mainDiv.querySelector(".globalVarsCode"), 
-        (DivElement)mainDiv.querySelector("div.choices"),
-        (Element)mainDiv.querySelector("svg.cursoroverlay"),
-        (Element)mainDiv.querySelector("div.simpleentry"),
-        (Element)mainDiv.querySelector("div.sidechoices"),
+        new CodeWidgetInputPanels(
+            (DivElement)mainDiv.querySelector("div.choices"),
+            new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
+                (DivElement)mainDiv.querySelector("div.sidechoices")),
+            new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
+            true),
         (Element)mainDiv.querySelector(".scrollable-interior"),
         mainDiv.querySelector(".globaldetails"), 
         (Element)mainDiv.querySelector(".classesHeading"),

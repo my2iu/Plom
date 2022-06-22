@@ -58,7 +58,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
   static void startHookCodeWidget(CodeWidgetBase codePanel, DivElement codeDiv, boolean hasFocus)
   {
     if (hasFocus)
-      codePanel.focus.current = codePanel;
+      codePanel.focus.setCurrent(codePanel);
     if (hasFocus)
       codePanel.focus.showChoicesDiv();
     else
@@ -90,7 +90,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
         (DivElement)mainDiv.querySelector("div.choices"),
         new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
             (DivElement)mainDiv.querySelector("div.sidechoices")),
-        new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay")),
+        new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
         false);
   }
   
@@ -112,10 +112,15 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
           (DivElement)mainDiv.querySelector("div.choices"),
           new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
               (DivElement)mainDiv.querySelector("div.sidechoices")),
-          new CodeWidgetCursorOverlay(this, (Element)mainDiv.querySelector("svg.cursoroverlay")),
+          new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
           false);
     }
     
+    @Override public DivElement getBaseCodeDiv()
+    {
+      return codeDiv;
+    }
+
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {
       // Not used in Dom version of code

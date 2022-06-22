@@ -70,7 +70,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   Symbol defaultParseContext = Symbol.FullStatement;
   
-  boolean hasFocus() { return focus.current == this; };
+  boolean hasFocus() { return focus.getCurrent() == this; };
   
   /** Does the codeDiv area used for getting x,y positions*/
   boolean codeAreaScrolls = true;
@@ -138,7 +138,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     updateCodeView(false);
 //        showPredictedTokenInput(choicesDiv);
   }
-
   
   public void setCode(StatementContainer code)
   {
@@ -236,7 +235,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   void showPredictedTokenInput()
   {
-    focus.current = this;
+    focus.setCurrent(this);
     focus.updateCursorVisibilityIfFocused(hasFocus());
     DivElement choicesDiv = focus.choicesDiv;
     choicesDiv.setInnerHTML("");
@@ -818,8 +817,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   
   void hookCodeClick(DivElement div)
   {
-    focus.cursorOverlay.hookCursorHandles(div);
-    
     div.addEventListener(Event.CLICK, (evt) -> {
       MouseEvent pevt = (MouseEvent)evt;
       double x = pointerToRelativeX(pevt, div);
@@ -1057,6 +1054,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     double topPadding = 10;
     double bottomPadding = 10;
     
+    @Override public DivElement getBaseCodeDiv()
+    {
+      return codeDiv;
+    }
+
     @Override void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef)
     {
       final int MIN_TOKEN_SIZE_FOR_DO_NOT_COVER = 50;

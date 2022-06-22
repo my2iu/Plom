@@ -22,7 +22,7 @@ public class CodeWidgetInputPanels
   CodeWidgetCursorOverlay cursorOverlay;
   
   // Current code widget that has focus (or null if nothing has focus)
-  CodeWidgetBase current;
+  private CodeWidgetBase current;
   
   /** When showing the choices div, force it to gain focus. Needed with SubCodingArea 
    * so that when user switches between the actual SubCodingArea and the choices div
@@ -83,5 +83,16 @@ public class CodeWidgetInputPanels
   void updateCursorVisibilityIfFocused(boolean hasFocus)
   {
     cursorOverlay.updateCursorVisibilityIfFocused(hasFocus);
+  }
+
+  CodeWidgetBase getCurrent()
+  {
+    return current;
+  }
+
+  void setCurrent(CodeWidgetBase current)
+  {
+    this.current = current;
+    cursorOverlay.codeWidget = current;
   }
 }

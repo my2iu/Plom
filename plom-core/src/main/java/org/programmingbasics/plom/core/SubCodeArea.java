@@ -21,45 +21,43 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
 {
   EventRemover docBlurListener;
 
-  public static SubCodeArea forMethodParameterField(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
+  public static SubCodeArea forMethodParameterField(Element mainDiv, 
+      CodeWidgetInputPanels inputPanels,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
     SubCodeArea codeArea = create(Symbol.ParameterFieldOnly, true,
-        mainDiv, choicesDiv, cursorOverlay, simpleEntry, sideChoices, 
+        mainDiv, inputPanels, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         20, 3, 3, 3,
         divForWindowWidth, widthCalculator);
     return codeArea;
   }
-
-  public static SubCodeArea forTypeField(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
+  
+  public static SubCodeArea forTypeField(Element mainDiv,
+      CodeWidgetInputPanels inputPanels,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
     SubCodeArea codeArea = create(Symbol.ReturnTypeFieldOnly, true,
-        mainDiv, choicesDiv, cursorOverlay, simpleEntry, sideChoices, 
+        mainDiv, inputPanels, 
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         20, 3, 3, 3,
         divForWindowWidth, widthCalculator);
     return codeArea;
   }
 
-  public static SubCodeArea forVariableDeclaration(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, Element simpleEntryDiv, Element sideChoices,
+  public static SubCodeArea forVariableDeclaration(Element mainDiv, 
+      CodeWidgetInputPanels inputPanels,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator) 
   {
     return create(Symbol.FullVariableDeclaration, false, 
-        mainDiv, choicesDiv, cursorOverlay, 
-        new SimpleEntry((DivElement)simpleEntryDiv,
-            (DivElement)sideChoices), 
-        sideChoices, 
+        mainDiv, 
+        inputPanels,
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover, 
         10, 10, 10, 10,
         divForWindowWidth, widthCalculator);
@@ -67,15 +65,15 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
   
   private static SubCodeArea create(
       Symbol grammar, boolean isSingleLineMode,
-      Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
+      Element mainDiv, 
+      CodeWidgetInputPanels inputPanels,
       Element codeDivInteriorForScrollPadding, Element scrollingDivForDoNotCover, 
       double leftPadding, double rightPadding, double topPadding, double bottomPadding,
       Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
   {
-    SubCodeArea codeArea = new SubCodeArea(mainDiv, choicesDiv,
-        cursorOverlay, simpleEntry, sideChoices,
+    SubCodeArea codeArea = new SubCodeArea(mainDiv,
+        inputPanels,
         codeDivInteriorForScrollPadding, scrollingDivForDoNotCover,
         divForWindowWidth,
         widthCalculator);
@@ -100,7 +98,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
         // Careful here. On losing focus, the simple entry will close
         // but won't fire an event saying that text entry has completed
         codeArea.focus.hideSimpleEntry();
-        codeArea.focus.current = null;
+        codeArea.focus.setCurrent(null);
         codeArea.focus.updateCursorVisibilityIfFocused(hasFocus);
       }
     }, true);
@@ -108,8 +106,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     return codeArea;
   }
   
-  private SubCodeArea(Element mainDiv, DivElement choicesDiv,
-      Element cursorOverlay, SimpleEntry simpleEntry, Element sideChoices,
+  private SubCodeArea(Element mainDiv, CodeWidgetInputPanels inputPanels, 
       Element codeDivInteriorForScrollPadding, 
       Element scrollingDivForDoNotCover, Element divForWindowWidth,
       SvgCodeRenderer.SvgTextWidthCalculator widthCalculator)
@@ -122,10 +119,7 @@ public class SubCodeArea extends CodeWidgetBase.CodeWidgetBaseSvg
     this.codeDivInteriorForScrollPadding = codeDivInteriorForScrollPadding;
     this.scrollingDivForDoNotCover = scrollingDivForDoNotCover;
     
-    this.focus = new CodeWidgetInputPanels(
-        choicesDiv, simpleEntry,
-        new CodeWidgetCursorOverlay(this, cursorOverlay),
-        true);
+    this.focus = inputPanels;
   }
 
   private boolean isFocusInCodingArea(Node originalTarget)
