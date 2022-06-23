@@ -819,8 +819,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       cursorPos = newPos;
       selectionCursorPos = null;
 
-      updateCodeView(false);
       showPredictedTokenInput();
+      updateCodeView(false);
     }, false);
   }
 
@@ -1118,10 +1118,13 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         focus.cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
       else
       {
-        ClientRect codeAreaRect = codeDiv.getBoundingClientRect();
-        ClientRect scrollingAreaRect = scrollingDivForDoNotCover.getBoundingClientRect();
-//        return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
-        focus.cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
+        if (focus.getCurrent() == this)
+        {
+          ClientRect codeAreaRect = codeDiv.getBoundingClientRect();
+          ClientRect scrollingAreaRect = scrollingDivForDoNotCover.getBoundingClientRect();
+//          return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
+          focus.cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
+        }
       }
     }
     

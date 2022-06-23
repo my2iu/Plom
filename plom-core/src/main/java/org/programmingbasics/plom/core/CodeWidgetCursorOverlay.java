@@ -66,7 +66,6 @@ class CodeWidgetCursorOverlay
   {
     String cssScrollTranslate = "translate(" + (dx) + " " + (dy) + ")";
     el.querySelector("g.cursorscrolltransform").setAttribute("transform", cssScrollTranslate);
-
   }
   
   void hookCursorHandles()
