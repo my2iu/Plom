@@ -26,12 +26,6 @@ public interface UIResources extends ClientBundle
    @Source("methodnamebase.html")
    TextResource getMethodNameBaseHtml();
 
-   @Source("methodnamefirstarg.html")
-   TextResource getMethodNameFirstArgumentHtml();
-
-   @Source("methodnamepart.html")
-   TextResource getMethodNamePartHtml();
-
    @Source("methodnamefirstarg2.html")
    TextResource getMethodNameFirstArgument2Html();
 

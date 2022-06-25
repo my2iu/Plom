@@ -771,7 +771,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   abstract void updateCodeView(boolean isCodeChanged);
   abstract void scrollSimpleEntryToNotCover(int doNotCoverLeft, int doNotCoverRight);
   abstract CodePosition hitDetectPointer(double x, double y, double cursorHandleXOffset, double cursorHandleYOffset);
-  abstract void updateForScroll();
+  abstract void updateForScroll(CodeWidgetCursorOverlay cursorOverlay);
   abstract void getExtentOfCurrentToken(CodePosition pos, AtomicInteger doNotCoverLeftRef, AtomicInteger doNotCoverRightRef);
   
   @JsFunction
@@ -803,7 +803,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   void hookScrollUpdateCursor(Element div)
   {
     div.addEventListener(Event.SCROLL, (evt) -> {
-      updateForScroll();
+      focus.updateCursorForScroll();
     }, false);
   }
   
@@ -1112,10 +1112,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCursor(renderedHitBoxes);
     }
 
-    @Override void updateForScroll()
+    @Override void updateForScroll(CodeWidgetCursorOverlay cursorOverlay)
     {
       if (codeAreaScrolls)
-        focus.cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
+        cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()) + leftPadding, (- codeDiv.getScrollTop()) + topPadding);
       else
       {
         if (focus.getCurrent() == this)
@@ -1123,7 +1123,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           ClientRect codeAreaRect = codeDiv.getBoundingClientRect();
           ClientRect scrollingAreaRect = scrollingDivForDoNotCover.getBoundingClientRect();
 //          return (evt.getClientY() - rect.getTop()) + div.getScrollTop();
-          focus.cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
+          cursorOverlay.adjustForCodeDivScrolling(codeAreaRect.getLeft() - scrollingAreaRect.getLeft() + leftPadding, codeAreaRect.getTop() - scrollingAreaRect.getTop() + topPadding);
         }
       }
     }
@@ -1138,7 +1138,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       double y = cursorRect.bottom;
       
       // Handle scrolling
-      updateForScroll();
+      focus.updateCursorForScroll();
       
       // Draw cursors
       focus.updateCursorVisibilityIfFocused();

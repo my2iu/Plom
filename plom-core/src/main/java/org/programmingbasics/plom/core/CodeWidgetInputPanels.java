@@ -46,6 +46,7 @@ public class CodeWidgetInputPanels
   {
     setCurrent(currentFocus);
     hideSimpleEntry();
+    updateCursorForScroll();
     updateCursorVisibilityIfFocused();
     choicesDiv.getStyle().setDisplay(Display.BLOCK);
     // Also assign focus to the coding area so that focus isn't lost
@@ -119,6 +120,12 @@ public class CodeWidgetInputPanels
     cursorOverlay.updateCursorVisibilityIfFocused(getCurrent() != null);
   }
 
+  void updateCursorForScroll()
+  {
+    if (getCurrent() != null)
+      current.updateForScroll(this.cursorOverlay);
+  }
+  
   CodeWidgetBase getCurrent()
   {
     return current;

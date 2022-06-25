@@ -158,9 +158,9 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
         return CodeRenderer.renderWithHitBoxes(codeDiv, codeList, pos, null, null, codeErrors);
     }
 
-    @Override void updateForScroll()
+    @Override void updateForScroll(CodeWidgetCursorOverlay cursorOverlay)
     {
-      focus.cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()), (- codeDiv.getScrollTop()));
+      cursorOverlay.adjustForCodeDivScrolling((- codeDiv.getScrollLeft()), (- codeDiv.getScrollTop()));
     }
     
     // We need the renderedhitboxes of the code to figure out where
@@ -178,7 +178,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       }
       
       // Handle scrolling
-      updateForScroll();
+      focus.updateCursorForScroll();
       
       // Draw cursors
       focus.updateCursorVisibilityIfFocused();
