@@ -464,7 +464,7 @@ public class MethodPanel
     {
       syncFromUi();
       sig.addNewArgCode();
-      if (sig.argNames.size() > 1)
+      if (sig.getNumArgs() > 1)
         sig.nameParts.add("with");
       rebuild();
       if (nameEls.size() == 1)
@@ -485,16 +485,12 @@ public class MethodPanel
       if (index == 0)
       {
         sig.removeArgCode(index);
-        sig.argNames.remove(index);
-        sig.argTypes.remove(index);
         if (sig.nameParts.size() > 1)
           sig.nameParts.remove(index + 1);
       }
       else
       {
         sig.removeArgCode(index);
-        sig.argNames.remove(index);
-        sig.argTypes.remove(index);
         sig.nameParts.remove(index);
       }
       rebuild();

@@ -33,7 +33,7 @@ public class ModuleCodeRepository
   {
     public List<String> nameParts = new ArrayList<>();
     public List<String> argNames = new ArrayList<>();
-    public List<Token.ParameterToken> argTypes = new ArrayList<>();
+    private List<Token.ParameterToken> argTypes = new ArrayList<>();
     private List<TokenContainer> argCode = new ArrayList<>();
     private Token.ParameterToken returnType;
     private TokenContainer returnTypeCode = new TokenContainer();
@@ -98,7 +98,12 @@ public class ModuleCodeRepository
         argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
       }
     }
-    public void removeArgCode(int idx) { argCode.remove(idx); }
+    public void removeArgCode(int idx) 
+    {
+      argNames.remove(idx);
+      argTypes.remove(idx);
+      argCode.remove(idx); 
+    }
     public TokenContainer getArgCode(int idx) { return argCode.get(idx); }
     public void setArgCode(int idx, TokenContainer argCode)
     {
