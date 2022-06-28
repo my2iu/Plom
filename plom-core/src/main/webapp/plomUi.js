@@ -340,7 +340,7 @@ function setupPlomUi() {
 	    main.repository = makeRepositoryWithStdLib(main);
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
-				function .{main} @{void} {
+				function .{main} {@{void}} {} {
 					var .{a} @{string}
 					.{a} := .{input: {"Guess a number between 1 and 10"} }
 					if { .{a} = "8" } {

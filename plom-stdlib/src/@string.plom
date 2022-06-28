@@ -1,16 +1,16 @@
  class @ { string } extends @ {object } {
  vardecls {
  }
- function . {+: . { val } @ {string } } @ {boolean } {
+ function . {+: { . {val } @ {string } } } { @ {boolean } } { } {
  primitive
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {substring from: . { from } @ {number }to: . { to } @ {number } } @ {string } {
+ function . {substring from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {string } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  return this
  }
  }

@@ -1118,22 +1118,9 @@ new_methods:
       while (namePart != null)
       {
         fnName += namePart;
-//        if ("{".equals(lexer.peekLexInput()))
-//        {
-//          // New-style
-//          lexer.expectToken("{");
-//          args.add(PlomTextReader.readTokenContainer(lexer)
-//        }
-//        else
-        {
-          // Old-style
-          lexer.expectToken(".");
-          lexer.expectToken("{");
-          String argName = lexer.lexParameterTokenPartOrEmpty();
-          lexer.expectToken("}");
-          Token.ParameterToken argType = (Token.ParameterToken)PlomTextReader.readToken(lexer); 
-          args.add(FunctionSignature.argCodeFromNameType(argName, argType));
-        }
+        lexer.expectToken("{");
+        args.add(PlomTextReader.readTokenContainer(lexer));
+        lexer.expectToken("}");
         namePart = lexer.lexParameterTokenPart();
       }
     }
@@ -1143,13 +1130,21 @@ new_methods:
     }
     lexer.expectToken("}");
     
-    Token.ParameterToken returnType;
+    TokenContainer returnType;
     if (!isConstructor)
-      returnType = (Token.ParameterToken)PlomTextReader.readToken(lexer);
+    {
+      lexer.expectToken("{");
+      returnType = PlomTextReader.readTokenContainer(lexer);
+      lexer.expectToken("}");
+    }
     else
-      returnType = Token.ParameterToken.fromContents("@void", Symbol.AtType);
+      returnType = new TokenContainer(Token.ParameterToken.fromContents("@void", Symbol.AtType));
+
+    // Reserved empty section that I might use for comments or other data
+    lexer.expectToken("{");
+    lexer.expectToken("}");
     
-    FunctionSignature sig = FunctionSignature.from(new TokenContainer(returnType), Arrays.asList(fnName.split(":")), args, null);
+    FunctionSignature sig = FunctionSignature.from(returnType, Arrays.asList(fnName.split(":")), args, null);
     if (isConstructor)
       sig.isConstructor = true;
     if (isStatic)

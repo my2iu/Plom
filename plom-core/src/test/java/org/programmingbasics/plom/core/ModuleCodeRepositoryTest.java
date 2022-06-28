@@ -105,10 +105,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         + "  vardecls {\n" 
         + "    var .{var decl} @{test class}\n"
         + "  }\n"
-        + "  function . {at x:.{x} @{number} y: .{ y} @{number} } @{number} {\n" 
+        + "  function . {at x:{.{x} @{number}} y: {.{ y} @{number}} } {@{number}} {} {\n" 
         + "    return . {x }\n" 
         + "  }\n" 
-        + "  constructor . {new } {\n" 
+        + "  constructor . {new } { } {\n" 
         + "  }\n" 
         + "}\n";
     
@@ -139,7 +139,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   public void testLoadClassWithSupertype() throws PlomReadException
   {
     String codeStr = "class @{test class} extends @{object} {\n"
-        + "  constructor . {new } {\n" 
+        + "  constructor . {new } {} {\n" 
         + "  }\n" 
         + "}\n";
     
@@ -192,10 +192,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         " vardecls {\n" +
         " var\n" +
         " }\n" +
-        " function . {get } @ {number } {\n" + 
+        " function . {get } {@ {number }} {} {\n" + 
         " return 3\n" + 
         " }\n" + 
-        " function . {test: . { arg1 } @ {number } } @ {number } {\n" + 
+        " function . {test: {. { arg1 } @ {number }} } {@ {number }} {} {\n" + 
         " }\n" + 
         " function . { new style: {.{a} @{number}} function: {.{b} @{boolean}}} {@{void}} {} {\n" +
         "   return\n" +
@@ -207,10 +207,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         " vardecls {\n" +
         " var\n" +
         " }\n" +
-        " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
+        " function . {at x: {. { x } @ {number }}y: {. { y } @ {number } }} {@ {number }} {} {\n" + 
         " return . {x }\n" + 
         " }\n" +
-        " constructor . {new } {\n" + 
+        " constructor . {new } {} {\n" + 
         " }\n" + 
         " }\n" + 
         " }";
@@ -225,7 +225,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertTrue(loaded.getFunctionWithName("get") != null);
     FunctionDescription newStyleFn = loaded.getFunctionWithName("new style:function:");
     Assert.assertTrue(newStyleFn != null);
-    Assert.assertEquals("", newStyleFn.sig.getDisplayName());
+    Assert.assertEquals("new style: (.a @number) function: (.b @boolean) @void", newStyleFn.sig.getDisplayName());
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.size(), 1);
@@ -260,7 +260,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   public void testLoadFunction() throws PlomReadException
   {
     String oldFnStr = 
-        " function . {get } @ {number } {\n" + 
+        " function . {get } {@ {number }}{} {\n" + 
         " return 3\n" + 
         " }\n";
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(oldFnStr);
@@ -275,7 +275,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     in = new PlomTextReader.StringTextReader(newStyleFnStr);
     lexer = new PlomTextReader.PlomTextScanner(in);
     fn = ModuleCodeRepository.loadFunction(lexer);
-    Assert.assertEquals("get @number", fn.sig.getDisplayName());
+    Assert.assertEquals("new style: (.a @number) function: (.b @boolean) @void", fn.sig.getDisplayName());
   }
   
   @Test

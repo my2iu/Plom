@@ -1,6 +1,6 @@
  class @ { Test } extends @ {object } {
  vardecls {
  }
- constructor . {new } {
+ constructor . {new } { } {
  }
  }

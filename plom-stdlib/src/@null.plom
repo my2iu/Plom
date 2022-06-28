@@ -1,7 +1,7 @@
  class @ { null } extends @ {object } {
  vardecls {
  }
- function . {= } @ {boolean } {
+ function . {= } { @ {boolean } } { } {
  primitive
  }
  }

@@ -1,13 +1,13 @@
  class @ { boolean } extends @ {object } {
  vardecls {
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {not } @ {boolean } {
+ function . {not } { @ {boolean } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  if { this = true } {
  return"true"
  }

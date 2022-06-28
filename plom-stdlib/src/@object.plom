@@ -1,16 +1,16 @@
  class @ { object } extends @ {object } {
  vardecls {
  }
- function . {!=: . { val } @ {object } } @ {boolean } {
+ function . {!=: { . {val } @ {object } } } { @ {boolean } } { } {
  return ( this = . {val } ) . {not }
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  primitive
  }
- constructor . {new } {
+ constructor . {new } { } {
  primitive
  }
  }

@@ -3,100 +3,100 @@
  vardecls {
  var . {test global var } @ {object }
  }
- function . {input: . { prompt } @ {string } } @ {string } {
+ function . {input: { . {prompt } @ {string } } } { @ {string } } { } {
  // Displays a prompt asking for input and returns the value entered by the user
  primitive
  }
- function . {print string: . { value } @ {string } } @ {void } {
+ function . {print string: { . {value } @ {string } } } { @ {void } } { } {
  // Prints a string to the screen
  primitive
  }
- function . {print: . { value } @ {object } } @ {void } {
+ function . {print: { . {value } @ {object } } } { @ {void } } { } {
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
- function . {range from: . { from } @ {number }to: . { to } @ {number } } @ {number iterator } {
+ function . {range from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {number iterator } } { } {
  return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
  }
- function . {test: . { arg1 } @ {number } } @ {number } {
+ function . {test: { . {arg1 } @ {number } } } { @ {number } } { } {
  }
  class @ { JS object } extends @ {object } {
  vardecls {
  }
- function . {as boolean } @ {boolean } {
+ function . {as boolean } { @ {boolean } } { } {
  primitive
  }
- function . {as number } @ {number } {
+ function . {as number } { @ {number } } { } {
  primitive
  }
- function . {as string } @ {string } {
+ function . {as string } { @ {string } } { } {
  primitive
  }
- function . {at: . { index } @ {number } } @ {JS object } {
+ function . {at: { . {index } @ {number } } } { @ {JS object } } { } {
  primitive
  }
- function . {at: . { index } @ {number }set: . { value } @ {object } } @ {void } {
+ function . {at: { . {index } @ {number } }set: { . {value } @ {object } } } { @ {void } } { } {
  primitive
  }
- function . {call: . { method } @ {string } } @ {JS object } {
+ function . {call: { . {method } @ {string } } } { @ {JS object } } { } {
  primitive
  }
- function . {call: . { method } @ {string }with: . { param1 } @ {JS object } } @ {JS object } {
+ function . {call: { . {method } @ {string } }with: { . {param1 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {call: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object } } @ {JS object } {
+ function . {call: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {call: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object }and: . { param3 } @ {JS object } } @ {JS object } {
+ function . {call: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {get: . { key } @ {string } } @ {JS object } {
+ function . {get: { . {key } @ {string } } } { @ {JS object } } { } {
  primitive
  }
- function . {new: . { method } @ {string } } @ {JS object } {
+ function . {new: { . {method } @ {string } } } { @ {JS object } } { } {
  primitive
  }
- function . {new: . { method } @ {string }with: . { param1 } @ {JS object } } @ {JS object } {
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {new: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object } } @ {JS object } {
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {new: . { method } @ {string }with: . { param1 } @ {JS object }and: . { param2 } @ {JS object }and: . { param3 } @ {JS object } } @ {JS object } {
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
- function . {set: . { key } @ {string }to: . { value } @ {object } } @ {void } {
+ function . {set: { . {key } @ {string } }to: { . {value } @ {object } } } { @ {void } } { } {
  primitive
  }
- classfunction . {from boolean: . { value } @ {boolean } } @ {JS object } {
+ classfunction . {from boolean: { . {value } @ {boolean } } } { @ {JS object } } { } {
  primitive
  }
- classfunction . {from number: . { value } @ {number } } @ {JS object } {
+ classfunction . {from number: { . {value } @ {number } } } { @ {JS object } } { } {
  primitive
  }
- classfunction . {from string: . { value } @ {string } } @ {JS object } {
+ classfunction . {from string: { . {value } @ {string } } } { @ {JS object } } { } {
  primitive
  }
- classfunction . {globals } @ {JS object } {
+ classfunction . {globals } { @ {JS object } } { } {
  primitive
  }
  }
  class @ { Test } extends @ {object } {
  vardecls {
  }
- constructor . {new } {
+ constructor . {new } { } {
  }
  }
  class @ { boolean } extends @ {object } {
  vardecls {
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {not } @ {boolean } {
+ function . {not } { @ {boolean } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  if { this = true } {
  return"true"
  }
@@ -109,39 +109,39 @@
  class @ { null } extends @ {object } {
  vardecls {
  }
- function . {= } @ {boolean } {
+ function . {= } { @ {boolean } } { } {
  primitive
  }
  }
  class @ { number } extends @ {object } {
  vardecls {
  }
- function . {*: . { val } @ {number } } @ {number } {
+ function . {*: { . {val } @ {number } } } { @ {number } } { } {
  primitive
  }
- function . {+: . { val } @ {number } } @ {number } {
+ function . {+: { . {val } @ {number } } } { @ {number } } { } {
  primitive
  }
- function . {-: . { val } @ {number } } @ {number } {
+ function . {-: { . {val } @ {number } } } { @ {number } } { } {
  primitive
  }
- function . {/: . { val } @ {number } } @ {number } {
+ function . {/: { . {val } @ {number } } } { @ {number } } { } {
  primitive
  }
  }
  class @ { number iterator } extends @ {object } {
  vardecls {
  }
- function . {at end } @ {boolean } {
+ function . {at end } { @ {boolean } } { } {
  return true
  }
- function . {next } @ {number iterator } {
+ function . {next } { @ {number iterator } } { } {
  return this
  }
- function . {value } @ {number } {
+ function . {value } { @ {number } } { } {
  return null
  }
- constructor . {new } {
+ constructor . {new } { } {
  super . {new }
  }
  }
@@ -153,17 +153,17 @@
 
  var . {end } @ {number }
  }
- function . {at end } @ {boolean } {
+ function . {at end } { @ {boolean } } { } {
  return . {current } > . {end }
  }
- function . {next } @ {number } {
+ function . {next } { @ {number } } { } {
  . {current } := . {current } + 1
  return this
  }
- function . {value } @ {number } {
+ function . {value } { @ {number } } { } {
  return . {current }
  }
- constructor . {from: . { from } @ {number }to: . { to } @ {number } } {
+ constructor . {from: { . {from } @ {number } }to: { . {to } @ {number } } } { } {
  super . {new }
  . {start } := . {from }
  . {end } := . {to }
@@ -173,32 +173,32 @@
  class @ { object } {
  vardecls {
  }
- function . {!=: . { val } @ {object } } @ {boolean } {
+ function . {!=: { . {val } @ {object } } } { @ {boolean } } { } {
  return ( this = . {val } ) . {not }
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  primitive
  }
- constructor . {new } {
+ constructor . {new } { } {
  primitive
  }
  }
  class @ { string } extends @ {object } {
  vardecls {
  }
- function . {+: . { val } @ {string } } @ {boolean } {
+ function . {+: { . {val } @ {string } } } { @ {boolean } } { } {
  primitive
  }
- function . {=: . { val } @ {object } } @ {boolean } {
+ function . {=: { . {val } @ {object } } } { @ {boolean } } { } {
  primitive
  }
- function . {substring from: . { from } @ {number }to: . { to } @ {number } } @ {string } {
+ function . {substring from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {string } } { } {
  primitive
  }
- function . {to string } @ {string } {
+ function . {to string } { @ {string } } { } {
  return this
  }
  }

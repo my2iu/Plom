@@ -6,17 +6,17 @@
 
  var . {end } @ {number }
  }
- function . {at end } @ {boolean } {
+ function . {at end } { @ {boolean } } { } {
  return . {current } > . {end }
  }
- function . {next } @ {number } {
+ function . {next } { @ {number } } { } {
  . {current } := . {current } + 1
  return this
  }
- function . {value } @ {number } {
+ function . {value } { @ {number } } { } {
  return . {current }
  }
- constructor . {from: . { from } @ {number }to: . { to } @ {number } } {
+ constructor . {from: { . {from } @ {number } }to: { . {to } @ {number } } } { } {
  super . {new }
  . {start } := . {from }
  . {end } := . {to }
