@@ -114,18 +114,18 @@ public class MethodPanel
     // Render the return type
     if (!sig.isConstructor)
     {
-      int maxReturnTypeWidth = containerDiv.querySelector(".method_return").getClientWidth();
-      returnTypeField = new TypeEntryField(sig.getReturnType().copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
-          (scope, coreTypes) -> {
-            StandardLibrary.createGlobals(null, scope, coreTypes);
-            scope.setParent(new RepositoryScope(repository, coreTypes));
-          },
-          (context) -> {},
-          widthCalculator, maxReturnTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
-      returnTypeField.setChangeListener((type, isFinal) -> {
-        notifyOfChanges();
-      });
-      returnTypeField.render();
+//      int maxReturnTypeWidth = containerDiv.querySelector(".method_return").getClientWidth();
+//      returnTypeField = new TypeEntryField(sig.getReturnType().copy(), (DivElement)containerDiv.querySelector(".method_return .typeEntry"), simpleEntry, true,
+//          (scope, coreTypes) -> {
+//            StandardLibrary.createGlobals(null, scope, coreTypes);
+//            scope.setParent(new RepositoryScope(repository, coreTypes));
+//          },
+//          (context) -> {},
+//          widthCalculator, maxReturnTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
+//      returnTypeField.setChangeListener((type, isFinal) -> {
+//        notifyOfChanges();
+//      });
+//      returnTypeField.render();
       
       
       returnTypeArea = SubCodeArea.forTypeField(
@@ -164,7 +164,7 @@ public class MethodPanel
           // Update line numbers
         }
       });
-      returnTypeArea.setSingleLineCode(new TokenContainer(sig.getReturnType().copy()));
+      returnTypeArea.setSingleLineCode(sig.getReturnTypeCode().copy());
     }
     else
     {

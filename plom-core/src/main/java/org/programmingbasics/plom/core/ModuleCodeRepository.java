@@ -130,6 +130,7 @@ public class ModuleCodeRepository
       }
     }
     public Token.ParameterToken getReturnType() { return returnType; }
+    public TokenContainer getReturnTypeCode() { return returnTypeCode; }
     public void setReturnTypeCode(TokenContainer code)
     {
       returnTypeCode = code;
@@ -141,7 +142,7 @@ public class ModuleCodeRepository
 //      if (isBuiltIn != fn.isBuiltIn) return false;
       if (isStatic != fn.isStatic) return false; 
       if (isConstructor != fn.isConstructor) return false;
-      if (!getReturnType().equals(fn.getReturnType())) return false;
+      if (!getReturnTypeCode().equals(fn.getReturnTypeCode())) return false;
       if (nameParts.size() != fn.nameParts.size()) return false;
       if (getNumArgs() != fn.getNumArgs()) return false;
       for (int n = 0; n < nameParts.size(); n++)
@@ -185,9 +186,7 @@ public class ModuleCodeRepository
       sig.argTypes = argTypes;
       for (int n = 0; n < argNames.size(); n++)
       {
-        TokenContainer code = new TokenContainer(
-            Token.ParameterToken.fromContents("." + argNames.get(n), Symbol.DotVariable),
-            argTypes.get(n));
+        TokenContainer code = argCodeFromNameType(argNames.get(n), argTypes.get(n));
         sig.addNewArgCode();
         sig.setArgCode(n, code);
       }
@@ -233,6 +232,12 @@ public class ModuleCodeRepository
       sig.isBuiltIn = oldSig.isBuiltIn;
       sig.isStatic = oldSig.isStatic;
       return sig;
+    }
+    public static TokenContainer argCodeFromNameType(String argName, Token argType)
+    {
+      return new TokenContainer(
+          Token.ParameterToken.fromContents("." + argName, Symbol.DotVariable),
+          argType);
     }
   }
 
@@ -881,19 +886,23 @@ public class ModuleCodeRepository
       for (int n = 0; n < fn.sig.getNumArgs(); n++)
       {
         out.append(fn.sig.nameParts.get(n) + ":");
-        out.token(".");
         out.token("{");
-        out.token(fn.sig.getArgName(n));
+        PlomTextWriter.writeTokenContainer(out, fn.sig.getArgCode(n));
         out.token("}");
-        PlomTextWriter.writeToken(out, fn.sig.getArgType(n));
       }
     }
     out.token("}");
     
     if (!fn.sig.isConstructor)
     {
-      PlomTextWriter.writeToken(out, fn.sig.getReturnType());
+      out.token("{");
+      PlomTextWriter.writeTokenContainer(out, fn.sig.getReturnTypeCode());
+      out.token("}");
     }
+
+    // An extra empty place where I might put comments later on
+    out.token("{");
+    out.token("}");
     
     out.token("{");
     out.newline();
@@ -1098,8 +1107,9 @@ new_methods:
     lexer.expectToken(".");
     lexer.expectToken("{");
     String fnName = "";
-    List<String> argNames = new ArrayList<>();
-    List<Token.ParameterToken> argTypes = new ArrayList<>();
+    List<TokenContainer> args = new ArrayList<>();
+//    List<String> argNames = new ArrayList<>();
+//    List<Token.ParameterToken> argTypes = new ArrayList<>();
     String namePart = lexer.lexParameterTokenPart();
     if (namePart == null)
       throw new PlomReadException("Expecting function name", lexer);
@@ -1108,11 +1118,22 @@ new_methods:
       while (namePart != null)
       {
         fnName += namePart;
-        lexer.expectToken(".");
-        lexer.expectToken("{");
-        argNames.add(lexer.lexParameterTokenPartOrEmpty());
-        lexer.expectToken("}");
-        argTypes.add((Token.ParameterToken)PlomTextReader.readToken(lexer));
+//        if ("{".equals(lexer.peekLexInput()))
+//        {
+//          // New-style
+//          lexer.expectToken("{");
+//          args.add(PlomTextReader.readTokenContainer(lexer)
+//        }
+//        else
+        {
+          // Old-style
+          lexer.expectToken(".");
+          lexer.expectToken("{");
+          String argName = lexer.lexParameterTokenPartOrEmpty();
+          lexer.expectToken("}");
+          Token.ParameterToken argType = (Token.ParameterToken)PlomTextReader.readToken(lexer); 
+          args.add(FunctionSignature.argCodeFromNameType(argName, argType));
+        }
         namePart = lexer.lexParameterTokenPart();
       }
     }
@@ -1128,7 +1149,7 @@ new_methods:
     else
       returnType = Token.ParameterToken.fromContents("@void", Symbol.AtType);
     
-    FunctionSignature sig = FunctionSignature.from(returnType, fnName, argNames, argTypes);
+    FunctionSignature sig = FunctionSignature.from(new TokenContainer(returnType), Arrays.asList(fnName.split(":")), args, null);
     if (isConstructor)
       sig.isConstructor = true;
     if (isStatic)

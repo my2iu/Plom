@@ -64,10 +64,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         " var\n" +
         " }\n" +
         " var . { test var } @ {test class }\n" +
-        " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
+        " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
-        " constructor . {new } {\n" + 
+        " constructor . {new } { } {\n" + 
         " }\n" + 
         " }\n", 
         strBuilder.toString());
@@ -87,10 +87,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         " var\n" +
         " }\n" + 
         " var . { test var } @ {test class }\n" +
-        " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
+        " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
-        " constructor . {new } {\n" + 
+        " constructor . {new } { } {\n" + 
         " }\n" + 
         " }\n", 
         strBuilder.toString());
@@ -166,7 +166,7 @@ public class ModuleCodeRepositoryTest extends TestCase
         " vardecls {\n" +
         " var\n" +
         " }\n" +
-        " function . {get } @ {number } {\n" + 
+        " function . {get } { @ {number } } { } {\n" + 
         " return 3\n" + 
         " }\n" + 
         " class @ { test class } {\n" + 
@@ -174,10 +174,10 @@ public class ModuleCodeRepositoryTest extends TestCase
         " var\n" +
         " }\n" +
         " var . { test var } @ {test class }\n" + 
-        " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
+        " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
-        " constructor . {new } {\n" + 
+        " constructor . {new } { } {\n" + 
         " }\n" + 
         " }\n" + 
         " }",
@@ -197,6 +197,9 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" + 
         " function . {test: . { arg1 } @ {number } } @ {number } {\n" + 
         " }\n" + 
+        " function . { new style: {.{a} @{number}} function: {.{b} @{boolean}}} {@{void}} {} {\n" +
+        "   return\n" +
+        " }\n" +
         " class @ { test class 2} {\n" + 
         " }\n" + 
         " class @ { test class } {\n" + 
@@ -206,7 +209,7 @@ public class ModuleCodeRepositoryTest extends TestCase
         " }\n" +
         " function . {at x: . { x } @ {number }y: . { y } @ {number } } @ {number } {\n" + 
         " return . {x }\n" + 
-        " }\n" + 
+        " }\n" +
         " constructor . {new } {\n" + 
         " }\n" + 
         " }\n" + 
@@ -220,6 +223,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     loaded.loadModule(lexer);
     
     Assert.assertTrue(loaded.getFunctionWithName("get") != null);
+    FunctionDescription newStyleFn = loaded.getFunctionWithName("new style:function:");
+    Assert.assertTrue(newStyleFn != null);
+    Assert.assertEquals("", newStyleFn.sig.getDisplayName());
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
     Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.size(), 1);
@@ -249,4 +255,74 @@ public class ModuleCodeRepositoryTest extends TestCase
     
     Assert.assertTrue(loaded.isNoStdLibFlag);
   }
+  
+  @Test
+  public void testLoadFunction() throws PlomReadException
+  {
+    String oldFnStr = 
+        " function . {get } @ {number } {\n" + 
+        " return 3\n" + 
+        " }\n";
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(oldFnStr);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    FunctionDescription fn = ModuleCodeRepository.loadFunction(lexer);
+    Assert.assertEquals("get @number", fn.sig.getDisplayName());
+
+    String newStyleFnStr = 
+        " function . { new style: {.{a} @{number}} function: {.{b} @{boolean}}} {@{void}} {} {\n" +
+        "   return\n" +
+        " }\n";
+    in = new PlomTextReader.StringTextReader(newStyleFnStr);
+    lexer = new PlomTextReader.PlomTextScanner(in);
+    fn = ModuleCodeRepository.loadFunction(lexer);
+    Assert.assertEquals("get @number", fn.sig.getDisplayName());
+  }
+  
+  @Test
+  public void testSaveFunction() throws PlomReadException, IOException
+  {
+    FunctionDescription fn = new FunctionDescription(
+        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "at x:y:",
+            "x", Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            "y", Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                Token.ParameterToken.fromContents(".x", Symbol.DotVariable))));
+
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+
+    ModuleCodeRepository.saveFunction(out, fn);
+    String fnStr = strBuilder.toString();
+    Assert.assertEquals(" function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n"
+        + " return . {x }\n"
+        + " }\n",
+        fnStr);
+    
+    // See if constructor version can also save out
+    FunctionSignature constructorSig = FunctionSignature.copyOf(fn.sig);
+    constructorSig.isConstructor = true;
+    FunctionDescription constructor = new FunctionDescription(
+        constructorSig,
+        new StatementContainer());
+    strBuilder.setLength(0);
+    ModuleCodeRepository.saveFunction(out, constructor);
+    String constructorStr = strBuilder.toString();
+    Assert.assertEquals(" constructor . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { } {\n"
+        + " }\n",
+        constructorStr);
+    
+    // Load back in and check
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(fnStr);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    FunctionDescription loadedFn = ModuleCodeRepository.loadFunction(lexer);
+    loadedFn.sig.canReplace(fn.sig);
+
+    in = new PlomTextReader.StringTextReader(constructorStr);
+    lexer = new PlomTextReader.PlomTextScanner(in);
+    FunctionDescription loadedConstructor = ModuleCodeRepository.loadFunction(lexer);
+    loadedConstructor.sig.canReplace(constructor.sig);
+  }
+
 }
