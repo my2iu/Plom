@@ -16,6 +16,7 @@ public enum Symbol
 	VarStatement,
 	VarType,
 	VarAssignment,
+	Type,
 	ExpressionOnly,
 	AssignmentExpression,
 	AssignmentExpressionMore,

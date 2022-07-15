@@ -115,7 +115,7 @@ public class CodeSuggestExpressionTyper
         }
         return true;
       })
-      .add(Rule.StaticMethodCallExpression_AtType_DotMember, (triggers, node, context, param) -> {
+      .add(Rule.StaticMethodCallExpression_Type_DotMember, (triggers, node, context, param) -> {
         // This rule wouldn't be matched unless we have at least the first child 
         // (i.e. the Type that the static call is being made on)
         GatheredTypeInfo typeInfo = new GatheredTypeInfo();
@@ -301,7 +301,7 @@ public class CodeSuggestExpressionTyper
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryTypeToMethodHandler("<=:")
       )
-      .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore, 
+      .add(Rule.RelationalExpressionMore_Is_Type_RelationalExpressionMore, 
           (triggers, node, context, param) -> {
 //            if (node.children.get(0) == null)
 //              return true;
@@ -319,7 +319,7 @@ public class CodeSuggestExpressionTyper
             }              
             return true;
           })
-      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore, 
+      .add(Rule.MemberExpressionMore_As_Type_MemberExpressionMore, 
           (triggers, node, context, param) -> {
             if (node.children.get(1) == null)
               return true;
@@ -335,7 +335,7 @@ public class CodeSuggestExpressionTyper
             }              
             return true;
           })
-      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
+      .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, 
           (triggers, node, context, param) -> {
             if (node.children.get(0) == null)
               return true;

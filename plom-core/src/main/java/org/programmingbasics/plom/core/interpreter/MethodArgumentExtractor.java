@@ -40,7 +40,7 @@ public class MethodArgumentExtractor
   static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
-      .add(Rule.ParameterField_DotDeclareIdentifier_AtType,
+      .add(Rule.ParameterField_DotDeclareIdentifier_Type,
           (triggers, node, variableDeclarer, typeLookup) -> {
             // Now create the variable
             if (!node.children.get(0).matchesRule(Rule.DotDeclareIdentifier_DotVariable))

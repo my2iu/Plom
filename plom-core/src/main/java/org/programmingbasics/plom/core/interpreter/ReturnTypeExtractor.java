@@ -63,7 +63,7 @@ public class ReturnTypeExtractor
   static AstNode.VisitorTriggers<Consumer<Type>, TypeLookup, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
-      .add(Rule.ReturnTypeField_AtType,
+      .add(Rule.ReturnTypeField_Type,
           (triggers, node, typeReturn, typeLookup) -> {
             GatheredTypeInfo typeInfo = new GatheredTypeInfo();
             node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, typeLookup);

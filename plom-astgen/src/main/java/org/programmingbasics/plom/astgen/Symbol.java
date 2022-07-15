@@ -16,6 +16,7 @@ enum Symbol
   VarStatement(false),
   VarType(false),
   VarAssignment(false),
+  Type(false),
   ExpressionOnly(false),
   AssignmentExpression(false),
   AssignmentExpressionMore(false),

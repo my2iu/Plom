@@ -127,7 +127,7 @@ public class ExpressionEvaluator
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, 
           createBinaryOperatorHandlerMoreForMethodPassthrough("<=:")
       )
-      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore,
+      .add(Rule.MemberExpressionMore_As_Type_MemberExpressionMore,
           (machine, node, idx) -> {
             switch(idx)
             {
@@ -140,7 +140,7 @@ public class ExpressionEvaluator
             }
           }
       )
-      .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore,
+      .add(Rule.RelationalExpressionMore_Is_Type_RelationalExpressionMore,
           (machine, node, idx) -> {
             switch(idx)
             {
@@ -161,7 +161,7 @@ public class ExpressionEvaluator
             }
           }
       )
-      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, 
+      .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, 
           (machine, node, idx) -> {
             GatheredTypeInfo typeInfo = new GatheredTypeInfo();
             node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
@@ -339,7 +339,7 @@ public class ExpressionEvaluator
               }
             }
       })
-      .add(Rule.StaticMethodCallExpression_AtType_DotMember, 
+      .add(Rule.StaticMethodCallExpression_Type_DotMember, 
           (MachineContext machine, AstNode node, int idx) -> {
             AstNode methodNode = node.children.get(1).children.get(0);
             if (idx < methodNode.internalChildren.size())
@@ -573,15 +573,15 @@ public class ExpressionEvaluator
       .add(Rule.AdditiveExpressionMore_Minus_MultiplicativeExpression_AdditiveExpressionMore, lValueInvalid())
       .add(Rule.MultiplicativeExpressionMore_Multiply_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
       .add(Rule.MultiplicativeExpressionMore_Divide_MemberExpression_MultiplicativeExpressionMore, lValueInvalid())
-      .add(Rule.MemberExpressionMore_As_AtType_MemberExpressionMore, lValueInvalid())
-      .add(Rule.RelationalExpressionMore_Is_AtType_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.MemberExpressionMore_As_Type_MemberExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Is_Type_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Eq_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Ne_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Gt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Ge_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Lt_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
       .add(Rule.RelationalExpressionMore_Le_AdditiveExpression_RelationalExpressionMore, lValueInvalid())
-      .add(Rule.RelationalExpressionMore_Retype_AtType_RelationalExpressionMore, lValueInvalid())
+      .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, lValueInvalid())
       .add(Rule.OrExpressionMore_Or_AndExpression_OrExpressionMore, lValueInvalid())
       .add(Rule.AndExpressionMore_And_RelationalExpression_AndExpressionMore, lValueInvalid())
       .add(Rule.DotVariable, 
