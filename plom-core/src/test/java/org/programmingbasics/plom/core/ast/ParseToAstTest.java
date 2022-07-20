@@ -1,8 +1,13 @@
 package org.programmingbasics.plom.core.ast;
 
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.view.CodePosition;
+import org.programmingbasics.plom.core.view.CodeRenderer;
+import org.programmingbasics.plom.core.view.ParseContext;
 
 import junit.framework.TestCase;
 
@@ -87,4 +92,28 @@ public class ParseToAstTest extends TestCase
 //    System.out.println(node.getDebugTreeString(0));
 //    Assert.fail()
 //  }
+  
+  @Test
+  public void testFunctionType() throws ParseToAst.ParseException
+  {
+    TokenContainer line = new TokenContainer(
+        new Token.SimpleToken("var", Symbol.Var),
+        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+        Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionType,
+            new TokenContainer(
+                Token.ParameterToken.fromContents("@array", Symbol.AtType)),
+            new TokenContainer(
+                Token.ParameterToken.fromContents("@number", Symbol.AtType))
+            ));
+
+    ParseToAst lineParser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
+    AstNode node = lineParser.parseToEnd(Symbol.Statement);
+    AstNode nodeForFunction = node.children.get(0).children.get(2).children.get(0).children.get(0);
+    Assert.assertEquals(2, nodeForFunction.internalChildren.size());
+    Assert.assertEquals(1, nodeForFunction.internalChildren.get(0).children.size());
+    Assert.assertEquals(2, nodeForFunction.internalChildren.get(0).symbols.size());
+    Assert.assertEquals(1, nodeForFunction.internalChildren.get(1).children.size());
+    Assert.assertEquals(2, nodeForFunction.internalChildren.get(1).symbols.size());
+  }
+
 }

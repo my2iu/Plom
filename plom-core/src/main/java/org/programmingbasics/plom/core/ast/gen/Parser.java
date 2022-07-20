@@ -11,6 +11,7 @@ public class Parser
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.AtType, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
+		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.Number, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
 		parsingTable.get(Symbol.AdditiveExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.MultiplicativeExpression, Symbol.AdditiveExpressionMore, });
@@ -45,6 +46,7 @@ public class Parser
 		parsingTable.get(Symbol.AfterIf).put(Symbol.DotVariable, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.FalseLiteral, new Symbol[] {});
+		parsingTable.get(Symbol.AfterIf).put(Symbol.FunctionType, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.NullLiteral, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.Number, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.OpenParenthesis, new Symbol[] {});
@@ -59,6 +61,7 @@ public class Parser
 		parsingTable.get(Symbol.AndExpression).put(Symbol.AtType, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
 		parsingTable.get(Symbol.AndExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
 		parsingTable.get(Symbol.AndExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
+		parsingTable.get(Symbol.AndExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
 		parsingTable.get(Symbol.AndExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
 		parsingTable.get(Symbol.AndExpression).put(Symbol.Number, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
 		parsingTable.get(Symbol.AndExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.RelationalExpression, Symbol.AndExpressionMore, });
@@ -76,6 +79,7 @@ public class Parser
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.AtType, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
+		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.Number, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
 		parsingTable.get(Symbol.AssignmentExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.Expression, Symbol.AssignmentExpressionMore, });
@@ -96,6 +100,7 @@ public class Parser
 		parsingTable.get(Symbol.Expression).put(Symbol.AtType, new Symbol[] {Symbol.OrExpression, });
 		parsingTable.get(Symbol.Expression).put(Symbol.DotVariable, new Symbol[] {Symbol.OrExpression, });
 		parsingTable.get(Symbol.Expression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.OrExpression, });
+		parsingTable.get(Symbol.Expression).put(Symbol.FunctionType, new Symbol[] {Symbol.OrExpression, });
 		parsingTable.get(Symbol.Expression).put(Symbol.NullLiteral, new Symbol[] {Symbol.OrExpression, });
 		parsingTable.get(Symbol.Expression).put(Symbol.Number, new Symbol[] {Symbol.OrExpression, });
 		parsingTable.get(Symbol.Expression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.OrExpression, });
@@ -107,6 +112,7 @@ public class Parser
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.AtType, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.DotVariable, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.FalseLiteral, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.FunctionType, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.NullLiteral, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.Number, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ExpressionOnly).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.Expression, Symbol.EndStatement, });
@@ -127,6 +133,7 @@ public class Parser
 		parsingTable.get(Symbol.FullStatement).put(Symbol.DotVariable, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.EndStatement, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.FalseLiteral, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
+		parsingTable.get(Symbol.FullStatement).put(Symbol.FunctionType, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.NullLiteral, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.Number, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
@@ -145,6 +152,7 @@ public class Parser
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.AtType, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
+		parsingTable.get(Symbol.MemberExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.Number, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
@@ -176,6 +184,7 @@ public class Parser
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.AtType, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
+		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.Number, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
 		parsingTable.get(Symbol.MultiplicativeExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.MemberExpression, Symbol.MultiplicativeExpressionMore, });
@@ -205,6 +214,7 @@ public class Parser
 		parsingTable.get(Symbol.OrExpression).put(Symbol.AtType, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
 		parsingTable.get(Symbol.OrExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
 		parsingTable.get(Symbol.OrExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
+		parsingTable.get(Symbol.OrExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
 		parsingTable.get(Symbol.OrExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
 		parsingTable.get(Symbol.OrExpression).put(Symbol.Number, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
 		parsingTable.get(Symbol.OrExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.AndExpression, Symbol.OrExpressionMore, });
@@ -221,10 +231,19 @@ public class Parser
 		parsingTable.get(Symbol.ParameterField).put(Symbol.DotVariable, new Symbol[] {Symbol.DotDeclareIdentifier, Symbol.Type, });
 		parsingTable.put(Symbol.ParameterFieldOnly, new HashMap<>());
 		parsingTable.get(Symbol.ParameterFieldOnly).put(Symbol.DotVariable, new Symbol[] {Symbol.ParameterField, Symbol.EndStatement, });
+		parsingTable.put(Symbol.ParameterFieldOptionalName, new HashMap<>());
+		parsingTable.get(Symbol.ParameterFieldOptionalName).put(Symbol.AtType, new Symbol[] {Symbol.Type, });
+		parsingTable.get(Symbol.ParameterFieldOptionalName).put(Symbol.DotVariable, new Symbol[] {Symbol.DotDeclareIdentifier, Symbol.Type, });
+		parsingTable.get(Symbol.ParameterFieldOptionalName).put(Symbol.FunctionType, new Symbol[] {Symbol.Type, });
+		parsingTable.put(Symbol.ParameterFieldOptionalNameOnly, new HashMap<>());
+		parsingTable.get(Symbol.ParameterFieldOptionalNameOnly).put(Symbol.AtType, new Symbol[] {Symbol.ParameterFieldOptionalName, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ParameterFieldOptionalNameOnly).put(Symbol.DotVariable, new Symbol[] {Symbol.ParameterFieldOptionalName, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ParameterFieldOptionalNameOnly).put(Symbol.FunctionType, new Symbol[] {Symbol.ParameterFieldOptionalName, Symbol.EndStatement, });
 		parsingTable.put(Symbol.ParenthesisExpression, new HashMap<>());
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.AtType, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.ValueExpression, });
+		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.Number, new Symbol[] {Symbol.ValueExpression, });
 		parsingTable.get(Symbol.ParenthesisExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.OpenParenthesis, Symbol.Expression, Symbol.ClosedParenthesis, });
@@ -236,6 +255,7 @@ public class Parser
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.AtType, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
+		parsingTable.get(Symbol.RelationalExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.Number, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
 		parsingTable.get(Symbol.RelationalExpression).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.AdditiveExpression, Symbol.RelationalExpressionMore, });
@@ -261,8 +281,10 @@ public class Parser
 		parsingTable.get(Symbol.ReturnStatement).put(Symbol.Return, new Symbol[] {Symbol.Return, Symbol.Expression, });
 		parsingTable.put(Symbol.ReturnTypeField, new HashMap<>());
 		parsingTable.get(Symbol.ReturnTypeField).put(Symbol.AtType, new Symbol[] {Symbol.Type, });
+		parsingTable.get(Symbol.ReturnTypeField).put(Symbol.FunctionType, new Symbol[] {Symbol.Type, });
 		parsingTable.put(Symbol.ReturnTypeFieldOnly, new HashMap<>());
 		parsingTable.get(Symbol.ReturnTypeFieldOnly).put(Symbol.AtType, new Symbol[] {Symbol.ReturnTypeField, Symbol.EndStatement, });
+		parsingTable.get(Symbol.ReturnTypeFieldOnly).put(Symbol.FunctionType, new Symbol[] {Symbol.ReturnTypeField, Symbol.EndStatement, });
 		parsingTable.put(Symbol.Statement, new HashMap<>());
 		parsingTable.get(Symbol.Statement).put(Symbol.AtType, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
@@ -271,6 +293,7 @@ public class Parser
 		parsingTable.get(Symbol.Statement).put(Symbol.DUMMY_COMMENT, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
 		parsingTable.get(Symbol.Statement).put(Symbol.DotVariable, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.FalseLiteral, new Symbol[] {Symbol.AssignmentExpression, });
+		parsingTable.get(Symbol.Statement).put(Symbol.FunctionType, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.NullLiteral, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.Number, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.AssignmentExpression, });
@@ -290,6 +313,7 @@ public class Parser
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.DotVariable, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.FalseLiteral, new Symbol[] {Symbol.Statement, });
+		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.FunctionType, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.NullLiteral, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.Number, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.OpenParenthesis, new Symbol[] {Symbol.Statement, });
@@ -302,14 +326,20 @@ public class Parser
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.Var, new Symbol[] {Symbol.Statement, });
 		parsingTable.put(Symbol.StaticMethodCallExpression, new HashMap<>());
 		parsingTable.get(Symbol.StaticMethodCallExpression).put(Symbol.AtType, new Symbol[] {Symbol.Type, Symbol.DotMember, });
+		parsingTable.get(Symbol.StaticMethodCallExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.Type, Symbol.DotMember, });
 		parsingTable.put(Symbol.SuperCallExpression, new HashMap<>());
 		parsingTable.get(Symbol.SuperCallExpression).put(Symbol.Super, new Symbol[] {Symbol.Super, Symbol.DotSuperMember, });
 		parsingTable.put(Symbol.Type, new HashMap<>());
 		parsingTable.get(Symbol.Type).put(Symbol.AtType, new Symbol[] {Symbol.AtType, });
+		parsingTable.get(Symbol.Type).put(Symbol.FunctionType, new Symbol[] {Symbol.FunctionType, });
+		parsingTable.put(Symbol.TypeOnly, new HashMap<>());
+		parsingTable.get(Symbol.TypeOnly).put(Symbol.AtType, new Symbol[] {Symbol.Type, Symbol.EndStatement, });
+		parsingTable.get(Symbol.TypeOnly).put(Symbol.FunctionType, new Symbol[] {Symbol.Type, Symbol.EndStatement, });
 		parsingTable.put(Symbol.ValueExpression, new HashMap<>());
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.AtType, new Symbol[] {Symbol.StaticMethodCallExpression, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.DotVariable, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.FalseLiteral, new Symbol[] {Symbol.FalseLiteral, });
+		parsingTable.get(Symbol.ValueExpression).put(Symbol.FunctionType, new Symbol[] {Symbol.StaticMethodCallExpression, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.NullLiteral, new Symbol[] {Symbol.NullLiteral, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.Number, new Symbol[] {Symbol.Number, });
 		parsingTable.get(Symbol.ValueExpression).put(Symbol.String, new Symbol[] {Symbol.String, });
@@ -327,6 +357,7 @@ public class Parser
 		parsingTable.get(Symbol.VarType).put(Symbol.Assignment, new Symbol[] {});
 		parsingTable.get(Symbol.VarType).put(Symbol.AtType, new Symbol[] {Symbol.Type, });
 		parsingTable.get(Symbol.VarType).put(Symbol.EndStatement, new Symbol[] {});
+		parsingTable.get(Symbol.VarType).put(Symbol.FunctionType, new Symbol[] {Symbol.Type, });
 		parsingTable.get(Symbol.VarType).put(Symbol.In, new Symbol[] {});
 		parsingTable.put(Symbol.VariableDeclaration, new HashMap<>());
 		parsingTable.get(Symbol.VariableDeclaration).put(Symbol.DUMMY_COMMENT, new Symbol[] {Symbol.DUMMY_COMMENT, Symbol.VariableDeclarationOrEmpty, });

@@ -193,6 +193,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     Symbol[] symbolOrder = new Symbol[] {
         Symbol.DotVariable,
         Symbol.AtType,
+        Symbol.FunctionType,
         Symbol.Number,
         Symbol.String,
         Symbol.TrueLiteral,
@@ -397,6 +398,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       if (sym == Symbol.EndStatement) continue;
       boolean isValidSymbol = stmtParser.peekParseSymbol(sym);
       String text = "Unknown";
+      String buttonText = null;
       switch(sym)
       {
       case Assignment: text = ":="; break;
@@ -420,6 +422,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case DUMMY_COMMENT: text = "//"; break;
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
+      case FunctionType: text = "f@"; buttonText = "\u0192@"; break;
+      case FunctionLiteral: text = "f."; buttonText = "\u0192."; break;
       case This: text = "this"; break;
       case Super: text = "super"; break;
       case TrueLiteral: text = "true"; break;
@@ -439,6 +443,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case PrimitivePassthrough: text = "primitive"; break;
       default:
       }
+      if (buttonText == null) 
+        buttonText = text;
       String tokenText = text;
       if (filterExcludeTokens.contains(sym)) continue;
       // Here we distinguish between allowed symbols and valid symbols because we
@@ -446,9 +452,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       // Instead we show all normally allowed symbols, but disable the ones that
       // aren't valid for this particular context
       if (isValidSymbol)
-        contentDiv.appendChild(makeButton(tokenText, true, choicesDiv, () -> { insertToken(cursorPos, tokenText, sym); }));
+        contentDiv.appendChild(makeButton(buttonText, true, choicesDiv, () -> { insertToken(cursorPos, tokenText, sym); }));
       else
-        contentDiv.appendChild(makeButton(tokenText, false, choicesDiv, () -> {  }));
+        contentDiv.appendChild(makeButton(buttonText, false, choicesDiv, () -> {  }));
     }
     
     // Show quick suggestions
@@ -493,6 +499,12 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
               updateCodeView(true);
               }));
         }
+        // If the suggestion is for a function type
+        else if (suggestion.code.startsWith("f@") && allowedSymbols.contains(Symbol.FunctionType))
+        {
+          // TODO: quick suggestions for function types
+          
+        }
       }
     }
     
@@ -534,6 +546,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     case AtType:
+    case FunctionType:
       newToken = new Token.ParameterToken(
           Token.ParameterToken.splitVarAtColons(tokenText), 
           Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
@@ -556,6 +569,16 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     switch (tokenType)
     {
     case AtType:
+    {
+      updateCodeView(true);
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      showSimpleEntryForToken(newToken, false, 
+          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly)), 
+          pos);
+      break;
+    }
+
+    case FunctionType:
     {
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
@@ -610,7 +633,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         tokenType = ((Token.TokenWithSymbol)currentToken).getType();
       
       if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT
-          || tokenType == Symbol.AtType || tokenType == Symbol.DotVariable)
+          || tokenType == Symbol.AtType || tokenType == Symbol.FunctionType
+          || tokenType == Symbol.DotVariable)
         return true;
     }
     return false;
@@ -682,6 +706,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       focus.showSimpleEntryFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
+    case FunctionType:
+      initialValue = initialValue.substring(2);
+      focus.showSimpleEntryFor("\u0192@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
+      break;
     case Number:
       focus.showSimpleEntryFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
@@ -735,6 +764,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.AtType)
+    {
+      ((Token.ParameterToken)token).setContents(
+          Token.ParameterToken.splitVarAtColons(val),
+          Token.ParameterToken.splitVarAtColonsForPostfix(val));
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      updateCodeView(true);
+    }
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionType)
     {
       ((Token.ParameterToken)token).setContents(
           Token.ParameterToken.splitVarAtColons(val),

@@ -17,6 +17,7 @@ public enum Symbol
 	VarType,
 	VarAssignment,
 	Type,
+	TypeOnly,
 	ExpressionOnly,
 	AssignmentExpression,
 	AssignmentExpressionMore,
@@ -51,6 +52,8 @@ public enum Symbol
 	Number,
 	DotVariable,
 	AtType,
+	FunctionType,
+	FunctionLiteral,
 	Var,
 	Assignment,
 	Retype,
@@ -92,6 +95,8 @@ public enum Symbol
 	ReturnTypeFieldOnly,
 	ParameterField,
 	ParameterFieldOnly,
+	ParameterFieldOptionalName,
+	ParameterFieldOptionalNameOnly,
 	ASSEMBLED_STATEMENTS_BLOCK;
 	public boolean isTerminal()
 	{
@@ -107,6 +112,8 @@ public enum Symbol
 		case Number:
 		case DotVariable:
 		case AtType:
+		case FunctionType:
+		case FunctionLiteral:
 		case Var:
 		case Assignment:
 		case Retype:

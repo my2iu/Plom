@@ -124,4 +124,34 @@ public class ParseContextTest extends TestCase
         parseContext.tokens);
   }
 
+  @Test
+  public void testFunctionType()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("var", Symbol.Var),
+                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionType,
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents("@array", Symbol.AtType)),
+                    new TokenContainer()
+                )
+            )
+        );
+    // Parameter of a function type
+    CodePosition pos = CodePosition.fromOffsets(0, 2, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0);
+    ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
+    Assert.assertEquals(Symbol.ParameterFieldOptionalNameOnly, parseContext.baseContext);
+    Assert.assertEquals(
+        Arrays.asList(),
+        parseContext.tokens);
+    
+    pos = CodePosition.fromOffsets(0, 2, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1);
+    parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
+    Assert.assertEquals(Symbol.ParameterFieldOptionalNameOnly, parseContext.baseContext);
+    Assert.assertEquals(
+        Arrays.asList(Token.ParameterToken.fromContents("@array", Symbol.AtType)),
+        parseContext.tokens);
+  }
 }

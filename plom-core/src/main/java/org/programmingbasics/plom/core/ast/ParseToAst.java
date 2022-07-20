@@ -63,9 +63,21 @@ public class ParseToAst
   {
     if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();
-    for (TokenContainer param: paramToken.parameters)
+    switch (paramToken.getType())
     {
-      node.internalChildren.add(parseExpression(Symbol.Expression, param.tokens, errorGatherer));
+    case FunctionType:
+    case AtType:
+      for (TokenContainer param: paramToken.parameters)
+      {
+        node.internalChildren.add(parseExpression(Symbol.ParameterFieldOptionalName, param.tokens, errorGatherer));
+      }
+      break;
+    default:
+      for (TokenContainer param: paramToken.parameters)
+      {
+        node.internalChildren.add(parseExpression(Symbol.Expression, param.tokens, errorGatherer));
+      }
+      break;
     }
   }
 

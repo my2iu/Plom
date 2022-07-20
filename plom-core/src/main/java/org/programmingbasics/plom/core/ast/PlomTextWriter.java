@@ -42,6 +42,8 @@ public class PlomTextWriter
     symbolTokenMap.put(Symbol.FalseLiteral, "false");
     symbolTokenMap.put(Symbol.DotVariable, ".");
     symbolTokenMap.put(Symbol.AtType, "@");
+    symbolTokenMap.put(Symbol.FunctionType, "f@");
+    symbolTokenMap.put(Symbol.FunctionLiteral, "f.");
     symbolTokenMap.put(Symbol.Var, "var");
 //    symbolTokenMap.put(Symbol.Colon, ":");
     symbolTokenMap.put(Symbol.Assignment, ":=");

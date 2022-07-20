@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -65,6 +66,22 @@ public class ParseContext
         StatementContainer blockContainer, CodePosition pos, int level, Void param)
     {
       return findPredictiveParseContextForStatements(blockContainer, pos, level);
+    }
+    @Override
+    public ParseContextForCursor visitParameterToken(ParameterToken token,
+        CodePosition pos, Integer level, Void param) throws RuntimeException
+    {
+      if (pos.getOffset(level) != CodeRenderer.PARAMTOK_POS_EXPRS)
+        return super.visitParameterToken(token, pos, level, param);
+
+      switch (token.getType())
+      {
+      case AtType:
+      case FunctionType:
+        return findPredictiveParseContextForLine(token.parameters.get(pos.getOffset(level + 1)), Symbol.ParameterFieldOptionalNameOnly, pos, level+2);
+      default:
+        return super.visitParameterToken(token, pos, level, param);
+      }
     }
   }
 }

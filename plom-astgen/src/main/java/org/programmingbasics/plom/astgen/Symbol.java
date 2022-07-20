@@ -17,6 +17,7 @@ enum Symbol
   VarType(false),
   VarAssignment(false),
   Type(false),
+  TypeOnly(false),
   ExpressionOnly(false),
   AssignmentExpression(false),
   AssignmentExpressionMore(false),
@@ -51,6 +52,8 @@ enum Symbol
   Number(true),
   DotVariable(true),
   AtType(true),
+  FunctionType(true),
+  FunctionLiteral(true),
   Var(true),
 //  Colon(true),
   Assignment(true),
@@ -97,6 +100,8 @@ enum Symbol
   ReturnTypeFieldOnly(false),
   ParameterField(false),
   ParameterFieldOnly(false),
+  ParameterFieldOptionalName(false),
+  ParameterFieldOptionalNameOnly(false),
   
   ASSEMBLED_STATEMENTS_BLOCK(true);  // Not a true symbol and not used by parsing, but used by the AST to repesent a bunch of statements put together in a block 
   Symbol(boolean isTerminal)
