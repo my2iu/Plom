@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.ast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -120,6 +121,17 @@ public abstract class Token
        ParameterToken token = new ParameterToken(contents, postfix, type);
        for (int n = 0; n < parameters.size(); n++)
          token.parameters.set(n, parameters.get(n).copy());
+       return token;
+     }
+     public static ParameterToken fromPartsWithoutPostfix(List<String> nameParts, Symbol type, List<TokenContainer> params)
+     {
+       ParameterToken token;
+       if (nameParts.size() == 1 && !nameParts.get(0).endsWith(":"))
+         token = new ParameterToken(Collections.emptyList(), nameParts.get(0), type);
+       else
+         token = new ParameterToken(nameParts, "", type);
+       for (int n = 0; n < params.size(); n++)
+         token.parameters.set(n, params.get(n));
        return token;
      }
      public static ParameterToken fromContents(String name, Symbol type, TokenContainer... params)

@@ -395,14 +395,18 @@ public class PlomTextReader
         String prefix = (sym == Symbol.AtType ? "@" : "."); 
         lexer.lexInput();
         lexer.expectToken("{");
-        String name = "";
+//        String name = "";
+        List<String> nameParts = new ArrayList<>();
         List<TokenContainer> params = new ArrayList<>();
         String nextPart = lexer.lexParameterTokenPartOrEmpty();
         if (nextPart.endsWith(":"))
         {
           while (true)
           {
-            name += nextPart;
+            if (nameParts.isEmpty())
+              nameParts.add(prefix + nextPart);
+            else
+              nameParts.add(nextPart);
             lexer.expectToken("{");
             params.add(readTokenContainer(lexer));
             lexer.expectToken("}");
@@ -412,7 +416,7 @@ public class PlomTextReader
               throw new PlomReadException("Expecting identifier part to end with :", lexer); 
           }
           lexer.expectToken("}");
-          return Token.ParameterToken.fromContents(prefix + name, sym, params.toArray(new TokenContainer[0]));
+          return Token.ParameterToken.fromPartsWithoutPostfix(nameParts, sym, params);
         }
         else
         {

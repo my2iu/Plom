@@ -708,6 +708,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       break;
     case FunctionType:
       initialValue = initialValue.substring(2);
+      if (initialValue.endsWith(" \u2192"))
+        initialValue = initialValue.substring(0, initialValue.length() - 2);
+      else if (initialValue.endsWith("\u2192"))
+        initialValue = initialValue.substring(0, initialValue.length() - 1);
       focus.showSimpleEntryFor("\u0192@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
@@ -774,9 +778,14 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionType)
     {
+      List<String> nameParts = Token.ParameterToken.splitVarAtColons(val);
+      if (nameParts.isEmpty())
+        nameParts.add(Token.ParameterToken.splitVarAtColonsForPostfix(val) + " \u2192");
+      else
+        nameParts.add("\u2192");
       ((Token.ParameterToken)token).setContents(
-          Token.ParameterToken.splitVarAtColons(val),
-          Token.ParameterToken.splitVarAtColonsForPostfix(val));
+          nameParts,
+          "");
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(true);
