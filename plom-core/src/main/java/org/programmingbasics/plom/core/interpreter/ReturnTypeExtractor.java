@@ -29,9 +29,9 @@ public class ReturnTypeExtractor
     ReturnTypeExtractor.fromReturnField(
         line,
         returnTypeSaver,
-        (token) -> {
+        (unboundType) -> {
           // Just pass the raw type name through unchanged
-          return new Type(((Token.ParameterToken)token).getLookupName());
+          return new Type(unboundType.mainToken.getLookupName());
         },
         null);
     if (returnTypeSaver.type != null)

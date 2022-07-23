@@ -52,13 +52,13 @@ public class VariableDeclarationInterpreter
   }
   public static interface TypeLookup
   {
-    Type lookupType(Token token);
+    Type lookupType(UnboundType unboundType);
   }
-  
+
   // Various AST node handlers for executing each variable declaration 
   static AstNode.VisitorTriggers<GatheredTypeInfo, TypeLookup, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, TypeLookup, RuntimeException>()
       .add(Rule.AtType, (triggers, node, typesToReturn, typeLookup) -> {
-        Type t = typeLookup.lookupType(node.token);
+        Type t = typeLookup.lookupType(UnboundType.fromToken(node.token));
         typesToReturn.type = t;
         return true;
       });

@@ -118,9 +118,9 @@ public class ModuleCodeRepository
             nameAndType.name = name;
             nameAndType.type = t;
           },
-          (token) -> {
+          (unboundType) -> {
             // Just pass the raw type name through unchanged
-            return new Type(((Token.ParameterToken)token).getLookupName());
+            return new Type(unboundType.mainToken.getLookupName());
           },
           null);
       if (nameAndType.name != null)

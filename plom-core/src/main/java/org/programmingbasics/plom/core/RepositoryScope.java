@@ -107,9 +107,9 @@ public class RepositoryScope extends VariableScope
           globalVariableSuggestions.add(name);
         };
     VariableDeclarationInterpreter.TypeLookup typeLookup =
-        token -> {
+        unboundType -> {
           try {
-            return typeFromToken(token);
+            return typeFromUnboundType(unboundType);
           } catch (RunException e) {
             // skip any errors
             return null;
@@ -287,9 +287,9 @@ public class RepositoryScope extends VariableScope
           toReturn.addMemberVariable(name, type);
         };
     VariableDeclarationInterpreter.TypeLookup typeLookup =
-        token -> {
+        unboundType -> {
           try {
-            return typeFromToken(token);
+            return typeFromUnboundType(unboundType);
           } catch (RunException e) {
             // skip any errors
             return null;

@@ -85,6 +85,15 @@ public class VariableScope
   }
 
   /**
+   * Returns the Type object used to represent a type within this 
+   * interpreter for the given textual Type description
+   */
+  public Type typeFromUnboundType(UnboundType unboundType) throws RunException
+  {
+    return typeFromUnboundType(unboundType);
+  }
+  
+  /**
    * Returns all the types available at this point in the code (including
    * generic parameter types). This is an expensive operation and should
    * only be used for type suggestions when coding.

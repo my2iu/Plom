@@ -27,7 +27,7 @@ public class MethodArgumentExtractorTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
     
     Assert.assertEquals(1, declaredNames.size());
@@ -49,7 +49,7 @@ public class MethodArgumentExtractorTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
 
     Assert.assertEquals(0, declaredNames.size());
@@ -65,7 +65,7 @@ public class MethodArgumentExtractorTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
 
     Assert.assertEquals(0, declaredNames.size());

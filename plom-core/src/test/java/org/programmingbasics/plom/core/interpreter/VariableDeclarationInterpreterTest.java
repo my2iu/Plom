@@ -37,7 +37,7 @@ public class VariableDeclarationInterpreterTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         errors);
     
     Assert.assertEquals(2, declaredNames.size());
@@ -73,7 +73,7 @@ public class VariableDeclarationInterpreterTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         errors);
     
     Assert.assertEquals(2, declaredNames.size());

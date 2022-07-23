@@ -24,7 +24,7 @@ public class ReturnTypeExtractorTest extends TestCase
         (t) -> {
           declaredTypes.add(t);
         },
-        (token) -> {return new Type(((Token.ParameterToken)token).getLookupName());},
+        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
     
     Assert.assertEquals(1, declaredTypes.size());
