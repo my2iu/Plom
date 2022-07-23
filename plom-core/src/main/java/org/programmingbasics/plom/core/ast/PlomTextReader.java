@@ -390,16 +390,29 @@ public class PlomTextReader
     }
     else
     {
-      if (sym == Symbol.AtType || sym == Symbol.DotVariable)
+      if (sym == Symbol.AtType || sym == Symbol.DotVariable || sym == Symbol.FunctionType)
       {
-        String prefix = (sym == Symbol.AtType ? "@" : "."); 
+        String prefix;
+        switch (sym)
+        {
+        case AtType:
+          prefix = "@";
+          break;
+        case FunctionType:
+          prefix = "f@";
+          break;
+        case DotVariable:
+        default:
+          prefix = ".";
+          break;
+        }
         lexer.lexInput();
         lexer.expectToken("{");
 //        String name = "";
         List<String> nameParts = new ArrayList<>();
         List<TokenContainer> params = new ArrayList<>();
         String nextPart = lexer.lexParameterTokenPartOrEmpty();
-        if (nextPart.endsWith(":"))
+        if (nextPart.endsWith(":") || (sym == Symbol.FunctionType && nextPart.endsWith(" \u2192")))
         {
           while (true)
           {
@@ -412,7 +425,7 @@ public class PlomTextReader
             lexer.expectToken("}");
             nextPart = lexer.lexParameterTokenPart();
             if (nextPart == null) break;
-            if (!nextPart.endsWith(":"))
+            if (!nextPart.endsWith(":") && !nextPart.equals("\u2192"))
               throw new PlomReadException("Expecting identifier part to end with :", lexer); 
           }
           lexer.expectToken("}");

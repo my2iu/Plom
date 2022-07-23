@@ -1,9 +1,11 @@
 package org.programmingbasics.plom.core.ast;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
@@ -55,9 +57,36 @@ public class PlomTextWriterTest extends TestCase
                     new Token.SimpleToken("\"good\"", Symbol.String)
                     )
                 )
-            )));
+            )
+        ));
     Assert.assertEquals(" . {a hello: { @ {number } . {next } + 1 }b: { . {sd d  a: {\"good\" } } } }", out.toString());
   } 
+
+  @Test
+  public void testWriteFunctionType() throws IOException, PlomReadException
+  {
+    TokenContainer code = new TokenContainer(
+        new Token.SimpleToken("var", Symbol.Var),
+        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+        Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@b:", "\u2192"), Symbol.FunctionType, 
+            Arrays.asList(
+                new TokenContainer(
+                    Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@go \u2192"), Symbol.FunctionType, Arrays.asList(new TokenContainer()))), 
+                new TokenContainer(Token.ParameterToken.fromContents("@number", Symbol.AtType)))
+        ));
+    
+    PlomTextWriter writer = new PlomTextWriter();
+    StringBuilder out = new StringBuilder();
+    PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
+    PlomTextWriter.writeTokenContainer(plomOut, code);
+    Assert.assertEquals(" var . {b } f@ {b: { f@ {go \u2192 { } } }\u2192 { @ {number } } }", out.toString());
+
+    // Check if we can read back the output
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    TokenContainer read = PlomTextReader.readTokenContainer(lexer);
+    Assert.assertEquals(code, read);
+  }
   
   @Test
   public void testWriteStatementContainer() throws IOException, PlomTextReader.PlomReadException

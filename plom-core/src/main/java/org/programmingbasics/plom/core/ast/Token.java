@@ -126,7 +126,7 @@ public abstract class Token
      public static ParameterToken fromPartsWithoutPostfix(List<String> nameParts, Symbol type, List<TokenContainer> params)
      {
        ParameterToken token;
-       if (nameParts.size() == 1 && !nameParts.get(0).endsWith(":"))
+       if (nameParts.size() == 1 && !nameParts.get(0).endsWith(":") && !nameParts.get(0).endsWith(" \u2192"))
          token = new ParameterToken(Collections.emptyList(), nameParts.get(0), type);
        else
          token = new ParameterToken(nameParts, "", type);

@@ -194,6 +194,10 @@ public class PlomTextWriter
       out.token("@");
       out.token("{");
       break;
+    case FunctionType:
+      out.token("f@");
+      out.token("{");
+      break;
     case DotVariable:
       out.token(".");
       out.token("{");
@@ -217,7 +221,12 @@ public class PlomTextWriter
       ParameterToken token, int n)
   {
     if (n == 0)
-      out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
+    {
+      if (token.getType() != Symbol.FunctionType)
+        out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
+      else        
+        out.append(escapeParameterTokenPart(token.contents.get(n).substring(2)));
+    }
     else
       out.append(escapeParameterTokenPart(token.contents.get(n)));
     out.token("{");
