@@ -6,6 +6,7 @@ import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
 /**
  * Holds code for typing expressions in order to make code suggestions.
  */
@@ -13,23 +14,23 @@ public class CodeSuggestExpressionTyper
 {
   // When parsing type information, we need a structure for stashing
   // that type info in order to return it
-  public static class GatheredTypeInfo
-  {
-    public Type type;
-  }
-  public static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
-      .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
-          try
-          {
-            Type t = context.currentScope().typeFromToken(node.token);
-            typesToReturn.type = t;
-          }
-          catch (RunException e)
-          {
-            typesToReturn.type = null;
-          }
-        return true;
-      });
+//  public static class GatheredTypeInfo
+//  {
+//    public Type type;
+//  }
+//  public static AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, CodeCompletionContext, RuntimeException>()
+//      .add(Rule.AtType, (triggers, node, typesToReturn, context) -> {
+//          try
+//          {
+//            Type t = context.currentScope().typeFromToken(node.token);
+//            typesToReturn.type = t;
+//          }
+//          catch (RunException e)
+//          {
+//            typesToReturn.type = null;
+//          }
+//        return true;
+//      });
 
   
   // Helpers for quickly clearing the last type used
@@ -118,9 +119,11 @@ public class CodeSuggestExpressionTyper
       .add(Rule.StaticMethodCallExpression_Type_DotMember, (triggers, node, context, param) -> {
         // This rule wouldn't be matched unless we have at least the first child 
         // (i.e. the Type that the static call is being made on)
-        GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-        node.children.get(0).recursiveVisit(typeParsingHandlers, typeInfo, context);
-        Type type = typeInfo.type;
+        Type type;
+        try { 
+          type = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(node.children.get(0))); 
+        } catch (RunException e) {type = null;}
+
         
         // See setLastTypeForStaticCall() for more info about what's going on here
         if (node.children.get(1) == null)
@@ -308,8 +311,10 @@ public class CodeSuggestExpressionTyper
 //            node.children.get(0).recursiveVisit(triggers, context, param);
             if (node.children.get(1) == null)
               return true;
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
+            Type type;
+            try {
+              type = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(node.children.get(1)));
+            } catch (RunException e) {type = null;}
             context.popType();
             context.pushType(context.coreTypes.getBooleanType());
             context.setLastTypeUsed(context.coreTypes.getBooleanType());
@@ -323,9 +328,10 @@ public class CodeSuggestExpressionTyper
           (triggers, node, context, param) -> {
             if (node.children.get(1) == null)
               return true;
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
-            Type castedType = typeInfo.type;
+            Type castedType;
+            try {
+              castedType = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(node.children.get(1)));
+            } catch (RunException e) {castedType = null;}
             context.popType();
             context.pushType(castedType);
             context.setLastTypeUsed(castedType);
@@ -342,9 +348,10 @@ public class CodeSuggestExpressionTyper
             node.children.get(0).recursiveVisit(triggers, context, param);
             if (node.children.get(1) == null)
               return true;
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, context);
-            Type retypeType = typeInfo.type;
+            Type retypeType;
+            try {
+              retypeType = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(node.children.get(1)));
+            } catch (RunException e) {retypeType = null;}
             context.popType();
             context.pushType(retypeType);
             context.setLastTypeUsed(retypeType);

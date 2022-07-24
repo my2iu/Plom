@@ -70,6 +70,13 @@ public class VariableDeclarationInterpreter
         return true;
       });
 
+  public static UnboundType gatherTypeInfo(AstNode node)
+  {
+    GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+    node.recursiveVisit(typeParsingHandlers, typeInfo, null);
+    return typeInfo.type;
+  }
+  
   static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup<Type>, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
@@ -79,9 +86,7 @@ public class VariableDeclarationInterpreter
             if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
               return false;
             String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
-            node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, null);
-            UnboundType type = typeInfo.type;
+            UnboundType type = gatherTypeInfo(node.children.get(2));
             variableDeclarer.handle(name, type);
             return false;
           });

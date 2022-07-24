@@ -14,10 +14,11 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper;
-import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper.GatheredTypeInfo;
 
 public class GatherCodeCompletionInfo
 {
@@ -156,11 +157,13 @@ public class GatherCodeCompletionInfo
     if (declareIdentifier == null || !declareIdentifier.matchesRule(Rule.DotDeclareIdentifier_DotVariable))
       return;
     String name = ((Token.ParameterToken)declareIdentifier.children.get(0).token).getLookupName();
-    GatheredTypeInfo typeInfo = new GatheredTypeInfo();
     if (varType == null)
       return;
-    varType.recursiveVisit(CodeSuggestExpressionTyper.typeParsingHandlers, typeInfo, context);
-    Type type = typeInfo.type;
+    Type type;
+    try {
+      type = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(varType));
+    } catch (RunException e) {type = null;}
+
     if (type == null) type = context.coreTypes().getVoidType();
 //        Value val = context.coreTypes().getNullValue();
 //        if (node.children.get(3) == null || !node.children.get(3).matchesRule(Rule.VarAssignment))
