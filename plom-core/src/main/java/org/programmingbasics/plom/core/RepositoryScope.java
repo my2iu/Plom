@@ -134,7 +134,7 @@ public class RepositoryScope extends VariableScope
   {
     Type [] argTypes = new Type[func.sig.getNumArgs()];
     for (int n = 0; n < func.sig.getNumArgs(); n++)
-      argTypes[n] = typeFromToken(func.sig.getArgType(n));
+      argTypes[n] = typeFromUnboundType(func.sig.getArgType(n));
     return Type.makeFunctionType(typeFromUnboundType(func.sig.getReturnType()), argTypes);    
   }
   
@@ -233,7 +233,7 @@ public class RepositoryScope extends VariableScope
         if (fn.sig.isBuiltIn) continue;
         Type[] args = new Type[fn.sig.getNumArgs()];
         for (int n = 0; n < fn.sig.getNumArgs(); n++)
-          args[n] = typeFromToken(fn.sig.getArgType(n));
+          args[n] = typeFromUnboundType(fn.sig.getArgType(n));
         try {
           AstNode code = ParseToAst.parseStatementContainer(fn.code);
           if (fn.sig.isStatic)

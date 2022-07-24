@@ -13,6 +13,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -100,7 +101,7 @@ public class GlobalsPanel implements AutoCloseable
       // Find a unique function name
       String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
       FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newFunctionName),
+          FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
           new StatementContainer());
       repository.addFunctionAndResetIds(func);
       

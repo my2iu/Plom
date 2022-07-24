@@ -20,4 +20,10 @@ public class UnboundType
   {
     return UnboundType.fromToken(Token.ParameterToken.fromContents("@" + name, Symbol.AtType)); 
   }
+  public UnboundType copy()
+  {
+    UnboundType newType = new UnboundType();
+    newType.mainToken = mainToken.copy();
+    return newType;
+  }
 }

@@ -548,9 +548,9 @@ public class Main
             for (int n = 0; n < fd.sig.getNumArgs(); n++)
             {
               String name = fd.sig.getArgName(n);
-              Token.ParameterToken typeToken = fd.sig.getArgType(n);
+              UnboundType unboundType = fd.sig.getArgType(n);
               try {
-                Type type = context.currentScope().typeFromToken(typeToken);
+                Type type = context.currentScope().typeFromUnboundType(unboundType);
                 context.currentScope().addVariable(name, type, new Value());
               }
               catch (RunException e)

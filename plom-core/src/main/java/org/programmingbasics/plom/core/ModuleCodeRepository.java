@@ -34,7 +34,7 @@ public class ModuleCodeRepository
   {
     public List<String> nameParts = new ArrayList<>();
     public List<String> argNames = new ArrayList<>();
-    private List<Token.ParameterToken> argTypes = new ArrayList<>();
+    private List<UnboundType> argTypes = new ArrayList<>();
     private List<TokenContainer> argCode = new ArrayList<>();
     private UnboundType returnType;
     private TokenContainer returnTypeCode = new TokenContainer();
@@ -67,7 +67,7 @@ public class ModuleCodeRepository
           name += argNames.get(n);
           name += " @";
           if (argTypes.get(n) != null)
-            name += argTypes.get(n).getLookupName();
+            name += argTypes.get(n).mainToken.getLookupName();
           name += ")";
         }
       }
@@ -89,14 +89,14 @@ public class ModuleCodeRepository
     }
     public int getNumArgs() { return argTypes.size(); }
     public String getArgName(int idx) { return argNames.get(idx); }
-    public Token.ParameterToken getArgType(int idx) { return argTypes.get(idx); }
+    public UnboundType getArgType(int idx) { return argTypes.get(idx); }
     public void addNewArgCode() 
     { 
       argCode.add(new TokenContainer());
       if (argNames.size() < argCode.size())
       {
         argNames.add("val");
-        argTypes.add(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+        argTypes.add(UnboundType.forClassLookupName("object"));
       }
     }
     public void removeArgCode(int idx) 
@@ -127,7 +127,7 @@ public class ModuleCodeRepository
       if (nameAndType.name != null)
       {
         argNames.set(idx, nameAndType.name);
-        argTypes.set(idx, ParameterToken.fromContents("@" + nameAndType.type.mainToken.getLookupName(), Symbol.AtType));
+        argTypes.set(idx, nameAndType.type);
       }
     }
     public UnboundType getReturnType() { return returnType; }
@@ -158,30 +158,30 @@ public class ModuleCodeRepository
       }
       return true;
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, String name)
+    public static FunctionSignature from(UnboundType returnType, String name)
     {
       return from(returnType, Arrays.asList(name.split(":")), new ArrayList<>(), new ArrayList<>(), null);
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type)
+    public static FunctionSignature from(UnboundType returnType, String name, String arg1Name, UnboundType arg1Type)
     {
       return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name), Arrays.asList(arg1Type), null);
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type, String arg2Name, Token.ParameterToken arg2Type)
+    public static FunctionSignature from(UnboundType returnType, String name, String arg1Name, UnboundType arg1Type, String arg2Name, UnboundType arg2Type)
     {
       return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name, arg2Name), Arrays.asList(arg1Type, arg2Type), null);
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, String name, String arg1Name, Token.ParameterToken arg1Type, String arg2Name, Token.ParameterToken arg2Type, String arg3Name, Token.ParameterToken arg3Type)
+    public static FunctionSignature from(UnboundType returnType, String name, String arg1Name, UnboundType arg1Type, String arg2Name, UnboundType arg2Type, String arg3Name, UnboundType arg3Type)
     {
       return from(returnType, Arrays.asList(name.split(":")), Arrays.asList(arg1Name, arg2Name, arg3Name), Arrays.asList(arg1Type, arg2Type, arg3Type), null);
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, String name, List<String> argNames, List<Token.ParameterToken> argTypes)
+    public static FunctionSignature from(UnboundType returnType, String name, List<String> argNames, List<UnboundType> argTypes)
     {
       return from(returnType, Arrays.asList(name.split(":")), argNames, argTypes, null);
     }
-    public static FunctionSignature from(Token.ParameterToken returnType, List<String> nameParts, List<String> argNames, List<Token.ParameterToken> argTypes, FunctionSignature oldSig)
+    public static FunctionSignature from(UnboundType returnType, List<String> nameParts, List<String> argNames, List<UnboundType> argTypes, FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.setReturnTypeCode(new TokenContainer(returnType));
+      sig.setReturnTypeCode(new TokenContainer(returnType.mainToken));
       sig.nameParts = nameParts;
       sig.argNames = argNames;
       sig.argTypes = argTypes;
@@ -224,7 +224,7 @@ public class ModuleCodeRepository
       sig.nameParts = new ArrayList<>(oldSig.nameParts);
       sig.argNames = new ArrayList<>(oldSig.argNames);
       sig.argTypes = new ArrayList<>();
-      for (Token.ParameterToken argType: oldSig.argTypes)
+      for (UnboundType argType: oldSig.argTypes)
         sig.argTypes.add(argType.copy());
       sig.argCode = new ArrayList<>();
       for (TokenContainer argCode: oldSig.argCode)
@@ -234,11 +234,11 @@ public class ModuleCodeRepository
       sig.isStatic = oldSig.isStatic;
       return sig;
     }
-    public static TokenContainer argCodeFromNameType(String argName, Token argType)
+    public static TokenContainer argCodeFromNameType(String argName, UnboundType argType)
     {
       return new TokenContainer(
           Token.ParameterToken.fromContents("." + argName, Symbol.DotVariable),
-          argType);
+          argType.mainToken);
     }
   }
 
@@ -741,7 +741,7 @@ public class ModuleCodeRepository
     for (StdLibMethod mdef: stdLibMethods)
     {
       ClassDescription c = classMap.get(mdef.className);
-      FunctionSignature sig = FunctionSignature.from(Token.ParameterToken.fromContents("@" + mdef.returnType, Symbol.AtType), mdef.methodName, mdef.argNames, mdef.argTypes.stream().map(typeStr -> Token.ParameterToken.fromContents("@" + typeStr, Symbol.AtType)).collect(Collectors.toList()));
+      FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName(mdef.returnType), mdef.methodName, mdef.argNames, mdef.argTypes.stream().map(typeStr -> UnboundType.forClassLookupName(typeStr)).collect(Collectors.toList()));
       if (mdef.isStatic)
         sig.setIsStatic(true);
       else if (mdef.isConstructor)

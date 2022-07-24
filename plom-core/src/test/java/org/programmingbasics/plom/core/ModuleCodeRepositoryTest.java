@@ -16,6 +16,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import junit.framework.TestCase;
 
@@ -28,7 +29,7 @@ public class ModuleCodeRepositoryTest extends TestCase
         Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
     repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
     repository.addFunctionAndResetIds(new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "get"),
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),
@@ -36,15 +37,15 @@ public class ModuleCodeRepositoryTest extends TestCase
     ClassDescription testClass = repository.addClassAndResetIds("test class");
     testClass.setSuperclass(null);
     testClass.addMethod(new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "at x:y:",
-            "x", Token.ParameterToken.fromContents("@number", Symbol.AtType),
-            "y", Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "at x:y:",
+            "x", UnboundType.forClassLookupName("number"),
+            "y", UnboundType.forClassLookupName("number")),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),
                 Token.ParameterToken.fromContents(".x", Symbol.DotVariable)))));
     testClass.addMethod(new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), "new")
+        FunctionSignature.from(UnboundType.forClassLookupName("void"), "new")
             .setIsConstructor(true),
         new StatementContainer()));
     testClass.addVarAndResetIds("test var", Token.ParameterToken.fromContents("@test class", Symbol.AtType));
@@ -129,7 +130,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     Assert.assertEquals(2, cls.methods.size());
     Assert.assertEquals("at x:y:", cls.methods.get(0).sig.getLookupName());
     Assert.assertEquals("y", cls.methods.get(0).sig.getArgName(1));
-    Assert.assertEquals("number", cls.methods.get(0).sig.getArgType(1).getLookupName());
+    Assert.assertEquals("number", cls.methods.get(0).sig.getArgType(1).mainToken.getLookupName());
     Assert.assertEquals("number", cls.methods.get(0).sig.getReturnType().mainToken.getLookupName());
     Assert.assertEquals("new", cls.methods.get(1).sig.getLookupName());
     Assert.assertEquals("void", cls.methods.get(1).sig.getReturnType().mainToken.getLookupName());
@@ -282,9 +283,9 @@ public class ModuleCodeRepositoryTest extends TestCase
   public void testSaveFunction() throws PlomReadException, IOException
   {
     FunctionDescription fn = new FunctionDescription(
-        FunctionSignature.from(Token.ParameterToken.fromContents("@number", Symbol.AtType), "at x:y:",
-            "x", Token.ParameterToken.fromContents("@number", Symbol.AtType),
-            "y", Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "at x:y:",
+            "x", UnboundType.forClassLookupName("number"),
+            "y", UnboundType.forClassLookupName("number")),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),

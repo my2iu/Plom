@@ -13,6 +13,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -106,7 +107,7 @@ public class ClassPanel
       e.preventDefault();
       String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newMethodName),
+          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName),
           new StatementContainer());
       cls.addMethod(func);
 
@@ -121,7 +122,7 @@ public class ClassPanel
       e.preventDefault();
       String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newMethodName)
+          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
               .setIsStatic(true),
           new StatementContainer());
       cls.addMethod(func);
@@ -134,7 +135,7 @@ public class ClassPanel
       e.preventDefault();
       String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(Token.ParameterToken.fromContents("@void", Symbol.AtType), newMethodName)
+          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
               .setIsConstructor(true),
           new StatementContainer());
       cls.addMethod(func);
