@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.GatheredUnboundTypeInfo;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.TypeLookup;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.VariableDeclarer;
 
@@ -19,7 +20,6 @@ public class MethodArgumentExtractor
 {
   public static void fromParameterField(TokenContainer line,
       VariableDeclarer variableDeclarer,
-      TypeLookup typeLookup,
       ErrorList errorGatherer)
   {
     // Parse the line
@@ -27,7 +27,7 @@ public class MethodArgumentExtractor
       AstNode ast = ParseToAst.parseExpression(Symbol.ParameterField, line.tokens, null);
       if (ast == null) return;
       // Execute the code to extract the variables
-      ast.recursiveVisit(statementHandlers, variableDeclarer, typeLookup);
+      ast.recursiveVisit(statementHandlers, variableDeclarer, null);
     }
     catch (Exception e)
     {
@@ -37,7 +37,7 @@ public class MethodArgumentExtractor
 
   }
 
-  static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
+  static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup<Type>, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
       .add(Rule.ParameterField_DotDeclareIdentifier_Type,
@@ -46,9 +46,9 @@ public class MethodArgumentExtractor
             if (!node.children.get(0).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
               return false;
             String name = ((Token.ParameterToken)node.children.get(0).children.get(0).token).getLookupName();
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(1).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, typeLookup);
-            Type type = typeInfo.type;
+            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+            node.children.get(1).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, null);
+            UnboundType type = typeInfo.type;
             variableDeclarer.handle(name, type);
             return false;
           });

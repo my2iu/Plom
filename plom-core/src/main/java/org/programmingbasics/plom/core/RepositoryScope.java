@@ -20,6 +20,7 @@ import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
@@ -63,12 +64,12 @@ public class RepositoryScope extends VariableScope
     // has direct access to these types, but the repository may have
     // extra methods defined on them)
     try {
-      typeFromToken(Token.ParameterToken.fromContents("@object", Symbol.AtType));
-      typeFromToken(Token.ParameterToken.fromContents("@number", Symbol.AtType));
-      typeFromToken(Token.ParameterToken.fromContents("@boolean", Symbol.AtType));
-      typeFromToken(Token.ParameterToken.fromContents("@string", Symbol.AtType));
-      typeFromToken(Token.ParameterToken.fromContents("@null", Symbol.AtType));
-      typeFromToken(Token.ParameterToken.fromContents("@void", Symbol.AtType));
+      typeFromUnboundType(UnboundType.forClassLookupName("object"));
+      typeFromUnboundType(UnboundType.forClassLookupName("number"));
+      typeFromUnboundType(UnboundType.forClassLookupName("boolean"));
+      typeFromUnboundType(UnboundType.forClassLookupName("string"));
+      typeFromUnboundType(UnboundType.forClassLookupName("null"));
+      typeFromUnboundType(UnboundType.forClassLookupName("void"));
     }
     catch (RunException e)
     {
@@ -101,24 +102,31 @@ public class RepositoryScope extends VariableScope
     }
     ErrorList errors = new ErrorList();
     VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
-        (name, type) -> {
+        (name, unboundType) -> {
+          Type type;
+          try {
+            type = typeFromUnboundType(unboundType);
+          } catch (RunException e) {
+            // skip any errors
+            type = null;
+          }
           if (type == null) type = coreTypes.getVoidType();
           addVariable(name, type, coreTypes.getNullValue());
           globalVariableSuggestions.add(name);
         };
-    VariableDeclarationInterpreter.TypeLookup typeLookup =
-        unboundType -> {
-          try {
-            return typeFromUnboundType(unboundType);
-          } catch (RunException e) {
-            // skip any errors
-            return null;
-          }
-        };
+//    VariableDeclarationInterpreter.TypeLookup<Type> typeLookup =
+//        unboundType -> {
+//          try {
+//            return typeFromUnboundType(unboundType);
+//          } catch (RunException e) {
+//            // skip any errors
+//            return null;
+//          }
+//        };
     VariableDeclarationInterpreter.fromStatements(repository.getImportedVariableDeclarationCode(),
-        variableDeclarer, typeLookup, errors);
+        variableDeclarer, errors);
     VariableDeclarationInterpreter.fromStatements(repository.getVariableDeclarationCode(),
-        variableDeclarer, typeLookup, errors);
+        variableDeclarer, errors);
     globalVariableSuggestions.sort(null);
   }
   
@@ -127,7 +135,7 @@ public class RepositoryScope extends VariableScope
     Type [] argTypes = new Type[func.sig.getNumArgs()];
     for (int n = 0; n < func.sig.getNumArgs(); n++)
       argTypes[n] = typeFromToken(func.sig.getArgType(n));
-    return Type.makeFunctionType(typeFromToken(func.sig.getReturnType()), argTypes);    
+    return Type.makeFunctionType(typeFromUnboundType(func.sig.getReturnType()), argTypes);    
   }
   
   @Override
@@ -233,7 +241,7 @@ public class RepositoryScope extends VariableScope
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
-                typeFromToken(fn.sig.getReturnType()), args);
+                typeFromUnboundType(fn.sig.getReturnType()), args);
           }
           else if (fn.sig.isConstructor)
           {
@@ -248,7 +256,7 @@ public class RepositoryScope extends VariableScope
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
             toReturn.addMethod(fn.sig.getLookupName(), execFn, 
-                typeFromToken(fn.sig.getReturnType()), args);
+                typeFromUnboundType(fn.sig.getReturnType()), args);
           }
         } 
         catch (ParseException e)
@@ -282,22 +290,29 @@ public class RepositoryScope extends VariableScope
     // Also run the variable declaration code to get members from there
     ErrorList errors = new ErrorList();
     VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
-        (name, type) -> {
+        (name, unboundType) -> {
+          Type type;
+          try {
+            type = typeFromUnboundType(unboundType);
+          } catch (RunException e) {
+            // skip any errors
+            type = null;
+          }
           if (type == null) type = coreTypes.getVoidType();
           toReturn.addMemberVariable(name, type);
         };
-    VariableDeclarationInterpreter.TypeLookup typeLookup =
-        unboundType -> {
-          try {
-            return typeFromUnboundType(unboundType);
-          } catch (RunException e) {
-            // skip any errors
-            return null;
-          }
-        };
+//    VariableDeclarationInterpreter.TypeLookup<Type> typeLookup =
+//        unboundType -> {
+//          try {
+//            return typeFromUnboundType(unboundType);
+//          } catch (RunException e) {
+//            // skip any errors
+//            return null;
+//          }
+//        };
     VariableDeclarationInterpreter.fromStatements(
         cls.getVariableDeclarationCode(),
-        variableDeclarer, typeLookup, errors);
+        variableDeclarer, errors);
   }
   
   @Override
@@ -308,7 +323,7 @@ public class RepositoryScope extends VariableScope
     for (ClassDescription cls: codeRepositoryClasses.values())
     {
       try {
-        types.add(typeFromToken(Token.ParameterToken.fromContents("@" + cls.getName(), Symbol.AtType)));
+        types.add(typeFromUnboundType(UnboundType.forClassLookupName(cls.getName())));
       }
       catch (RunException e)
       {

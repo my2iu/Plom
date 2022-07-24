@@ -467,7 +467,7 @@ public class ExpressionEvaluator
 
   private static Type getClassFromStackFrame(MachineContext machine) throws RunException
   {
-    return machine.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + machine.getTopStackFrame().codeUnit.className, Symbol.AtType));
+    return machine.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(machine.getTopStackFrame().codeUnit.className));
   }
 
 

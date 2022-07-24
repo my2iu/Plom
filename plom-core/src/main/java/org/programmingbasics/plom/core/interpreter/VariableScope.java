@@ -90,7 +90,8 @@ public class VariableScope
    */
   public Type typeFromUnboundType(UnboundType unboundType) throws RunException
   {
-    return typeFromUnboundType(unboundType);
+    if (unboundType == null) throw new RunException();
+    return typeFromToken(unboundType.mainToken);
   }
   
   /**

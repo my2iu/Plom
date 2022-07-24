@@ -23,6 +23,7 @@ import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import jsinterop.annotations.JsType;
 
@@ -35,7 +36,7 @@ public class ModuleCodeRepository
     public List<String> argNames = new ArrayList<>();
     private List<Token.ParameterToken> argTypes = new ArrayList<>();
     private List<TokenContainer> argCode = new ArrayList<>();
-    private Token.ParameterToken returnType;
+    private UnboundType returnType;
     private TokenContainer returnTypeCode = new TokenContainer();
     public boolean isBuiltIn = false;
     public boolean isStatic = false;
@@ -72,7 +73,7 @@ public class ModuleCodeRepository
       }
       if (getReturnType() != null)
       {
-        name += " @" + getReturnType().getLookupName();
+        name += " @" + getReturnType().mainToken.getLookupName();
       }
       return name;
     }
@@ -110,26 +111,26 @@ public class ModuleCodeRepository
       this.argCode.set(idx, argCode);
       class NameAndType {
         String name;
-        Type type;
+        UnboundType type;
       }
       NameAndType nameAndType = new NameAndType();
       MethodArgumentExtractor.fromParameterField(argCode, 
-          (name, t) -> {
+          (name, unboundType) -> {
             nameAndType.name = name;
-            nameAndType.type = t;
+            nameAndType.type = unboundType;
           },
-          (unboundType) -> {
-            // Just pass the raw type name through unchanged
-            return new Type(unboundType.mainToken.getLookupName());
-          },
+//          (unboundType) -> {
+//            // Just pass the raw type name through unchanged
+//            return new Type(unboundType.mainToken.getLookupName());
+//          },
           null);
       if (nameAndType.name != null)
       {
         argNames.set(idx, nameAndType.name);
-        argTypes.set(idx, ParameterToken.fromContents("@" + nameAndType.type.name, Symbol.AtType));
+        argTypes.set(idx, ParameterToken.fromContents("@" + nameAndType.type.mainToken.getLookupName(), Symbol.AtType));
       }
     }
-    public Token.ParameterToken getReturnType() { return returnType; }
+    public UnboundType getReturnType() { return returnType; }
     public TokenContainer getReturnTypeCode() { return returnTypeCode; }
     public void setReturnTypeCode(TokenContainer code)
     {

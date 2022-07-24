@@ -31,20 +31,20 @@ public class VariableDeclarationInterpreterTest extends TestCase
     
     ErrorList errors = new ErrorList();
     List<String> declaredNames = new ArrayList<>();
-    List<Type> declaredTypes = new ArrayList<>();
+    List<UnboundType> declaredTypes = new ArrayList<>();
     VariableDeclarationInterpreter.fromStatements(code, 
         (name, t) -> {
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         errors);
     
     Assert.assertEquals(2, declaredNames.size());
     Assert.assertEquals("test1", declaredNames.get(0));
     Assert.assertEquals("test2", declaredNames.get(1));
-    Assert.assertEquals("object", declaredTypes.get(0).name);
-    Assert.assertEquals("number", declaredTypes.get(1).name);
+    Assert.assertEquals("object", declaredTypes.get(0).mainToken.getLookupName());
+    Assert.assertEquals("number", declaredTypes.get(1).mainToken.getLookupName());
   }
   
   @Test
@@ -67,20 +67,20 @@ public class VariableDeclarationInterpreterTest extends TestCase
     
     ErrorList errors = new ErrorList();
     List<String> declaredNames = new ArrayList<>();
-    List<Type> declaredTypes = new ArrayList<>();
+    List<UnboundType> declaredTypes = new ArrayList<>();
     VariableDeclarationInterpreter.fromStatements(code, 
         (name, t) -> {
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         errors);
     
     Assert.assertEquals(2, declaredNames.size());
     Assert.assertEquals("test1", declaredNames.get(0));
     Assert.assertEquals("test2", declaredNames.get(1));
-    Assert.assertEquals("object", declaredTypes.get(0).name);
-    Assert.assertEquals("number", declaredTypes.get(1).name);
+    Assert.assertEquals("object", declaredTypes.get(0).mainToken.getLookupName());
+    Assert.assertEquals("number", declaredTypes.get(1).mainToken.getLookupName());
   }
   
 }

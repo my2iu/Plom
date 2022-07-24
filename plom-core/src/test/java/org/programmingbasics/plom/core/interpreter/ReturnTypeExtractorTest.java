@@ -19,16 +19,16 @@ public class ReturnTypeExtractorTest extends TestCase
     TokenContainer code = new TokenContainer(
         Token.ParameterToken.fromContents("@number", Symbol.AtType));
     
-    List<Type> declaredTypes = new ArrayList<>();
+    List<UnboundType> declaredTypes = new ArrayList<>();
     ReturnTypeExtractor.fromReturnField(code, 
         (t) -> {
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
     
     Assert.assertEquals(1, declaredTypes.size());
-    Assert.assertEquals("number", declaredTypes.get(0).name);
+    Assert.assertEquals("number", declaredTypes.get(0).mainToken.getLookupName());
   }
   
 }

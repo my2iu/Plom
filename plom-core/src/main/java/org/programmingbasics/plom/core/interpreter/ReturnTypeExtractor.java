@@ -10,6 +10,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
+import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.GatheredUnboundTypeInfo;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.TypeLookup;
 
 /**
@@ -18,31 +19,27 @@ import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterprete
  */
 public class ReturnTypeExtractor
 {
-  public static Token.ParameterToken fromReturnFieldTokenContainer(TokenContainer line)
+  public static UnboundType fromReturnFieldTokenContainer(TokenContainer line)
   {
-    class ReturnTypeSaver implements Consumer<Type>
+    class ReturnTypeSaver implements Consumer<UnboundType>
     {
-      Token.ParameterToken type;
-      @Override public void accept(Type t) { type = Token.ParameterToken.fromContents("@" + t.name, Symbol.AtType); }
+      UnboundType type;
+      @Override public void accept(UnboundType t) { type = t; }
     }
     ReturnTypeSaver returnTypeSaver = new ReturnTypeSaver();
     ReturnTypeExtractor.fromReturnField(
         line,
         returnTypeSaver,
-        (unboundType) -> {
-          // Just pass the raw type name through unchanged
-          return new Type(unboundType.mainToken.getLookupName());
-        },
         null);
     if (returnTypeSaver.type != null)
       return returnTypeSaver.type;
     else
-      return Token.ParameterToken.fromContents("@void", Symbol.AtType);
+      return UnboundType.forClassLookupName("void");
   }
   
   public static void fromReturnField(TokenContainer line,
-      Consumer<Type> typeReturner,
-      TypeLookup typeLookup,
+      Consumer<UnboundType> typeReturner,
+//      Void typeLookup,
       ErrorList errorGatherer)
   {
     // Parse the line
@@ -50,7 +47,7 @@ public class ReturnTypeExtractor
       AstNode ast = ParseToAst.parseExpression(Symbol.ReturnTypeField, line.tokens, null);
       if (ast == null) return;
       // Execute the code to extract the variables
-      ast.recursiveVisit(statementHandlers, typeReturner, typeLookup);
+      ast.recursiveVisit(statementHandlers, typeReturner, null);
     }
     catch (Exception e)
     {
@@ -60,14 +57,14 @@ public class ReturnTypeExtractor
 
   }
 
-  static AstNode.VisitorTriggers<Consumer<Type>, TypeLookup, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
+  static AstNode.VisitorTriggers<Consumer<UnboundType>, Void, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
       .add(Rule.ReturnTypeField_Type,
-          (triggers, node, typeReturn, typeLookup) -> {
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, typeLookup);
-            Type type = typeInfo.type;
+          (triggers, node, typeReturn, unsued) -> {
+            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+            node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, null);
+            UnboundType type = typeInfo.type;
             typeReturn.accept(type);
             return false;
           });

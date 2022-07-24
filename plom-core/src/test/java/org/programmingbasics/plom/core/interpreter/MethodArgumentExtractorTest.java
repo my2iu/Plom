@@ -21,18 +21,18 @@ public class MethodArgumentExtractorTest extends TestCase
         Token.ParameterToken.fromContents("@number", Symbol.AtType));
     
     List<String> declaredNames = new ArrayList<>();
-    List<Type> declaredTypes = new ArrayList<>();
+    List<UnboundType> declaredTypes = new ArrayList<>();
     MethodArgumentExtractor.fromParameterField(code, 
         (name, t) -> {
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
     
     Assert.assertEquals(1, declaredNames.size());
     Assert.assertEquals("test1", declaredNames.get(0));
-    Assert.assertEquals("number", declaredTypes.get(0).name);
+    Assert.assertEquals("number", declaredTypes.get(0).mainToken.getLookupName());
   }
   
   @Test
@@ -43,13 +43,13 @@ public class MethodArgumentExtractorTest extends TestCase
         Token.ParameterToken.fromContents(".test1", Symbol.DotVariable));
     
     List<String> declaredNames = new ArrayList<>();
-    List<Type> declaredTypes = new ArrayList<>();
+    List<UnboundType> declaredTypes = new ArrayList<>();
     MethodArgumentExtractor.fromParameterField(code, 
         (name, t) -> {
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
 
     Assert.assertEquals(0, declaredNames.size());
@@ -65,7 +65,7 @@ public class MethodArgumentExtractorTest extends TestCase
           declaredNames.add(name);
           declaredTypes.add(t);
         },
-        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
+//        (unboundType) -> {return new Type(unboundType.mainToken.getLookupName());},
         null);
 
     Assert.assertEquals(0, declaredNames.size());

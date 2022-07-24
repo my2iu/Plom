@@ -19,7 +19,7 @@ public class VariableDeclarationInterpreter
 {
   public static void fromStatements(StatementContainer code,
       VariableDeclarer variableDeclarer,
-      TypeLookup typeLookup,
+//      TypeLookup<Type> typeLookup,
       ErrorList errorGatherer)
   {
     // Parse things one line at a time since we want to skip over
@@ -41,29 +41,36 @@ public class VariableDeclarationInterpreter
         continue;
 
       // Execute the code to extract the variables
-      parsed.recursiveVisit(statementHandlers, variableDeclarer, typeLookup);
+      parsed.recursiveVisit(statementHandlers, variableDeclarer, null);
     }
   }
 
+  // When parsing type information, we need a structure for stashing
+  // that type info in order to return it
+  static class GatheredUnboundTypeInfo
+  {
+    UnboundType type;
+  }
+  
   // Callbacks
   public static interface VariableDeclarer
   {
-    void handle(String name, Type t);
+    void handle(String name, UnboundType t);
   }
-  public static interface TypeLookup
+  public static interface TypeLookup<T>
   {
-    Type lookupType(UnboundType unboundType);
+    T lookupType(UnboundType unboundType);
   }
 
   // Various AST node handlers for executing each variable declaration 
-  static AstNode.VisitorTriggers<GatheredTypeInfo, TypeLookup, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, TypeLookup, RuntimeException>()
-      .add(Rule.AtType, (triggers, node, typesToReturn, typeLookup) -> {
-        Type t = typeLookup.lookupType(UnboundType.fromToken(node.token));
+  static AstNode.VisitorTriggers<GatheredUnboundTypeInfo, Void, RuntimeException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredUnboundTypeInfo, Void, RuntimeException>()
+      .add(Rule.AtType, (triggers, node, typesToReturn, unused) -> {
+        UnboundType t = UnboundType.fromToken(node.token);
         typesToReturn.type = t;
         return true;
       });
 
-  static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
+  static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup<Type>, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
       .add(Rule.VarDeclarationStatement_Var_DotDeclareIdentifier_VarType,
@@ -72,9 +79,9 @@ public class VariableDeclarationInterpreter
             if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
               return false;
             String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, typeLookup);
-            Type type = typeInfo.type;
+            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+            node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, null);
+            UnboundType type = typeInfo.type;
             variableDeclarer.handle(name, type);
             return false;
           });

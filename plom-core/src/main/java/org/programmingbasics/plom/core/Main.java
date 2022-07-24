@@ -19,6 +19,7 @@ import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
@@ -516,7 +517,7 @@ public class Main
               context.setIsConstructorMethod(currentMethodBeingViewed.sig.isConstructor);
             }
             try {
-              context.setDefinedClassOfMethod(context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.getName(), Symbol.AtType)));
+              context.setDefinedClassOfMethod(context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName())));
             }
             catch (RunException e)
             {
@@ -526,7 +527,7 @@ public class Main
             // Create an object scope that will handle this and instance variables
             try {
               Value thisValue = new Value();
-              thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + currentMethodClassBeingViewed.getName(), Symbol.AtType));
+              thisValue.type = context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName()));
               context.pushObjectScope(thisValue);
             } 
             catch (RunException e)

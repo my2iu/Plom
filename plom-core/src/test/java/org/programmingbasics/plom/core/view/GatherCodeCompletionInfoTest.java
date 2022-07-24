@@ -13,6 +13,7 @@ import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
@@ -80,7 +81,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     if (thisTypeString != null)
     {
       Value thisValue = new Value();
-      thisValue.type = context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@" + thisTypeString, Symbol.AtType));
+      thisValue.type = context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(thisTypeString));
       context.pushObjectScope(thisValue);
     }
     context.pushNewScope();
@@ -484,7 +485,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
 
     context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 2));
     Assert.assertNull(context.getLastTypeUsed());
-    Assert.assertEquals(context.currentScope().typeFromToken(Token.ParameterToken.fromContents("@object", Symbol.AtType)), context.getLastTypeForStaticCall());
+    Assert.assertEquals(context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName("object")), context.getLastTypeForStaticCall());
     List<String> suggestions = new StaticMemberSuggester(context, true, true).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("new"));
 
