@@ -37,18 +37,18 @@ public class SimpleInterpreter
   MachineContext ctx;
   ErrorLogger errorLogger;
   
-  // When parsing type information, we need a structure for stashing
-  // that type info in order to return it
-  static class GatheredTypeInfo
-  {
-    Type type;
-  }
-  static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException>()
-      .add(Rule.AtType, (triggers, node, typesToReturn, machine) -> {
-        Type t = machine.currentScope().typeFromToken((Token.ParameterToken)node.token);
-        typesToReturn.type = t;
-        return true;
-      });
+//  // When parsing type information, we need a structure for stashing
+//  // that type info in order to return it
+//  static class GatheredTypeInfo
+//  {
+//    Type type;
+//  }
+//  static AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException> typeParsingHandlers = new AstNode.VisitorTriggers<GatheredTypeInfo, MachineContext, RunException>()
+//      .add(Rule.AtType, (triggers, node, typesToReturn, machine) -> {
+//        Type t = machine.currentScope().typeFromToken((Token.ParameterToken)node.token);
+//        typesToReturn.type = t;
+//        return true;
+//      });
 
   static MachineContext.NodeHandlers statementHandlers = new MachineContext.NodeHandlers();
   static {
@@ -77,9 +77,7 @@ public class SimpleInterpreter
               if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
                 throw new RunException();
               String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-              node.children.get(2).recursiveVisit(typeParsingHandlers, typeInfo, machine);
-              Type type = typeInfo.type;
+              Type type = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(2)));
               if (type == null) type = machine.coreTypes().getVoidType();
               Value val;
               if (node.children.get(3).matchesRule(Rule.VarAssignment_Assignment_Expression))
@@ -282,9 +280,7 @@ public class SimpleInterpreter
               if (!forExpression.children.get(0).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
                 throw new RunException();
               String name = ((Token.ParameterToken)forExpression.children.get(0).children.get(0).token).getLookupName();
-              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-              forExpression.children.get(1).recursiveVisit(typeParsingHandlers, typeInfo, machine);
-              Type type = typeInfo.type;
+              Type type = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(forExpression.children.get(1)));
               if (type == null) type = machine.coreTypes().getVoidType();
               Value val = machine.popValue();
               machine.currentScope().addVariable(name, type, val);

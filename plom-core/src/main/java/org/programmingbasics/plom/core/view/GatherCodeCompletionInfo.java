@@ -14,9 +14,7 @@ import org.programmingbasics.plom.core.ast.Token.WideToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
-import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.CodeSuggestExpressionTyper;
 
@@ -159,10 +157,7 @@ public class GatherCodeCompletionInfo
     String name = ((Token.ParameterToken)declareIdentifier.children.get(0).token).getLookupName();
     if (varType == null)
       return;
-    Type type;
-    try {
-      type = context.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherTypeInfo(varType));
-    } catch (RunException e) {type = null;}
+    Type type = CodeSuggestExpressionTyper.gatherTypeInfoNoFail(varType, context);
 
     if (type == null) type = context.coreTypes().getVoidType();
 //        Value val = context.coreTypes().getNullValue();

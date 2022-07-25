@@ -9,7 +9,6 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
 
 /**
  * Executes variable declaration statements and creates the
@@ -70,13 +69,13 @@ public class VariableDeclarationInterpreter
         return true;
       });
 
-  public static UnboundType gatherTypeInfo(AstNode node)
+  public static UnboundType gatherUnboundTypeInfo(AstNode node)
   {
     GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
     node.recursiveVisit(typeParsingHandlers, typeInfo, null);
     return typeInfo.type;
   }
-  
+
   static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup<Type>, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
@@ -86,7 +85,7 @@ public class VariableDeclarationInterpreter
             if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
               return false;
             String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-            UnboundType type = gatherTypeInfo(node.children.get(2));
+            UnboundType type = gatherUnboundTypeInfo(node.children.get(2));
             variableDeclarer.handle(name, type);
             return false;
           });

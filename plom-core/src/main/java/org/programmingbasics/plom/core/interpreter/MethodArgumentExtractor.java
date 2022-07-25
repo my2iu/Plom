@@ -7,7 +7,6 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.GatheredUnboundTypeInfo;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.TypeLookup;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter.VariableDeclarer;

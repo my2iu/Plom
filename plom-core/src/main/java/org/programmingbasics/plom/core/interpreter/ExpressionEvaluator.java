@@ -6,10 +6,8 @@ import java.util.List;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Rule;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 import org.programmingbasics.plom.core.interpreter.PrimitiveFunction.PrimitiveBlockingFunction;
-import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.GatheredTypeInfo;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ExpressionEvaluator
@@ -146,9 +144,7 @@ public class ExpressionEvaluator
             {
             case 0:
             {
-              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-              node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
-              Type isType = typeInfo.type;
+              Type isType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
               Value left = machine.popValue();
               machine.pushValue(Value.createBooleanValue(machine.coreTypes(), left.type.isInstanceOf(isType)));
               // Handle the "...More" part 
@@ -163,9 +159,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, 
           (machine, node, idx) -> {
-            GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-            node.children.get(1).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
-            Type retypeType = typeInfo.type;
+            Type retypeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
             Value left = machine.popValue();
             if (left.isNull())
             {
@@ -349,9 +343,7 @@ public class ExpressionEvaluator
             }
             else if (idx == methodNode.internalChildren.size()) 
             {
-              GatheredTypeInfo typeInfo = new GatheredTypeInfo();
-              node.children.get(0).recursiveVisit(SimpleInterpreter.typeParsingHandlers, typeInfo, machine);
-              Type calleeType = typeInfo.type;
+              Type calleeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)));
               ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
