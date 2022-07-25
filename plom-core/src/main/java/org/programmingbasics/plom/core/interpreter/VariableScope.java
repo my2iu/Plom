@@ -74,8 +74,10 @@ public class VariableScope
   /**
    * Returns the Type object used to represent a type within this 
    * interpreter for the given textual Type description
+   * @deprecated please use typeFromUnboundType() instead
    */
-  public Type typeFromToken(Token typeToken) throws RunException
+  @Deprecated
+  protected Type typeFromToken(Token typeToken) throws RunException
   {
     if (parent != null)
       return parent.typeFromToken(typeToken);

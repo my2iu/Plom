@@ -88,7 +88,7 @@ public class ClassPanel
     
     // For setting the supertype
     int maxTypeWidth = mainDiv.querySelector(".extends").getClientWidth();
-    TypeEntryField extendsField = new TypeEntryField(cls.parent, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
+    TypeEntryField extendsField = new TypeEntryField(cls.parent.mainToken, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
@@ -96,7 +96,7 @@ public class ClassPanel
         (context) -> {},
         widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
     extendsField.setChangeListener((newType, isFinal) -> {
-      cls.setSuperclass(newType);
+      cls.setSuperclass(UnboundType.fromToken(newType));
     });
     extendsField.render();
 

@@ -12,7 +12,6 @@ import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
@@ -91,6 +90,7 @@ public class RepositoryScope extends VariableScope
     {
       for (VariableDescription v: repository.chainedRepository.globalVars)
       {
+        // This code is obsolete since VariableDescription is being phased out of the UI
         try {
           addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
         }
@@ -194,7 +194,8 @@ public class RepositoryScope extends VariableScope
   private Map<String, Type> typeLookupCache = new HashMap<>(); 
 
   @Override
-  public Type typeFromToken(Token typeToken) throws RunException
+  @Deprecated
+  protected Type typeFromToken(Token typeToken) throws RunException
   {
     String name = ((Token.ParameterToken)typeToken).getLookupName();
     Type toReturn = typeLookupCache.get(name);
@@ -225,7 +226,7 @@ public class RepositoryScope extends VariableScope
       ClassDescription cls = codeRepositoryClasses.get(name);
       if (cls.parent != null)
       {
-        toReturn.parent = typeFromToken(cls.parent); 
+        toReturn.parent = typeFromUnboundType(cls.parent); 
       }
       addMemberVarsFromClass(toReturn, cls);
       for (FunctionDescription fn: cls.methods)
@@ -279,12 +280,13 @@ public class RepositoryScope extends VariableScope
   {
     if (cls.parent != null && !cls.getName().equals("object"))
     {
-      String name = cls.parent.getLookupName();
+      String name = cls.parent.mainToken.getLookupName();
       ClassDescription parentCls = codeRepositoryClasses.get(name);
       addMemberVarsFromClass(toReturn, parentCls);
     }
     for (VariableDescription var: cls.variables)
     {
+      // This code is obsolete since variable declarations are being phased out of the UI
       toReturn.addMemberVariable(var.name, typeFromToken(var.type));
     }
     // Also run the variable declaration code to get members from there

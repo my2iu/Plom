@@ -15,14 +15,12 @@ import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
 import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
-import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import jsinterop.annotations.JsType;
@@ -274,7 +272,7 @@ public class ModuleCodeRepository
   {
     private String name;
     private String originalName;
-    Token.ParameterToken parent;
+    UnboundType parent;
     List<FunctionDescription> methods = new ArrayList<>();
     List<VariableDescription> variables = new ArrayList<>();
     
@@ -374,7 +372,7 @@ public class ModuleCodeRepository
     {
       return originalName;
     }
-    public void setSuperclass(Token.ParameterToken parent)
+    public void setSuperclass(UnboundType parent)
     {
       this.parent = parent;
     }
@@ -683,7 +681,7 @@ public class ModuleCodeRepository
   {
     ClassDescription cls = new ClassDescription(name, name);
     cls.module = this;
-    cls.parent = Token.ParameterToken.fromContents("@object", Symbol.AtType);
+    cls.parent = UnboundType.forClassLookupName("object");
     classes.add(0, cls);
     cls.id = 0;
     return cls;
@@ -733,7 +731,7 @@ public class ModuleCodeRepository
           .setBuiltIn(true);
       classMap.put(clsdef.name, c);
       if (clsdef.parent != null)
-        c.setSuperclass(Token.ParameterToken.fromContents("@" + clsdef.parent, Symbol.AtType));
+        c.setSuperclass(UnboundType.forClassLookupName(clsdef.parent));
       else
         c.setSuperclass(null);
     }
@@ -815,7 +813,7 @@ public class ModuleCodeRepository
     if (c.parent != null)
     {
       out.token("extends");
-      PlomTextWriter.writeToken(out, c.parent);
+      PlomTextWriter.writeToken(out, c.parent.mainToken);
     }
     
     out.token("{");
@@ -1039,7 +1037,7 @@ new_methods:
     if ("extends".equals(lexer.peekLexInput()))
     {
       lexer.expectToken("extends");
-      cls.setSuperclass((Token.ParameterToken)PlomTextReader.readToken(lexer));
+      cls.setSuperclass(UnboundType.fromToken(PlomTextReader.readToken(lexer)));
     }
     
     lexer.expectToken("{");

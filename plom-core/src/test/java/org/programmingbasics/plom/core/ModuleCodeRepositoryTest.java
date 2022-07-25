@@ -81,7 +81,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
 
     ClassDescription c = repository.getAllClassesSorted().stream().filter(cls -> cls.getName().equals("test class")).findFirst().get();
-    c.setSuperclass(Token.ParameterToken.fromContents("@object", Symbol.AtType));
+    c.setSuperclass(UnboundType.forClassLookupName("object"));
     ModuleCodeRepository.saveClass(out, c);
     Assert.assertEquals(" class @ { test class } extends @ {object } {\n" + 
         " vardecls {\n" + 
@@ -149,7 +149,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     
     ClassDescription cls = ModuleCodeRepository.loadClass(lexer);
     Assert.assertEquals("test class", cls.getName());
-    Assert.assertEquals("object", cls.parent.getLookupName());
+    Assert.assertEquals("object", cls.parent.mainToken.getLookupName());
     Assert.assertEquals(1, cls.methods.size());
     Assert.assertEquals("new", cls.methods.get(0).sig.getLookupName());
     Assert.assertEquals("void", cls.methods.get(0).sig.getReturnType().mainToken.getLookupName());
