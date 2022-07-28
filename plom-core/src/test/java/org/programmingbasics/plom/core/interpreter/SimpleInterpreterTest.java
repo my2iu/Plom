@@ -34,9 +34,9 @@ public class SimpleInterpreterTest extends TestCase
     }
     
     @Override
-    public Type typeFromToken(Token typeToken) throws RunException
+    public Type typeFromUnboundType(UnboundType unboundType) throws RunException
     {
-      String name = ((Token.ParameterToken)typeToken).getLookupName();
+      String name = unboundType.mainToken.getLookupName();
       Type toReturn = typeLookup.get(name);
       if (toReturn != null) return toReturn;
       switch (name)

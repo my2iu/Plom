@@ -154,9 +154,23 @@ public abstract class Token
      }
      public String getLookupName()
      {
-       if (contents.isEmpty())
-         return postfix.substring(1);
-       return (String.join("", contents) + postfix).substring(1);
+       switch(type)
+       {
+         case FunctionType:
+         {
+           if (contents.isEmpty())
+             return postfix.substring(2);
+           return (String.join("", contents) + postfix).substring(2);
+           
+         }
+         case AtType:
+         default:
+         {
+           if (contents.isEmpty())
+             return postfix.substring(1);
+           return (String.join("", contents) + postfix).substring(1);
+         }
+       }
      }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents) + postfix; }

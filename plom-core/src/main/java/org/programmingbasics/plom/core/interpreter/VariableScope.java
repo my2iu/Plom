@@ -79,11 +79,7 @@ public class VariableScope
   @Deprecated
   protected Type typeFromToken(Token typeToken) throws RunException
   {
-    if (parent != null)
-      return parent.typeFromToken(typeToken);
-    if (typeToken instanceof Token.ParameterToken)
-      throw new RunException("Unknown type " + ((Token.ParameterToken)typeToken).getLookupName());
-    throw new RunException();
+    return typeFromUnboundType(UnboundType.fromToken(typeToken));
   }
 
   /**
@@ -93,7 +89,11 @@ public class VariableScope
   public Type typeFromUnboundType(UnboundType unboundType) throws RunException
   {
     if (unboundType == null) throw new RunException();
-    return typeFromToken(unboundType.mainToken);
+    if (parent != null)
+      return parent.typeFromUnboundType(unboundType);
+    if (unboundType.mainToken instanceof Token.ParameterToken)
+      throw new RunException("Unknown type " + unboundType.mainToken.getLookupName());
+    throw new RunException();
   }
   
   /**

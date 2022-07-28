@@ -67,6 +67,11 @@ public class VariableDeclarationInterpreter
         UnboundType t = UnboundType.fromToken(node.token);
         typesToReturn.type = t;
         return true;
+      })
+      .add(Rule.FunctionType, (triggers, node, typesToReturn, unused) -> {
+        UnboundType t = UnboundType.fromToken(node.token);
+        typesToReturn.type = t;
+        return true;
       });
 
   public static UnboundType gatherUnboundTypeInfo(AstNode node)
