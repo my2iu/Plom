@@ -197,4 +197,24 @@ public class Type
     }
     public boolean isCallable() { return true; }
   }
+  
+  /**
+   * Function types are a little weird in that they aren't unique. The 
+   * same function type might have different Type objects that refer
+   * to it. Also, the name and arg names are ignored for checking
+   * for equivalence maybe?
+   */
+  public static class FunctionType extends Type
+  {
+    public Type returnType;
+    public List<Type> args;
+    public List<String> optionalArgNames;
+    public FunctionType(String name, Type returnType, List<String> optionalArgNames, List<Type> args)
+    {
+      super(name);
+      this.returnType = returnType;
+      this.args = args;
+      this.optionalArgNames = optionalArgNames;
+    }
+  }
 }
