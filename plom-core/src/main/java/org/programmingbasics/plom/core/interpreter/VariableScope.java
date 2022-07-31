@@ -1,11 +1,14 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 import jsinterop.annotations.JsType;
@@ -79,23 +82,68 @@ public class VariableScope
   @Deprecated
   protected Type typeFromToken(Token typeToken) throws RunException
   {
-    return typeFromUnboundType(UnboundType.fromToken(typeToken));
+    return typeFromUnboundType(UnboundType.fromToken(typeToken), this);
   }
 
   /**
    * Returns the Type object used to represent a type within this 
    * interpreter for the given textual Type description
+   * @param subTypeCreator When creating a type, we may need to create additional types, but
+   * since scope is chained, we may be in a different variable scope than the scope where the
+   * types are declared in, so we need the full scope of the types to be passed in so that we
+   * can create these sub-types from within the correct scope (not that we support types in 
+   * other scopes, but whatever)
    */
-  public Type typeFromUnboundType(UnboundType unboundType) throws RunException
+  public Type typeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
   {
     if (unboundType == null) throw new RunException();
     if (parent != null)
-      return parent.typeFromUnboundType(unboundType);
+      return parent.typeFromUnboundType(unboundType, subTypeCreator);
     if (unboundType.mainToken instanceof Token.ParameterToken)
       throw new RunException("Unknown type " + unboundType.mainToken.getLookupName());
     throw new RunException();
   }
   
+  /**
+   * Helper function for creating function types (this is normally
+   * only called from typeFromUnboundType() )
+   * @throws RunException 
+   */
+  protected static Type.FunctionType helperFunctionTypeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
+  {
+    if (unboundType.mainToken.type != Symbol.FunctionType)
+      throw new IllegalArgumentException("Expecting a FunctionType");
+    String name = unboundType.mainToken.getLookupName();
+    List<TokenContainer> unboundParams = unboundType.mainToken.parameters;
+    List<String> declaredNames = new ArrayList<>();
+    List<UnboundType> declaredUnboundTypes = new ArrayList<>();
+    for (int n = 0; n < unboundParams.size(); n++)
+    {
+      TokenContainer line = unboundParams.get(n);
+      MethodArgumentExtractor.fromFunctionTypeParameterField(
+          line, 
+          (paramName, paramType) -> {
+            declaredNames.add(paramName);
+            declaredUnboundTypes.add(paramType);
+          },
+          null);
+      if (declaredNames.size() < n + 1)
+      {
+        declaredNames.add(null);
+        declaredUnboundTypes.add(null);
+      }
+    }
+    Type returnType = subTypeCreator.typeFromUnboundType(declaredUnboundTypes.get(declaredUnboundTypes.size() - 1), subTypeCreator);
+    declaredNames.remove(declaredNames.size() - 1);
+    List<Type> declaredTypes = new ArrayList<>();
+    for (int n = 0; n < declaredUnboundTypes.size() - 1; n++)
+    {
+      declaredTypes.add(subTypeCreator.typeFromUnboundType(declaredUnboundTypes.get(n), subTypeCreator));
+    }
+    Type.FunctionType fnType = new Type.FunctionType(name, returnType, declaredNames, declaredTypes);
+    return fnType;
+  }
+
   /**
    * Returns all the types available at this point in the code (including
    * generic parameter types). This is an expensive operation and should

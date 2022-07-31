@@ -33,9 +33,27 @@ public class MethodArgumentExtractor
       // Ignore errors
 //      e.printStackTrace();
     }
-
   }
 
+  public static void fromFunctionTypeParameterField(TokenContainer line,
+      VariableDeclarer variableDeclarer,
+      ErrorList errorGatherer)
+  {
+    // Parse the line
+    try {
+      AstNode ast = ParseToAst.parseExpression(Symbol.ParameterFieldOptionalName, line.tokens, null);
+      if (ast == null) return;
+      // Execute the code to extract the variables
+      ast.recursiveVisit(statementHandlers, variableDeclarer, null);
+    }
+    catch (Exception e)
+    {
+      // Ignore errors
+//      e.printStackTrace();
+    }
+  }
+  
+  
   static AstNode.VisitorTriggers<VariableDeclarer, TypeLookup<Type>, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<>();
   static {
     statementHandlers
@@ -49,6 +67,25 @@ public class MethodArgumentExtractor
             node.children.get(1).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, null);
             UnboundType type = typeInfo.type;
             variableDeclarer.handle(name, type);
+            return false;
+          })
+      .add(Rule.ParameterFieldOptionalName_DotDeclareIdentifier_Type,
+          (triggers, node, variableDeclarer, typeLookup) -> {
+            // Now create the variable
+            String name = ((Token.ParameterToken)node.children.get(0).children.get(0).token).getLookupName();
+            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+            node.children.get(1).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, null);
+            UnboundType type = typeInfo.type;
+            variableDeclarer.handle(name, type);
+            return false;
+          })
+      .add(Rule.ParameterFieldOptionalName_Type,
+          (triggers, node, variableDeclarer, typeLookup) -> {
+            // Now create the variable
+            GatheredUnboundTypeInfo typeInfo = new GatheredUnboundTypeInfo();
+            node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers, typeInfo, null);
+            UnboundType type = typeInfo.type;
+            variableDeclarer.handle(null, type);
             return false;
           });
   }

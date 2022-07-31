@@ -144,7 +144,7 @@ public class ExpressionEvaluator
             {
             case 0:
             {
-              Type isType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
+              Type isType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)), machine.currentScope());
               Value left = machine.popValue();
               machine.pushValue(Value.createBooleanValue(machine.coreTypes(), left.type.isInstanceOf(isType)));
               // Handle the "...More" part 
@@ -159,7 +159,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, 
           (machine, node, idx) -> {
-            Type retypeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
+            Type retypeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)), machine.currentScope());
             Value left = machine.popValue();
             if (left.isNull())
             {
@@ -343,7 +343,7 @@ public class ExpressionEvaluator
             }
             else if (idx == methodNode.internalChildren.size()) 
             {
-              Type calleeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)));
+              Type calleeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)), machine.currentScope());
               ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
@@ -459,7 +459,7 @@ public class ExpressionEvaluator
 
   private static Type getClassFromStackFrame(MachineContext machine) throws RunException
   {
-    return machine.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(machine.getTopStackFrame().codeUnit.className));
+    return machine.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(machine.getTopStackFrame().codeUnit.className), machine.currentScope());
   }
 
 

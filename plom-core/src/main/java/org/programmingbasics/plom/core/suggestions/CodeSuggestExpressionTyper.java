@@ -437,7 +437,7 @@ public class CodeSuggestExpressionTyper
   {
     UnboundType unboundType = VariableDeclarationInterpreter.gatherUnboundTypeInfo(node);
     try {
-      return context.currentScope().typeFromUnboundType(unboundType);
+      return context.currentScope().typeFromUnboundType(unboundType, context.currentScope());
     } 
     catch (RunException e) 
     {

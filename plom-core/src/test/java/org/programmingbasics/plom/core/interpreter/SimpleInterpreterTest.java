@@ -34,8 +34,13 @@ public class SimpleInterpreterTest extends TestCase
     }
     
     @Override
-    public Type typeFromUnboundType(UnboundType unboundType) throws RunException
+    public Type typeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
     {
+      if (unboundType.mainToken.type == Symbol.FunctionType) 
+      {
+        return helperFunctionTypeFromUnboundType(unboundType, subTypeCreator);
+      }
+
       String name = unboundType.mainToken.getLookupName();
       Type toReturn = typeLookup.get(name);
       if (toReturn != null) return toReturn;
