@@ -333,7 +333,7 @@ public class ExpressionEvaluator
               }
             }
       })
-      .add(Rule.StaticMethodCallExpression_Type_DotMember, 
+      .add(Rule.StaticMethodCallExpression_AtType_DotMember, 
           (MachineContext machine, AstNode node, int idx) -> {
             AstNode methodNode = node.children.get(1).children.get(0);
             if (idx < methodNode.internalChildren.size())

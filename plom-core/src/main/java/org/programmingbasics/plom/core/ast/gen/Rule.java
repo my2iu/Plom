@@ -61,7 +61,7 @@ public class Rule
 	public final static List<Symbol> ValueExpression_StaticMethodCallExpression = Arrays.asList(Symbol.ValueExpression, Symbol.StaticMethodCallExpression);
 	public final static List<Symbol> ValueExpression_DotVariable = Arrays.asList(Symbol.ValueExpression, Symbol.DotVariable);
 	public final static List<Symbol> ValueExpression_String = Arrays.asList(Symbol.ValueExpression, Symbol.String);
-	public final static List<Symbol> StaticMethodCallExpression_Type_DotMember = Arrays.asList(Symbol.StaticMethodCallExpression, Symbol.Type, Symbol.DotMember);
+	public final static List<Symbol> StaticMethodCallExpression_AtType_DotMember = Arrays.asList(Symbol.StaticMethodCallExpression, Symbol.AtType, Symbol.DotMember);
 	public final static List<Symbol> SuperCallExpression_Super_DotSuperMember = Arrays.asList(Symbol.SuperCallExpression, Symbol.Super, Symbol.DotSuperMember);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSEIF_AfterIf = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSEIF, Symbol.AfterIf);
 	public final static List<Symbol> AfterIf_COMPOUND_ELSE = Arrays.asList(Symbol.AfterIf, Symbol.COMPOUND_ELSE);

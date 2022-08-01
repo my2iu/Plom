@@ -117,7 +117,7 @@ public class CodeSuggestExpressionTyper
         }
         return true;
       })
-      .add(Rule.StaticMethodCallExpression_Type_DotMember, (triggers, node, context, param) -> {
+      .add(Rule.StaticMethodCallExpression_AtType_DotMember, (triggers, node, context, param) -> {
         // This rule wouldn't be matched unless we have at least the first child 
         // (i.e. the Type that the static call is being made on)
         Type type = gatherTypeInfoNoFail(node.children.get(0), context);

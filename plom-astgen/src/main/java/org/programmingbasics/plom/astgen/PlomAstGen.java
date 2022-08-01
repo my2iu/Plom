@@ -83,7 +83,7 @@ public class PlomAstGen
       rule(ValueExpression, StaticMethodCallExpression),
       rule(ValueExpression, DotVariable),
       rule(ValueExpression, String),
-      rule(StaticMethodCallExpression, Type, DotMember),
+      rule(StaticMethodCallExpression, AtType, DotMember),
       rule(SuperCallExpression, Super, DotSuperMember),
       rule(AfterIf, COMPOUND_ELSEIF, AfterIf),
       rule(AfterIf, COMPOUND_ELSE),
