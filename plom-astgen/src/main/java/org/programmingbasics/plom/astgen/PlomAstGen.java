@@ -80,6 +80,7 @@ public class PlomAstGen
       rule(ValueExpression, TrueLiteral),
       rule(ValueExpression, FalseLiteral),
       rule(ValueExpression, Number),
+      rule(ValueExpression, FunctionLiteral),
       rule(ValueExpression, StaticMethodCallExpression),
       rule(ValueExpression, DotVariable),
       rule(ValueExpression, String),

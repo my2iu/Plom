@@ -229,6 +229,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         Symbol.As,
 //        Symbol.Colon,
         Symbol.In,
+        Symbol.FunctionLiteral,
     };
     for (int n = 0; n < symbolOrder.length; n++)
       buttonOrderPriority.put(symbolOrder[n], n);
@@ -552,6 +553,12 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
           tokenType);
       break;
+    case FunctionLiteral:
+      newToken = new Token.ParameterToken(
+          Token.ParameterToken.splitVarAtColons(tokenText), 
+          Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
+          tokenType);
+      break;
     case DotVariable:
       newToken = new Token.ParameterToken(
           Token.ParameterToken.splitVarAtColons(tokenText), 
@@ -579,6 +586,16 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
 
     case FunctionType:
+    {
+      updateCodeView(true);
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      showSimpleEntryForToken(newToken, false, 
+          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly)), 
+          pos);
+      break;
+    }
+
+    case FunctionLiteral:
     {
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
@@ -715,6 +732,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       focus.showSimpleEntryFor("\u0192@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
+    case FunctionLiteral:
+      initialValue = initialValue.substring(2);
+      if (initialValue.endsWith(" \u2192"))
+        initialValue = initialValue.substring(0, initialValue.length() - 2);
+      else if (initialValue.endsWith("\u2192"))
+        initialValue = initialValue.substring(0, initialValue.length() - 1);
+      focus.showSimpleEntryFor("\u0192@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
+      break;
     case Number:
       focus.showSimpleEntryFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
@@ -777,6 +803,20 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionType)
+    {
+      List<String> nameParts = Token.ParameterToken.splitVarAtColons(val);
+      if (nameParts.isEmpty())
+        nameParts.add(Token.ParameterToken.splitVarAtColonsForPostfix(val) + " \u2192");
+      else
+        nameParts.add("\u2192");
+      ((Token.ParameterToken)token).setContents(
+          nameParts,
+          "");
+      if (advanceToNext && isFinal)
+        NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+      updateCodeView(true);
+    }
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionLiteral)
     {
       List<String> nameParts = Token.ParameterToken.splitVarAtColons(val);
       if (nameParts.isEmpty())

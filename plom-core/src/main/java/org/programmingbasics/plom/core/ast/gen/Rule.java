@@ -58,6 +58,7 @@ public class Rule
 	public final static List<Symbol> ValueExpression_TrueLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.TrueLiteral);
 	public final static List<Symbol> ValueExpression_FalseLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.FalseLiteral);
 	public final static List<Symbol> ValueExpression_Number = Arrays.asList(Symbol.ValueExpression, Symbol.Number);
+	public final static List<Symbol> ValueExpression_FunctionLiteral = Arrays.asList(Symbol.ValueExpression, Symbol.FunctionLiteral);
 	public final static List<Symbol> ValueExpression_StaticMethodCallExpression = Arrays.asList(Symbol.ValueExpression, Symbol.StaticMethodCallExpression);
 	public final static List<Symbol> ValueExpression_DotVariable = Arrays.asList(Symbol.ValueExpression, Symbol.DotVariable);
 	public final static List<Symbol> ValueExpression_String = Arrays.asList(Symbol.ValueExpression, Symbol.String);
