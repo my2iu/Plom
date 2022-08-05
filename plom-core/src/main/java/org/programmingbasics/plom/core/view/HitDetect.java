@@ -7,7 +7,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -159,21 +158,6 @@ public class HitDetect
       // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
       return checkHitMultilineSpan(x, y, hitBox);
     }
-    @Override
-    public TokenHitLocation visitParameterOneBlockToken(Token.ParameterOneBlockToken token,
-        Integer x,
-        Integer y, RenderedHitBox hitBox)
-    {
-      // Early escape for if it definitely isn't on the token 
-      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
-      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x
-          && hitBox.getOffsetTop() < y) return TokenHitLocation.AFTER;
-      if (y < hitBox.getOffsetTop()) return TokenHitLocation.NONE;
-      if (x < hitBox.getOffsetLeft()) return TokenHitLocation.NONE;
-      
-      // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
-      return checkHitMultilineSpan(x, y, hitBox);
-    }
     TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
     {
       if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
@@ -228,39 +212,25 @@ public class HitDetect
     public Void visitParameterToken(ParameterToken token, CodePosition pos,
         Integer level, HitDetectParam param)
     {
-      checkParameters(token, pos, level, param);
-      return null;
-    }
-    void checkParameters(Token.TokenWithParameters token, CodePosition pos,
-        int level, HitDetectParam param)
-    {
       RenderedHitBox hitBox = param.hitBox;
       int x = param.x;
       int y = param.y;
       // Make sure we're actually on the token
-      if (x < hitBox.getOffsetLeft() || y < hitBox.getOffsetTop()) return;
+      if (x < hitBox.getOffsetLeft() || y < hitBox.getOffsetTop()) return null;
       // Check each parameter to see if we're clicking in there
       RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
       if (paramHitBox == null)
-        return;
+        return null;
       for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
       {
         if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
         {
           pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
           pos.setOffset(level + 1, n);
-          hitDetectTokens(x, y, token.getParameters().get(n), paramHitBox.children.get(n), pos, level + 2);
-          return;
+          hitDetectTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
+          return null;
         }
       }
-    }
-    
-    @Override
-    public Void visitParameterOneBlockToken(ParameterOneBlockToken token,
-        CodePosition pos, Integer level, HitDetectParam param)
-    {
-      checkParameters(token, pos, level, param);
-      // TODO: Add in handling of the block part
       return null;
     }
     @Override

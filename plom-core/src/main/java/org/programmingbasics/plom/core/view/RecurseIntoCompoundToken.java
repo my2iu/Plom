@@ -3,7 +3,6 @@ package org.programmingbasics.plom.core.view;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor3Err;
@@ -29,19 +28,6 @@ public class RecurseIntoCompoundToken<T, U, E extends Throwable> implements Toke
     {
       return handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, param);
     }
-    throw new IllegalArgumentException();
-  }
-  
-  @Override
-  public T visitParameterOneBlockToken(ParameterOneBlockToken token,
-      CodePosition pos, Integer level, U param) throws E
-  {
-    if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
-    {
-      return handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, param);
-    }
-    else if (token.block != null && pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_BLOCK)
-      return handleStatementContainer(token, token.block, pos, level + 1, param);
     throw new IllegalArgumentException();
   }
   

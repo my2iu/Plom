@@ -554,14 +554,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           tokenType);
       break;
     case FunctionLiteral:
-      // Doesn't matter if we format the contents of the token incorrectly
-      // because it will converted to a string, reparsed, and reinserted
-      // into the token via simpleEntryInput()
-      newToken = new Token.ParameterOneBlockToken(
+      newToken = new Token.ParameterToken(
           Token.ParameterToken.splitVarAtColons(tokenText), 
           Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
-          tokenType,
-          new StatementContainer());
+          tokenType);
       break;
     case DotVariable:
       newToken = new Token.ParameterToken(
@@ -820,14 +816,14 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(true);
     }
-    else if (token instanceof Token.ParameterOneBlockToken && ((Token.ParameterOneBlockToken)token).type == Symbol.FunctionLiteral)
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionLiteral)
     {
       List<String> nameParts = Token.ParameterToken.splitVarAtColons(val);
       if (nameParts.isEmpty())
         nameParts.add(Token.ParameterToken.splitVarAtColonsForPostfix(val) + " \u2192");
       else
         nameParts.add("\u2192");
-      ((Token.ParameterOneBlockToken)token).setNamePartsAndPostfix(
+      ((Token.ParameterToken)token).setContents(
           nameParts,
           "");
       if (advanceToNext && isFinal)

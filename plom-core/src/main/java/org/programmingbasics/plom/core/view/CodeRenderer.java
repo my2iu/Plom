@@ -8,7 +8,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -32,7 +31,6 @@ public class CodeRenderer
   
   static final int PARAMTOK_POS_TEXTS = 0;
   static final int PARAMTOK_POS_EXPRS = 1;
-  static final int PARAMTOK_POS_BLOCK = 2;
   
 //  private static final int EXPRBLOCK_POS_END = 3;
 
@@ -210,12 +208,6 @@ public class CodeRenderer
       toReturn.el = span;
       toReturn.beforeInsertionPoint = span;
       return null;
-    }
-    @Override
-    public Void visitParameterOneBlockToken(ParameterOneBlockToken token,
-        TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)    
-    {
-      throw new IllegalArgumentException("Not implemented yet");
     }
     @Override
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, CodePosition pos, Integer level, CodePosition currentTokenPos, RenderedHitBox hitBox)

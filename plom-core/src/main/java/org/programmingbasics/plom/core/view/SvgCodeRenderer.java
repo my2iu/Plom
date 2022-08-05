@@ -10,7 +10,6 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -608,11 +607,6 @@ public class SvgCodeRenderer
     @Override
     public Void visitParameterToken(ParameterToken token, TokenRendererReturn toReturn, TokenRendererPositioning externalPositioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
-      visitTokenWithParameters(token, toReturn, externalPositioning, level, currentTokenPos);
-      return null;
-    }
-    private void visitTokenWithParameters(Token.TokenWithParameters token, TokenRendererReturn toReturn, TokenRendererPositioning externalPositioning, int level, CodePosition currentTokenPos)
-    {
       // We render inside the parameter token with a separate context than what's used for the rest of the line
       TokenRendererPositioning positioning = externalPositioning.copy();
       positioning.lineTop += (positioning.currentNestingInLine) * vertPadding;
@@ -630,7 +624,7 @@ public class SvgCodeRenderer
       positioning.maxNestingForLine--;
       
       String classList = "codetoken";
-      if (supplement.codeErrors.containsToken((Token)token))
+      if (supplement.codeErrors.containsToken(token))
         classList += " tokenError";
       if (currentTokenPos.isBetweenNullable(supplement.selectionStart, supplement.selectionEnd))
         classList += " tokenselected";
@@ -664,7 +658,7 @@ public class SvgCodeRenderer
       TokenRendererReturn returned = new TokenRendererReturn();
       boolean isFirstParameterNameOnLine = true;
       double maxX = positioning.x;
-      for (int n = 0; n < token.getNameParts().size(); n++)
+      for (int n = 0; n < token.contents.size(); n++)
       {
         boolean isParameterExpressionOnNewLine = false;
         double startParamX = positioning.x;
@@ -673,8 +667,8 @@ public class SvgCodeRenderer
 
         // Add some extra space at the end to make it easier to put
         // the cursor at the end of the last parameter
-        boolean addSpaceToEnd = (n == token.getNameParts().size() - 1)
-            && (token.getPostfix() == null || token.getPostfix().isEmpty());
+        boolean addSpaceToEnd = (n == token.contents.size() - 1)
+            && (token.postfix == null || token.postfix.isEmpty());
         
         // Try rendering three different ways
         
@@ -739,11 +733,11 @@ public class SvgCodeRenderer
       }
       // Handle any postfix for the token
 //      SpanElement endSpan = doc.createSpanElement();
-      if (token.getPostfix() != null && !token.getPostfix().isEmpty())
+      if (token.postfix != null && !token.postfix.isEmpty())
       {
         if (isFirstParameterNameOnLine)
           positioning.lineTop += vertPadding;
-        tokenText += layoutParameterTokenParameterName(token.getPostfix(), positioning, isFirstParameterNameOnLine,
+        tokenText += layoutParameterTokenParameterName(token.postfix, positioning, isFirstParameterNameOnLine,
             classList);
         isFirstParameterNameOnLine = false;
       }
@@ -784,8 +778,9 @@ public class SvgCodeRenderer
       toReturn.hitBox.children.set(SvgCodeRenderer.PARAMTOK_POS_EXPRS, exprHitBoxes);
       externalPositioning.x = startX + toReturn.width; 
       externalPositioning.lineBottom = Math.max(positioning.lineBottom, externalPositioning.lineBottom);
+      return null;
     }
-    private void layoutParameterTokenParameter(Token.TokenWithParameters token, Integer level, CodePosition currentTokenPos,
+    private void layoutParameterTokenParameter(ParameterToken token, Integer level, CodePosition currentTokenPos,
         String classList, TokenRendererReturn returned, boolean isFirstParameterNameOnLine, int paramIdx,
         TokenRendererPositioning paramNamePositioning, TokenRendererPositioning subpositioning, boolean isParameterExpressionOnNewLine,
         boolean addSpaceToEnd) {
@@ -794,7 +789,7 @@ public class SvgCodeRenderer
       double startNameX = paramNamePositioning.x;
       if (isFirstParameterNameOnLine)
         paramNamePositioning.lineTop += vertPadding;
-      String nameText = layoutParameterTokenParameterName(token.getNameParts().get(paramIdx), paramNamePositioning, isFirstParameterNameOnLine,
+      String nameText = layoutParameterTokenParameterName(token.contents.get(paramIdx), paramNamePositioning, isFirstParameterNameOnLine,
           classList) + "\n";
       paramNamePositioning.x += horzPadding;
       double nameMaxX = paramNamePositioning.x;
@@ -809,7 +804,7 @@ public class SvgCodeRenderer
         
       // Layout the expression part of the parameter
       double startExprX = subpositioning.x;
-      layoutParameterTokenParameterExpression(token.getParameters().get(paramIdx), subpositioning, currentTokenPos, level, paramIdx, addSpaceToEnd, returned);
+      layoutParameterTokenParameterExpression(token.parameters.get(paramIdx), subpositioning, currentTokenPos, level, paramIdx, addSpaceToEnd, returned);
       returned.svgString = nameText + returned.svgString;
       
       // Set a width for the parameter
@@ -848,13 +843,6 @@ public class SvgCodeRenderer
       currentTokenPos.setMaxOffset(level + 1);
     }
 
-    @Override
-    public Void visitParameterOneBlockToken(ParameterOneBlockToken token, TokenRendererReturn toReturn, TokenRendererPositioning externalPositioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
-    {
-      visitTokenWithParameters(token, toReturn, externalPositioning, level, currentTokenPos);
-      return null;
-    }
-    
     @Override
     public Void visitWideToken(WideToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {

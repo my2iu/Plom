@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
-import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -157,11 +156,6 @@ public class PlomTextWriter
         return null;
       }
 
-      @Override public Void visitParameterOneBlockToken(ParameterOneBlockToken token) throws IOException
-      {
-        throw new IllegalArgumentException("Not implemented yet");
-      }
-      
       @Override public Void visitWideToken(WideToken token) throws IOException
       {
         out.token(symbolTokenMap.get(token.getType()));

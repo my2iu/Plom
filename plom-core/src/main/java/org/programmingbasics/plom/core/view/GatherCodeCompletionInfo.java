@@ -86,8 +86,6 @@ public class GatherCodeCompletionInfo
             CodeCompletionContext param1) { return null; }
         @Override public Void visitParameterToken(ParameterToken token,
             CodeCompletionContext param1) { return null; }
-        @Override public Void visitParameterOneBlockToken(Token.ParameterOneBlockToken token,
-            CodeCompletionContext param1) { return null; }
         @Override public Void visitWideToken(WideToken token,
             CodeCompletionContext param1) { return null; }
         @Override public Void visitOneBlockToken(OneBlockToken token,
