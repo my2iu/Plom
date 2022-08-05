@@ -7,6 +7,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
@@ -54,18 +55,32 @@ public class CodeNestingCounter
       return 1;
     }
 
-    @Override public Integer visitParameterToken(ParameterToken token)
+    private int visitTokenWithParameters(Token.TokenWithParameters token)
     {
       int nesting = 0;
-      if (!token.parameters.isEmpty())
+      if (!token.getParameters().isEmpty())
         nesting = 1;
-      for (TokenContainer expr: token.parameters)
+      for (TokenContainer expr: token.getParameters())
       {
         nesting = Math.max(nesting, nestingCounter.calculateNestingForLine(expr));
       }
       return nesting + 1;
     }
+    
+    @Override public Integer visitParameterToken(ParameterToken token)
+    {
+      int nesting = visitTokenWithParameters(token);
+      return nesting;
+    }
 
+    @Override public Integer visitParameterOneBlockToken(ParameterOneBlockToken token)
+    {
+      int nesting = visitTokenWithParameters(token);
+      if (token.block != null)
+        nestingCounter.calculateNestingForStatements(token.block);
+      return nesting;
+    }
+    
     Integer visitWideToken(WideToken token, TokenContainer exprContainer,
         StatementContainer blockContainer)
     {

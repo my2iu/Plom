@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
@@ -88,6 +89,7 @@ public class LL1Parser implements TokenVisitor<Void>
 
   @Override public Void visitSimpleToken(SimpleToken token) { return visitSymbol(token.type); }
   @Override public Void visitParameterToken(ParameterToken token) { return visitSymbol(token.type); }
+  @Override public Void visitParameterOneBlockToken(ParameterOneBlockToken token) { return visitSymbol(token.type); }
   @Override public Void visitWideToken(WideToken token) { return visitSymbol(token.type); }
   @Override public Void visitOneBlockToken(OneBlockToken token) { return visitSymbol(token.type); }
   @Override public Void visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) { return visitSymbol(token.type); }

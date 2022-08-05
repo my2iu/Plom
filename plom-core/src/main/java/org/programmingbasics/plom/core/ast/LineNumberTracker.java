@@ -5,9 +5,12 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.WideToken;
+
+import elemental.client.Browser;
 
 /**
  * Assigns line numbers to some code so that better error 
@@ -77,6 +80,18 @@ public class LineNumberTracker
       return startLine;
     }
 
+    @Override public Integer visitParameterOneBlockToken(ParameterOneBlockToken token, Integer startLine)
+    {
+      Browser.getWindow().getConsole().log("Line numbers not being calculated correctly here yet");
+      for (TokenContainer expr: token.parameters)
+      {
+        lineTracker.calculateLineNumbersForLine(expr, startLine);
+      }
+      if (token.block != null)
+        return lineTracker.calculateLineNumbersForStatements(token.block, startLine + 1);
+      return startLine;
+    }
+    
     Integer visitWideToken(WideToken token, TokenContainer exprContainer,
         StatementContainer blockContainer, int lineNo)
     {

@@ -99,9 +99,17 @@ public abstract class Token
       }
    }
    
+   public static interface TokenWithParameters
+   {
+     public List<TokenContainer> getParameters();
+     public List<String> getNameParts();
+     public String getPostfix();
+     public void setNamePartsAndPostfix(List<String> contents, String postfix);
+   }
+   
    // Token that may have parameters for it (used for variable identifiers
    // and method calls)
-   public static class ParameterToken extends Token implements TokenWithSymbol, TokenWithEditableTextContent
+   public static class ParameterToken extends Token implements TokenWithSymbol, TokenWithEditableTextContent, TokenWithParameters
    {
      public List<String> contents;
      public String postfix;
@@ -145,12 +153,7 @@ public abstract class Token
      }
      public void setContents(List<String> contents, String postfix)
      {
-       this.contents = contents;
-       this.postfix = postfix;
-       while (parameters.size() < contents.size())
-         parameters.add(new TokenContainer());
-       while (parameters.size() > contents.size())
-         parameters.remove(parameters.size() - 1);
+       setNamePartsAndPostfix(contents, postfix);
      }
      public String getLookupName()
      {
@@ -174,6 +177,18 @@ public abstract class Token
      }
      @Override public Symbol getType() { return type; }
      @Override public String getTextContent() { return String.join("", contents) + postfix; }
+     @Override public List<String> getNameParts() { return contents; }
+     @Override public List<TokenContainer> getParameters() { return parameters; }
+     @Override public String getPostfix() { return postfix; }
+     @Override public void setNamePartsAndPostfix(List<String> contents, String postfix)
+     {
+       this.contents = contents;
+       this.postfix = postfix;
+       while (parameters.size() < contents.size())
+         parameters.add(new TokenContainer());
+       while (parameters.size() > contents.size())
+         parameters.remove(parameters.size() - 1);
+     }
      public static List<String> splitVarAtColons(String val)
      {
        if (!val.contains(":"))
@@ -265,6 +280,195 @@ public abstract class Token
      }
    }
 
+   /**
+    * Not sure where to classify this yet in the hierarchy, but this is a parameter token with a block of code 
+    * inside of it as well (used for function literals)
+    */
+   public static class ParameterOneBlockToken extends Token implements TokenWithSymbol, TokenWithEditableTextContent, TokenWithParameters
+   {
+     public List<String> contents;
+     public String postfix;
+     public final Symbol type;
+     public List<TokenContainer> parameters;
+     public StatementContainer block = new StatementContainer();
+     public ParameterOneBlockToken(List<String> contents, String postfix, Symbol type, StatementContainer block)
+     {
+        this.contents = contents;
+        parameters = new ArrayList<>();
+        for (int n = 0; n < contents.size(); n++)
+          parameters.add(new TokenContainer());
+        this.postfix = postfix;
+        this.type = type;
+        this.block = block;
+     }
+     @Override public ParameterOneBlockToken copy()
+     {
+       ParameterOneBlockToken token = new ParameterOneBlockToken(contents, postfix, type, block);
+       for (int n = 0; n < parameters.size(); n++)
+         token.parameters.set(n, parameters.get(n).copy());
+       return token;
+     }
+//     public static ParameterToken fromPartsWithoutPostfix(List<String> nameParts, Symbol type, List<TokenContainer> params)
+//     {
+//       ParameterToken token;
+//       if (nameParts.size() == 1 && !nameParts.get(0).endsWith(":") && !nameParts.get(0).endsWith(" \u2192"))
+//         token = new ParameterToken(Collections.emptyList(), nameParts.get(0), type);
+//       else
+//         token = new ParameterToken(nameParts, "", type);
+//       for (int n = 0; n < params.size(); n++)
+//         token.parameters.set(n, params.get(n));
+//       return token;
+//     }
+//     public static ParameterToken fromContents(String name, Symbol type, TokenContainer... params)
+//     {
+//       List<String> parts = splitVarAtColons(name);
+//       String postfix = splitVarAtColonsForPostfix(name);
+//       ParameterToken tok = new ParameterToken(parts, postfix, type);
+//       for (int n = 0; n < params.length; n++)
+//         tok.parameters.set(n, params[n]);
+//       return tok;
+//     }
+//     public void setContents(List<String> contents, String postfix)
+//     {
+//       this.contents = contents;
+//       this.postfix = postfix;
+//       while (parameters.size() < contents.size())
+//         parameters.add(new TokenContainer());
+//       while (parameters.size() > contents.size())
+//         parameters.remove(parameters.size() - 1);
+//     }
+//     public String getLookupName()
+//     {
+//       switch(type)
+//       {
+//         case FunctionType:
+//         {
+//           if (contents.isEmpty())
+//             return postfix.substring(2);
+//           return (String.join("", contents) + postfix).substring(2);
+//           
+//         }
+//         case AtType:
+//         default:
+//         {
+//           if (contents.isEmpty())
+//             return postfix.substring(1);
+//           return (String.join("", contents) + postfix).substring(1);
+//         }
+//       }
+//     }
+     @Override public Symbol getType() { return type; }
+     @Override public String getTextContent() { return String.join("", contents) + postfix; }
+     @Override public List<TokenContainer> getParameters() { return parameters; }
+     @Override public List<String> getNameParts() { return contents; }
+     @Override public String getPostfix() { return postfix; }
+     @Override public void setNamePartsAndPostfix(List<String> contents, String postfix)
+     {
+       this.contents = contents;
+       this.postfix = postfix;
+       while (parameters.size() < contents.size())
+         parameters.add(new TokenContainer());
+       while (parameters.size() > contents.size())
+         parameters.remove(parameters.size() - 1);
+     }
+//     public static List<String> splitVarAtColons(String val)
+//     {
+//       if (!val.contains(":"))
+//         return new ArrayList<>();
+//       List<String> params = new ArrayList<>();
+//       while (val.indexOf(':') >= 0)
+//       {
+//         params.add(val.substring(0, val.indexOf(':') + 1));
+//         val = val.substring(val.indexOf(':') + 1);
+//       }
+//       if (!val.isEmpty())
+//         params.add(val);
+//       return params;
+//     }
+//     public static String splitVarAtColonsForPostfix(String val)
+//     {
+//       if (!val.contains(":"))
+//         return val;
+//       return "";
+//     }
+     public <S> S visit(TokenVisitor<S> visitor)
+     {
+        return visitor.visitParameterOneBlockToken(this);
+     }
+     public <S, T> S visit(TokenVisitor1<S, T> visitor, T param1)
+     {
+        return visitor.visitParameterOneBlockToken(this, param1);
+     }
+     public <S, T, U> S visit(TokenVisitor2<S, T, U> visitor, T param1, U param2)
+     {
+        return visitor.visitParameterOneBlockToken(this, param1, param2);
+     }
+     public <S, T, U, V> S visit(TokenVisitor3<S, T, U, V> visitor, T param1, U param2, V param3)
+     {
+        return visitor.visitParameterOneBlockToken(this, param1, param2, param3);
+     }
+     public <S, T, U, V, E extends Throwable> S visit(TokenVisitor3Err<S, T, U, V, E> visitor, T param1, U param2, V param3) throws E
+     {
+        return visitor.visitParameterOneBlockToken(this, param1, param2, param3);
+     }
+     public <S, T, U, V, W> S visit(TokenVisitor4<S, T, U, V, W> visitor, T param1, U param2, V param3, W param4)
+     {
+        return visitor.visitParameterOneBlockToken(this, param1, param2, param3, param4);
+     }
+     public <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5)
+     {
+        return visitor.visitParameterOneBlockToken(this, param1, param2, param3, param4, param5);
+     }
+     public <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E
+     {
+       return visitor.visitParameterOneBlockToken(this);
+     }
+     @Override
+     public int hashCode()
+     {
+       final int prime = 31;
+       int result = 1;
+       result = prime * result + ((block == null) ? 0 : block.hashCode());
+       result = prime * result + ((contents == null) ? 0 : contents.hashCode());
+       result = prime * result
+           + ((parameters == null) ? 0 : parameters.hashCode());
+       result = prime * result + ((postfix == null) ? 0 : postfix.hashCode());
+       result = prime * result + ((type == null) ? 0 : type.hashCode());
+       return result;
+     }
+     @Override
+     public boolean equals(Object obj)
+     {
+       if (this == obj) return true;
+       if (obj == null) return false;
+       if (getClass() != obj.getClass()) return false;
+       ParameterOneBlockToken other = (ParameterOneBlockToken) obj;
+       if (block == null)
+       {
+         if (other.block != null) return false;
+       }
+       else if (!block.equals(other.block)) return false;
+       if (contents == null)
+       {
+         if (other.contents != null) return false;
+       }
+       else if (!contents.equals(other.contents)) return false;
+       if (parameters == null)
+       {
+         if (other.parameters != null) return false;
+       }
+       else if (!parameters.equals(other.parameters)) return false;
+       if (postfix == null)
+       {
+         if (other.postfix != null) return false;
+       }
+       else if (!postfix.equals(other.postfix)) return false;
+       if (type != other.type) return false;
+       return true;
+     }
+   }
+
+   
    /** A token that is rendered to take up the full-width of the display */
    public static class WideToken extends Token implements TokenWithSymbol, TokenWithEditableTextContent
    {
@@ -555,6 +759,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token) throws E;
       public S visitParameterToken(ParameterToken token) throws E;
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token) throws E;
       public S visitWideToken(WideToken token) throws E;
       public S visitOneBlockToken(OneBlockToken token) throws E;
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token) throws E;
@@ -565,6 +770,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token);
       public S visitParameterToken(ParameterToken token);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token);
       public S visitWideToken(WideToken token);
       public S visitOneBlockToken(OneBlockToken token);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token);
@@ -575,6 +781,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1);
       public S visitParameterToken(ParameterToken token, T param1);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1);
       public S visitWideToken(WideToken token, T param1);
       public S visitOneBlockToken(OneBlockToken token, T param1);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1);
@@ -585,6 +792,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2);
       public S visitParameterToken(ParameterToken token, T param1, U param2);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1, U param2);
       public S visitWideToken(WideToken token, T param1, U param2);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2);
@@ -594,6 +802,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3);
       public S visitParameterToken(ParameterToken token, T param1, U param2, V param3);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1, U param2, V param3);
       public S visitWideToken(WideToken token, T param1, U param2, V param3);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3);
@@ -603,6 +812,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3) throws E;
       public S visitParameterToken(ParameterToken token, T param1, U param2, V param3) throws E;
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1, U param2, V param3) throws E;
       public S visitWideToken(WideToken token, T param1, U param2, V param3) throws E;
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3) throws E;
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3) throws E;
@@ -612,6 +822,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3, W param4);
       public S visitParameterToken(ParameterToken token, T param1, U param2, V param3, W param4);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1, U param2, V param3, W param4);
       public S visitWideToken(WideToken token, T param1, U param2, V param3, W param4);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3, W param4);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4);
@@ -621,6 +832,7 @@ public abstract class Token
    {
       public S visitSimpleToken(SimpleToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitParameterToken(ParameterToken token, T param1, U param2, V param3, W param4, X param5);
+      public S visitParameterOneBlockToken(ParameterOneBlockToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitWideToken(WideToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitOneBlockToken(OneBlockToken token, T param1, U param2, V param3, W param4, X param5);
       public S visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, T param1, U param2, V param3, W param4, X param5);

@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterOneBlockToken;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.SimpleToken;
 import org.programmingbasics.plom.core.ast.Token.TokenVisitor;
@@ -56,6 +57,14 @@ public class LastPosition
         pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
         pos.setOffset(level + 1, token.parameters.size() - 1);
         lastPositionOfLine(token.parameters.get(token.parameters.size() - 1), pos, level + 2);
+        return true;
+      }
+      
+      @Override
+      public Boolean visitParameterOneBlockToken(ParameterOneBlockToken token)
+      {
+        pos.setOffset(level, CodeRenderer.PARAMTOK_POS_BLOCK);
+        lastPositionOfStatements(token.block, pos, level + 1);
         return true;
       }
       
