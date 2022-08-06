@@ -18,7 +18,8 @@ public class InsertToken
     TokenContainer line = stmtContainer.statements.get(pos.getOffset(level));
     if (!pos.hasOffset(level + 2) && !newToken.isWide() 
         && line.tokens.size() > pos.getOffset(level + 1)
-        && line.tokens.get(pos.getOffset(level + 1)).isWide())
+        && line.tokens.get(pos.getOffset(level + 1)).isWide()
+        && !line.tokens.get(pos.getOffset(level + 1)).canMixWithNonWide())
     {
       // Normal tokens cannot have a wide token following them on a line.
       // (It is ok if normal tokens have wide tokens in front of them though.)
@@ -33,7 +34,8 @@ public class InsertToken
       insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
       stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
     }
-    else if (!pos.hasOffset(level + 2) && newToken.isWide() 
+    else if (!pos.hasOffset(level + 2) && newToken.isWide()
+        && !newToken.canMixWithNonWide()
         && pos.getOffset(level + 1) - 1 < line.tokens.size()
         && pos.getOffset(level + 1) - 1 >= 0
         && !line.tokens.get(pos.getOffset(level + 1) - 1).isWide())

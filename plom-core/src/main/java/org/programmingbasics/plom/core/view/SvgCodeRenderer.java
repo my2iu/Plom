@@ -1430,8 +1430,24 @@ public class SvgCodeRenderer
       // to do this for all non-wide tokens
       if (isLastToken && addSpaceToEnd && tok instanceof Token.ParameterToken)
         subpositioning.lineEnd -= renderer.horzEndParamPadding;
+
+      // Wide tokens should always be at the start of a line, so force
+      // a wrap if necessary
+      if (tok.isWide() && !isStartOfLine)
+      {
+        // Start a new line and lay out the token again
+        positioning.newline();
+        positioning.x = positioning.wrapLineStart;
+        minX = Math.min(minX, positioning.x);
+        subpositioning.copyFrom(positioning);
+//        subpositioning.lineStart = positioning.x;
+        toReturn.wraps = true;
+        isStartOfLine = true;
+      }
+      // Try laying out the token
       tok.visit(renderer, returnedRenderedToken, subpositioning, level + 1, currentTokenPos, null);
       currentTokenPos.setMaxOffset(level + 1);
+      // If we have a parameter token that wraps, move it to a new line and lay it out again
       if (!tok.isWide())
       {
         // If requested, we can add some extra space that sticks to the end of the last token

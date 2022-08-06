@@ -17,6 +17,7 @@ public abstract class Token
    public abstract <S, T, U, V, W, X> S visit(TokenVisitor5<S, T, U, V, W, X> visitor, T param1, U param2, V param3, W param4, X param5);
    public abstract <S, E extends Throwable> S visit(TokenVisitorErr<S, E> visitor) throws E;
    public boolean isWide() { return false; }
+   public boolean canMixWithNonWide() { return true; }  // Wide tokens normally can't come after non-wide tokens (they need to be on a newline), except for function literals
    public abstract Token copy();
    
    public static interface TokenWithSymbol
@@ -275,7 +276,8 @@ public abstract class Token
          this.contents = contents;
          this.type = type;
       }
-      public boolean isWide() { return true; }
+      @Override public boolean isWide() { return true; }
+      @Override public boolean canMixWithNonWide() { return getType() == Symbol.FunctionLiteral; }
       @Override public Symbol getType() { return type; }
       @Override public String getTextContent() { return contents; }
       @Override public WideToken copy()
