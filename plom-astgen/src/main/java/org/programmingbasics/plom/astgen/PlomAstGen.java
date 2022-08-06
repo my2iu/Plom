@@ -103,6 +103,8 @@ public class PlomAstGen
       rule(ReturnStatement, Return, Expression),
       rule(ForExpression, DotDeclareIdentifier, VarType, In, Expression),
       rule(ForExpressionOnly, ForExpression, EndStatement),
+      rule(FunctionLiteralExpression, FunctionType),
+      rule(FunctionLiteralExpressionOnly, FunctionLiteralExpression, EndStatement),
 
       rule(FullVariableDeclaration, VariableDeclarationOrEmpty, EndStatement),
       rule(VariableDeclarationOrEmpty, VariableDeclaration),

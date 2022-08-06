@@ -106,6 +106,8 @@ public class GatherCodeCompletionInfo
         {
           if (originalToken.getType() == Symbol.COMPOUND_FOR)
             fromLine(exprContainer, Symbol.ForExpression, context, pos, level);
+          else if (originalToken.getType() == Symbol.FunctionLiteral)
+            fromLine(exprContainer, Symbol.FunctionLiteralExpression, context, pos, level);
           else
             fromLine(exprContainer, Symbol.Expression, context, pos, level);
           return null;

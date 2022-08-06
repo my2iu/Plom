@@ -88,6 +88,8 @@ public class ParseToAst
     node.internalChildren = new ArrayList<>();
     if (token.getType() == Symbol.COMPOUND_FOR)
       node.internalChildren.add(parseExpression(Symbol.ForExpression, token.expression.tokens, errorGatherer));
+    else if (token.getType() == Symbol.FunctionLiteral)
+      node.internalChildren.add(parseExpression(Symbol.FunctionLiteralExpression, token.expression.tokens, errorGatherer));
     else
       node.internalChildren.add(parseExpression(Symbol.Expression, token.expression.tokens, errorGatherer));
     if (errorGatherer != null)

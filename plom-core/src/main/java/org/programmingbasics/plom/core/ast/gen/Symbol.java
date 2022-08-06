@@ -42,6 +42,8 @@ public enum Symbol
 	SuperCallExpression,
 	ForExpression,
 	ForExpressionOnly,
+	FunctionLiteralExpression,
+	FunctionLiteralExpressionOnly,
 	EndStatement,
 	This,
 	Super,

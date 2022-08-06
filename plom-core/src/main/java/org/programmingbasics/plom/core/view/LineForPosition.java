@@ -47,6 +47,8 @@ public class LineForPosition
     {
       if (originalToken.getType() == Symbol.COMPOUND_FOR)
         return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, lineTracker);
+      else if (originalToken.getType() == Symbol.FunctionLiteral)
+        return inLine(exprContainer, Symbol.FunctionLiteralExpressionOnly, pos, level, lineTracker);
       else
         return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, lineTracker);
     }

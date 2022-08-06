@@ -109,6 +109,8 @@ public class RenderedTokenHitBox
     {
       if (originalToken.getType() == Symbol.COMPOUND_FOR)
         return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+      else if (originalToken.getType() == Symbol.FunctionLiteral)
+        return inLine(exprContainer, Symbol.FunctionLiteralExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
       else
         return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
     }

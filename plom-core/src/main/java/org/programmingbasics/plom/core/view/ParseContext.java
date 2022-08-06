@@ -58,6 +58,8 @@ public class ParseContext
     {
       if (originalToken.getType() == Symbol.COMPOUND_FOR)
         return findPredictiveParseContextForLine(exprContainer, Symbol.ForExpressionOnly, pos, level);
+      else if (originalToken.getType() == Symbol.FunctionLiteral)
+        return findPredictiveParseContextForLine(exprContainer, Symbol.FunctionLiteralExpressionOnly, pos, level);
       else
         return findPredictiveParseContextForLine(exprContainer, Symbol.ExpressionOnly, pos, level);
     }

@@ -42,6 +42,8 @@ enum Symbol
   SuperCallExpression(false),
   ForExpression(false),
   ForExpressionOnly(false),
+  FunctionLiteralExpression(false),
+  FunctionLiteralExpressionOnly(false),
   EndStatement(true),
   This(true),
   Super(true),

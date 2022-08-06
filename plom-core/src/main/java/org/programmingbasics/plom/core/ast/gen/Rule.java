@@ -81,6 +81,8 @@ public class Rule
 	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
 	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression);
 	public final static List<Symbol> ForExpressionOnly_ForExpression_EndStatement = Arrays.asList(Symbol.ForExpressionOnly, Symbol.ForExpression, Symbol.EndStatement);
+	public final static List<Symbol> FunctionLiteralExpression_FunctionType = Arrays.asList(Symbol.FunctionLiteralExpression, Symbol.FunctionType);
+	public final static List<Symbol> FunctionLiteralExpressionOnly_FunctionLiteralExpression_EndStatement = Arrays.asList(Symbol.FunctionLiteralExpressionOnly, Symbol.FunctionLiteralExpression, Symbol.EndStatement);
 	public final static List<Symbol> FullVariableDeclaration_VariableDeclarationOrEmpty_EndStatement = Arrays.asList(Symbol.FullVariableDeclaration, Symbol.VariableDeclarationOrEmpty, Symbol.EndStatement);
 	public final static List<Symbol> VariableDeclarationOrEmpty_VariableDeclaration = Arrays.asList(Symbol.VariableDeclarationOrEmpty, Symbol.VariableDeclaration);
 	public final static List<Symbol> VariableDeclarationOrEmpty = Arrays.asList(Symbol.VariableDeclarationOrEmpty);
