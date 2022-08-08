@@ -911,7 +911,8 @@ public class SvgCodeRenderer
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
         classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
 
-      final double startX = positioning.x;
+      final double tokenStartX = positioning.x;
+      final double startX = tokenStartX;
       final double startY = positioning.lineTop;
       positioning.x += horzPadding;
       String wideSvg = "";
@@ -986,7 +987,7 @@ public class SvgCodeRenderer
         toReturn.reset();
 //        TokenRendererPositioning subPositioning = positioning.copy();
         double oldLineStart = positioning.lineStart;
-        double indentedLineStart = positioning.lineStart + INDENT;
+        double indentedLineStart = tokenStartX + INDENT;
         positioning.x = positioning.lineStart = indentedLineStart;
         positioning.wrapLineStart = positioning.lineStart + WRAP_INDENT;
         currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
@@ -1002,8 +1003,20 @@ public class SvgCodeRenderer
         positioning.newline();
         double endBracketY = positioning.lineTop + vertPadding + textHeight; 
         positioning.maxBottom(minLineHeight());
-        endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "' class='" + classList + "'>}</text>"; 
-        positioning.newline();
+        endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "' class='" + classList + "'>}</text>";
+        if (!token.canMixWithNonWide())
+        {
+          positioning.newline();
+        }
+        else
+        {
+          // With function literals, they appear in expressions, so
+          // don't immediately start a new line after the token, but
+          // let the line/expression layout code start a new line if 
+          // necessary
+          toReturn.wraps = true;
+          positioning.x = indentedLineStart; 
+        }
         blockHitBox = toReturn.hitBox;
       }
       
@@ -1030,7 +1043,9 @@ public class SvgCodeRenderer
       hitBox.children.set(EXPRBLOCK_POS_EXPR, exprHitBox);
       hitBox.children.set(EXPRBLOCK_POS_BLOCK, blockHitBox);
       
-      positioning.addSpaceBetweenLines();
+      
+      if (!token.canMixWithNonWide())
+        positioning.addSpaceBetweenLines();
 
       
 //      positioning.newline();
@@ -1486,6 +1501,16 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString + "\n";
         else
           toReturn.svgString += returnedRenderedToken.svgString;
+      }
+      
+      if (tok.isWide() && tok.canMixWithNonWide() && !isLastToken)
+      {
+        // Wide tokens should not have tokens come after it on the same line
+        positioning.newline();
+        positioning.x = positioning.wrapLineStart;
+        minX = Math.min(minX, positioning.x);
+        toReturn.wraps = true;
+        isStartOfLine = true;
       }
 //      toReturn.width = Math.max(toReturn.width, returnedRenderedToken.width);
       maxX = Math.max(returnedRenderedToken.hitBox.x + returnedRenderedToken.hitBox.width, maxX);
