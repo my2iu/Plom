@@ -670,4 +670,41 @@ public class SvgCodeRendererTest extends TestCase
     // To test:
     //   placement of extra space after last parameter expression and how it wraps
   }
+  
+  @Test
+  public void testFunctionLiteral()
+  {
+    // Tests a function literal (i.e. a wide token that can be mixed in with non-wide tokens in an expression)
+    StatementContainer codeList = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("\u03bb", Symbol.FunctionLiteral)
+            // Despite being a wide token, there should be no empty line afterwards
+            ),            
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number),
+            // Should wrap and indent to the next line
+            new Token.OneExpressionOneBlockToken("\u03bb", Symbol.FunctionLiteral),
+            // Subsequent tokens should also appear on their own line and wrap
+            new Token.SimpleToken("1", Symbol.Number)
+            )            
+        );
+    SvgCodeRenderer.TokenRendererReturn returned = renderPlain(codeList, THIN_CANVAS_WIDTH);
+    Assert.assertEquals("<path d='M0.0 0.0 l 70.0 0 l 0 18.0 l -50.0 0 L 20.0 54.0 L 0.0 54.0 z' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>λ</text><text x='55.0' y='13.0' class='codetoken'>{</text><rect x='20.0' y='3.0' width='30' height='12' class='fillinblank'/>\n" + 
+        "<path d=\"M20.0 15.0 l30 0\" class=\"wideexpressionslot\"/>\n" + 
+        "<text x='5.0' y='49.0' class='codetoken'>}</text>\n" + 
+        "<rect x='0.0' y='54.0' width='20.0' height='18' class='codetoken'/><text x='5.0' y='67.0' class='codetoken'>1</text>\n" + 
+        "<path d='M40.0 72.0 l 70.0 0 l 0 18.0 l -50.0 0 L 60.0 126.0 L 40.0 126.0 z' class='codetoken'/><text x='45.0' y='85.0' class='codetoken'>λ</text><text x='95.0' y='85.0' class='codetoken'>{</text><rect x='60.0' y='75.0' width='30' height='12' class='fillinblank'/>\n" + 
+        "<path d=\"M60.0 87.0 l30 0\" class=\"wideexpressionslot\"/>\n" + 
+        "<text x='45.0' y='121.0' class='codetoken'>}</text>\n" + 
+        "<rect x='40.0' y='126.0' width='20.0' height='12' class='codetoken'/><text x='45.0' y='136.0' class='codetoken'>1</text>\n" + 
+        "", returned.svgString);
+    // Hitbox for the cursor position at the end of the function literal 
+    // (unlike normal wide tokens where the hitbox refers to the blank line 
+    // after the token, the hitbox for the function literal should refer to the space after the '}' )
+    RenderedHitBox endHitBox = returned.hitBox.children.get(0).children.get(1);
+    Assert.assertEquals(36, endHitBox.getOffsetTop());
+    Assert.assertEquals(20, endHitBox.getOffsetLeft());
+    Assert.assertEquals(0, endHitBox.getOffsetWidth());
+    Assert.assertEquals(18, endHitBox.getOffsetHeight());
+  }
 }

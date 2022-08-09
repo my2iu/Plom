@@ -16,10 +16,9 @@ public class InsertToken
       stmtContainer.statements.add(new TokenContainer(Collections.emptyList()));
     }
     TokenContainer line = stmtContainer.statements.get(pos.getOffset(level));
-    if (!pos.hasOffset(level + 2) && !newToken.isWide() 
+    if (!pos.hasOffset(level + 2) && newToken.isInline() 
         && line.tokens.size() > pos.getOffset(level + 1)
-        && line.tokens.get(pos.getOffset(level + 1)).isWide()
-        && !line.tokens.get(pos.getOffset(level + 1)).canMixWithNonWide())
+        && !line.tokens.get(pos.getOffset(level + 1)).isInline())
     {
       // Normal tokens cannot have a wide token following them on a line.
       // (It is ok if normal tokens have wide tokens in front of them though.)
@@ -34,11 +33,10 @@ public class InsertToken
       insertTokenIntoLine(line, newToken, pos, level + 1, advanceCursorPos);
       stmtContainer.statements.add(pos.getOffset(level) + 1, newline);
     }
-    else if (!pos.hasOffset(level + 2) && newToken.isWide()
-        && !newToken.canMixWithNonWide()
+    else if (!pos.hasOffset(level + 2) && !newToken.isInline()
         && pos.getOffset(level + 1) - 1 < line.tokens.size()
         && pos.getOffset(level + 1) - 1 >= 0
-        && !line.tokens.get(pos.getOffset(level + 1) - 1).isWide())
+        && line.tokens.get(pos.getOffset(level + 1) - 1).isInline())
     {
       // Make sure we aren't inserting a wide token after a non-wide token
       TokenContainer newline = new TokenContainer(line.tokens.subList(pos.getOffset(level + 1), line.tokens.size()));

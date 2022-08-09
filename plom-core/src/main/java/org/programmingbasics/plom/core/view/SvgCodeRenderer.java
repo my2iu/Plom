@@ -1004,7 +1004,7 @@ public class SvgCodeRenderer
         double endBracketY = positioning.lineTop + vertPadding + textHeight; 
         positioning.maxBottom(minLineHeight());
         endBracketSvg = "<text x='" + (startX + horzPadding) + "' y='" + (endBracketY) + "' class='" + classList + "'>}</text>";
-        if (!token.canMixWithNonWide())
+        if (!token.isInline())
         {
           positioning.newline();
         }
@@ -1044,7 +1044,7 @@ public class SvgCodeRenderer
       hitBox.children.set(EXPRBLOCK_POS_BLOCK, blockHitBox);
       
       
-      if (!token.canMixWithNonWide())
+      if (!token.isInline())
         positioning.addSpaceBetweenLines();
 
       
@@ -1503,7 +1503,7 @@ public class SvgCodeRenderer
           toReturn.svgString += returnedRenderedToken.svgString;
       }
       
-      if (tok.isWide() && tok.canMixWithNonWide() && !isLastToken)
+      if (tok.isWide() && tok.isInline() && !isLastToken)
       {
         // Wide tokens should not have tokens come after it on the same line
         positioning.newline();
@@ -1558,7 +1558,7 @@ public class SvgCodeRenderer
     {
 //      positioning.maxBottom(renderer.minLineHeight());
       hitBox.children.add(RenderedHitBox.forRectangle(
-          positioning.lineStart, positioning.lineTop, 
+          positioning.x, positioning.lineTop, 
           0, positioning.lineBottom - positioning.lineTop));
 //      subdiv = doc.createDivElement();
 //      div.appendChild(subdiv);

@@ -42,6 +42,18 @@ public class TokenContainer
      if (tokens.isEmpty()) return false;
      return !tokens.get(tokens.size() - 1).isWide();
    }
+
+   public boolean endsWithInlineToken()
+   {
+     if (tokens.isEmpty()) return false;
+     return tokens.get(tokens.size() - 1).isInline();
+   }
+
+   public boolean endsWithNonInlineToken()
+   {
+     if (tokens.isEmpty()) return false;
+     return !tokens.get(tokens.size() - 1).isInline();
+   }
    
   @Override
   public int hashCode()
