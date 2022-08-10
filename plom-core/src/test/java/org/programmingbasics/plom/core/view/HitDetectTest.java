@@ -159,6 +159,17 @@ public class HitDetectTest extends TestCase
     Assert.assertEquals(0, newPos.getOffset(3));
     Assert.assertEquals(1, newPos.getOffset(4));
 
+    // Clicking on the "}" of the "if"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(3, 100, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(4));
+    Assert.assertFalse(newPos.hasOffset(5));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(0, newPos.getOffset(1));
+    Assert.assertEquals(2, newPos.getOffset(2));
+    Assert.assertEquals(0, newPos.getOffset(3));
+    Assert.assertEquals(2, newPos.getOffset(4));
+    
     // Clicking on the statement following the "if"
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(3, 120, container, hitBoxes, newPos, 0);
@@ -175,7 +186,104 @@ public class HitDetectTest extends TestCase
     Assert.assertEquals(1, newPos.getOffset(0));
     Assert.assertEquals(2, newPos.getOffset(1));
   }
-  
+
+  @Test
+  public void testInlineBlockToken()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(new Token.SimpleToken("Z", Symbol.Number)),
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("\u03bb", Symbol.FunctionLiteral, 
+                    new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
+                    new StatementContainer(
+                        new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number)))
+                ),
+                new Token.WideToken("comment", Symbol.DUMMY_COMMENT)
+            )
+        );
+    RenderedHitBox hitBoxes = new MockHitBox(-1, -1, -1, -1,
+        new MockHitBox(0, 0, 202, 26,
+            new MockHitBox(0, 0, 18, 26)  // Z
+        ),
+        new MockHitBox(0, 26, 202, 132,
+            new MockHitBox(0, 26, 202, 79,  // lambda
+                new MockHitBox(4, 35, 19, 17),
+                new MockHitBox(23, 35, 20, 17,
+                    new MockHitBox(23, 31, 20, 26)),  // A
+                new MockHitBox(4, 57, 194, 26,
+                    new MockHitBox(20, 57, 177, 26,
+                        new MockHitBox(20, 57, 16, 26),  // 1
+                        new MockHitBox(37, 57, 17, 26)   // 2
+                        ))
+            ),
+            new MockHitBox(0, 106, 202, 27,
+                new MockHitBox(4, 110, 45, 17),  // Comment
+                null, null)
+        ));
+
+    // Clicking before the "lambda"
+    CodePosition newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(-1, 30, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(1));
+    Assert.assertFalse(newPos.hasOffset(2));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(0, newPos.getOffset(1));
+
+    // Clicking on front part of the "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(10, 30, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(1));
+    Assert.assertFalse(newPos.hasOffset(2));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(0, newPos.getOffset(1));
+    
+    // Clicking on expression part of "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(25, 30, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(3));
+    Assert.assertFalse(newPos.hasOffset(4));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(0, newPos.getOffset(1));
+    Assert.assertEquals(1, newPos.getOffset(2));
+    Assert.assertEquals(0, newPos.getOffset(3));
+    
+    // Clicking inside the block part of "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(40, 60, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(4));
+    Assert.assertFalse(newPos.hasOffset(5));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(0, newPos.getOffset(1));
+    Assert.assertEquals(2, newPos.getOffset(2));
+    Assert.assertEquals(0, newPos.getOffset(3));
+    Assert.assertEquals(1, newPos.getOffset(4));
+
+    // Clicking on the "}" of the "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(3, 100, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(1));
+    Assert.assertFalse(newPos.hasOffset(2));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(1, newPos.getOffset(1));
+    
+    // Clicking on the statement following the "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(3, 120, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(1));
+    Assert.assertFalse(newPos.hasOffset(2));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(1, newPos.getOffset(1));
+    
+    // Clicking after the statement following the "lambda"
+    newPos = new CodePosition();
+    newPos = HitDetect.hitDetectStatementContainer(3, 140, container, hitBoxes, newPos, 0);
+    Assert.assertTrue(newPos.hasOffset(1));
+    Assert.assertFalse(newPos.hasOffset(2));
+    Assert.assertEquals(1, newPos.getOffset(0));
+    Assert.assertEquals(2, newPos.getOffset(1));
+  }
+
   @Test
   public void testOneLineParameterToken()
   {

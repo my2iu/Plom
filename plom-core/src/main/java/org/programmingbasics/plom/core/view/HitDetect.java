@@ -181,7 +181,16 @@ public class HitDetect
         OneExpressionOneBlockToken token, Integer x,
         Integer y, RenderedHitBox hitBox)
     {
-      return hitDetectWideToken(x, y, hitBox);
+      TokenHitLocation toReturn = hitDetectWideToken(x, y, hitBox);
+      // Since function literals are wide tokens that are inline, there is
+      // no extra line after the wide token, so if you click on the "}" at
+      // the end of the token, it should count as being after the token (because
+      // that's the only way to get a cursor position there)
+      if (token.isInline() && toReturn == TokenHitLocation.ON
+          && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop()
+          + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetHeight())
+        return TokenHitLocation.AFTER;
+      return toReturn;
     }
     
   }
