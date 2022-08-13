@@ -155,6 +155,7 @@ public enum Symbol
 	public boolean isWide()
 	{
 		switch(this) {
+		case FunctionLiteral:
 		case DUMMY_COMMENT:
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:

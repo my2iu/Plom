@@ -117,6 +117,7 @@ enum Symbol
   }
   boolean isWide()
   {
-    return this == DUMMY_COMMENT || name().startsWith("COMPOUND_");
+    return this == DUMMY_COMMENT || this == FunctionLiteral
+        || name().startsWith("COMPOUND_");
   }
 }

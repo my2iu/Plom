@@ -424,7 +424,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
       case FunctionType: text = "f@"; buttonText = "\u0192@"; break;
-      case FunctionLiteral: text = "\u03bb"; break;
+      case FunctionLiteral: text = "lambda"; buttonText = "\u03bb"; break;
       case This: text = "this"; break;
       case Super: text = "super"; break;
       case TrueLiteral: text = "true"; break;
@@ -714,7 +714,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         initialValue = initialValue.substring(0, initialValue.length() - 2);
       else if (initialValue.endsWith("\u2192"))
         initialValue = initialValue.substring(0, initialValue.length() - 1);
-      focus.showSimpleEntryFor("\u0192@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showSimpleEntryFor("\u0192@", "f@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:

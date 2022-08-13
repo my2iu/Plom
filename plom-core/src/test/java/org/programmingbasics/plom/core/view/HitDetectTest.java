@@ -194,7 +194,7 @@ public class HitDetectTest extends TestCase
         new StatementContainer(
             new TokenContainer(new Token.SimpleToken("Z", Symbol.Number)),
             new TokenContainer(
-                new Token.OneExpressionOneBlockToken("\u03bb", Symbol.FunctionLiteral, 
+                new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral, 
                     new TokenContainer(new Token.SimpleToken("A", Symbol.Number)),
                     new StatementContainer(
                         new TokenContainer(new Token.SimpleToken("1", Symbol.Number), new Token.SimpleToken("2", Symbol.Number)))

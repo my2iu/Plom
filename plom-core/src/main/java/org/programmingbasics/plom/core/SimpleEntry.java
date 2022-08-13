@@ -32,6 +32,7 @@ public class SimpleEntry
   InputCallback<Token> callback;
   BackspaceAllCallback backspaceCallback;
   String tokenPrefix = "";
+  String tokenDisplayPrefix = "";  // Prefix that is shown in the UI (may be different than the prefix that is prepended to the token)
   String tokenPostfix = "";
   Suggester suggester;
   boolean isEdit;
@@ -221,23 +222,30 @@ public class SimpleEntry
   
   <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
+    showFor(prefix, prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
+        (InputElement)container.querySelector("input"),
+        (TextAreaElement)container.querySelector("textarea"));
+  }
+
+  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  {
+    showFor(displayPrefix, prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
   <U extends Token> void showMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
-    showFor(prefix, postfix, prompt, initialValue, token, isEdit, null, callback, bkspCallback,
+    showFor(prefix, prefix, postfix, prompt, initialValue, token, isEdit, null, callback, bkspCallback,
         (TextAreaElement)container.querySelector("textarea"),
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {
-      container.querySelector("span.prefix").setTextContent(prefix);
+      container.querySelector("span.prefix").setTextContent(displayPrefix);
       container.querySelector("span.postfix").setTextContent(postfix);
     }
     else
@@ -258,6 +266,7 @@ public class SimpleEntry
     forInput.focus();
     simpleEntryToken = token;
     this.tokenPrefix = prefix;
+    this.tokenDisplayPrefix = displayPrefix;
     this.tokenPostfix = postfix;
     this.isEdit = isEdit;
     this.suggester = suggester;

@@ -99,6 +99,17 @@ public class CodeWidgetInputPanels
     simpleEntry.showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback);
   }
 
+  <U extends Token> void showSimpleEntryFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  {
+    // A simple entry is triggered from the choices div, and the choices div
+    // automatically shows the cursor overlay, so the only visibility that
+    // needs to change when starting up the simpleEntry is to hide the
+    // choices div
+    hideChoicesDiv();
+
+    simpleEntry.showFor(displayPrefix, prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback);
+  }
+
   <U extends Token> void showSimpleEntryMultilineFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     // A simple entry is triggered from the choices div, and the choices div

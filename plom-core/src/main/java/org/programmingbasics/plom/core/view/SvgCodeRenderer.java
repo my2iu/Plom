@@ -789,7 +789,10 @@ public class SvgCodeRenderer
       double startNameX = paramNamePositioning.x;
       if (isFirstParameterNameOnLine)
         paramNamePositioning.lineTop += vertPadding;
-      String nameText = layoutParameterTokenParameterName(token.contents.get(paramIdx), paramNamePositioning, isFirstParameterNameOnLine,
+      String paramName = token.contents.get(paramIdx);
+      if (token.getType() == Symbol.FunctionType && paramName.startsWith("f@"))
+        paramName = "\u0192@" + paramName.substring(2);
+      String nameText = layoutParameterTokenParameterName(paramName, paramNamePositioning, isFirstParameterNameOnLine,
           classList) + "\n";
       paramNamePositioning.x += horzPadding;
       double nameMaxX = paramNamePositioning.x;
@@ -895,7 +898,10 @@ public class SvgCodeRenderer
     public Void visitOneExpressionOneBlockToken(
         OneExpressionOneBlockToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
-      createWideToken(token, token.contents, token.expression, token.block, toReturn, positioning, level, currentTokenPos);
+      String tokenContents = token.contents;
+      if (token.getType() == Symbol.FunctionLiteral && tokenContents.equals("lambda"))
+        tokenContents = "\u03bb";
+      createWideToken(token, tokenContents, token.expression, token.block, toReturn, positioning, level, currentTokenPos);
       return null;
     }
     private void createWideToken(Token token, String tokenText, TokenContainer exprContainer,
