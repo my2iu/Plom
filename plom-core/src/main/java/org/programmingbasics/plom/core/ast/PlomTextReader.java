@@ -369,7 +369,8 @@ public class PlomTextReader
         lexer.swallowOptionalNewlineToken();
         StatementContainer block = readStatementContainer(lexer);
         lexer.expectToken("}");
-        lexer.swallowOptionalNewlineToken();
+        if (!sym.isInline())
+          lexer.swallowOptionalNewlineToken();
         return new Token.OneExpressionOneBlockToken(peek, sym, expression, block);
       }
       case COMPOUND_ELSE:

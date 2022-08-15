@@ -167,4 +167,104 @@ public enum Symbol
 			return false;
 		}
 	}
+	public boolean isInline()
+	{
+		switch(this) {
+		case EMPTY:
+		case FullStatement:
+		case Statement:
+		case StatementOrEmpty:
+		case StatementNoComment:
+		case StatementNoCommentOrEmpty:
+		case WideStatement:
+		case OptionalComment:
+		case AfterIf:
+		case IfMore:
+		case ReturnStatement:
+		case VarStatement:
+		case VarType:
+		case VarAssignment:
+		case Type:
+		case TypeOnly:
+		case ExpressionOnly:
+		case AssignmentExpression:
+		case AssignmentExpressionMore:
+		case Expression:
+		case OrExpression:
+		case OrExpressionMore:
+		case AndExpression:
+		case AndExpressionMore:
+		case RelationalExpression:
+		case RelationalExpressionMore:
+		case AdditiveExpression:
+		case AdditiveExpressionMore:
+		case MultiplicativeExpression:
+		case MultiplicativeExpressionMore:
+		case IsAsExpression:
+		case IsAsExpressionMore:
+		case MemberExpression:
+		case MemberExpressionMore:
+		case ParenthesisExpression:
+		case ValueExpression:
+		case StaticMethodCallExpression:
+		case SuperCallExpression:
+		case ForExpression:
+		case ForExpressionOnly:
+		case FunctionLiteralExpression:
+		case FunctionLiteralExpressionOnly:
+		case EndStatement:
+		case This:
+		case Super:
+		case NullLiteral:
+		case TrueLiteral:
+		case FalseLiteral:
+		case String:
+		case Number:
+		case DotVariable:
+		case AtType:
+		case FunctionType:
+		case FunctionLiteral:
+		case Var:
+		case Assignment:
+		case Retype:
+		case As:
+		case Is:
+		case Lt:
+		case Gt:
+		case Le:
+		case Ge:
+		case Eq:
+		case Ne:
+		case Or:
+		case And:
+		case Plus:
+		case Minus:
+		case Multiply:
+		case Divide:
+		case OpenParenthesis:
+		case ClosedParenthesis:
+		case Return:
+		case PrimitivePassthrough:
+		case In:
+		case DotDeclareIdentifier:
+		case DotMember:
+		case DotSuperMember:
+		case DUMMY_BEGIN:
+		case DUMMY_END:
+		case FullVariableDeclaration:
+		case VariableDeclaration:
+		case VariableDeclarationOrEmpty:
+		case VarDeclarationStatement:
+		case ReturnTypeField:
+		case ReturnTypeFieldOnly:
+		case ParameterField:
+		case ParameterFieldOnly:
+		case ParameterFieldOptionalName:
+		case ParameterFieldOptionalNameOnly:
+		case ASSEMBLED_STATEMENTS_BLOCK:
+			return true;
+		default:
+			return false;
+		}
+	}
 }

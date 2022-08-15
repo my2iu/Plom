@@ -120,4 +120,9 @@ enum Symbol
     return this == DUMMY_COMMENT || this == FunctionLiteral
         || name().startsWith("COMPOUND_");
   }
+  boolean isInline()
+  {
+    if (!isWide()) return true;
+    return this == FunctionLiteral;
+  }
 }

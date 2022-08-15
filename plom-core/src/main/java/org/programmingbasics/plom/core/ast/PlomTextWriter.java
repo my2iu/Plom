@@ -170,7 +170,10 @@ public class PlomTextWriter
       {
         writeBlockTokenFirstLine(out, token, true);
         writeStatementContainer(out, token.block);
-        writeBlockTokenEnd(out);
+        if (token.isInline())
+          writeInlineBlockTokenEnd(out);
+        else          
+          writeBlockTokenEnd(out);
         return null;
       }
 
@@ -180,7 +183,10 @@ public class PlomTextWriter
         writeTokenContainer(out, token.expression);
         writeBlockTokenExpressionToBlock(out);
         writeStatementContainer(out, token.block);
-        writeBlockTokenEnd(out);
+        if (token.isInline())
+          writeInlineBlockTokenEnd(out);
+        else          
+          writeBlockTokenEnd(out);
         return null;
       }});
   }
@@ -257,6 +263,11 @@ public class PlomTextWriter
   {
     out.token("}");
     out.newline();
+  }
+
+  public static void writeInlineBlockTokenEnd(PlomCodeOutputFormatter out) throws IOException
+  {
+    out.token("}");
   }
 
   public static void writeTokenContainer(PlomCodeOutputFormatter out, TokenContainer tokens) throws IOException

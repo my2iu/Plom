@@ -136,28 +136,36 @@ public class PlomTextReaderTest extends TestCase
     Assert.assertEquals("\n", reader.lexInput());
     Assert.assertEquals("+", reader.lexInput());
     
-    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("1 + lambda { } {\n"
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("lambda {} {}\n"
+        + "1 + lambda { } {\n"
         + " 2 + 3\n"
-        + " }\n"
-        + " +");
+        + " } +");
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
-    TokenContainer container = PlomTextReader.readTokenContainer(lexer);
+    StatementContainer container = PlomTextReader.readStatementContainer(lexer);
     
     Assert.assertEquals(
-        new TokenContainer(
-            new Token.SimpleToken("1", Symbol.Number),
-            new Token.SimpleToken("+", Symbol.Plus),
-            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
-                new TokenContainer(
-                    ),
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.SimpleToken("2", Symbol.Number),
-                        new Token.SimpleToken("+", Symbol.Plus),
-                        new Token.SimpleToken("3", Symbol.Number)
-                        ))),
-            new Token.SimpleToken("+", Symbol.Plus)
-            ),
+        new StatementContainer(
+          new TokenContainer(
+              new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                  new TokenContainer(),
+                  new StatementContainer()
+                  )
+          ),
+          new TokenContainer(
+              new Token.SimpleToken("1", Symbol.Number),
+              new Token.SimpleToken("+", Symbol.Plus),
+              new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                  new TokenContainer(
+                      ),
+                  new StatementContainer(
+                      new TokenContainer(
+                          new Token.SimpleToken("2", Symbol.Number),
+                          new Token.SimpleToken("+", Symbol.Plus),
+                          new Token.SimpleToken("3", Symbol.Number)
+                          ))),
+              new Token.SimpleToken("+", Symbol.Plus)
+              )
+        ),
         container);
   }
 }

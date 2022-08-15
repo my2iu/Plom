@@ -75,7 +75,6 @@ public class PlomTextWriterTest extends TestCase
                 new TokenContainer(Token.ParameterToken.fromContents("@number", Symbol.AtType)))
         ));
     
-    PlomTextWriter writer = new PlomTextWriter();
     StringBuilder out = new StringBuilder();
     PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
     PlomTextWriter.writeTokenContainer(plomOut, code);
@@ -106,25 +105,59 @@ public class PlomTextWriterTest extends TestCase
         new Token.SimpleToken("+", Symbol.Plus)
         );
     
-    PlomTextWriter writer = new PlomTextWriter();
     StringBuilder out = new StringBuilder();
     PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
     PlomTextWriter.writeTokenContainer(plomOut, code);
     Assert.assertEquals(" 1 + lambda { } {\n"
         + " 2 + 3\n"
-        + " }\n"
-        + " +", out.toString());
+        + " } +", out.toString());
 
     // Check if we can read back the output
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     TokenContainer read = PlomTextReader.readTokenContainer(lexer);
-    Token a = code.tokens.get(2);
-    Token b = read.tokens.get(2);
-    Assert.assertTrue(a.equals(b));
     Assert.assertEquals(code, read);
   }
 
+  @Test
+  public void testWriteFunctionLiteralEndOfLine() throws IOException, PlomReadException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+          new Token.SimpleToken("1", Symbol.Number),
+          new Token.SimpleToken("+", Symbol.Plus),
+          new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+              new TokenContainer(
+                  ),
+              new StatementContainer(
+                  new TokenContainer(
+                      new Token.SimpleToken("2", Symbol.Number),
+                      new Token.SimpleToken("+", Symbol.Plus),
+                      new Token.SimpleToken("3", Symbol.Number)
+                      )))
+          ),
+        new TokenContainer(
+            new Token.SimpleToken("1", Symbol.Number),
+            new Token.SimpleToken("+", Symbol.Plus),
+            new Token.SimpleToken("2", Symbol.Number)
+            ));
+    
+    StringBuilder out = new StringBuilder();
+    PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
+    PlomTextWriter.writeStatementContainer(plomOut, code);
+    Assert.assertEquals(" 1 + lambda { } {\n"
+        + " 2 + 3\n"
+        + " }\n"
+        + " 1 + 2\n", out.toString());
+
+    // Check if we can read back the output
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    StatementContainer read = PlomTextReader.readStatementContainer(lexer);
+    Assert.assertEquals(code, read);
+  }
+
+  
   @Test
   public void testWriteStatementContainer() throws IOException, PlomTextReader.PlomReadException
   {
