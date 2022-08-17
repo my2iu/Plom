@@ -73,6 +73,7 @@ public class Rule
 	public final static List<Symbol> TypeOnly_Type_EndStatement = Arrays.asList(Symbol.TypeOnly, Symbol.Type, Symbol.EndStatement);
 	public final static List<Symbol> Type_AtType = Arrays.asList(Symbol.Type, Symbol.AtType);
 	public final static List<Symbol> Type_FunctionType = Arrays.asList(Symbol.Type, Symbol.FunctionType);
+	public final static List<Symbol> FunctionType_FunctionTypeName_Returns_ParameterFieldOptionalName = Arrays.asList(Symbol.FunctionType, Symbol.FunctionTypeName, Symbol.Returns, Symbol.ParameterFieldOptionalName);
 	public final static List<Symbol> DotDeclareIdentifier_DotVariable = Arrays.asList(Symbol.DotDeclareIdentifier, Symbol.DotVariable);
 	public final static List<Symbol> DotMember_DotVariable = Arrays.asList(Symbol.DotMember, Symbol.DotVariable);
 	public final static List<Symbol> DotSuperMember_DotVariable = Arrays.asList(Symbol.DotSuperMember, Symbol.DotVariable);
@@ -107,8 +108,9 @@ public class Rule
 	public final static List<Symbol> Number = Arrays.asList(Symbol.Number);
 	public final static List<Symbol> DotVariable = Arrays.asList(Symbol.DotVariable);
 	public final static List<Symbol> AtType = Arrays.asList(Symbol.AtType);
-	public final static List<Symbol> FunctionType = Arrays.asList(Symbol.FunctionType);
+	public final static List<Symbol> FunctionTypeName = Arrays.asList(Symbol.FunctionTypeName);
 	public final static List<Symbol> FunctionLiteral = Arrays.asList(Symbol.FunctionLiteral);
+	public final static List<Symbol> Returns = Arrays.asList(Symbol.Returns);
 	public final static List<Symbol> Var = Arrays.asList(Symbol.Var);
 	public final static List<Symbol> Assignment = Arrays.asList(Symbol.Assignment);
 	public final static List<Symbol> Retype = Arrays.asList(Symbol.Retype);

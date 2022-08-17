@@ -99,21 +99,25 @@ public class ParseToAstTest extends TestCase
     TokenContainer line = new TokenContainer(
         new Token.SimpleToken("var", Symbol.Var),
         Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-        Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionType,
+        Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionTypeName,
             new TokenContainer(
                 Token.ParameterToken.fromContents("@array", Symbol.AtType)),
             new TokenContainer(
                 Token.ParameterToken.fromContents("@number", Symbol.AtType))
-            ));
+            ),
+        new Token.SimpleToken("returns", Symbol.Returns),
+        Token.ParameterToken.fromContents("@void", Symbol.AtType)
+        );
 
     ParseToAst lineParser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode node = lineParser.parseToEnd(Symbol.Statement);
     AstNode nodeForFunction = node.children.get(0).children.get(2).children.get(0).children.get(0);
-    Assert.assertEquals(2, nodeForFunction.internalChildren.size());
-    Assert.assertEquals(1, nodeForFunction.internalChildren.get(0).children.size());
-    Assert.assertEquals(2, nodeForFunction.internalChildren.get(0).symbols.size());
-    Assert.assertEquals(1, nodeForFunction.internalChildren.get(1).children.size());
-    Assert.assertEquals(2, nodeForFunction.internalChildren.get(1).symbols.size());
+    AstNode nodeForFunctionName = nodeForFunction.children.get(0);
+    Assert.assertEquals(2, nodeForFunctionName.internalChildren.size());
+    Assert.assertEquals(1, nodeForFunctionName.internalChildren.get(0).children.size());
+    Assert.assertEquals(2, nodeForFunctionName.internalChildren.get(0).symbols.size());
+    Assert.assertEquals(1, nodeForFunctionName.internalChildren.get(1).children.size());
+    Assert.assertEquals(2, nodeForFunctionName.internalChildren.get(1).symbols.size());
   }
 
 }

@@ -55,7 +55,9 @@ public enum Symbol
 	DotVariable,
 	AtType,
 	FunctionType,
+	FunctionTypeName,
 	FunctionLiteral,
+	Returns,
 	Var,
 	Assignment,
 	Retype,
@@ -114,8 +116,9 @@ public enum Symbol
 		case Number:
 		case DotVariable:
 		case AtType:
-		case FunctionType:
+		case FunctionTypeName:
 		case FunctionLiteral:
+		case Returns:
 		case Var:
 		case Assignment:
 		case Retype:
@@ -223,7 +226,9 @@ public enum Symbol
 		case DotVariable:
 		case AtType:
 		case FunctionType:
+		case FunctionTypeName:
 		case FunctionLiteral:
+		case Returns:
 		case Var:
 		case Assignment:
 		case Retype:

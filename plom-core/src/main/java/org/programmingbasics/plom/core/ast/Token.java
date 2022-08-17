@@ -157,7 +157,7 @@ public abstract class Token
      {
        switch(type)
        {
-         case FunctionType:
+         case FunctionTypeName:
          {
            if (contents.isEmpty())
              return postfix.substring(2);

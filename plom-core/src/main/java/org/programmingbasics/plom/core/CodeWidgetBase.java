@@ -193,7 +193,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     Symbol[] symbolOrder = new Symbol[] {
         Symbol.DotVariable,
         Symbol.AtType,
-        Symbol.FunctionType,
+        Symbol.FunctionTypeName,
+        Symbol.Returns,
         Symbol.Number,
         Symbol.String,
         Symbol.TrueLiteral,
@@ -423,8 +424,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case DUMMY_COMMENT: text = "//"; break;
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
-      case FunctionType: text = "f@"; buttonText = "\u0192@"; break;
+      case FunctionTypeName: text = "f@"; buttonText = "\u0192@"; break;
       case FunctionLiteral: text = "lambda"; buttonText = "\u03bb"; break;
+      case Returns: text = "returns"; buttonText = "\u2192"; break;
       case This: text = "this"; break;
       case Super: text = "super"; break;
       case TrueLiteral: text = "true"; break;
@@ -501,7 +503,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
               }));
         }
         // If the suggestion is for a function type
-        else if (suggestion.code.startsWith("f@") && allowedSymbols.contains(Symbol.FunctionType))
+        else if (suggestion.code.startsWith("f@") && allowedSymbols.contains(Symbol.FunctionTypeName))
         {
           // TODO: quick suggestions for function types
           
@@ -548,7 +550,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     case AtType:
-    case FunctionType:
+    case FunctionTypeName:
       newToken = new Token.ParameterToken(
           Token.ParameterToken.splitVarAtColons(tokenText), 
           Token.ParameterToken.splitVarAtColonsForPostfix(tokenText), 
@@ -580,7 +582,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       break;
     }
 
-    case FunctionType:
+    case FunctionTypeName:
     {
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
@@ -635,7 +637,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         tokenType = ((Token.TokenWithSymbol)currentToken).getType();
       
       if (tokenType == Symbol.String || tokenType == Symbol.DUMMY_COMMENT
-          || tokenType == Symbol.AtType || tokenType == Symbol.FunctionType
+          || tokenType == Symbol.AtType || tokenType == Symbol.FunctionTypeName
           || tokenType == Symbol.DotVariable)
         return true;
     }
@@ -708,12 +710,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       focus.showSimpleEntryFor("@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
-    case FunctionType:
+    case FunctionTypeName:
       initialValue = initialValue.substring(2);
-      if (initialValue.endsWith(" \u2192"))
-        initialValue = initialValue.substring(0, initialValue.length() - 2);
-      else if (initialValue.endsWith("\u2192"))
-        initialValue = initialValue.substring(0, initialValue.length() - 1);
       focus.showSimpleEntryFor("\u0192@", "f@", "", null, initialValue, newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
@@ -778,16 +776,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(true);
     }
-    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionType)
+    else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.FunctionTypeName)
     {
-      List<String> nameParts = Token.ParameterToken.splitVarAtColons(val);
-      if (nameParts.isEmpty())
-        nameParts.add(Token.ParameterToken.splitVarAtColonsForPostfix(val) + " \u2192");
-      else
-        nameParts.add("\u2192");
       ((Token.ParameterToken)token).setContents(
-          nameParts,
-          "");
+          Token.ParameterToken.splitVarAtColons(val),
+          Token.ParameterToken.splitVarAtColonsForPostfix(val));
       if (advanceToNext && isFinal)
         NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
       updateCodeView(true);

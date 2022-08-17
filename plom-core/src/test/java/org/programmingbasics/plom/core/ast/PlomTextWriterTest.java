@@ -68,17 +68,19 @@ public class PlomTextWriterTest extends TestCase
     TokenContainer code = new TokenContainer(
         new Token.SimpleToken("var", Symbol.Var),
         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-        Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@b:", "\u2192"), Symbol.FunctionType, 
-            Arrays.asList(
-                new TokenContainer(
-                    Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@go \u2192"), Symbol.FunctionType, Arrays.asList(new TokenContainer()))), 
-                new TokenContainer(Token.ParameterToken.fromContents("@number", Symbol.AtType)))
-        ));
+        Token.ParameterToken.fromContents("f@b:", Symbol.FunctionTypeName, 
+            new TokenContainer(
+                Token.ParameterToken.fromContents("f@go", Symbol.FunctionTypeName),
+                new Token.SimpleToken("returns", Symbol.Returns))
+            ),
+        new Token.SimpleToken("returns", Symbol.Returns),
+        Token.ParameterToken.fromContents("@number", Symbol.AtType)
+        );
     
     StringBuilder out = new StringBuilder();
     PlomCodeOutputFormatter plomOut = new PlomCodeOutputFormatter(out);
     PlomTextWriter.writeTokenContainer(plomOut, code);
-    Assert.assertEquals(" var . {b } f@ {b: { f@ {go \u2192 { } } }\u2192 { @ {number } } }", out.toString());
+    Assert.assertEquals(" var . {b } f@ {b: { f@ {go } returns } } returns @ {number }", out.toString());
 
     // Check if we can read back the output
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());

@@ -392,7 +392,7 @@ public class PlomTextReader
     }
     else
     {
-      if (sym == Symbol.AtType || sym == Symbol.DotVariable || sym == Symbol.FunctionType)
+      if (sym == Symbol.AtType || sym == Symbol.DotVariable || sym == Symbol.FunctionTypeName)
       {
         String prefix;
         switch (sym)
@@ -400,7 +400,7 @@ public class PlomTextReader
         case AtType:
           prefix = "@";
           break;
-        case FunctionType:
+        case FunctionTypeName:
           prefix = "f@";
           break;
         case DotVariable:
@@ -414,7 +414,7 @@ public class PlomTextReader
         List<String> nameParts = new ArrayList<>();
         List<TokenContainer> params = new ArrayList<>();
         String nextPart = lexer.lexParameterTokenPartOrEmpty();
-        if (nextPart.endsWith(":") || (sym == Symbol.FunctionType && nextPart.endsWith(" \u2192")))
+        if (nextPart.endsWith(":"))
         {
           while (true)
           {

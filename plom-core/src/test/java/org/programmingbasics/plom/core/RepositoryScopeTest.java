@@ -87,20 +87,21 @@ public class RepositoryScopeTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-            Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@get number value \u2192"), Symbol.FunctionType, 
-                Arrays.asList(new TokenContainer(
-                    Token.ParameterToken.fromContents("@number", Symbol.AtType)
-                )))
+            Token.ParameterToken.fromContents("f@get number value", Symbol.FunctionTypeName),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
         ),
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
-            Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@number transform:", "\u2192"), Symbol.FunctionType, 
-                Arrays.asList(
-                    new TokenContainer(Token.ParameterToken.fromContents(".param", Symbol.DotVariable), Token.ParameterToken.fromContents("@number", Symbol.AtType)),
-                    new TokenContainer(Token.ParameterToken.fromContents(".return", Symbol.DotVariable), Token.ParameterToken.fromContents("@number", Symbol.AtType)
-                )))
-            )));
+            Token.ParameterToken.fromContents("f@number transform:", Symbol.FunctionTypeName, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".param", Symbol.DotVariable), 
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)
+                )),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents(".return", Symbol.DotVariable), 
+            Token.ParameterToken.fromContents("@boolean", Symbol.AtType))));
     
     // Run some code
     SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer());
@@ -113,7 +114,7 @@ public class RepositoryScopeTest extends TestCase
     Assert.assertEquals("number", ((Type.FunctionType)fnType).returnType.name);
     Assert.assertEquals(0, ((Type.FunctionType)fnType).args.size());
     Assert.assertTrue(fnTypeWithNames instanceof Type.FunctionType);
-    Assert.assertEquals("number", ((Type.FunctionType)fnTypeWithNames).returnType.name);
+    Assert.assertEquals("boolean", ((Type.FunctionType)fnTypeWithNames).returnType.name);
     Assert.assertEquals(1, ((Type.FunctionType)fnTypeWithNames).args.size());
     Assert.assertEquals("number", ((Type.FunctionType)fnTypeWithNames).args.get(0).name);
   }  

@@ -111,7 +111,7 @@ public class VariableScope
    */
   protected static Type.FunctionType helperFunctionTypeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
   {
-    if (unboundType.mainToken.type != Symbol.FunctionType)
+    if (unboundType.mainToken.type != Symbol.FunctionTypeName)
       throw new IllegalArgumentException("Expecting a FunctionType");
     String name = unboundType.mainToken.getLookupName();
     List<TokenContainer> unboundParams = unboundType.mainToken.parameters;
@@ -133,10 +133,29 @@ public class VariableScope
         declaredUnboundTypes.add(null);
       }
     }
-    Type returnType = subTypeCreator.typeFromUnboundType(declaredUnboundTypes.get(declaredUnboundTypes.size() - 1), subTypeCreator);
-    declaredNames.remove(declaredNames.size() - 1);
+    Type returnType = null;
+    if (unboundType.returnType != null)
+    {
+      // Just stash the parsed return type in the list of declared parameters
+      MethodArgumentExtractor.fromFunctionTypeParameterField(
+          unboundType.returnType, 
+          (paramName, paramType) -> {
+            declaredNames.add(paramName);
+            declaredUnboundTypes.add(paramType);
+          },
+          null);
+      if (declaredNames.size() > unboundParams.size())
+      {
+        // We found a return type
+        declaredNames.remove(declaredNames.size() - 1);
+        UnboundType unboundReturnType = declaredUnboundTypes.remove(declaredUnboundTypes.size() - 1); 
+        returnType = subTypeCreator.typeFromUnboundType(unboundReturnType, subTypeCreator);
+      }
+      else
+        returnType = subTypeCreator.typeFromUnboundType(UnboundType.forClassLookupName("void"), subTypeCreator);
+    }
     List<Type> declaredTypes = new ArrayList<>();
-    for (int n = 0; n < declaredUnboundTypes.size() - 1; n++)
+    for (int n = 0; n < declaredUnboundTypes.size(); n++)
     {
       declaredTypes.add(subTypeCreator.typeFromUnboundType(declaredUnboundTypes.get(n), subTypeCreator));
     }

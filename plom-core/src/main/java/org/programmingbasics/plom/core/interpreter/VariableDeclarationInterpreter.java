@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
@@ -68,7 +71,19 @@ public class VariableDeclarationInterpreter
         typesToReturn.type = t;
         return true;
       })
-      .add(Rule.FunctionType, (triggers, node, typesToReturn, unused) -> {
+      .add(Rule.FunctionType_FunctionTypeName_Returns_ParameterFieldOptionalName, (triggers, node, typesToReturn, unused) -> {
+        // If the rule matches, then at least the FunctionTypeName is defined
+        node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers,  typesToReturn, null);
+        // Check if there's a return type
+        if (node.children.get(2) != null)
+        {
+          List<Token> returnTypeTokens = new ArrayList<>();
+          node.children.get(2).gatherTokens(returnTypeTokens);
+          typesToReturn.type.returnType = new TokenContainer(returnTypeTokens);
+        }
+        return true;
+      })
+      .add(Rule.FunctionTypeName, (triggers, node, typesToReturn, unused) -> {
         UnboundType t = UnboundType.fromToken(node.token);
         typesToReturn.type = t;
         return true;

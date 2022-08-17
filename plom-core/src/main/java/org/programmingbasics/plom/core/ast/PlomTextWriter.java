@@ -42,7 +42,8 @@ public class PlomTextWriter
     symbolTokenMap.put(Symbol.FalseLiteral, "false");
     symbolTokenMap.put(Symbol.DotVariable, ".");
     symbolTokenMap.put(Symbol.AtType, "@");
-    symbolTokenMap.put(Symbol.FunctionType, "f@");
+    symbolTokenMap.put(Symbol.FunctionTypeName, "f@");
+    symbolTokenMap.put(Symbol.Returns, "returns");
     symbolTokenMap.put(Symbol.FunctionLiteral, "lambda");
     symbolTokenMap.put(Symbol.Var, "var");
 //    symbolTokenMap.put(Symbol.Colon, ":");
@@ -200,7 +201,7 @@ public class PlomTextWriter
       out.token("@");
       out.token("{");
       break;
-    case FunctionType:
+    case FunctionTypeName:
       out.token("f@");
       out.token("{");
       break;
@@ -217,7 +218,12 @@ public class PlomTextWriter
       ParameterToken token)
   {
     if (token.contents.isEmpty())
-      out.append(escapeParameterTokenPart(token.postfix.substring(1)));
+    {
+      if (token.getType() != Symbol.FunctionTypeName)
+        out.append(escapeParameterTokenPart(token.postfix.substring(1)));
+      else
+        out.append(escapeParameterTokenPart(token.postfix.substring(2)));
+    }
     else
       out.append(escapeParameterTokenPart(token.postfix));
     out.token("}");
@@ -228,7 +234,7 @@ public class PlomTextWriter
   {
     if (n == 0)
     {
-      if (token.getType() != Symbol.FunctionType)
+      if (token.getType() != Symbol.FunctionTypeName)
         out.append(escapeParameterTokenPart(token.contents.get(n).substring(1)));
       else        
         out.append(escapeParameterTokenPart(token.contents.get(n).substring(2)));

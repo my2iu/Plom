@@ -79,7 +79,7 @@ public class ParseContext
       switch (token.getType())
       {
       case AtType:
-      case FunctionType:
+      case FunctionTypeName:
         return findPredictiveParseContextForLine(token.parameters.get(pos.getOffset(level + 1)), Symbol.ParameterFieldOptionalNameOnly, pos, level+2);
       default:
         return super.visitParameterToken(token, pos, level, param);

@@ -84,18 +84,17 @@ public class PlomTextReaderTest extends TestCase
   @Test
   public void testReadFunctionType() throws PlomTextReader.PlomReadException
   {
-    PlomTextReader.StringTextReader inScanner = new PlomTextReader.StringTextReader("var 22f@{a\u2192{}}");
+    PlomTextReader.StringTextReader inScanner = new PlomTextReader.StringTextReader("var 22f@{a}returns");
     PlomTextReader.PlomTextScanner reader = new PlomTextReader.PlomTextScanner(inScanner);
     Assert.assertEquals("var", reader.lexInput());
     Assert.assertEquals("22", reader.lexInput());
     Assert.assertEquals("f@", reader.lexInput());
     Assert.assertEquals("{", reader.lexInput());
-    Assert.assertEquals("a\u2192", reader.lexParameterTokenPart());
-    Assert.assertEquals("{", reader.lexInput());
+    Assert.assertEquals("a", reader.lexParameterTokenPart());
     Assert.assertEquals("}", reader.lexInput());
-    Assert.assertEquals("}", reader.lexInput());
+    Assert.assertEquals("returns", reader.lexInput());
     
-    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("var .{b} f@ {b: { f@ {go \u2192 { } } } \u2192 { @{number} } }");
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("var .{b} f@ {b: { f@ {go} returns }} returns @{number}");
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     TokenContainer container = PlomTextReader.readTokenContainer(lexer);
     
@@ -103,12 +102,13 @@ public class PlomTextReaderTest extends TestCase
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
             Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
-            Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@b:", "\u2192"), Symbol.FunctionType, 
-                Arrays.asList(
-                    new TokenContainer(
-                        Token.ParameterToken.fromPartsWithoutPostfix(Arrays.asList("f@go \u2192"), Symbol.FunctionType, Arrays.asList(new TokenContainer()))), 
-                    new TokenContainer(Token.ParameterToken.fromContents("@number", Symbol.AtType)))
-            )),
+            Token.ParameterToken.fromContents("f@b:", Symbol.FunctionTypeName, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@go", Symbol.FunctionTypeName),
+                    new Token.SimpleToken("returns", Symbol.Returns))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
+            ),
         container);
   }
 

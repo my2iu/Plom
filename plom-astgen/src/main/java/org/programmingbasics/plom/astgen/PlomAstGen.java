@@ -95,6 +95,7 @@ public class PlomAstGen
       rule(TypeOnly, Type, EndStatement),
       rule(Type, AtType),
       rule(Type, FunctionType),
+      rule(FunctionType, FunctionTypeName, Returns, ParameterFieldOptionalName),
       rule(DotDeclareIdentifier, DotVariable),
       rule(DotMember, DotVariable),
       rule(DotSuperMember, DotVariable),

@@ -132,7 +132,7 @@ public class ParseContextTest extends TestCase
             new TokenContainer(
                 new Token.SimpleToken("var", Symbol.Var),
                 Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
-                Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionType,
+                Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionTypeName,
                     new TokenContainer(
                         Token.ParameterToken.fromContents("@array", Symbol.AtType)),
                     new TokenContainer()

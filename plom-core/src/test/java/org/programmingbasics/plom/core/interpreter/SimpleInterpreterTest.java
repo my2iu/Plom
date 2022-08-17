@@ -36,7 +36,7 @@ public class SimpleInterpreterTest extends TestCase
     @Override
     public Type typeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
     {
-      if (unboundType.mainToken.type == Symbol.FunctionType) 
+      if (unboundType.mainToken.type == Symbol.FunctionTypeName) 
       {
         return helperFunctionTypeFromUnboundType(unboundType, subTypeCreator);
       }

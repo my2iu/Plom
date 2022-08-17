@@ -65,6 +65,18 @@ public class AstNode
     }
     return null;
   }
+
+  /**
+   * Gather all the tokens that form the tree rooted at a node 
+   */
+  public void gatherTokens(List<Token> tokens)
+  {
+    if (token != null) tokens.add(token);
+    for (AstNode node: children)
+    {
+      node.gatherTokens(tokens);
+    }
+  }
   
   public boolean matchesRule(List<Symbol> rule)
   {

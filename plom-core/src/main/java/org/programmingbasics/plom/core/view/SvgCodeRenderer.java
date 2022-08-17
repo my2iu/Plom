@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.programmingbasics.plom.core.UIResources;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -20,7 +19,6 @@ import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitB
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 
-import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -579,6 +577,8 @@ public class SvgCodeRenderer
       if (supplement.activeHighlightPos != null && currentTokenPos.equalUpToLevel(supplement.activeHighlightPos, level))
         classList += supplement.renderTypeFieldStyle ? " typeTokenSelected" : " tokenactive";
       String text = token.contents;
+      if (token.getType() == Symbol.Returns && text.equals("returns"))
+        text = "\u2192";
       double textWidth = widthCalculator.calculateWidth(text);
       toReturn.reset();
       double x = positioning.x;
@@ -737,7 +737,10 @@ public class SvgCodeRenderer
       {
         if (isFirstParameterNameOnLine)
           positioning.lineTop += vertPadding;
-        tokenText += layoutParameterTokenParameterName(token.postfix, positioning, isFirstParameterNameOnLine,
+        String postfix = token.postfix;
+        if (token.getType() == Symbol.FunctionTypeName && postfix.startsWith("f@"))
+          postfix = "\u0192@" + postfix.substring(2);
+        tokenText += layoutParameterTokenParameterName(postfix, positioning, isFirstParameterNameOnLine,
             classList);
         isFirstParameterNameOnLine = false;
       }
@@ -790,7 +793,7 @@ public class SvgCodeRenderer
       if (isFirstParameterNameOnLine)
         paramNamePositioning.lineTop += vertPadding;
       String paramName = token.contents.get(paramIdx);
-      if (token.getType() == Symbol.FunctionType && paramName.startsWith("f@"))
+      if (token.getType() == Symbol.FunctionTypeName && paramName.startsWith("f@"))
         paramName = "\u0192@" + paramName.substring(2);
       String nameText = layoutParameterTokenParameterName(paramName, paramNamePositioning, isFirstParameterNameOnLine,
           classList) + "\n";

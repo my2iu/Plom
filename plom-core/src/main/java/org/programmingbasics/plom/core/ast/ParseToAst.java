@@ -65,7 +65,7 @@ public class ParseToAst
     node.internalChildren = new ArrayList<>();
     switch (paramToken.getType())
     {
-    case FunctionType:
+    case FunctionTypeName:
     case AtType:
       for (TokenContainer param: paramToken.parameters)
       {

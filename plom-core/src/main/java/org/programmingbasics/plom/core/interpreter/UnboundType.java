@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 /** 
@@ -10,6 +11,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 public class UnboundType
 {
   public Token.ParameterToken mainToken;
+  public TokenContainer returnType;  // For function types with a return type
   public static UnboundType fromToken(Token tok)
   {
     UnboundType type = new UnboundType();
