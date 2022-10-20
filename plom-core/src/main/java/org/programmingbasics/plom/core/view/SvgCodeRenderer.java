@@ -19,6 +19,8 @@ import org.programmingbasics.plom.core.view.RenderedHitBox.RectangleRenderedHitB
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 
+import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration;
 import elemental.css.CSSStyleDeclaration.Unit;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -195,7 +197,7 @@ public class SvgCodeRenderer
     supplementalInfo.activeHighlightPos = activeHighlightPos;
     supplementalInfo.selectionStart = selectionPos1;
     supplementalInfo.selectionEnd = selectionPos2;
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding, widthCalculator);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
     SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -222,7 +224,7 @@ public class SvgCodeRenderer
       supplementalInfo.activeHighlightPos = activeHighlightPos;
       supplementalInfo.selectionStart = selectionPos1;
       supplementalInfo.selectionEnd = selectionPos2;
-      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
+      SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding, widthCalculator);
       SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
       positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
       SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
@@ -271,7 +273,7 @@ public class SvgCodeRenderer
     supplementalInfo.selectionStart = null;
     supplementalInfo.selectionEnd = null;
     
-    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding);
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(clientWidth - extraWidth - leftPadding - rightPadding, widthCalculator);
     SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, (int)Math.ceil(positioning.fontSize), widthCalculator);
     positioning.wrapLineStart = positioning.lineStart + tokenRenderer.WRAP_INDENT;
     if (type != null)
@@ -394,7 +396,12 @@ public class SvgCodeRenderer
     boolean showMultilineAccent = true;
     boolean showWideExpresionAccent = false;
     
-    TokenRendererPositioning(double width)
+    TokenRendererPositioning(double width, TextWidthCalculator widthCalculator)
+    {
+      this(width);
+      fontSize = widthCalculator.getFontSize();
+    }
+    private TokenRendererPositioning(double width)
     {
       this.canvasWidth = width;
       this.minWidth = canvasWidth / 2;
@@ -456,6 +463,9 @@ public class SvgCodeRenderer
   public static interface TextWidthCalculator
   {
     public double calculateWidth(String text);
+    
+    // Returns the font size in pixels
+    public double getFontSize();
 
     public default List<String> breakLines(String contents, double maxWidth)
     {
@@ -532,6 +542,15 @@ public class SvgCodeRenderer
     {
       textEl.setTextContent(text);
       return textEl.getComputedTextLength();
+    }
+    @Override public double getFontSize()
+    {
+      final int DEFAULT_FONT_SIZE = 10;
+      CSSStyleDeclaration style = Browser.getWindow().getComputedStyle(textEl, null);
+      String fontSizeString = style.getFontSize();
+      if (fontSizeString.endsWith("px"))
+        return Double.parseDouble(fontSizeString.substring(0, fontSizeString.length() - 2));
+      return DEFAULT_FONT_SIZE;
     }
   }
   
