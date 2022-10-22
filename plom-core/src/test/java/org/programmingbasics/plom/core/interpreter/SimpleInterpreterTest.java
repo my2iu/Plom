@@ -1015,4 +1015,59 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(0, interpreter.ctx.valueStackSize());
     Assert.assertEquals(5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
+  
+  @Test
+  public void testFunctionLiteral() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("2", Symbol.Number)
+                        )))
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("5", Symbol.Number)))
+            ));
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+      Assert.assertEquals(7.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+    } 
+    catch (IllegalArgumentException e)
+    {
+      // Lambdas are not implemented yet, so an exception will be thrown
+    }
+  }
 }

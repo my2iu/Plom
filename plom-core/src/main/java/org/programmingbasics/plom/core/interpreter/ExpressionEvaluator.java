@@ -453,7 +453,12 @@ public class ExpressionEvaluator
 //            {
 //              throw new IllegalArgumentException("This should be unreachable");
 //            }
-      });
+      })
+      .add(Rule.FunctionLiteral, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            throw new IllegalArgumentException("Not implemented yet");
+          })
+      ;
   }
 
 
