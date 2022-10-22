@@ -81,7 +81,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     if (thisTypeString != null)
     {
       Value thisValue = new Value();
-      thisValue.type = context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(thisTypeString), context.currentScope());
+      thisValue.type = context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(thisTypeString));
       context.pushObjectScope(thisValue);
     }
     context.pushNewScope();
@@ -485,7 +485,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
 
     context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 2));
     Assert.assertNull(context.getLastTypeUsed());
-    Assert.assertEquals(context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName("object"), context.currentScope()), context.getLastTypeForStaticCall());
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("object")), context.getLastTypeForStaticCall());
     List<String> suggestions = new StaticMemberSuggester(context, true, true).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("new"));
 

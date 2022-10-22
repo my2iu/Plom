@@ -110,12 +110,12 @@ public class RepositoryScopeTest extends TestCase
     
     Type fnType = scopeConfig.globalScope.lookupType("b");
     Type fnTypeWithNames = scopeConfig.globalScope.lookupType("c");
-    Assert.assertTrue(fnType instanceof Type.FunctionType);
-    Assert.assertEquals("number", ((Type.FunctionType)fnType).returnType.name);
-    Assert.assertEquals(0, ((Type.FunctionType)fnType).args.size());
-    Assert.assertTrue(fnTypeWithNames instanceof Type.FunctionType);
-    Assert.assertEquals("boolean", ((Type.FunctionType)fnTypeWithNames).returnType.name);
-    Assert.assertEquals(1, ((Type.FunctionType)fnTypeWithNames).args.size());
-    Assert.assertEquals("number", ((Type.FunctionType)fnTypeWithNames).args.get(0).name);
+    Assert.assertTrue(fnType instanceof Type.LambdaFunctionType);
+    Assert.assertEquals("number", ((Type.LambdaFunctionType)fnType).returnType.name);
+    Assert.assertEquals(0, ((Type.LambdaFunctionType)fnType).args.size());
+    Assert.assertTrue(fnTypeWithNames instanceof Type.LambdaFunctionType);
+    Assert.assertEquals("boolean", ((Type.LambdaFunctionType)fnTypeWithNames).returnType.name);
+    Assert.assertEquals(1, ((Type.LambdaFunctionType)fnTypeWithNames).args.size());
+    Assert.assertEquals("number", ((Type.LambdaFunctionType)fnTypeWithNames).args.get(0).name);
   }  
 }

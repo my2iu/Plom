@@ -144,7 +144,7 @@ public class ExpressionEvaluator
             {
             case 0:
             {
-              Type isType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)), machine.currentScope());
+              Type isType = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
               Value left = machine.popValue();
               machine.pushValue(Value.createBooleanValue(machine.coreTypes(), left.type.isInstanceOf(isType)));
               // Handle the "...More" part 
@@ -159,7 +159,7 @@ public class ExpressionEvaluator
       )
       .add(Rule.RelationalExpressionMore_Retype_Type_RelationalExpressionMore, 
           (machine, node, idx) -> {
-            Type retypeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)), machine.currentScope());
+            Type retypeType = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(1)));
             Value left = machine.popValue();
             if (left.isNull())
             {
@@ -309,6 +309,19 @@ public class ExpressionEvaluator
             else 
             {
               Value self = machine.readValue(methodNode.internalChildren.size());
+              if (self.type instanceof Type.LambdaFunctionType)
+              {
+                Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)self.type;
+                if (!((Token.ParameterToken)methodNode.token).getLookupName().equals(lambdaType.name))
+                  throw new RunException();
+                LambdaFunction lambda = (LambdaFunction)self.val;
+                // TODO: The value of "this" should come from "this" was defined as in the lambda
+                Value chainedSelf = null;
+                machine.popValue();  // Remove the "self"
+                machine.ip.pop();
+                callMethodOrFunction(machine, chainedSelf, lambda.toExecutableFunction(), false, null);
+                return;
+              }
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
@@ -343,7 +356,7 @@ public class ExpressionEvaluator
             }
             else if (idx == methodNode.internalChildren.size()) 
             {
-              Type calleeType = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)), machine.currentScope());
+              Type calleeType = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)));
               ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
@@ -456,7 +469,16 @@ public class ExpressionEvaluator
       })
       .add(Rule.FunctionLiteral, 
           (MachineContext machine, AstNode node, int idx) -> {
-            throw new IllegalArgumentException("Not implemented yet");
+            AstNode functionTypeAst = node.internalChildren.get(0);
+            UnboundType unboundFunctionType = VariableDeclarationInterpreter.gatherUnboundTypeInfo(functionTypeAst);
+            Type functionType = machine.currentScope().typeFromUnboundTypeFromScope(unboundFunctionType);
+            AstNode contentsAst = node.internalChildren.get(1);
+            LambdaFunction fun = new LambdaFunction();
+            fun.functionBody = contentsAst;
+            Value val = Value.create(fun, functionType);
+            machine.pushValue(val);
+            machine.ip.pop();
+//            throw new IllegalArgumentException("Not implemented yet");
           })
       ;
   }
@@ -464,7 +486,7 @@ public class ExpressionEvaluator
 
   private static Type getClassFromStackFrame(MachineContext machine) throws RunException
   {
-    return machine.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(machine.getTopStackFrame().codeUnit.className), machine.currentScope());
+    return machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(machine.getTopStackFrame().codeUnit.className));
   }
 
 

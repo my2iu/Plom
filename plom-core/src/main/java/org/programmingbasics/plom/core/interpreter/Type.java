@@ -204,12 +204,12 @@ public class Type
    * to it. Also, the name and arg names are ignored for checking
    * for equivalence maybe?
    */
-  public static class FunctionType extends Type
+  public static class LambdaFunctionType extends Type
   {
     public Type returnType;
     public List<Type> args;
     public List<String> optionalArgNames;
-    public FunctionType(String name, Type returnType, List<String> optionalArgNames, List<Type> args)
+    public LambdaFunctionType(String name, Type returnType, List<String> optionalArgNames, List<Type> args)
     {
       super(name);
       this.returnType = returnType;

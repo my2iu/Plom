@@ -517,7 +517,7 @@ public class Main
               context.setIsConstructorMethod(currentMethodBeingViewed.sig.isConstructor);
             }
             try {
-              context.setDefinedClassOfMethod(context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName()), context.currentScope()));
+              context.setDefinedClassOfMethod(context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName())));
             }
             catch (RunException e)
             {
@@ -527,7 +527,7 @@ public class Main
             // Create an object scope that will handle this and instance variables
             try {
               Value thisValue = new Value();
-              thisValue.type = context.currentScope().typeFromUnboundType(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName()), context.currentScope());
+              thisValue.type = context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName()));
               context.pushObjectScope(thisValue);
             } 
             catch (RunException e)
@@ -550,7 +550,7 @@ public class Main
               String name = fd.sig.getArgName(n);
               UnboundType unboundType = fd.sig.getArgType(n);
               try {
-                Type type = context.currentScope().typeFromUnboundType(unboundType, context.currentScope());
+                Type type = context.currentScope().typeFromUnboundTypeFromScope(unboundType);
                 context.currentScope().addVariable(name, type, new Value());
               }
               catch (RunException e)

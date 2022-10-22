@@ -1015,10 +1015,51 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(0, interpreter.ctx.valueStackSize());
     Assert.assertEquals(5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-  
+
   @Test
-  public void testFunctionLiteral() throws ParseException, RunException
+  public void testFunctionLiteralNoArgsNoClosures() throws ParseException, RunException
   {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@call", Symbol.FunctionTypeName),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@call", Symbol.FunctionTypeName),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.SimpleToken("2", Symbol.Number)
+                        )))
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(2.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
+  @Test
+  public void testFunctionLiteralOneArg() throws ParseException, RunException
+  {
+    // TODO: Test with args, with closures, and with "this"
+    
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
       StandardLibrary.createCoreTypes(coreTypes);
       scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
@@ -1065,7 +1106,7 @@ public class SimpleInterpreterTest extends TestCase
       new SimpleInterpreter(code).runNoReturn(vars);
       Assert.assertEquals(7.0, vars.globalScope.lookup("a").getNumberValue(), 0);
     } 
-    catch (IllegalArgumentException e)
+    catch (RunException e)
     {
       // Lambdas are not implemented yet, so an exception will be thrown
     }

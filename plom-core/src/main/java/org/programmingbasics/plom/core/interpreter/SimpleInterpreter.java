@@ -77,7 +77,7 @@ public class SimpleInterpreter
               if (!node.children.get(1).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
                 throw new RunException();
               String name = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
-              Type type = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(2)), machine.currentScope());
+              Type type = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(2)));
               if (type == null) type = machine.coreTypes().getVoidType();
               Value val;
               if (node.children.get(3).matchesRule(Rule.VarAssignment_Assignment_Expression))
@@ -230,7 +230,7 @@ public class SimpleInterpreter
             case 1: // If it's a list, get an iterator from it
             {
               Value val = machine.popValue();
-              if (!val.type.isInstanceOf(machine.currentScope().typeFromUnboundType(NUMBER_ITERATOR_TYPE, machine.currentScope())))
+              if (!val.type.isInstanceOf(machine.currentScope().typeFromUnboundTypeFromScope(NUMBER_ITERATOR_TYPE)))
                 throw new RunException("Expecting an iterator");
               // Leave the iterator on the stack and start the iteration
               machine.pushValue(val);
@@ -280,7 +280,7 @@ public class SimpleInterpreter
               if (!forExpression.children.get(0).matchesRule(Rule.DotDeclareIdentifier_DotVariable))
                 throw new RunException();
               String name = ((Token.ParameterToken)forExpression.children.get(0).children.get(0).token).getLookupName();
-              Type type = machine.currentScope().typeFromUnboundType(VariableDeclarationInterpreter.gatherUnboundTypeInfo(forExpression.children.get(1)), machine.currentScope());
+              Type type = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(forExpression.children.get(1)));
               if (type == null) type = machine.coreTypes().getVoidType();
               Value val = machine.popValue();
               machine.currentScope().addVariable(name, type, val);

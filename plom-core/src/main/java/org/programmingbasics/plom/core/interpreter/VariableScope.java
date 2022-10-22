@@ -86,6 +86,16 @@ public class VariableScope
   }
 
   /**
+   * Normally, when you call typeFromUnboundType(), you call it from the current scope, and pass in the
+   * same current scope as the subtypecreator parameter. This is a helper method that will do that 
+   * automatically for you.
+   */
+  public Type typeFromUnboundTypeFromScope(UnboundType unboundType) throws RunException
+  {
+    return typeFromUnboundType(unboundType, this);
+  }
+  
+  /**
    * Returns the Type object used to represent a type within this 
    * interpreter for the given textual Type description
    * @param subTypeCreator When creating a type, we may need to create additional types, but
@@ -109,7 +119,7 @@ public class VariableScope
    * only called from typeFromUnboundType() )
    * @throws RunException 
    */
-  protected static Type.FunctionType helperFunctionTypeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
+  protected static Type.LambdaFunctionType helperFunctionTypeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
   {
     if (unboundType.mainToken.type != Symbol.FunctionTypeName)
       throw new IllegalArgumentException("Expecting a FunctionType");
@@ -159,7 +169,7 @@ public class VariableScope
     {
       declaredTypes.add(subTypeCreator.typeFromUnboundType(declaredUnboundTypes.get(n), subTypeCreator));
     }
-    Type.FunctionType fnType = new Type.FunctionType(name, returnType, declaredNames, declaredTypes);
+    Type.LambdaFunctionType fnType = new Type.LambdaFunctionType(name, returnType, declaredNames, declaredTypes);
     return fnType;
   }
 
