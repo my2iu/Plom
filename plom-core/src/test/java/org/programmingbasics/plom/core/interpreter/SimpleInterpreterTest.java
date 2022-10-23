@@ -1102,13 +1102,7 @@ public class SimpleInterpreterTest extends TestCase
                 new TokenContainer(
                     new Token.SimpleToken("5", Symbol.Number)))
             ));
-    try {
-      new SimpleInterpreter(code).runNoReturn(vars);
-      Assert.assertEquals(7.0, vars.globalScope.lookup("a").getNumberValue(), 0);
-    } 
-    catch (RunException e)
-    {
-      // Lambdas are not implemented yet, so an exception will be thrown
-    }
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(7.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 }

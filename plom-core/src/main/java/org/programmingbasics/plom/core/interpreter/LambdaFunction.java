@@ -1,6 +1,6 @@
 package org.programmingbasics.plom.core.interpreter;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.programmingbasics.plom.core.ast.AstNode;
 
@@ -10,11 +10,13 @@ import org.programmingbasics.plom.core.ast.AstNode;
  */
 public class LambdaFunction
 {
-  AstNode functionBody;
+  public AstNode functionBody;
+  public CodeUnitLocation codeUnit;
+  public List<String> argPosToName;
   
   public ExecutableFunction toExecutableFunction()
   {
-    ExecutableFunction toReturn = ExecutableFunction.forCode(CodeUnitLocation.forUnknown(), functionBody, Collections.emptyList()); 
+    ExecutableFunction toReturn = ExecutableFunction.forCode(codeUnit, functionBody, argPosToName); 
     return toReturn;
   }
 }

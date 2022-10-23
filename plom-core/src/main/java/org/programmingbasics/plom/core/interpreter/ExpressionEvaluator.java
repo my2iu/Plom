@@ -78,7 +78,7 @@ public class ExpressionEvaluator
           machine.ip.advanceIdx();
           machine.pushValue(self);
           machine.pushValue(right);
-          callMethodOrFunction(machine, self, method, false, null);
+          callMethodOrFunction(machine, self, method, false, null, false);
           break;
         }
       case 2:
@@ -268,7 +268,7 @@ public class ExpressionEvaluator
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
                 machine.ip.pop();
-                callMethodOrFunction(machine, null, fn, false, null);
+                callMethodOrFunction(machine, null, fn, false, null, false);
                 return;
               }
               List<Value> args = new ArrayList<>();
@@ -311,22 +311,22 @@ public class ExpressionEvaluator
               Value self = machine.readValue(methodNode.internalChildren.size());
               if (self.type instanceof Type.LambdaFunctionType)
               {
+                // We're calling a lambda function
                 Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)self.type;
                 if (!((Token.ParameterToken)methodNode.token).getLookupName().equals(lambdaType.name))
                   throw new RunException();
                 LambdaFunction lambda = (LambdaFunction)self.val;
                 // TODO: The value of "this" should come from "this" was defined as in the lambda
                 Value chainedSelf = null;
-                machine.popValue();  // Remove the "self"
                 machine.ip.pop();
-                callMethodOrFunction(machine, chainedSelf, lambda.toExecutableFunction(), false, null);
+                callMethodOrFunction(machine, chainedSelf, lambda.toExecutableFunction(), false, null, true);
                 return;
               }
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
                 machine.ip.pop();
-                callMethodOrFunction(machine, self, method, false, null);
+                callMethodOrFunction(machine, self, method, false, null, false);
                 return;
               }
               else
@@ -363,13 +363,13 @@ public class ExpressionEvaluator
                 if (method.codeUnit.isStatic)
                 {
                   machine.ip.pop();
-                  callMethodOrFunction(machine, null, method, false, null);
+                  callMethodOrFunction(machine, null, method, false, null, false);
                 }
                 else if (method.codeUnit.isConstructor)
                 {
                   machine.ip.pop();
                   // Call constructor on the empty object to configure it
-                  callMethodOrFunction(machine, null, method, true, calleeType);
+                  callMethodOrFunction(machine, null, method, true, calleeType, false);
                 }
                 return;
               }
@@ -403,7 +403,7 @@ public class ExpressionEvaluator
                   if (method.codeUnit.isConstructor)
                   {
                     machine.ip.advanceIdx();
-                    callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType);
+                    callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType, false);
                   }
                   else
                     throw new RunException("Can only use super to call other constructors from within a constructor");
@@ -471,10 +471,22 @@ public class ExpressionEvaluator
           (MachineContext machine, AstNode node, int idx) -> {
             AstNode functionTypeAst = node.internalChildren.get(0);
             UnboundType unboundFunctionType = VariableDeclarationInterpreter.gatherUnboundTypeInfo(functionTypeAst);
-            Type functionType = machine.currentScope().typeFromUnboundTypeFromScope(unboundFunctionType);
+            Type.LambdaFunctionType functionType = (Type.LambdaFunctionType)machine.currentScope().typeFromUnboundTypeFromScope(unboundFunctionType);
             AstNode contentsAst = node.internalChildren.get(1);
+            // Not sure if using the codeUnit for the whole method is the right choice for the codeUnit for a lambda inside that method
+            CodeUnitLocation codeUnit = machine.getTopStackFrame().codeUnit;
+            List<String> argPosToName = new ArrayList<>();
+            for (String argName: functionType.optionalArgNames)
+            {
+              if (argName == null)
+                argPosToName.add("");
+              else 
+                argPosToName.add(argName);
+            }
             LambdaFunction fun = new LambdaFunction();
             fun.functionBody = contentsAst;
+            fun.codeUnit = codeUnit;
+            fun.argPosToName = argPosToName;
             Value val = Value.create(fun, functionType);
             machine.pushValue(val);
             machine.ip.pop();
@@ -495,7 +507,7 @@ public class ExpressionEvaluator
    *   gives the concrete type that should be constructed by the constructor
    */
   static void callMethodOrFunction(MachineContext machine, Value self,
-      ExecutableFunction method, boolean isConstructor, Type constructorType)
+      ExecutableFunction method, boolean isConstructor, Type constructorType, boolean isLambda)
   {
     // Transfer arguments off of the value stack 
     int numArgs = method.argPosToName.size();
@@ -504,7 +516,7 @@ public class ExpressionEvaluator
     {
       args.add(machine.readValue(numArgs - n - 1));
     }
-    if (self != null && !isConstructor)
+    if (isLambda || (self != null && !isConstructor))
       machine.popValues(numArgs + 1);
     else
       machine.popValues(numArgs);
