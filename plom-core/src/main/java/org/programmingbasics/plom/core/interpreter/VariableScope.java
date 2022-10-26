@@ -204,6 +204,13 @@ public class VariableScope
 //    this.thisValue = thisValue;
 //  }
   
+  public Value lookupThisOrNull()
+  {
+    if (parent != null)
+      return parent.lookupThisOrNull();
+    return null;
+  }
+  
   /**
    * In constructors, we may need to overwrite the "this" value 
    * so that it can later be returned by the constructor

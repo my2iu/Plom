@@ -13,6 +13,8 @@ public class LambdaFunction
   public AstNode functionBody;
   public CodeUnitLocation codeUnit;
   public List<String> argPosToName;
+  public VariableScope closureScope;
+  // public Value self;  // Not actually needed since it's implicitly stored in the closureScope
   
   public ExecutableFunction toExecutableFunction()
   {

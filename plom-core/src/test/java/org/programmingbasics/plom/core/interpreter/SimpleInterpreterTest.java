@@ -1058,8 +1058,6 @@ public class SimpleInterpreterTest extends TestCase
   @Test
   public void testFunctionLiteralOneArg() throws ParseException, RunException
   {
-    // TODO: Test with args, with closures, and with "this"
-    
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
       StandardLibrary.createCoreTypes(coreTypes);
       scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
@@ -1105,4 +1103,107 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(7.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
+  
+  @Test
+  public void testFunctionLiteralWithClosures() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 3));
+    });
+
+    StatementContainer code = new StatementContainer(
+        // Create a lambda containing a local variable. The lambda then returns another lambda which accesses that local variable
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".makeLambda", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("var", Symbol.Var),
+                        Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
+                        Token.ParameterToken.fromContents("@number", Symbol.AtType),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("20", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                                    new TokenContainer(
+                                        Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                                        Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+                                new Token.SimpleToken("returns", Symbol.Returns),
+                                Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                            new StatementContainer(
+                                new TokenContainer(
+                                    Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
+                                    new Token.SimpleToken(":=", Symbol.Assignment),
+                                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                                    new Token.SimpleToken("+", Symbol.Plus),
+                                    Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
+                                    ),
+                                new TokenContainer(
+                                    new Token.SimpleToken("return", Symbol.Return),
+                                    Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
+                                    ))
+                        )
+                        )))
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".makeLambda", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".make", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("1", Symbol.Number)))
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call:", Symbol.DotVariable,
+                new TokenContainer(
+                    new Token.SimpleToken("2", Symbol.Number)))
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(23.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
+  @Test
+  public void testFunctionLiteralWithThis() throws ParseException, RunException
+  {
+    // TODO: test lambdas that access "this"
+  }
+
 }

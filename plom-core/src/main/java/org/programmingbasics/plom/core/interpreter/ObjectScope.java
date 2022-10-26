@@ -23,12 +23,18 @@ public class ObjectScope extends VariableScope
   /**
    * Looks up the value of "this" i.e. the current object
    */
-  public Value lookupThis() throws RunException
+  @Override public Value lookupThis() throws RunException
   {
     return thisValue;
   }
 
-  public void overwriteThis(Value thisValue) throws RunException
+  @Override public Value lookupThisOrNull()
+  {
+    return thisValue;
+  }
+
+  
+  @Override public void overwriteThis(Value thisValue) throws RunException
   {
     this.thisValue = thisValue;
     if (thisValue.val instanceof PlomObject)

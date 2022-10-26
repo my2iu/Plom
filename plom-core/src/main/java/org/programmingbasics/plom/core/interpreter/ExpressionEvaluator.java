@@ -78,7 +78,7 @@ public class ExpressionEvaluator
           machine.ip.advanceIdx();
           machine.pushValue(self);
           machine.pushValue(right);
-          callMethodOrFunction(machine, self, method, false, null, false);
+          callMethodOrFunction(machine, self, method, false, null, false, null);
           break;
         }
       case 2:
@@ -268,7 +268,7 @@ public class ExpressionEvaluator
               {
                 ExecutableFunction fn = (ExecutableFunction)toReturn.val;
                 machine.ip.pop();
-                callMethodOrFunction(machine, null, fn, false, null, false);
+                callMethodOrFunction(machine, null, fn, false, null, false, null);
                 return;
               }
               List<Value> args = new ArrayList<>();
@@ -316,17 +316,15 @@ public class ExpressionEvaluator
                 if (!((Token.ParameterToken)methodNode.token).getLookupName().equals(lambdaType.name))
                   throw new RunException();
                 LambdaFunction lambda = (LambdaFunction)self.val;
-                // TODO: The value of "this" should come from "this" was defined as in the lambda
-                Value chainedSelf = null;
                 machine.ip.pop();
-                callMethodOrFunction(machine, chainedSelf, lambda.toExecutableFunction(), false, null, true);
+                callMethodOrFunction(machine, null, lambda.toExecutableFunction(), false, null, true, lambda.closureScope);
                 return;
               }
               ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
               if (method != null)
               {
                 machine.ip.pop();
-                callMethodOrFunction(machine, self, method, false, null, false);
+                callMethodOrFunction(machine, self, method, false, null, false, null);
                 return;
               }
               else
@@ -363,13 +361,13 @@ public class ExpressionEvaluator
                 if (method.codeUnit.isStatic)
                 {
                   machine.ip.pop();
-                  callMethodOrFunction(machine, null, method, false, null, false);
+                  callMethodOrFunction(machine, null, method, false, null, false, null);
                 }
                 else if (method.codeUnit.isConstructor)
                 {
                   machine.ip.pop();
                   // Call constructor on the empty object to configure it
-                  callMethodOrFunction(machine, null, method, true, calleeType, false);
+                  callMethodOrFunction(machine, null, method, true, calleeType, false, null);
                 }
                 return;
               }
@@ -403,7 +401,7 @@ public class ExpressionEvaluator
                   if (method.codeUnit.isConstructor)
                   {
                     machine.ip.advanceIdx();
-                    callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType, false);
+                    callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType, false, null);
                   }
                   else
                     throw new RunException("Can only use super to call other constructors from within a constructor");
@@ -487,10 +485,11 @@ public class ExpressionEvaluator
             fun.functionBody = contentsAst;
             fun.codeUnit = codeUnit;
             fun.argPosToName = argPosToName;
+            fun.closureScope = machine.currentScope();
+//            fun.self = machine.currentScope().lookupThisOrNull();
             Value val = Value.create(fun, functionType);
             machine.pushValue(val);
             machine.ip.pop();
-//            throw new IllegalArgumentException("Not implemented yet");
           })
       ;
   }
@@ -505,9 +504,10 @@ public class ExpressionEvaluator
   /**
    * @param constructorType when the method is a constructor, this parameter
    *   gives the concrete type that should be constructed by the constructor
+   * @param closureScope TODO
    */
   static void callMethodOrFunction(MachineContext machine, Value self,
-      ExecutableFunction method, boolean isConstructor, Type constructorType, boolean isLambda)
+      ExecutableFunction method, boolean isConstructor, Type constructorType, boolean isLambda, VariableScope closureScope)
   {
     // Transfer arguments off of the value stack 
     int numArgs = method.argPosToName.size();
@@ -521,12 +521,19 @@ public class ExpressionEvaluator
     else
       machine.popValues(numArgs);
 
-    // Push a new stack frame for the function and set up the arguments and other variable scope
-    machine.pushStackFrame(method.code, method.codeUnit, constructorType, SimpleInterpreter.statementHandlers);
-    if (isConstructor)
-      machine.pushConstructorScope();
-    else if (self != null)
-      machine.pushObjectScope(self);
+    // Push a new stack frame for the function and set up other variable scope
+    if (!isLambda)
+    {
+      machine.pushStackFrame(method.code, method.codeUnit, constructorType, SimpleInterpreter.statementHandlers);
+      if (isConstructor)
+        machine.pushConstructorScope();
+      else if (self != null)
+        machine.pushObjectScope(self);
+    }
+    else
+      machine.pushStackFrame(method.code, method.codeUnit, closureScope, constructorType, SimpleInterpreter.statementHandlers);
+
+    // Push arguments onto the scope stack
     machine.pushNewScope();
     for (int n = 0; n < method.argPosToName.size(); n++)
     {

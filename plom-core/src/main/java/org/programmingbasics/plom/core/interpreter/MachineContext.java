@@ -259,12 +259,17 @@ public class MachineContext
   }
   private List<StackFrame> stackFrames = new ArrayList<>();
   private StackFrame topStackFrame;
-  
+
   public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, Type constructorType, NodeHandlers instructionHandlers)
+  {
+    pushStackFrame(node, codeUnit, getGlobalScope(), constructorType, instructionHandlers);
+  }
+
+  protected void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, VariableScope baseScope, Type constructorType, NodeHandlers instructionHandlers)
   {
     StackFrame frame = new StackFrame();
     frame.ip.push(node, instructionHandlers);
-    frame.topScope = getGlobalScope();
+    frame.topScope = baseScope;
     frame.codeUnit = codeUnit;
     frame.constructorConcreteType = constructorType;
     
