@@ -57,8 +57,10 @@ import elemental.html.ClientRect;
 import elemental.html.DivElement;
 import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
+@JsType
 public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMovingCallback 
 {
   // References to other parts of the UI (possibly outside the coding area)
@@ -168,6 +170,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   public static interface VariableContextConfigurator {
     public void accept(CodeCompletionContext context);
   }
+  @JsMethod
   public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator)
   {
     this.globalConfigurator = globalConfigurator;

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-<xsl:output method="html" encoding="UTF-8" omit-xml-declaration="yes" doctype-system="about:legacy-compat"/> 
+<xsl:output method="html" encoding="UTF-8" omit-xml-declaration="yes" doctype-system="about:legacy-compat" indent="no"/> 
 
 <xsl:include href="basetemplate.xsl"/>
 
@@ -87,7 +87,7 @@
 <!-- Sets up the JavaScript needed to start each tutorial code panel -->
 <xsl:template match="plom-tutorial-code-panel" mode="js">
 	var repo = makeRepositoryWithStdLib();
-	var codePanel = new org.programmingbasics.plom.core.CodePanel(document.getElementById("<xsl:value-of select="generate-id()"/>"), true);
+	var codePanel = new org.programmingbasics.plom.core.CodePanel.forFullScreen(document.getElementById("<xsl:value-of select="generate-id()"/>"), true);
     codePanel.setVariableContextConfigurator(
         function(scope, coreTypes) {
           org.programmingbasics.plom.core.interpreter.StandardLibrary.createGlobals(null, scope, coreTypes);
@@ -122,7 +122,7 @@
    		<xsl:if test="@include='assign' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["Assignment"]);</xsl:if>
 
     </xsl:for-each>
-    var QuickSuggestion = org.programmingbasics.plom.core.CodePanel.QuickSuggestion;
+    var QuickSuggestion = org.programmingbasics.plom.core.CodeWidgetBase.QuickSuggestion;
     codePanel.setQuickSuggestions(org.programmingbasics.plom.core.Main.jsMakeListFromArray([
 	    <xsl:for-each select="suggestion">
 	    	new QuickSuggestion("<xsl:value-of select="@token"/>", "<xsl:value-of select="@token"/>")<xsl:if test="count(following-sibling::suggestion) &gt; 0">,</xsl:if>
@@ -208,6 +208,14 @@
 			<xsl:choose>
 				<xsl:when test="@choicelines">
 					height: <xsl:value-of select="2 + 2 * @choicelines"/>em;
+				</xsl:when>
+				<xsl:otherwise></xsl:otherwise>
+			</xsl:choose>
+		}
+		#<xsl:value-of select="generate-id()"/> .codesvg svg {
+			<xsl:choose>
+				<xsl:when test="@choicelines">
+					padding-bottom: <xsl:value-of select="1.5 + 1.5 * @lines"/>em;
 				</xsl:when>
 				<xsl:otherwise></xsl:otherwise>
 			</xsl:choose>
