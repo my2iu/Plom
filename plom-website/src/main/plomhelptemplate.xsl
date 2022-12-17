@@ -112,8 +112,8 @@
    		<xsl:if test="@include='simple literals' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["String", "Number"]);</xsl:if>
    		<xsl:if test="@exclude='boolean literals' or @exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["TrueLiteral", "FalseLiteral"]);</xsl:if>
    		<xsl:if test="@include='boolean literals' or @include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["TrueLiteral", "FalseLiteral"]);</xsl:if>
-   		<xsl:if test="@exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "This", "Super", "NullLiteral", "Is", "As", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment"]);</xsl:if>
-   		<xsl:if test="@include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["AtType", "This", "Super", "NullLiteral", "Is", "As", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment"]);</xsl:if>
+   		<xsl:if test="@exclude='all' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "This", "Super", "NullLiteral", "Is", "As", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment", "FunctionLiteral", "FunctionTypeName"]);</xsl:if>
+   		<xsl:if test="@include='all' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["AtType", "This", "Super", "NullLiteral", "Is", "As", "Retype", "OpenParenthesis", "DotVariable", "ClosedParenthesis", "Assignment", "FunctionLiteral", "FunctionTypeName"]);</xsl:if>
    		<xsl:if test="@exclude='variable identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["DotVariable"]);</xsl:if>
    		<xsl:if test="@include='variable identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelFewerExcludedTokens(codePanel, ["DotVariable"]);</xsl:if>
    		<xsl:if test="@exclude='identifiers' ">org.programmingbasics.plom.core.Main.jsCodePanelMoreExcludedTokens(codePanel, ["AtType", "DotVariable"]);</xsl:if>
