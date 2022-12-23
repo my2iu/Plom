@@ -26,6 +26,9 @@
  function . {as boolean } { @ {boolean } } { } {
  primitive
  }
+ function . {as function } { @ {object } } { } {
+ primitive
+ }
  function . {as number } { @ {number } } { } {
  primitive
  }
@@ -69,6 +72,9 @@
  primitive
  }
  classfunction . {from boolean: { . {value } @ {boolean } } } { @ {JS object } } { } {
+ primitive
+ }
+ classfunction . {from function: { . {value } @ {object } } } { @ {JS object } } { } {
  primitive
  }
  classfunction . {from number: { . {value } @ {number } } } { @ {JS object } } { } {
