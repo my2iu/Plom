@@ -9,6 +9,7 @@ import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import elemental.client.Browser;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
@@ -385,6 +386,12 @@ public class SimpleInterpreter
     ctx.runToEndOfFrame();
   }
 
+  public static Value callPlomLambdaFromJs()
+  {
+    Browser.getWindow().getConsole().log("called");
+    return null;
+  }
+  
 //  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException
 //  {
 //    runNoReturn(globalConfigurator);

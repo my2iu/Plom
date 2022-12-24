@@ -4,10 +4,13 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
+import jsinterop.annotations.JsType;
+
 /** 
  * Stores information about a parsed type (but just the raw text
  * for the type and not actual references to the real types)
  */
+@JsType
 public class UnboundType
 {
   public Token.ParameterToken mainToken;

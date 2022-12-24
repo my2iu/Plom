@@ -1,11 +1,17 @@
 function setupPlomUi() {
-	var Main = org.programmingbasics.plom.core.Main;
-	var ModuleCodeRepository = org.programmingbasics.plom.core.ModuleCodeRepository;
-	var PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
-	var CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
-	var Value = org.programmingbasics.plom.core.interpreter.Value; 
-	var StandardLibrary = org.programmingbasics.plom.core.interpreter.StandardLibrary;
-	var RunException = org.programmingbasics.plom.core.interpreter.RunException;
+	const Main = org.programmingbasics.plom.core.Main;
+	const ModuleCodeRepository = org.programmingbasics.plom.core.ModuleCodeRepository;
+	const PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
+	const CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
+	const Value = org.programmingbasics.plom.core.interpreter.Value; 
+	const StandardLibrary = org.programmingbasics.plom.core.interpreter.StandardLibrary;
+	const SimpleInterpreter = org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+	const RunException = org.programmingbasics.plom.core.interpreter.RunException;
+	const UnboundType = org.programmingbasics.plom.core.interpreter.UnboundType;
+	// Used to store whether a Plom object has a JS equivalent/proxy
+	const toJS = Symbol();
+	// Used to store whether a JS object has a Plom equivalent/proxy
+	const toPlom = Symbol();
 
 	// Code for the custom auto-resizing DOM input element	
 	class AutoResizingInputElement extends HTMLElement {
@@ -48,7 +54,7 @@ function setupPlomUi() {
 					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
 					var toReturn = selfVal.val[machine.currentScope().lookup("key").getStringValue()];
-					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
+					var returnValue = Value.create(toReturn, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));
 					blockWait.unblockAndReturn(returnValue);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "set:to:"),
@@ -64,7 +70,7 @@ function setupPlomUi() {
 					var selfVal = machine.currentScope().lookupThis();
 					// We just store the JavaScript pointer as the object itself
 					var toReturn = selfVal.val[machine.currentScope().lookup("index").getNumberValue()];
-					var returnValue = Value.create(toReturn, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
+					var returnValue = Value.create(toReturn, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));
 					blockWait.unblockAndReturn(returnValue);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "at:set:"),
@@ -99,11 +105,21 @@ function setupPlomUi() {
 					else
 						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getBooleanType()));
 				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "as function"),
+				function(blockWait, machine) {
+					var selfVal = machine.currentScope().lookupThis();
+					if (selfVal.val == null)
+						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
+					else if (selfVal.val[toPlom])
+						return selfVal.val[toPlom];
+					else
+						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getBooleanType()));
+				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(selfVal.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:"),
@@ -111,7 +127,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(selfVal.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:"),
@@ -120,7 +136,7 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(selfVal.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1, param2), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:"),
@@ -130,14 +146,14 @@ function setupPlomUi() {
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new selfVal.val[method](), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:"),
@@ -145,7 +161,7 @@ function setupPlomUi() {
 					var method = machine.currentScope().lookup("method").getStringValue();
 					var param1 = machine.currentScope().lookup("param1").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new selfVal.val[method](param1), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:"),
@@ -154,7 +170,7 @@ function setupPlomUi() {
 					var param1 = machine.currentScope().lookup("param1").val;
 					var param2 = machine.currentScope().lookup("param2").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new selfVal.val[method](param1, param2), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1, param2), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:"),
@@ -164,12 +180,12 @@ function setupPlomUi() {
 					var param2 = machine.currentScope().lookup("param2").val;
 					var param3 = machine.currentScope().lookup("param3").val;
 					var selfVal = machine.currentScope().lookupThis();
-					var v = Value.create(new selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object"))); 
+					var v = Value.create(new selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
 				function(blockWait, machine) {
-					var v = Value.create(window, machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));
+					var v = Value.create(window, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));
 					blockWait.unblockAndReturn(v);
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from number:"),
@@ -177,7 +193,7 @@ function setupPlomUi() {
 					var val = machine.currentScope().lookup("value");
 					if (val.type != machine.coreTypes().getNullType())
 					{
-						var v = Value.create(val.getNumberValue(), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));  
+						var v = Value.create(val.getNumberValue(), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));  
 						blockWait.unblockAndReturn(v);
 					}
 					else
@@ -188,7 +204,7 @@ function setupPlomUi() {
 					var val = machine.currentScope().lookup("value");
 					if (val.type != machine.coreTypes().getNullType())
 					{
-						var v = Value.create(val.getStringValue(), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));  
+						var v = Value.create(val.getStringValue(), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));  
 						blockWait.unblockAndReturn(v);
 					}
 					else
@@ -199,11 +215,33 @@ function setupPlomUi() {
 					var val = machine.currentScope().lookup("value");
 					if (val.type != machine.coreTypes().getNullType())
 					{
-						var v = Value.create(val.getBooleanValue(), machine.currentScope().typeFromToken(machine.quickTypeToken("@JS object")));  
+						var v = Value.create(val.getBooleanValue(), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));  
 						blockWait.unblockAndReturn(v);
 					}
 					else
 						blockWait.unblockAndReturn(val);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "from function:"),
+				function(blockWait, machine) {
+					var val = machine.currentScope().lookup("value");
+					if (val.type == machine.coreTypes().getNullType())
+					{
+						blockWait.unblockAndReturn(val);
+					}
+					else if (val.val[toJS])
+					{
+						blockWait.unblockAndReturn(val.val[toJS]);
+					}
+					else
+					{
+						const jsProxy = function() {
+							SimpleInterpreter.callPlomLambdaFromJs();
+						};
+						jsProxy[toPlom] = val;
+						val[toJS] = jsProxy;
+						var v = Value.create(jsProxy, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));
+						blockWait.unblockAndReturn(v);
+					}
 				});
 	}
 	function makeStdLibRepository()
