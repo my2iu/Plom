@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -386,10 +389,38 @@ public class SimpleInterpreter
     ctx.runToEndOfFrame();
   }
 
-  public static Value callPlomLambdaFromJs()
+  /**
+   * A Plom lambda can be passed to JavaScript code to run. When JS tries to
+   * run that lambda, it ends up in this method to actually start up an 
+   * interpreter to run it.
+   */
+  public static Value callPlomLambdaFromJs(MachineContext oldCtx, LambdaFunction lambda) throws RunException
   {
-    Browser.getWindow().getConsole().log("called");
-    return null;
+    try {
+      // Create a new interpreter / MachineContext (we're too lazy to check if we can reuse an existing one for now)
+      SimpleInterpreter terp = new SimpleInterpreter(null);
+      // Reuse the global scope from the context where the lambda was created
+      terp.ctx = MachineContext.fromOutsideContext(oldCtx.coreTypes(), oldCtx.getGlobalScope());
+      
+      // Set up arguments
+      List<Value> args = new ArrayList<>();
+      
+      // Trying calling into the lambda now
+      ExpressionEvaluator.callMethodOrFunctionNoStack(terp.ctx, null, lambda.toExecutableFunction(), false, null, true, lambda.closureScope, args);
+      
+      // Run the lambda now that its stackframe is on the stack
+      terp.ctx.runToCompletion();
+      
+      // See if there was a return value
+      return terp.ctx.getExitReturnValue();
+    }
+    catch (Throwable e)
+    {
+//      if (errorLogger != null)
+//        errorLogger.error(e);
+//      else
+        throw e;
+    }
   }
   
 //  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException

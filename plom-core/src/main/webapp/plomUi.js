@@ -235,7 +235,7 @@ function setupPlomUi() {
 					else
 					{
 						const jsProxy = function() {
-							SimpleInterpreter.callPlomLambdaFromJs();
+							SimpleInterpreter.callPlomLambdaFromJs(machine, val.val);
 						};
 						jsProxy[toPlom] = val;
 						val[toJS] = jsProxy;

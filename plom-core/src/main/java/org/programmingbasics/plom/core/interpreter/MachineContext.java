@@ -49,6 +49,23 @@ public class MachineContext
   }
   
   /**
+   * In some cases, we already have a global scope from another
+   * context, and we can just reuse the same one instead of 
+   * configuring an entirely new one (used primarily when we
+   * have a lambda from another context that we've passed into
+   * JavaScript, and then the JavaScript calls that lambda--we
+   * create a new context for the call, but we should reuse the
+   * global scope from the other context)  
+   */
+  public static MachineContext fromOutsideContext(CoreTypeLibrary newCoreTypes, VariableScope newGlobalScope)
+  {
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = newCoreTypes;
+    ctx.globalScope = newGlobalScope;
+    return ctx;
+  }
+  
+  /**
    * Gets the current scope used for looking up variables and where
    * new variables will be added. A scope is where bindings of names 
    * to values for variables can be looked up
@@ -299,13 +316,24 @@ public class MachineContext
       pushValue(returnVal);
     }
     else
+    {
       topStackFrame = null;
+      exitReturnValue = returnVal;
+    }
   }
   
   StackFrame getTopStackFrame()
   {
     return topStackFrame;
   }
+
+  /**
+   * When the last function/method exits, it may return a value.
+   * That value is stored here since there is no stack frame left
+   * to hold that final value.
+   */
+  private Value exitReturnValue = null;
+  public Value getExitReturnValue() { return exitReturnValue; }
   
   /**
    * We occasionally need to call blocking functions, but since JavaScript 

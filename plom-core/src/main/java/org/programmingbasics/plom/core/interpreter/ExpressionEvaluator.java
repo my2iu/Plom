@@ -521,6 +521,21 @@ public class ExpressionEvaluator
     else
       machine.popValues(numArgs);
 
+    callMethodOrFunctionNoStack(machine, self, method, isConstructor, constructorType, isLambda,
+        closureScope, args);
+  }
+
+  /**
+   * Calls a method or function, but with all the necessary function arguments
+   * already removed from the stack and put into a List (this is useful because
+   * we sometimes want to call directly into a function/method from outside (like
+   * from JavaScript) and we don't want to create a dummy stack frame to
+   * store arguments and other data just to pop them off again) 
+   */
+  static void callMethodOrFunctionNoStack(MachineContext machine, Value self,
+      ExecutableFunction method, boolean isConstructor, Type constructorType,
+      boolean isLambda, VariableScope closureScope, List<Value> args)
+  {
     // Push a new stack frame for the function and set up other variable scope
     if (!isLambda)
     {
