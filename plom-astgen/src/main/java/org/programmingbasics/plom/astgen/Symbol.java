@@ -127,4 +127,11 @@ enum Symbol
     if (!isWide()) return true;
     return this == FunctionLiteral;
   }
+  boolean isRejectNewlines()
+  {
+    return this == TypeOnly || this == ExpressionOnly 
+        || this == ForExpressionOnly || this == FunctionLiteralExpressionOnly
+        || this == ReturnTypeFieldOnly || this == ParameterFieldOnly
+        || this == ParameterFieldOptionalNameOnly;
+  }
 }

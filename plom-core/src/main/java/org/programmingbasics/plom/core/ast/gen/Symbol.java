@@ -272,4 +272,19 @@ public enum Symbol
 			return false;
 		}
 	}
+	public boolean isRejectNewlines()
+	{
+		switch(this) {
+		case TypeOnly:
+		case ExpressionOnly:
+		case ForExpressionOnly:
+		case FunctionLiteralExpressionOnly:
+		case ReturnTypeFieldOnly:
+		case ParameterFieldOnly:
+		case ParameterFieldOptionalNameOnly:
+			return true;
+		default:
+			return false;
+		}
+	}
 }

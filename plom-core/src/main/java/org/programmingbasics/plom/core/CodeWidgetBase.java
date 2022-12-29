@@ -653,8 +653,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (fragmentStr == null) return;
     
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(defaultParseContext, codeList, cursorPos, 0);
-    boolean canAcceptNewlinesAndWideTokens = (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
-        && parseContext.baseContext != Symbol.ReturnTypeFieldOnly && parseContext.baseContext != Symbol.ParameterFieldOnly); 
+    boolean canAcceptNewlinesAndWideTokens = !parseContext.baseContext.isRejectNewlines(); 
     try {
       PlomTextReader.StringTextReader strReader = new PlomTextReader.StringTextReader(fragmentStr);
       PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(strReader); 
@@ -671,7 +670,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         isFirst = false;
         for (Token tok: tokens.tokens)
         {
-          if (tok.isWide() && !canAcceptNewlinesAndWideTokens)
+          if (!tok.isInline() && !canAcceptNewlinesAndWideTokens)
             break;
           InsertToken.insertTokenIntoStatementContainer(codeList, tok, cursorPos, 0, true);
         }

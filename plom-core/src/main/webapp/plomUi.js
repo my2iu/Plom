@@ -113,7 +113,8 @@ function setupPlomUi() {
 					else if (selfVal.val[toPlom])
 						return selfVal.val[toPlom];
 					else
-						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.coreTypes().getBooleanType()));
+						// Simply return the function as a JS object, which can be invoked as a normal function using apply()
+						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))));
 				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
 				function(blockWait, machine) {

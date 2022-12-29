@@ -376,6 +376,7 @@ public class PlomAstGen
       generateSymbolBooleanTest(out, "isTerminal", sym -> sym.isTerminal);
       generateSymbolBooleanTest(out, "isWide", sym -> sym.isWide());
       generateSymbolBooleanTest(out, "isInline", sym -> sym.isInline());
+      generateSymbolBooleanTest(out, "isRejectNewlines", sym -> sym.isRejectNewlines());
       out.println("}");
     }
     
