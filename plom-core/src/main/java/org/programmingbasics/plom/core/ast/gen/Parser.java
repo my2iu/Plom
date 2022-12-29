@@ -153,7 +153,7 @@ public class Parser
 		parsingTable.put(Symbol.FunctionLiteralExpressionOnly, new HashMap<>());
 		parsingTable.get(Symbol.FunctionLiteralExpressionOnly).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.FunctionLiteralExpression, Symbol.EndStatement, });
 		parsingTable.put(Symbol.FunctionType, new HashMap<>());
-		parsingTable.get(Symbol.FunctionType).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.FunctionTypeName, Symbol.Returns, Symbol.ParameterFieldOptionalName, });
+		parsingTable.get(Symbol.FunctionType).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.FunctionTypeName, Symbol.Returns, Symbol.ReturnTypeFieldOptionalName, });
 		parsingTable.put(Symbol.MemberExpression, new HashMap<>());
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.AtType, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
 		parsingTable.get(Symbol.MemberExpression).put(Symbol.DotVariable, new Symbol[] {Symbol.ParenthesisExpression, Symbol.MemberExpressionMore, });
@@ -291,6 +291,10 @@ public class Parser
 		parsingTable.put(Symbol.ReturnTypeFieldOnly, new HashMap<>());
 		parsingTable.get(Symbol.ReturnTypeFieldOnly).put(Symbol.AtType, new Symbol[] {Symbol.ReturnTypeField, Symbol.EndStatement, });
 		parsingTable.get(Symbol.ReturnTypeFieldOnly).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.ReturnTypeField, Symbol.EndStatement, });
+		parsingTable.put(Symbol.ReturnTypeFieldOptionalName, new HashMap<>());
+		parsingTable.get(Symbol.ReturnTypeFieldOptionalName).put(Symbol.AtType, new Symbol[] {Symbol.ReturnTypeField, });
+		parsingTable.get(Symbol.ReturnTypeFieldOptionalName).put(Symbol.DotVariable, new Symbol[] {Symbol.DotDeclareIdentifier, Symbol.ReturnTypeField, });
+		parsingTable.get(Symbol.ReturnTypeFieldOptionalName).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.ReturnTypeField, });
 		parsingTable.put(Symbol.Statement, new HashMap<>());
 		parsingTable.get(Symbol.Statement).put(Symbol.AtType, new Symbol[] {Symbol.AssignmentExpression, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });

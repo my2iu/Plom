@@ -102,6 +102,7 @@ enum Symbol
   
   ReturnTypeField(false),
   ReturnTypeFieldOnly(false),
+  ReturnTypeFieldOptionalName(false),
   ParameterField(false),
   ParameterFieldOnly(false),
   ParameterFieldOptionalName(false),

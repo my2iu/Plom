@@ -73,7 +73,7 @@ public class Rule
 	public final static List<Symbol> TypeOnly_Type_EndStatement = Arrays.asList(Symbol.TypeOnly, Symbol.Type, Symbol.EndStatement);
 	public final static List<Symbol> Type_AtType = Arrays.asList(Symbol.Type, Symbol.AtType);
 	public final static List<Symbol> Type_FunctionType = Arrays.asList(Symbol.Type, Symbol.FunctionType);
-	public final static List<Symbol> FunctionType_FunctionTypeName_Returns_ParameterFieldOptionalName = Arrays.asList(Symbol.FunctionType, Symbol.FunctionTypeName, Symbol.Returns, Symbol.ParameterFieldOptionalName);
+	public final static List<Symbol> FunctionType_FunctionTypeName_Returns_ReturnTypeFieldOptionalName = Arrays.asList(Symbol.FunctionType, Symbol.FunctionTypeName, Symbol.Returns, Symbol.ReturnTypeFieldOptionalName);
 	public final static List<Symbol> DotDeclareIdentifier_DotVariable = Arrays.asList(Symbol.DotDeclareIdentifier, Symbol.DotVariable);
 	public final static List<Symbol> DotMember_DotVariable = Arrays.asList(Symbol.DotMember, Symbol.DotVariable);
 	public final static List<Symbol> DotSuperMember_DotVariable = Arrays.asList(Symbol.DotSuperMember, Symbol.DotVariable);
@@ -92,6 +92,8 @@ public class Rule
 	public final static List<Symbol> VarDeclarationStatement_Var_DotDeclareIdentifier_VarType = Arrays.asList(Symbol.VarDeclarationStatement, Symbol.Var, Symbol.DotDeclareIdentifier, Symbol.VarType);
 	public final static List<Symbol> ReturnTypeField_Type = Arrays.asList(Symbol.ReturnTypeField, Symbol.Type);
 	public final static List<Symbol> ReturnTypeFieldOnly_ReturnTypeField_EndStatement = Arrays.asList(Symbol.ReturnTypeFieldOnly, Symbol.ReturnTypeField, Symbol.EndStatement);
+	public final static List<Symbol> ReturnTypeFieldOptionalName_ReturnTypeField = Arrays.asList(Symbol.ReturnTypeFieldOptionalName, Symbol.ReturnTypeField);
+	public final static List<Symbol> ReturnTypeFieldOptionalName_DotDeclareIdentifier_ReturnTypeField = Arrays.asList(Symbol.ReturnTypeFieldOptionalName, Symbol.DotDeclareIdentifier, Symbol.ReturnTypeField);
 	public final static List<Symbol> ParameterField_DotDeclareIdentifier_Type = Arrays.asList(Symbol.ParameterField, Symbol.DotDeclareIdentifier, Symbol.Type);
 	public final static List<Symbol> ParameterFieldOnly_ParameterField_EndStatement = Arrays.asList(Symbol.ParameterFieldOnly, Symbol.ParameterField, Symbol.EndStatement);
 	public final static List<Symbol> ParameterFieldOptionalName_DotDeclareIdentifier_Type = Arrays.asList(Symbol.ParameterFieldOptionalName, Symbol.DotDeclareIdentifier, Symbol.Type);

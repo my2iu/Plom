@@ -71,7 +71,7 @@ public class VariableDeclarationInterpreter
         typesToReturn.type = t;
         return true;
       })
-      .add(Rule.FunctionType_FunctionTypeName_Returns_ParameterFieldOptionalName, (triggers, node, typesToReturn, unused) -> {
+      .add(Rule.FunctionType_FunctionTypeName_Returns_ReturnTypeFieldOptionalName, (triggers, node, typesToReturn, unused) -> {
         // If the rule matches, then at least the FunctionTypeName is defined
         node.children.get(0).recursiveVisit(VariableDeclarationInterpreter.typeParsingHandlers,  typesToReturn, null);
         // Check if there's a return type

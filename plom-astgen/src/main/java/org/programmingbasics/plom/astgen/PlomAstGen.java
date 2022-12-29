@@ -95,7 +95,7 @@ public class PlomAstGen
       rule(TypeOnly, Type, EndStatement),
       rule(Type, AtType),
       rule(Type, FunctionType),
-      rule(FunctionType, FunctionTypeName, Returns, ParameterFieldOptionalName),
+      rule(FunctionType, FunctionTypeName, Returns, ReturnTypeFieldOptionalName),
       rule(DotDeclareIdentifier, DotVariable),
       rule(DotMember, DotVariable),
       rule(DotSuperMember, DotVariable),
@@ -116,6 +116,8 @@ public class PlomAstGen
 
       rule(ReturnTypeField, Type),
       rule(ReturnTypeFieldOnly, ReturnTypeField, EndStatement),
+      rule(ReturnTypeFieldOptionalName, ReturnTypeField),
+      rule(ReturnTypeFieldOptionalName, DotDeclareIdentifier, ReturnTypeField),
       rule(ParameterField, DotDeclareIdentifier, Type),
       rule(ParameterFieldOnly, ParameterField, EndStatement),
       rule(ParameterFieldOptionalName, DotDeclareIdentifier, Type),

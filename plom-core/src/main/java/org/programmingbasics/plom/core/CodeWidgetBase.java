@@ -339,8 +339,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     // newline button
     floatDivLine = Browser.getDocument().createDivElement();
     floatDiv.appendChild(floatDivLine);
-    if (parseContext.baseContext != Symbol.ExpressionOnly && parseContext.baseContext != Symbol.ForExpressionOnly
-        && parseContext.baseContext != Symbol.ReturnTypeFieldOnly && parseContext.baseContext != Symbol.ParameterFieldOnly)
+    if (!parseContext.baseContext.isRejectNewlines())
     {
       floatDivLine.appendChild(makeButton("\u21b5", true, choicesDiv, () -> {
         InsertNewLine.insertNewlineIntoStatementContainer(codeList, cursorPos, 0);
@@ -374,7 +373,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
             case AtType:
             {
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
-              suggester = new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly));
+              suggester = new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
               break;
               
             }
@@ -580,7 +579,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly)), 
+          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -590,7 +589,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeFieldOnly) || parentSymbols.contains(Symbol.ParameterFieldOnly)), 
+          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }

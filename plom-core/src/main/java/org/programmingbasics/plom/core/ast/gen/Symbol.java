@@ -97,6 +97,7 @@ public enum Symbol
 	VarDeclarationStatement,
 	ReturnTypeField,
 	ReturnTypeFieldOnly,
+	ReturnTypeFieldOptionalName,
 	ParameterField,
 	ParameterFieldOnly,
 	ParameterFieldOptionalName,
@@ -262,6 +263,7 @@ public enum Symbol
 		case VarDeclarationStatement:
 		case ReturnTypeField:
 		case ReturnTypeFieldOnly:
+		case ReturnTypeFieldOptionalName:
 		case ParameterField:
 		case ParameterFieldOnly:
 		case ParameterFieldOptionalName:
