@@ -215,6 +215,12 @@ public class MachineContext
     {
       return ipHead >= 0;
     }
+    /** Sets the ip to an invalid value (only used when popping the last stack frame */
+    public void invalidate()
+    {
+      ipHead = -1;
+      ip.clear();
+    }
   }
   public InstructionPointer ip = new InstructionPointer();
   
@@ -319,6 +325,7 @@ public class MachineContext
     {
       topStackFrame = null;
       exitReturnValue = returnVal;
+      ip.invalidate();
     }
   }
   
@@ -520,7 +527,12 @@ public class MachineContext
           return false;
         
         // Finished executing the current stack frame, so exit it
-        if (!topStackFrame.codeUnit.isConstructor)
+        if (topStackFrame == null)
+        {
+          // This can happen if we return a value from the final
+          // stack frame
+        }
+        else if (!topStackFrame.codeUnit.isConstructor)
         {
           // If there's no return value, return void
           popStackFrameReturning(Value.createVoidValue(coreTypes()));

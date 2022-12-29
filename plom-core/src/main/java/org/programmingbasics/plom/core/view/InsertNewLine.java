@@ -26,7 +26,11 @@ public class InsertNewLine
         Void handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, Void param)
         {
-          throw new IllegalArgumentException();
+          if (!pos.hasOffset(level + 1))
+            throw new IllegalArgumentException();
+          Token tok = exprContainer.tokens.get(pos.getOffset(level));
+          tok.visit(this, pos, level + 1, null);
+          return null; 
         }
         @Override
         Void handleStatementContainer(TokenWithSymbol originalToken,

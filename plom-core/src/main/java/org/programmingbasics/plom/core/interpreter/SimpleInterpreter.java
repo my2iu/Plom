@@ -12,7 +12,7 @@ import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
-import elemental.client.Browser;
+import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
@@ -394,7 +394,7 @@ public class SimpleInterpreter
    * run that lambda, it ends up in this method to actually start up an 
    * interpreter to run it.
    */
-  public static Value callPlomLambdaFromJs(MachineContext oldCtx, LambdaFunction lambda) throws RunException
+  public static Value callPlomLambdaFromJs(MachineContext oldCtx, LambdaFunction lambda, ArrayOf<Value> arguments) throws RunException
   {
     try {
       // Create a new interpreter / MachineContext (we're too lazy to check if we can reuse an existing one for now)
@@ -403,10 +403,18 @@ public class SimpleInterpreter
       terp.ctx = MachineContext.fromOutsideContext(oldCtx.coreTypes(), oldCtx.getGlobalScope());
       
       // Set up arguments
-      List<Value> args = new ArrayList<>();
+      ExecutableFunction fn = lambda.toExecutableFunction();
+      List<Value> paddedArgs = new ArrayList<>();
+      for (int n = 0; n < fn.argPosToName.size(); n++)
+      {
+        if (n < arguments.length())
+          paddedArgs.add(arguments.get(n));
+        else 
+          paddedArgs.add(terp.ctx.coreTypes().getNullValue());
+      }
       
       // Trying calling into the lambda now
-      ExpressionEvaluator.callMethodOrFunctionNoStack(terp.ctx, null, lambda.toExecutableFunction(), false, null, true, lambda.closureScope, args);
+      ExpressionEvaluator.callMethodOrFunctionNoStack(terp.ctx, null, fn, false, null, true, lambda.closureScope, paddedArgs);
       
       // Run the lambda now that its stackframe is on the stack
       terp.ctx.runToCompletion();

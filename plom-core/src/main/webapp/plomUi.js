@@ -234,12 +234,20 @@ function setupPlomUi() {
 					}
 					else
 					{
+						JsObjectType = machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"));
 						const jsProxy = function() {
-							SimpleInterpreter.callPlomLambdaFromJs(machine, val.val);
+							var plomArgVals = [];
+							for (var n = 0; n < arguments.length; n++)
+								plomArgVals.push(Value.create(arguments[n], JsObjectType));
+							var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
+							if (returnVal == null || returnVal.isNull()) 
+								return null;
+							else 
+								return returnVal.val; 
 						};
 						jsProxy[toPlom] = val;
 						val[toJS] = jsProxy;
-						var v = Value.create(jsProxy, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));
+						var v = Value.create(jsProxy, JsObjectType);
 						blockWait.unblockAndReturn(v);
 					}
 				});

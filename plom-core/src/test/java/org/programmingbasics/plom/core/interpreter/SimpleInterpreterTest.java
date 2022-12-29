@@ -15,6 +15,8 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MachineContext.PrimitiveBlockingFunctionReturn;
 
+import elemental.util.ArrayOf;
+import elemental.util.impl.JreArrayOf;
 import junit.framework.TestCase;
 
 public class SimpleInterpreterTest extends TestCase
@@ -1204,6 +1206,68 @@ public class SimpleInterpreterTest extends TestCase
   public void testFunctionLiteralWithThis() throws ParseException, RunException
   {
     // TODO: test lambdas that access "this"
+  }
+  
+  @Test
+  public void testCallPlomLambdaFromJs() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      try {
+        // function type of the lambda
+        UnboundType funType = new UnboundType();
+        funType.mainToken = Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                Token.ParameterToken.fromContents("@number", Symbol.AtType)));
+        funType.returnType = new TokenContainer(
+            Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType));
+        
+        scope.addVariable("fun", 
+            scope.typeFromUnboundTypeFromScope(funType), coreTypes.getNullValue());
+      } catch (RunException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("6", Symbol.Number)),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".fun", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".arg", Symbol.DotVariable)
+                        )))
+            ));
+    // Run to create a lambda
+    SimpleInterpreter oldTerp = new SimpleInterpreter(code); 
+    oldTerp.runNoReturn(vars);
+    
+    // Now try calling the lambda from outside
+    Value lambda = vars.globalScope.lookup("fun");
+    ArrayOf<Value> arguments = new JreArrayOf<>();
+    arguments.push(Value.createNumberValue(oldTerp.ctx.coreTypes(), 10));
+    Value returned = SimpleInterpreter.callPlomLambdaFromJs(oldTerp.ctx, (LambdaFunction)lambda.val, arguments);
+    Assert.assertEquals(16, returned.getNumberValue(), 0.01);
   }
 
 }

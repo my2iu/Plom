@@ -89,4 +89,53 @@ public class InsertNewLineTest extends TestCase
     Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), pos);
   }
 
+  @Test
+  public void testInsertInLambdaInExpression()
+  {
+    StatementContainer container = 
+        new StatementContainer(
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents("f@call", Symbol.FunctionTypeName),
+                                new Token.SimpleToken("returns", Symbol.Returns),
+                                Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("return", Symbol.Return),
+                                    new Token.SimpleToken("1", Symbol.Number)
+                                    )))
+                        ),
+                    new StatementContainer()
+                )
+            )
+        );
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0);
+    InsertNewLine.insertNewlineIntoStatementContainer(container, pos, 0);
+    Assert.assertEquals(
+        new StatementContainer(
+            new TokenContainer(
+                new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents("f@call", Symbol.FunctionTypeName),
+                                new Token.SimpleToken("returns", Symbol.Returns),
+                                Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+                            new StatementContainer(
+                                new TokenContainer(),
+                                new TokenContainer(
+                                    new Token.SimpleToken("return", Symbol.Return),
+                                    new Token.SimpleToken("1", Symbol.Number)
+                                    )))
+                        ),
+                    new StatementContainer()
+                )
+            )
+        ),
+        container);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), pos);    
+  }
 }
