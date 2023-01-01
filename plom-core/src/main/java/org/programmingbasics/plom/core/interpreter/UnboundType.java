@@ -25,6 +25,20 @@ public class UnboundType
   {
     return UnboundType.fromToken(Token.ParameterToken.fromContents("@" + name, Symbol.AtType)); 
   }
+  public static UnboundType forSimpleFunctionType(String returnClassName, String name, String...argClassNames)
+  {
+    UnboundType funType = new UnboundType();
+    funType.returnType = new TokenContainer(Token.ParameterToken.fromContents("@" + returnClassName, Symbol.AtType));
+    TokenContainer[] args = new TokenContainer[argClassNames.length];
+    for (int n = 0; n < argClassNames.length; n++)
+    {
+      args[n] = new TokenContainer();
+      args[n].tokens.add(Token.ParameterToken.fromContents(".arg" + n, Symbol.DotVariable));
+      args[n].tokens.add(Token.ParameterToken.fromContents("@" + argClassNames[n], Symbol.AtType));
+    }
+    funType.mainToken = Token.ParameterToken.fromContents("f@" + name, Symbol.FunctionTypeName, args);
+    return funType;
+  }
   public UnboundType copy()
   {
     UnboundType newType = new UnboundType();

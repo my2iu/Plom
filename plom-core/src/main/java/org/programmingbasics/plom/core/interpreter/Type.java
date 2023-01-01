@@ -216,5 +216,10 @@ public class Type
       this.args = args;
       this.optionalArgNames = optionalArgNames;
     }
+    @Override
+    public void lookupMethodSuggestions(GatheredSuggestions suggestions)
+    {
+      suggestions.addSuggestion(name);
+    }
   }
 }

@@ -624,4 +624,96 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(suggestions.contains("substring from:to:"));
     Assert.assertTrue(suggestions.contains("to string"));
   }
+  
+  @Test
+  public void testFunctionLiteralCallNoParams() throws RunException
+  {
+    // Will the methods available on a function literal be listed properly
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@go", Symbol.FunctionTypeName),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".go", Symbol.DotVariable)
+            ));
+        
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 1));
+    UnboundType funType = UnboundType.forSimpleFunctionType("string", "go");
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getLastTypeUsed());
+    List<String> suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("go"));
+
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 2));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("substring from:to:"));
+
+    
+//    new TokenContainer(
+//        new Token.SimpleToken("var", Symbol.Var),
+//        Token.ParameterToken.fromContents(".makeLambda", Symbol.DotVariable),
+//        Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
+//        new Token.SimpleToken("returns", Symbol.Returns),
+//        Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+//            new TokenContainer(
+//                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+//                Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+//        new Token.SimpleToken("returns", Symbol.Returns),
+//        Token.ParameterToken.fromContents("@number", Symbol.AtType),
+//        new Token.SimpleToken(":=", Symbol.Assignment),
+//        new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+//            new TokenContainer(
+//                Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
+//                new Token.SimpleToken("returns", Symbol.Returns),
+//                Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+//                    new TokenContainer(
+//                        Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+//                        Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+//                new Token.SimpleToken("returns", Symbol.Returns),
+//                Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+//            new StatementContainer(
+//                new TokenContainer(
+//                    new Token.SimpleToken("var", Symbol.Var),
+//                    Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
+//                    Token.ParameterToken.fromContents("@number", Symbol.AtType),
+//                    new Token.SimpleToken(":=", Symbol.Assignment),
+//                    new Token.SimpleToken("20", Symbol.Number)
+//                    ),
+//                new TokenContainer(
+//                    new Token.SimpleToken("return", Symbol.Return),
+//                    new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+//                        new TokenContainer(
+//                            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+//                                new TokenContainer(
+//                                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+//                                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+//                            new Token.SimpleToken("returns", Symbol.Returns),
+//                            Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+//                        new StatementContainer(
+//                            new TokenContainer(
+//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
+//                                new Token.SimpleToken(":=", Symbol.Assignment),
+//                                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
+//                                new Token.SimpleToken("+", Symbol.Plus),
+//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
+//                                ),
+//                            new TokenContainer(
+//                                new Token.SimpleToken("return", Symbol.Return),
+//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
+//                                ))
+//                    )
+//                    )))
+//        ),
+
+    
+  }
 }

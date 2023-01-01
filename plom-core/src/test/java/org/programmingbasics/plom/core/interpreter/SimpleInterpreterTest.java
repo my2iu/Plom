@@ -1215,15 +1215,7 @@ public class SimpleInterpreterTest extends TestCase
       StandardLibrary.createCoreTypes(coreTypes);
       try {
         // function type of the lambda
-        UnboundType funType = new UnboundType();
-        funType.mainToken = Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
-            new TokenContainer(
-                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
-                Token.ParameterToken.fromContents("@number", Symbol.AtType)));
-        funType.returnType = new TokenContainer(
-            Token.ParameterToken.fromContents(".returned value", Symbol.DotVariable),
-            Token.ParameterToken.fromContents("@number", Symbol.AtType));
-        
+        UnboundType funType = UnboundType.forSimpleFunctionType("number", "call:", "number"); 
         scope.addVariable("fun", 
             scope.typeFromUnboundTypeFromScope(funType), coreTypes.getNullValue());
       } catch (RunException e) {
