@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Type
 {
@@ -220,6 +221,34 @@ public class Type
     public void lookupMethodSuggestions(GatheredSuggestions suggestions)
     {
       suggestions.addSuggestion(name);
+    }
+    @Override 
+    public TypeSignature lookupMethodSignature(String funName)
+    {
+      TypeSignature sig = null;
+      if (name.equals(funName))
+      {
+        sig = new TypeSignature(name, returnType, args.toArray(new Type[0]));
+      }
+      return sig;
+    }
+    @Override
+    public int hashCode()
+    {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + Objects.hash(args, returnType);
+      return result;
+    }
+    @Override
+    public boolean equals(Object obj)
+    {
+      if (this == obj) return true;
+      if (!super.equals(obj)) return false;
+      if (getClass() != obj.getClass()) return false;
+      LambdaFunctionType other = (LambdaFunctionType) obj;
+      return Objects.equals(args, other.args)
+          && Objects.equals(returnType, other.returnType);
     }
   }
 }

@@ -93,10 +93,21 @@ public class GatherCodeCompletionInfo
         @Override public Void visitOneExpressionOneBlockToken(
             OneExpressionOneBlockToken token, CodeCompletionContext param1) 
         {
-          if (token.getType() != Symbol.COMPOUND_FOR) return null;
-          if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
-          parseWholeLine(token.expression, Symbol.ForExpression, context);
-          return null; 
+          switch (token.getType())
+          {
+            case COMPOUND_FOR:
+              if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+              parseWholeLine(token.expression, Symbol.ForExpression, context);
+              return null;
+            case FunctionLiteral:
+              if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+              // Parse out the function type of the literal and extract any arguments defined in function literal type
+              if (token.expression == null) return null;
+              parseWholeLine(token.expression, Symbol.FunctionLiteralExpression, context);
+              return null;
+            default:
+              return null;
+          }
         }
       }, context); 
       // Now enter into the token for the current code position
@@ -148,6 +159,19 @@ public class GatherCodeCompletionInfo
       AstNode declareIdentifier = node.children.get(0);
       AstNode varType = node.children.get(1);
       handleVariableDeclaration(context, declareIdentifier, varType);
+      return true;
+      })
+    .add(Rule.FunctionLiteralExpression_FunctionType, (triggers, node, context, param) -> {
+      Type type = CodeSuggestExpressionTyper.gatherTypeInfoNoFail(node.children.get(0), context);
+      // Add in all arguments from the function type
+      if (!(type instanceof Type.LambdaFunctionType)) return true;
+      Type.LambdaFunctionType funType = (Type.LambdaFunctionType)type;
+      for (int n = 0; n < funType.args.size(); n++)
+      {
+        if (funType.optionalArgNames.get(n) == null) continue;
+        if (funType.args.get(n) == null) continue;
+        context.currentScope().addVariable(funType.optionalArgNames.get(n), funType.args.get(n), context.coreTypes().getNullValue());
+      }
       return true;
       });
   }

@@ -626,9 +626,9 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
   
   @Test
-  public void testFunctionLiteralCallNoParams() throws RunException
+  public void testFunctionTypeNoParams() throws RunException
   {
-    // Will the methods available on a function literal be listed properly
+    // Will the methods available on a function type be listed properly?
     StatementContainer code = new StatementContainer(
         new TokenContainer(
             new Token.SimpleToken("var", Symbol.Var),
@@ -641,7 +641,6 @@ public class GatherCodeCompletionInfoTest extends TestCase
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".go", Symbol.DotVariable)
             ));
-        
     
     CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 0));
     Assert.assertNull(context.getLastTypeUsed());
@@ -656,64 +655,105 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
     suggestions = new MemberSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("substring from:to:"));
-
-    
-//    new TokenContainer(
-//        new Token.SimpleToken("var", Symbol.Var),
-//        Token.ParameterToken.fromContents(".makeLambda", Symbol.DotVariable),
-//        Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
-//        new Token.SimpleToken("returns", Symbol.Returns),
-//        Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
-//            new TokenContainer(
-//                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
-//                Token.ParameterToken.fromContents("@number", Symbol.AtType))),
-//        new Token.SimpleToken("returns", Symbol.Returns),
-//        Token.ParameterToken.fromContents("@number", Symbol.AtType),
-//        new Token.SimpleToken(":=", Symbol.Assignment),
-//        new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
-//            new TokenContainer(
-//                Token.ParameterToken.fromContents("f@make", Symbol.FunctionTypeName),
-//                new Token.SimpleToken("returns", Symbol.Returns),
-//                Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
-//                    new TokenContainer(
-//                        Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
-//                        Token.ParameterToken.fromContents("@number", Symbol.AtType))),
-//                new Token.SimpleToken("returns", Symbol.Returns),
-//                Token.ParameterToken.fromContents("@number", Symbol.AtType)),
-//            new StatementContainer(
-//                new TokenContainer(
-//                    new Token.SimpleToken("var", Symbol.Var),
-//                    Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
-//                    Token.ParameterToken.fromContents("@number", Symbol.AtType),
-//                    new Token.SimpleToken(":=", Symbol.Assignment),
-//                    new Token.SimpleToken("20", Symbol.Number)
-//                    ),
-//                new TokenContainer(
-//                    new Token.SimpleToken("return", Symbol.Return),
-//                    new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
-//                        new TokenContainer(
-//                            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
-//                                new TokenContainer(
-//                                    Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
-//                                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
-//                            new Token.SimpleToken("returns", Symbol.Returns),
-//                            Token.ParameterToken.fromContents("@number", Symbol.AtType)),
-//                        new StatementContainer(
-//                            new TokenContainer(
-//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable),
-//                                new Token.SimpleToken(":=", Symbol.Assignment),
-//                                Token.ParameterToken.fromContents(".arg", Symbol.DotVariable),
-//                                new Token.SimpleToken("+", Symbol.Plus),
-//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
-//                                ),
-//                            new TokenContainer(
-//                                new Token.SimpleToken("return", Symbol.Return),
-//                                Token.ParameterToken.fromContents(".val", Symbol.DotVariable)
-//                                ))
-//                    )
-//                    )))
-//        ),
-
-    
   }
+  
+  @Test
+  public void testFunctionLiteralCallParams() throws RunException
+  {
+    // Will a function literal with multiple parameters be suggested correctly? 
+    // Will the arguments within a function literal be suggested correctly?
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionTypeName,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".argA", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@boolean", Symbol.AtType)),
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".argB", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@string", Symbol.AtType))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents("f@call:with:", Symbol.FunctionTypeName,
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg1", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@boolean", Symbol.AtType)),
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg2", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@string", Symbol.AtType))),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType)
+                    ),
+                new StatementContainer(
+                    new TokenContainer(
+                      new Token.SimpleToken("var", Symbol.Var),
+                      Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                      Token.ParameterToken.fromContents("@number", Symbol.AtType)
+                    )))
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call:with:", Symbol.DotVariable,
+                new TokenContainer(), 
+                new TokenContainer())
+            ));
+        
+    CodeCompletionContext context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    // Function literal arguments aren't available outside the function literal
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 1));
+    List<String> suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertFalse(suggestions.contains("arg1"));
+    Assert.assertFalse(suggestions.contains("arg2"));
+    Assert.assertFalse(suggestions.contains("argA"));
+    Assert.assertFalse(suggestions.contains("argB"));
+    Assert.assertFalse(suggestions.contains("b"));
+    Assert.assertTrue(suggestions.contains("a"));
+    
+    // Function type with parameters handled properly
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 1));
+    UnboundType funType = UnboundType.forSimpleFunctionType("number", "call:with:", "boolean", "string");
+    UnboundType incorrectFunParamsType = UnboundType.forSimpleFunctionType("number", "call:with:", "number", "string");
+    UnboundType incorrectFunParamCountType = UnboundType.forSimpleFunctionType("number", "call:", "boolean");
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getLastTypeUsed());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("call:with:"));
+    Assert.assertNotEquals(context.currentScope().typeFromUnboundTypeFromScope(incorrectFunParamCountType), context.getLastTypeUsed());
+    Assert.assertNotEquals(context.currentScope().typeFromUnboundTypeFromScope(incorrectFunParamsType), context.getLastTypeUsed());
+
+    // Return type of function type with parameters
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(1, 2));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("-:"));
+
+    // Types are suggested properly for function literal args 
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    // skip test
+    
+    // Function literal arguments are suggested
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("arg1"));
+    Assert.assertTrue(suggestions.contains("arg2"));
+    Assert.assertFalse(suggestions.contains("argA"));
+    Assert.assertFalse(suggestions.contains("argB"));
+    Assert.assertFalse(suggestions.contains("a"));
+    Assert.assertFalse(suggestions.contains("b"));
+
+    // Function literal arguments are suggested
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0));
+    suggestions = new VariableSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("arg1"));
+    Assert.assertTrue(suggestions.contains("arg2"));
+    Assert.assertFalse(suggestions.contains("argA"));
+    Assert.assertFalse(suggestions.contains("argB"));
+    Assert.assertFalse(suggestions.contains("a"));
+    Assert.assertTrue(suggestions.contains("b"));
+}
 }
