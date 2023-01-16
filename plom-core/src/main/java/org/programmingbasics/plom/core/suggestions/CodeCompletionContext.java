@@ -22,6 +22,8 @@ public class CodeCompletionContext
   List<Type> typeStack = new ArrayList<>();
   Type lastTypeUsed;
   Type lastTypeForStaticCall;
+  /** Type that should be returned from an expression (mainly used for function literals) */
+  Type expectedType;
   
   /** Class where the code is defined on (or null if not applicable) */
   Type definedClassOfMethod;
@@ -29,7 +31,7 @@ public class CodeCompletionContext
   boolean isStaticMethod;
   /** If the code is from a constructor method */
   boolean isConstructorMethod;
-
+  
   public CodeCompletionContext()
   {
     
@@ -75,6 +77,21 @@ public class CodeCompletionContext
   public Type getLastTypeForStaticCall()
   {
     return lastTypeForStaticCall;
+  }
+  
+  /**
+   * The expected type of an expression (e.g. some very limited
+   * type inference, so what is the expected type of a return, or
+   * when assigning to a variable of known type, or passing in a 
+   * parameter)
+   */
+  public void setExpectedExpressionType(Type val)
+  {
+    expectedType = val;
+  }
+  public Type getExpectedExpressionType()
+  {
+    return expectedType;
   }
   
   

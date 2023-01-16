@@ -51,11 +51,13 @@ public class GatherCodeCompletionInfoTest extends TestCase
     CodeCompletionContext context = codeCompletionForPosition(code, pos);
     Assert.assertNull(context.currentScope().lookupType("b"));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
+    Assert.assertNull(context.getExpectedExpressionType());
     
     pos = CodePosition.fromOffsets(3);
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("a"));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.currentScope().lookupType("b"));
+    Assert.assertNull(context.getExpectedExpressionType());
   }
 
   private CodeCompletionContext codeCompletionForPosition(StatementContainer code, CodePosition pos) throws RunException
@@ -137,54 +139,71 @@ public class GatherCodeCompletionInfoTest extends TestCase
 
     CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
     
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 1));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 2));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 3));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("number", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 4));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertEquals("number", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 5));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("number", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 6));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertEquals("number", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 1));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 2));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(3, 3));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 1));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 2));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 3));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 4));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(4, 5));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertEquals("string", context.getExpectedExpressionType().name);
   }
 
   @Test
@@ -732,6 +751,15 @@ public class GatherCodeCompletionInfoTest extends TestCase
     suggestions = new MemberSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("-:"));
 
+    // Check that we can have enough type information to
+    // suggest a match for the function literal type
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6));
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
+
+    // We need the expected type to push into the lambda too?
+//    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+//    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
+
     // Types are suggested properly for function literal args 
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
     // skip test
@@ -755,5 +783,5 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertFalse(suggestions.contains("argB"));
     Assert.assertFalse(suggestions.contains("a"));
     Assert.assertTrue(suggestions.contains("b"));
-}
+  }
 }

@@ -430,6 +430,39 @@ public class CodeSuggestExpressionTyper
             return true;
           }
       )
+      .add(Rule.AssignmentExpression_Expression_AssignmentExpressionMore, (triggers, node, context, param) -> {
+        Type varType = null;
+        if (node.children.get(0) != null)
+        {
+          node.children.get(0).recursiveVisit(triggers, context, param);
+          varType = context.getLastTypeUsed();
+        }
+        if (node.children.get(1) != null)
+        {
+          if (node.children.get(1).matchesRule(Rule.AssignmentExpressionMore_Assignment_Expression))
+            context.setExpectedExpressionType(varType);
+          node.children.get(1).recursiveVisit(triggers, context, param);
+        }
+        return true;
+      })
+      .add(Rule.VarStatement_Var_DotDeclareIdentifier_VarType_VarAssignment,  (triggers, node, context, param) -> {
+        if (node.children.get(0) != null)
+          node.children.get(0).recursiveVisit(triggers, context, param);
+        if (node.children.get(1) != null)
+          node.children.get(1).recursiveVisit(triggers, context, param);
+        if (node.children.get(2) != null)
+          node.children.get(2).recursiveVisit(triggers, context, param);
+        if (node.children.get(3) != null)
+        {
+          if (node.children.get(3).matchesRule(Rule.VarAssignment_Assignment_Expression))
+          {
+            Type type = gatherTypeInfoNoFail(node.children.get(2), context);
+            context.setExpectedExpressionType(type);
+          }
+          node.children.get(3).recursiveVisit(triggers, context, param);
+        }
+        return true;
+      })
       ;
   }
   
