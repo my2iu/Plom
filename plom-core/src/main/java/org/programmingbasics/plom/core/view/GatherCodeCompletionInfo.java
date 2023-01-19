@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core.view;
 
+import java.util.List;
+
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -54,25 +56,15 @@ public class GatherCodeCompletionInfo
     }
   }
 
+  // Performs suggestion analysis for a line of code where the code position is somewhere
+  // within the line (or at a deeper level inside a token on the line)
   public static void fromLine(TokenContainer line, Symbol baseContext, CodeCompletionContext context, CodePosition pos, int level)
   {
     if (!pos.hasOffset(level + 1))
     {
       // We're at the last level--for expressions and stuff, so we can
-      // dig deeper to get the last type used in the expression
-      ParseToAst parser = new ParseToAst(line.tokens.subList(0, pos.getOffset(level)), Symbol.EndStatement, null);
-      parser.setErrorOnPrematureEnd(false);
-      parser.setRecurseIntoTokens(false);
-      try {
-        AstNode parsed = parser.parseToEnd(baseContext);
-        if (parsed != null)
-          parsed.recursiveVisit(CodeSuggestExpressionTyper.lastTypeHandlers, context, null);
-      } 
-      catch (ParseException e)
-      {
-        // Ignore errors
-        e.printStackTrace();
-      }
+      // dig deeper to get the last type used in the expression. 
+      executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level)), baseContext, context, pos, level);
     }
     else
     {
@@ -97,9 +89,11 @@ public class GatherCodeCompletionInfo
           {
             case COMPOUND_FOR:
               if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+              context.setExpectedExpressionType(null);
               parseWholeLine(token.expression, Symbol.ForExpression, context);
               return null;
             case FunctionLiteral:
+              // We're only interested in executing the expression part if we're recursing into the block part later on
               if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
               // Parse out the function type of the literal and extract any arguments defined in function literal type
               if (token.expression == null) return null;
@@ -115,10 +109,30 @@ public class GatherCodeCompletionInfo
         @Override Void handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, CodeCompletionContext context)
         {
+          context.setExpectedExpressionType(null);
           if (originalToken.getType() == Symbol.COMPOUND_FOR)
             fromLine(exprContainer, Symbol.ForExpression, context, pos, level);
           else if (originalToken.getType() == Symbol.FunctionLiteral)
+          {
+            // Execute any previous tokens to extract possible lambda completion info
+            executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level - 2)), baseContext, context, pos, level);
+            Type expectedTypeForLambda = context.getExpectedExpressionType();
+            context.resetState();
+            context.setExpectedExpressionType(expectedTypeForLambda);
             fromLine(exprContainer, Symbol.FunctionLiteralExpression, context, pos, level);
+            
+          }
+          else if (originalToken instanceof Token.ParameterToken)
+          {
+            // For parameter tokens, we need to extract the type of the parameter
+            // token to determine the expected type before recursing into it
+            executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level - 2) + 1), baseContext, context, pos, level);
+            Type.TypeSignature lastSignatureCalled = context.lastSignatureCalled; 
+            context.resetState();
+            if (lastSignatureCalled != null)
+              context.setExpectedExpressionType(lastSignatureCalled.args.get(pos.getOffset(level - 1)));
+            fromLine(exprContainer, Symbol.Expression, context, pos, level);
+          }
           else
             fromLine(exprContainer, Symbol.Expression, context, pos, level);
           return null;
@@ -127,6 +141,7 @@ public class GatherCodeCompletionInfo
             StatementContainer blockContainer, CodePosition pos, int level,
             CodeCompletionContext context)
         {
+          context.setExpectedExpressionType(null);
           fromStatements(blockContainer, context, pos, level);
           return null;
         }
@@ -140,6 +155,24 @@ public class GatherCodeCompletionInfo
 //    if (pos.getOffset(level) < line.tokens.size())
 //      return line.tokens.get(pos.getOffset(level));
 //    return null;
+  }
+
+  static void executeTokensForSuggestions(List<Token> tokens, Symbol baseContext,
+      CodeCompletionContext context, CodePosition pos, int level)
+  {
+    ParseToAst parser = new ParseToAst(tokens, Symbol.EndStatement, null);
+    parser.setErrorOnPrematureEnd(false);
+    parser.setRecurseIntoTokens(false);
+    try {
+      AstNode parsed = parser.parseToEnd(baseContext);
+      if (parsed != null)
+        parsed.recursiveVisit(CodeSuggestExpressionTyper.lastTypeHandlers, context, null);
+    } 
+    catch (ParseException e)
+    {
+      // Ignore errors
+      e.printStackTrace();
+    }
   }
   
   static AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException> statementHandlers = new AstNode.VisitorTriggers<CodeCompletionContext, Void, RuntimeException>();

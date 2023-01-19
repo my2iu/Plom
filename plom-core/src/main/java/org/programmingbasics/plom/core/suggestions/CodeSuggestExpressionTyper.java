@@ -91,6 +91,7 @@ public class CodeSuggestExpressionTyper
           t = context.coreTypes().getVoidType();
         else if (t instanceof Type.TypeSignature)
         {
+          context.lastSignatureCalled = (Type.TypeSignature)t; 
           t = ((Type.TypeSignature)t).returnType;
         }
         context.pushType(t);
@@ -107,12 +108,14 @@ public class CodeSuggestExpressionTyper
             returnType = sig.returnType;
           else
             returnType = context.coreTypes().getVoidType();
+          context.lastSignatureCalled = sig; 
           context.setLastTypeUsed(returnType);
           context.popType();
           context.pushType(returnType);
         }
         else
         {
+          context.lastSignatureCalled = null; 
           context.setLastTypeUsed(null);
         }
         return true;
@@ -129,6 +132,7 @@ public class CodeSuggestExpressionTyper
           // used to suggest a type for a static call, so store the type that the static call
           // is being made on
           context.setLastTypeForStaticCall(type);
+          context.lastSignatureCalled = null; 
         }
         else
         {
@@ -140,17 +144,20 @@ public class CodeSuggestExpressionTyper
             Type.TypeSignature sig = type.lookupStaticMethodSignature(((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName());
             if (sig != null)
             {
+              context.lastSignatureCalled = sig; 
               context.setLastTypeUsed(sig.returnType);
               context.pushType(sig.returnType);
             }
             else
             {
+              context.lastSignatureCalled = null; 
               context.setLastTypeUsed(context.coreTypes().getVoidType());
               context.pushType(context.coreTypes().getVoidType());
             }
           }
           else
           {
+            context.lastSignatureCalled = null; 
             context.setLastTypeUsed(context.coreTypes().getVoidType());
             context.pushType(context.coreTypes().getVoidType());
           }
@@ -167,6 +174,7 @@ public class CodeSuggestExpressionTyper
         // See setLastTypeForStaticCall() for more info about what's going on here
         if (node.children.get(1) == null)
         {
+          context.lastSignatureCalled = null; 
           // No member is defined, so we should provide a type that can be used for suggestions
           if (context.getIsConstructorMethod())
           {
@@ -185,10 +193,13 @@ public class CodeSuggestExpressionTyper
           {
             context.setLastTypeUsed(context.coreTypes().getVoidType());
             context.pushType(context.coreTypes().getVoidType());
+            context.lastSignatureCalled = null;  // Not implemented yet 
+
           }
           else
           {
             // We only support super being used for constructor chaining at the moment
+            context.lastSignatureCalled = null;  // Not implemented yet 
           }
 //          // We have a static call, and all the parts are there, so we probably aren't being
 //          // used to suggest completions for the static call, but for something further on 

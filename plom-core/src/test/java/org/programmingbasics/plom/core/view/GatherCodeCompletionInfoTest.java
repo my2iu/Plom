@@ -271,21 +271,27 @@ public class GatherCodeCompletionInfoTest extends TestCase
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
     
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0));
     Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 1));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
     context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 2));
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getExpectedExpressionType());
   }
   
   @Test
@@ -757,8 +763,8 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
 
     // We need the expected type to push into the lambda too?
-//    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
-//    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
 
     // Types are suggested properly for function literal args 
     context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
@@ -783,5 +789,37 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertFalse(suggestions.contains("argB"));
     Assert.assertFalse(suggestions.contains("a"));
     Assert.assertTrue(suggestions.contains("b"));
+  }
+  
+  @Test
+  public void testFunctionLiteralWithFunctionLiteralParam() throws RunException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".argA", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("f@call2:", Symbol.FunctionTypeName,
+                        new TokenContainer(
+                            Token.ParameterToken.fromContents(".arg1", Symbol.DotVariable),
+                            Token.ParameterToken.fromContents("@boolean", Symbol.AtType))
+                    ),
+                    new Token.SimpleToken("returns", Symbol.Returns),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType))),
+            new Token.SimpleToken("returns", Symbol.Returns),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".call:", Symbol.DotVariable,
+                new TokenContainer())
+            ));
+    
+    // Check that function types are suggested when used as a method argument
+    CodePosition pos = CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0);
+    CodeCompletionContext context = codeCompletionForPosition(code, pos);
+    UnboundType funType = UnboundType.forSimpleFunctionType("number", "call2:", "boolean");
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
   }
 }

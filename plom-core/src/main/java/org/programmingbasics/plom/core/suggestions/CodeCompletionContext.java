@@ -25,6 +25,9 @@ public class CodeCompletionContext
   /** Type that should be returned from an expression (mainly used for function literals) */
   Type expectedType;
   
+  /** Used internally as a scratchpad to track the function signature of the last method/function called when "executing" tokens of a line of code */
+  public Type.TypeSignature lastSignatureCalled;
+  
   /** Class where the code is defined on (or null if not applicable) */
   Type definedClassOfMethod;
   /** If the code is from a static method */
@@ -109,6 +112,19 @@ public class CodeCompletionContext
   {
     return typeStack.remove(typeStack.size() - 1);
   }
+  
+  public void resetState()
+  {
+    typeStack.clear();
+    setExpectedExpressionType(null);
+    setLastTypeForStaticCall(null);
+    clearLastTypeUsed();
+  }
+  
+  // The below methods are used to configure the context of the code where suggestions are gathered from
+  // Whereas the above methods are for executing and analysing the code to actually gather types and context
+  // for gathering suggestions
+  
   public void pushNewScope()
   {
     VariableScope scope = new VariableScope();
