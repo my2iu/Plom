@@ -16,29 +16,61 @@ import org.programmingbasics.plom.core.interpreter.VariableScope;
  */
 public class CodeCompletionContext
 {
-  List<Type> knownTypes;
-  VariableScope globalScope = new VariableScope();
-  VariableScope topScope = globalScope;
-  List<Type> typeStack = new ArrayList<>();
-  Type lastTypeUsed;
-  Type lastTypeForStaticCall;
+//  private List<Type> knownTypes;
+  private VariableScope globalScope = new VariableScope();
+  private VariableScope topScope = globalScope;
+  private List<Type> typeStack = new ArrayList<>();
+  private Type lastTypeUsed;
+  private Type lastTypeForStaticCall;
   /** Type that should be returned from an expression (mainly used for function literals) */
-  Type expectedType;
+  private Type expectedType;
   
   /** Used internally as a scratchpad to track the function signature of the last method/function called when "executing" tokens of a line of code */
   public Type.TypeSignature lastSignatureCalled;
   
   /** Class where the code is defined on (or null if not applicable) */
-  Type definedClassOfMethod;
+  private Type definedClassOfMethod;
   /** If the code is from a static method */
-  boolean isStaticMethod;
+  private boolean isStaticMethod;
   /** If the code is from a constructor method */
-  boolean isConstructorMethod;
+  private boolean isConstructorMethod;
   
   public CodeCompletionContext()
   {
     
   }
+
+  // Provides easy access to the core types
+  CoreTypeLibrary coreTypes = new CoreTypeLibrary();
+  public CoreTypeLibrary coreTypes() { return coreTypes; }
+  
+  public static Builder builder() { return new Builder(); }
+  public static class Builder
+  {
+    private CodeCompletionContext instance = new CodeCompletionContext();
+    
+    public void pushNewScope()
+    {
+      VariableScope scope = new VariableScope();
+      scope.setParent(instance.topScope);
+      instance.topScope = scope;
+    }
+    public void pushObjectScope(Value thisValue)
+    {
+      VariableScope scope = new ObjectScope(thisValue);
+      scope.setParent(instance.topScope);
+      instance.topScope = scope;
+    }
+    public VariableScope currentScope() { return instance.topScope; }
+    public CoreTypeLibrary coreTypes() { return instance.coreTypes; }
+    
+    public void setDefinedClassOfMethod(Type t) { instance.definedClassOfMethod = t; }
+    public void setIsStaticMethod(boolean val) { instance.isStaticMethod = val; }
+    public void setIsConstructorMethod(boolean val) { instance.isConstructorMethod = val; }
+    public CodeCompletionContext build() { return instance; }
+  }
+  
+  
   
   /**
    * Used internally to lookup types and do type checking when computing 
@@ -113,8 +145,14 @@ public class CodeCompletionContext
     return typeStack.remove(typeStack.size() - 1);
   }
   
+  // TODO: Instead of reusing the same context and resetting it,
+  // it might make more sense to make copies of the context each
+  // time we use it.
   public void resetState()
   {
+    // This is not a full reset. It only resets the variables used to
+    // trace the types used tokens when executing instructions. The scope
+    // and variables are not reset.
     typeStack.clear();
     setExpectedExpressionType(null);
     setLastTypeForStaticCall(null);
@@ -124,28 +162,10 @@ public class CodeCompletionContext
   // The below methods are used to configure the context of the code where suggestions are gathered from
   // Whereas the above methods are for executing and analysing the code to actually gather types and context
   // for gathering suggestions
-  
-  public void pushNewScope()
-  {
-    VariableScope scope = new VariableScope();
-    scope.setParent(topScope);
-    topScope = scope;
-  }
-  public void pushObjectScope(Value thisValue)
-  {
-    VariableScope scope = new ObjectScope(thisValue);
-    scope.setParent(topScope);
-    topScope = scope;
-  }
+
   public VariableScope currentScope() { return topScope; }
-  // Provides easy access to the core types
-  CoreTypeLibrary coreTypes = new CoreTypeLibrary();
-  public CoreTypeLibrary coreTypes() { return coreTypes; }
   
   public Type getDefinedClassOfMethod() { return definedClassOfMethod; }
-  public void setDefinedClassOfMethod(Type t) { definedClassOfMethod = t; }
   public boolean getIsStaticMethod() { return isStaticMethod; }
-  public void setIsStaticMethod(boolean val) { isStaticMethod = val; }
   public boolean getIsConstructorMethod() { return isConstructorMethod; }
-  public void setIsConstructorMethod(boolean val) { isConstructorMethod = val; }
 }

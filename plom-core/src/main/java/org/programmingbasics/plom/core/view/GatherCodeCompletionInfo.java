@@ -126,7 +126,7 @@ public class GatherCodeCompletionInfo
           {
             // For parameter tokens, we need to extract the type of the parameter
             // token to determine the expected type before recursing into it
-            executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level - 2) + 1), baseContext, context, pos, level);
+            executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level - 3) + 1), baseContext, context, pos, level);
             Type.TypeSignature lastSignatureCalled = context.lastSignatureCalled; 
             context.resetState();
             if (lastSignatureCalled != null)

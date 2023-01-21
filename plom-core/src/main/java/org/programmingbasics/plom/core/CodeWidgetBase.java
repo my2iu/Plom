@@ -166,11 +166,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     return codeList.statements.get(0);
   }
   
-  @JsFunction
+//  @JsFunction
   public static interface VariableContextConfigurator {
-    public void accept(CodeCompletionContext context);
+    public void accept(CodeCompletionContext.Builder contextBuilder);
   }
-  @JsMethod
+//  @JsMethod
   public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator)
   {
     this.globalConfigurator = globalConfigurator;
@@ -619,12 +619,13 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   protected static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos,
       ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
-    CodeCompletionContext suggestionContext = new CodeCompletionContext();
+    CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
     if (globalConfigurator != null)
-      globalConfigurator.configure(suggestionContext.currentScope(), suggestionContext.coreTypes());
+      globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
     if (variableContextConfigurator != null)
-      variableContextConfigurator.accept(suggestionContext);
-    suggestionContext.pushNewScope();
+      variableContextConfigurator.accept(suggestionContextBuilder);
+    suggestionContextBuilder.pushNewScope();
+    CodeCompletionContext suggestionContext = suggestionContextBuilder.build();
     if (codeList != null && pos != null)
       GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
     return suggestionContext;

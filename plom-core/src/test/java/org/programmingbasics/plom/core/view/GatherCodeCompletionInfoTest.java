@@ -72,29 +72,30 @@ public class GatherCodeCompletionInfoTest extends TestCase
   
   private CodeCompletionContext codeCompletionForPosition(StatementContainer code, String thisTypeString, ConfigureForCodeCompletion configuration, CodePosition pos) throws RunException    
   {
-    CodeCompletionContext context = new CodeCompletionContext();
-    StandardLibrary.createCoreTypes(context.coreTypes());
-    SimpleInterpreterTest.TestScopeWithTypes globalScope = new SimpleInterpreterTest.TestScopeWithTypes(context.coreTypes());
-    context.currentScope().setParent(globalScope);
+    CodeCompletionContext.Builder contextBuilder = CodeCompletionContext.builder();
+    StandardLibrary.createCoreTypes(contextBuilder.coreTypes());
+    SimpleInterpreterTest.TestScopeWithTypes globalScope = new SimpleInterpreterTest.TestScopeWithTypes(contextBuilder.coreTypes());
+    contextBuilder.currentScope().setParent(globalScope);
     
     if (configuration != null)
-      configuration.configure(context, globalScope);
+      configuration.configure(contextBuilder, globalScope);
     
     if (thisTypeString != null)
     {
       Value thisValue = new Value();
-      thisValue.type = context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(thisTypeString));
-      context.pushObjectScope(thisValue);
+      thisValue.type = contextBuilder.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(thisTypeString));
+      contextBuilder.pushObjectScope(thisValue);
     }
-    context.pushNewScope();
+    contextBuilder.pushNewScope();
     
+    CodeCompletionContext context = contextBuilder.build();
     GatherCodeCompletionInfo.fromStatements(code, context, pos, 0);
     return context;
   }
 
   static interface ConfigureForCodeCompletion
   {
-    public void configure(CodeCompletionContext context, SimpleInterpreterTest.TestScopeWithTypes globalScope);
+    public void configure(CodeCompletionContext.Builder context, SimpleInterpreterTest.TestScopeWithTypes globalScope);
   }
   
   @Test

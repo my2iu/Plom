@@ -19,7 +19,7 @@ public class MemberSuggester implements Suggester
   {
     GatheredSuggestions gatheredSuggestions = new GatheredSuggestions();
     gatheredSuggestions.setStringMatch(val);
-    Type type = context.lastTypeUsed;
+    Type type = context.getLastTypeUsed();
     int depth = 0;
     final int MAX_DEPTH = 10000;
     while (type != null && depth < MAX_DEPTH)

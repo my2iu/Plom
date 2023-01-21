@@ -192,9 +192,7 @@ public class ClassPanel
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository, coreTypes));
         },
-        (context) -> {
-          return;
-        });
+        null);
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {
