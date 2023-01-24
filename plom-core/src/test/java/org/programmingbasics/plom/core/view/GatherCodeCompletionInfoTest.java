@@ -814,13 +814,25 @@ public class GatherCodeCompletionInfoTest extends TestCase
         new TokenContainer(
             Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
             Token.ParameterToken.fromContents(".call:", Symbol.DotVariable,
-                new TokenContainer())
-            ));
+                new TokenContainer(
+                    new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                        new TokenContainer(),
+                        new StatementContainer()
+
+                    )
+                  )
+            )));
     
     // Check that function types are suggested when used as a method argument
     CodePosition pos = CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0);
     CodeCompletionContext context = codeCompletionForPosition(code, pos);
     UnboundType funType = UnboundType.forSimpleFunctionType("number", "call2:", "boolean");
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
+    
+    pos = CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0);
+    context = codeCompletionForPosition(code, pos);
+    funType = UnboundType.forSimpleFunctionType("number", "call2:", "boolean");
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
+
   }
 }

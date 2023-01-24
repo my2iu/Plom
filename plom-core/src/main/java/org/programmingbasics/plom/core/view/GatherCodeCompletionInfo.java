@@ -109,12 +109,15 @@ public class GatherCodeCompletionInfo
         @Override Void handleExpression(TokenWithSymbol originalToken, TokenContainer exprContainer,
             CodePosition pos, int level, CodeCompletionContext context)
         {
-          context.setExpectedExpressionType(null);
           if (originalToken.getType() == Symbol.COMPOUND_FOR)
+          {
+            context.setExpectedExpressionType(null);
             fromLine(exprContainer, Symbol.ForExpression, context, pos, level);
+          }
           else if (originalToken.getType() == Symbol.FunctionLiteral)
           {
             // Execute any previous tokens to extract possible lambda completion info
+            // Don't erase the expected expression type that was inherited from the previous level before executing the instructions here
             executeTokensForSuggestions(line.tokens.subList(0, pos.getOffset(level - 2)), baseContext, context, pos, level);
             Type expectedTypeForLambda = context.getExpectedExpressionType();
             context.resetState();
@@ -134,7 +137,10 @@ public class GatherCodeCompletionInfo
             fromLine(exprContainer, Symbol.Expression, context, pos, level);
           }
           else
+          {
+            context.setExpectedExpressionType(null);
             fromLine(exprContainer, Symbol.Expression, context, pos, level);
+          }
           return null;
         }
         @Override Void handleStatementContainer(TokenWithSymbol originalToken,

@@ -21,6 +21,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
+import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.MemberSuggester;
 import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
@@ -57,7 +58,6 @@ import elemental.html.ClientRect;
 import elemental.html.DivElement;
 import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -375,7 +375,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
               suggester = new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
               break;
-              
             }
 
             case DotVariable:
@@ -383,7 +382,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.DotVariable);
               suggester = getDotSuggester(suggestionContext, parentSymbols);
               break;
-              
             }
           }
         }
@@ -461,11 +459,48 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       else
         contentDiv.appendChild(makeButton(buttonText, false, choicesDiv, () -> {  }));
     }
+
+    // We might need to grab additional context for suggestions, but we don't want to
+    // calculate these suggestions more than once, so just do it lazily as needed
+    CodeCompletionContext suggestionContext = null;
     
+    // Show a suggestion for filling in function literals
+    if (parseContext.baseContext == Symbol.FunctionLiteralExpressionOnly
+        && parseContext.tokens.isEmpty())
+    {
+      if (suggestionContext == null)
+        suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+      Type expectedType = suggestionContext.getExpectedExpressionType();
+      if (expectedType != null && expectedType instanceof Type.LambdaFunctionType)
+      {
+        Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)expectedType;
+        contentDiv.appendChild(makeButton("\u0192@" + lambdaType.name, true, choicesDiv, () -> {
+          List<Token> tokensToAdd = makeTokensForType(expectedType);
+          for (Token newToken: tokensToAdd)
+          {
+            InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
+            // Manually advance to end of inserted token
+            for (int n = 0;; n++)
+            {
+              if (!cursorPos.hasOffset(n + 1))
+              {
+                cursorPos.setOffset(n, cursorPos.getOffset(n) + 1);
+                break;
+              }
+            }
+          }
+          showPredictedTokenInput();
+          updateCodeView(true);
+        }));
+        
+      }
+    }
+
     // Show quick suggestions
     if (!suggestions.isEmpty())
     {
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+      if (suggestionContext == null)
+        suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
       Suggester dotSuggester = null;
       if (allowedSymbols.contains(Symbol.DotVariable))
         dotSuggester = getDotSuggester(suggestionContext, stmtParser.peekExpandedSymbols(Symbol.DotVariable)); 
@@ -521,6 +556,41 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       }));
     }
   }
+
+  /** Given a type, returns a list of tokens that can be used to create that type in some code */
+  static List<Token> makeTokensForType(Type type)
+  {
+    List<Token> toReturn = new ArrayList<>();
+    if (type instanceof Type.LambdaFunctionType)
+    {
+      Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)type;
+      Token.ParameterToken newToken = new Token.ParameterToken(
+          Token.ParameterToken.splitVarAtColons("f@" + lambdaType.name), 
+          Token.ParameterToken.splitVarAtColonsForPostfix("f@" + lambdaType.name), 
+          Symbol.FunctionTypeName);
+      for (int n = 0; n < lambdaType.args.size(); n++)
+      {
+        if (lambdaType.optionalArgNames.get(n) != null && !lambdaType.optionalArgNames.get(n).isEmpty())
+        {
+          newToken.parameters.get(n).tokens.add(Token.ParameterToken.fromContents(lambdaType.optionalArgNames.get(n), Symbol.DotVariable));
+        }
+        newToken.parameters.get(n).tokens.addAll(makeTokensForType(lambdaType.args.get(n)));
+      }
+      toReturn.add(newToken);
+      
+      if (lambdaType.returnType != null)
+      {
+        toReturn.add(new Token.SimpleToken("returns", Symbol.Returns));
+        toReturn.addAll(makeTokensForType(lambdaType.returnType));
+      }
+    }
+    else if (type instanceof Type)
+    {
+      toReturn.add(Token.ParameterToken.fromContents("@" + type.name, Symbol.AtType));
+    }
+    return toReturn;
+  }
+
 
   void insertToken(CodePosition pos, String tokenText, Symbol tokenType)
   {
