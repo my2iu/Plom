@@ -143,22 +143,22 @@ public class GlobalsPanel implements AutoCloseable
     }
     
     // For adding global variables
-    Element newGlobalAnchor = mainDiv.querySelector(".globalVarsHeading a");
-    newGlobalAnchor.addEventListener(Event.CLICK, (e) -> {
-      e.preventDefault();
-      String newVarName = "";
-      int newId = repository.addGlobalVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
-      rebuildView();
-      NodeList nodes = mainDiv.querySelectorAll("div.global_var");
-      // Assume ids are linear
-      if (newId < nodes.length())
-      {
-        Element el = (Element)nodes.item(newId);
-        el.scrollIntoView();
-        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
-        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
-      }
-    }, false);
+//    Element newGlobalAnchor = mainDiv.querySelector(".globalVarsHeading a");
+//    newGlobalAnchor.addEventListener(Event.CLICK, (e) -> {
+//      e.preventDefault();
+//      String newVarName = "";
+//      int newId = repository.addGlobalVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
+//      rebuildView();
+//      NodeList nodes = mainDiv.querySelectorAll("div.global_var");
+//      // Assume ids are linear
+//      if (newId < nodes.length())
+//      {
+//        Element el = (Element)nodes.item(newId);
+//        el.scrollIntoView();
+//        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
+//        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
+//      }
+//    }, false);
    
     List<DivElement> globalVarDivs = new ArrayList<>();
     for (VariableDescription v: repository.getAllGlobalVarsSorted())

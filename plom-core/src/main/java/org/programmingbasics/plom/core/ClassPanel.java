@@ -150,23 +150,23 @@ public class ClassPanel
     createMethodList(mainDiv.querySelector(".constructorMethodsList"), cls.getConstructorMethods());
     
     // Variables
-    Element newVarAnchor = mainDiv.querySelector(".varsHeading a");
-    newVarAnchor.addEventListener(Event.CLICK, (e) -> {
-      e.preventDefault();
-      String newVarName = "";
-      int newId = cls.addVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
-      rebuildView(false);
-      
-      NodeList nodes = mainDiv.querySelectorAll("div.class_var");
-      // Assume ids are linear
-      if (newId < nodes.length())
-      {
-        Element el = (Element)nodes.item(newId);
-        el.scrollIntoView();
-        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
-        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
-      }
-    }, false);
+//    Element newVarAnchor = mainDiv.querySelector(".varsHeading a");
+//    newVarAnchor.addEventListener(Event.CLICK, (e) -> {
+//      e.preventDefault();
+//      String newVarName = "";
+//      int newId = cls.addVarAndResetIds(newVarName, Token.ParameterToken.fromContents("@object", Symbol.AtType));
+//      rebuildView(false);
+//      
+//      NodeList nodes = mainDiv.querySelectorAll("div.class_var");
+//      // Assume ids are linear
+//      if (newId < nodes.length())
+//      {
+//        Element el = (Element)nodes.item(newId);
+//        el.scrollIntoView();
+//        ((InputElement)el.querySelector("plom-autoresizing-input")).focus();
+//        ((InputElement)el.querySelector("plom-autoresizing-input")).select();
+//      }
+//    }, false);
    
     List<DivElement> varDivs = new ArrayList<>();
     for (VariableDescription v: cls.getAllVars())
