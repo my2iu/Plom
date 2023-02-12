@@ -266,7 +266,11 @@ public class MethodPanel
 //  List<String> argNames = new ArrayList<>();
 //  List<Token.ParameterToken> argTypes = new ArrayList<>();
 //  FunctionSignature newSig = FunctionSignature.from(returnType, nameSig.nameParts, nameSig.argNames, nameSig.argTypes, originalSig);
-    FunctionSignature newSig = FunctionSignature.from(returnTypeArea.getSingleLineCode(), nameSig.nameParts, argCodes, originalSig);
+    FunctionSignature newSig;
+    if (returnTypeArea != null)
+      newSig = FunctionSignature.from(returnTypeArea.getSingleLineCode(), nameSig.nameParts, argCodes, originalSig);
+    else
+      newSig = FunctionSignature.from(new TokenContainer(), nameSig.nameParts, argCodes, originalSig);
     return newSig;
   }
   
