@@ -366,6 +366,30 @@ function setupPlomUi() {
 			evt.preventDefault();
 			doRun(main);
 		});
+		
+		// Run things as a web page in a mini-sandbox
+		var runHtmlEl = document.querySelector('a.runhtmlbutton');
+		runHtmlEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			// Register a service worker that can serve data as if
+			// it were a web page sent from a server (even though it's
+			// actually all done locally)
+			if (!'serviceWorker' in navigator) {
+				console.error('service workers not supported');
+				return;
+			}
+			navigator.serviceWorker.register('localServerServiceWorker.js')
+			.then((registration) => {
+				// Wait until the service worker becomes active
+				navigator.serviceWorker.ready.then((registration) => {
+				});
+			})
+			.catch((e) => {
+    			console.error(e);
+			});
+			
+			
+		});
 	}
 	function hookLoadSave(main)
 	{
