@@ -368,28 +368,63 @@ function setupPlomUi() {
 		});
 		
 		// Run things as a web page in a mini-sandbox
+		var localServerServiceWorker;  // Stores a reference to the active service worker after it has started
 		var runHtmlEl = document.querySelector('a.runhtmlbutton');
 		runHtmlEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
 			// Register a service worker that can serve data as if
 			// it were a web page sent from a server (even though it's
 			// actually all done locally)
-			if (!'serviceWorker' in navigator) {
-				console.error('service workers not supported');
+			if (!('serviceWorker' in navigator)) {
+				console.error('Service workers not supported');
 				return;
 			}
 			navigator.serviceWorker.register('localServerServiceWorker.js')
 			.then((registration) => {
 				// Wait until the service worker becomes active
 				navigator.serviceWorker.ready.then((registration) => {
+					localServerServiceWorker = registration.active;
 				});
 			})
 			.catch((e) => {
     			console.error(e);
 			});
-			
-			
 		});
+		
+		var serviceWorkerBroadcastChannel = new BroadcastChannel('Plom virtual web server service worker request resource');
+		serviceWorkerBroadcastChannel.addEventListener('message', (evt) => {
+			// Service worker (i.e. virtual web server) has relayed a 
+			// request for a resource to us. See if we can fulfill that
+			// request.
+			//  
+			// Expected message format: {
+			//   type:'GET',
+			//   serverContext: 'identifying string for server',
+			//   path: 'index.html' 
+			// }
+			if (evt.data.type != 'GET') return;
+			if (!localServerServiceWorker) return;
+			if (evt.data.path == 'index.html') {
+				var dataToSend = new TextEncoder().encode('hi world');
+				localServerServiceWorker.postMessage({
+					type: 'GET',
+					serverContext: evt.data.serverContext,
+					path: evt.data.path,
+					headers: {'Content-Type':'text/html'},
+					data: dataToSend.buffer
+				}, [dataToSend.buffer]);
+			} else {
+				// Could not find any data to send, so send back null
+				// (it will be treated as a 404 by the service worker)
+				localServerServiceWorker.postMessage({
+					type: 'GET',
+					serverContext: evt.data.serverContext,
+					path: evt.data.path,
+					data: null
+				});
+			}
+		});
+		
 	}
 	function hookLoadSave(main)
 	{
