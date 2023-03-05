@@ -359,19 +359,23 @@ function setupPlomUi() {
 			console.error(e);
 		}
 	}
+	var hamburgerMenuDiv;   // saves a reference to the div showing the popup menu of hamburger options
 	function hookRun(main)
 	{
 		var runEl = document.querySelector('a.runbutton');
 		runEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			doRun(main);
 		});
 		
 		// Run things as a web page in a mini-sandbox
 		var localServerServiceWorker;  // Stores a reference to the active service worker after it has started
+		var localServerId;
 		var runHtmlEl = document.querySelector('a.runhtmlbutton');
 		runHtmlEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			// Register a service worker that can serve data as if
 			// it were a web page sent from a server (even though it's
 			// actually all done locally)
@@ -384,6 +388,12 @@ function setupPlomUi() {
 				// Wait until the service worker becomes active
 				navigator.serviceWorker.ready.then((registration) => {
 					localServerServiceWorker = registration.active;
+					// Generate a random id for the url that we'll serve data from
+					localServerId = Math.floor(Math.random() * 1000000000).toString();
+					// Show the web view and point it to the running program
+					var webViewDiv = document.querySelector('.runWebView');
+					webViewDiv.style.display = 'flex';
+					webViewDiv.querySelector('iframe').src = 'test' + localServerId + '/index.html';
 				});
 			})
 			.catch((e) => {
@@ -404,6 +414,7 @@ function setupPlomUi() {
 			// }
 			if (evt.data.type != 'GET') return;
 			if (!localServerServiceWorker) return;
+			if (event.data.serverContext != localServerId) return;
 			if (evt.data.path == 'index.html') {
 				var dataToSend = new TextEncoder().encode('hi world');
 				localServerServiceWorker.postMessage({
@@ -424,6 +435,21 @@ function setupPlomUi() {
 				});
 			}
 		});
+
+		// Button to show the running code output (just shows the web page)
+		var showHtmlEl = document.querySelector('a.showhtmlbutton');
+		showHtmlEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
+			var webViewDiv = document.querySelector('.runWebView');
+			webViewDiv.style.display = 'flex';
+		});
+		
+		// Close button on the web view showing the output of the running code
+		document.querySelector('.runWebView .runWebViewMenuBar a').addEventListener('click', (evt) => {
+			evt.preventDefault();
+			document.querySelector('.runWebView').style.display = 'none';
+		});
 		
 	}
 	function hookLoadSave(main)
@@ -431,11 +457,13 @@ function setupPlomUi() {
 		var loadEl = document.querySelector("a.loadbutton");
 		loadEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			doLoad(main);
 		});
 		var saveEl = document.querySelector("a.savebutton");
 		saveEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			doSave(main);
 		});
 	}
@@ -465,19 +493,20 @@ function setupPlomUi() {
 		}
 	}
 	function hookSimpleHamburgerMenu(menuButtonAnchor, menuDiv)
-		{
-			menuButtonAnchor.onclick = function(evt) {
-				evt.preventDefault();
-				if (menuDiv.style.display == 'none') {
-					menuDiv.style.display = 'flex';
-					// Position the menu under the button
-					var bounds = menuButtonAnchor.getBoundingClientRect();
-					menuDiv.style.top = bounds.bottom + 'px';
-				}
-				else
-					menuDiv.style.display = 'none';
-			};
-		}
+	{
+		hamburgerMenuDiv = menuDiv;
+		menuButtonAnchor.onclick = function(evt) {
+			evt.preventDefault();
+			if (menuDiv.style.display == 'none') {
+				menuDiv.style.display = 'flex';
+				// Position the menu under the button
+				var bounds = menuButtonAnchor.getBoundingClientRect();
+				menuDiv.style.top = bounds.bottom + 'px';
+			}
+			else
+				menuDiv.style.display = 'none';
+		};
+	}
 	window.hookRun = hookRun;
 	window.hookLoadSave = hookLoadSave;
 	window.initRepository = initRepository;

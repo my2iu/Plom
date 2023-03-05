@@ -74,6 +74,7 @@
   <div class="testbuttons" style="display: none;">
   <a class="runbutton plomUiButton" href="#">Run</a> 
   &nbsp; <a class="runhtmlbutton plomUiButton" href="#">Run web</a> 
+  &nbsp; <a class="showhtmlbutton plomUiButton" href="#">Show web output</a> 
   &nbsp; <a class="loadbutton plomUiButton" href="#">Load</a> &nbsp; 
   <a class="savebutton plomUiButton" href="#">Save</a> </div>
 
@@ -85,5 +86,11 @@
    -->
   <div class="main">
   </div>
+  
+  <div class="runWebView" style="position: absolute; display: none; flex-direction: column; top: 1em; bottom: 1em; left: 1em; right: 1em; background-color: white; border: 1px solid black;">
+  	<div class="runWebViewMenuBar" style="border-bottom: 1px solid black; text-align: right; "><a class="plomUiButton" href="#">&#x25BC;</a></div>
+  	<iframe style="flex-grow: 1; border: 0px;"></iframe>
+  </div>
+  
   </body>
 </html>
