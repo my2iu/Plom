@@ -230,7 +230,11 @@ public class GlobalsPanel implements AutoCloseable
     Element newFilesAnchor = mainDiv.querySelector(".extraFilesHeading a");
     newFilesAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      repository.getExtraFilesManager().newFileUi();
+      repository.getExtraFilesManager().newFileUi("web", () -> {
+        repository.refreshExtraFiles(() -> {
+          rebuildFileList();
+        });
+      });
 //      // Find a unique function name
 //      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
 //      FunctionDescription func = new FunctionDescription(
@@ -242,14 +246,20 @@ public class GlobalsPanel implements AutoCloseable
 //        functionSigCallback.load(func, true);
     }, false);
     
+    rebuildFileList();
+  }
+
+  public void rebuildFileList()
+  {
     // List of functions
     Element filesListEl = mainDiv.querySelector(".extraFilesList");
+    filesListEl.setInnerHTML("");
     for (FileDescription file: repository.getAllExtraFilesSorted())
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
       a.setHref("#");
-      a.setTextContent("." + file.getPath());
+      a.setTextContent(file.getPath());
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
 //        viewSwitchCallback.load(fnName);

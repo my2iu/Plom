@@ -1,6 +1,7 @@
 function setupPlomUi() {
 	const Main = org.programmingbasics.plom.core.Main;
 	const ModuleCodeRepository = org.programmingbasics.plom.core.ModuleCodeRepository;
+	const ExtraFilesManagerWebInMemory = org.programmingbasics.plom.core.ExtraFilesManagerWebInMemory;
 	const PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
 	const CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 	const Value = org.programmingbasics.plom.core.interpreter.Value; 
@@ -312,37 +313,12 @@ function setupPlomUi() {
         repo.setChainedRepository(makeStdLibRepository());
         return repo;
     }
-    function chooseFile(accept, asString, loadCallback)
-    {
-    	var fileInput = document.createElement('input');
-		fileInput.type = "file";
-		fileInput.style.display = 'none';
-		document.body.appendChild(fileInput);
-		if (accept)
-			fileInput.accept = accept;
-		fileInput.addEventListener('change', function(e) {
-			e.preventDefault();
-			if (fileInput.files.length != 0)
-			{
-				var reader = new FileReader();
-				reader.onload = function(loadedEvt) {
-					loadCallback(fileInput.files[0].name, reader.result);
-				};
-				if (asString)
-					reader.readAsText(fileInput.files[0]);
-				else
-					reader.readAsArrayBuffer(fileInput.files[0]);
-			}
-			document.body.removeChild(fileInput);
-		});
-		fileInput.click();
-    }
 	function doLoadWeb(main)
 	{
-		chooseFile('.plom', true, function(name, readStr) {
+		Main.jsShowFileChooser('.plom', true, function(name, readStr) {
 			try {
 			    var newRepository = makeRepositoryWithStdLib(main);
-			    newRepository.setExtraFilesManager(new ExtraFilesManagerWeb());
+			    newRepository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
 			    loadCodeStringIntoRepository(readStr, newRepository);
 				main.repository = newRepository;
 				main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
@@ -368,20 +344,6 @@ function setupPlomUi() {
 		{
 			console.error(e);
 		}
-	}
-
-	/**
-	 * Version of the ExtraFilesManager that's suitable for a web IDE
-	 * where all files are stored in memory
-	 */
-	class ExtraFilesManagerWeb
-	{
-		constructor() {}
-	    newFileUi() {
-			chooseFile(null, false, function(name, readStr) {
-				
-			});
-	    }
 	}
 
 	var hamburgerMenuDiv;   // saves a reference to the div showing the popup menu of hamburger options
@@ -499,7 +461,7 @@ function setupPlomUi() {
 	    // Load in the built-in primitives of the interpreter into the 
 	    // code repository so that they can be browsed in the UI
 	    main.repository = makeRepositoryWithStdLib(main);
-	    main.repository.setExtraFilesManager(new ExtraFilesManagerWeb());
+	    main.repository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
 				function .{main} {@{void}} {} {

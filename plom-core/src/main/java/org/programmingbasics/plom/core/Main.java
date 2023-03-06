@@ -24,11 +24,14 @@ import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
+import elemental.html.FileReader;
+import elemental.html.InputElement;
 import elemental.js.util.JsArrayOf;
 import elemental.js.util.JsArrayOfString;
 import jsinterop.annotations.JsFunction;
@@ -183,6 +186,38 @@ public class Main
     for (int n = 0; n < array.length(); n++)
       list.add(array.get(n));
     return list;
+  }
+  
+  /** Helper method for JavaScript to show a file chooser */
+  public static void jsShowFileChooser(String acceptExtension, boolean asString, ShowFileChooserCallback loadCallback)
+  {
+    InputElement fileInput = Browser.getDocument().createInputElement();
+    fileInput.setType("file");
+    fileInput.getStyle().setDisplay(Display.NONE);
+    Browser.getDocument().getBody().appendChild(fileInput);
+    if (acceptExtension != null)
+        fileInput.setAccept(acceptExtension);
+    fileInput.addEventListener(Event.CHANGE, (e) -> {
+        e.preventDefault();
+        if (fileInput.getFiles().getLength() != 0)
+        {
+            FileReader reader = Browser.getWindow().newFileReader();
+            reader.setOnload((loadedEvt) -> {
+                loadCallback.fileLoaded(fileInput.getFiles().item(0).getName(), reader.getResult());
+            });
+            if (asString)
+                reader.readAsText(fileInput.getFiles().item(0));
+            else
+                reader.readAsArrayBuffer(fileInput.getFiles().item(0));
+        }
+        Browser.getDocument().getBody().removeChild(fileInput);
+    }, false);
+    fileInput.click();
+  }
+  @JsFunction
+  public static interface ShowFileChooserCallback
+  {
+    void fileLoaded(String name, Object result);
   }
   
   /** If any code is currently being displayed in the code panel, save it

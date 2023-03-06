@@ -389,22 +389,18 @@ public class ModuleCodeRepository
    * but I suppose other resources could be stored in a project as well later on). For the
    * web version of Plom, these files are stored in memory, but for app versions of Ploms,
    * these files are stored externally on disk, but we just keep a listing of them in memory
-   * so that it's easy to show them in the UI.
+   * so that it's easy to show them in the UI. 
    */
   @JsType
   public static class FileDescription 
   {
     /** Use '/' as a path separator? */
     String filePath;
-    /** Can be null if file contents are stored on disk */ 
-    String base64Contents;
     public boolean isImported;
     public FileDescription setImported(boolean isImported) { this.isImported = isImported; return this;}
     
     public String getPath() { return filePath; }
     public void setPath(String newPath) { filePath = newPath; }
-    public String getBase64Contents() { return base64Contents; }
-    public void setBase64Contents(String data) { base64Contents = data; }
   }
   
   private List <FunctionDescription> functions = new ArrayList<>();
@@ -752,6 +748,28 @@ public class ModuleCodeRepository
     return toReturn;
   }
 
+  /** Refresh the internal list of extra files in the module */
+  public void refreshExtraFiles(ExtraFilesManager.EmptyCallback callback)
+  {
+    if (fileManager == null) 
+    {
+      callback.call();
+      return;
+    }
+    fileManager.getFileList(filenames -> {
+      extraFiles.clear();
+      for (String name: filenames)
+      {
+        FileDescription file = new FileDescription();
+        file.filePath = name;
+        // TODO: handle imported status
+        extraFiles.add(file);
+      }
+      callback.call();
+    });
+
+  }
+  
   public void setExtraFilesManager(ExtraFilesManager newFileManager)
   {
     fileManager = newFileManager; 
