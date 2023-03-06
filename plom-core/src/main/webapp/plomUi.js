@@ -312,39 +312,49 @@ function setupPlomUi() {
         repo.setChainedRepository(makeStdLibRepository());
         return repo;
     }
-	function doLoad(main)
-	{
-		var fileInput = document.createElement('input');
+    function chooseFile(accept, asString, loadCallback)
+    {
+    	var fileInput = document.createElement('input');
 		fileInput.type = "file";
 		fileInput.style.display = 'none';
 		document.body.appendChild(fileInput);
-		fileInput.accept = ".plom";
+		if (accept)
+			fileInput.accept = accept;
 		fileInput.addEventListener('change', function(e) {
 			e.preventDefault();
 			if (fileInput.files.length != 0)
 			{
 				var reader = new FileReader();
 				reader.onload = function(loadedEvt) {
-					var readStr = reader.result;
-					try {
-					    var newRepository = makeRepositoryWithStdLib(main);
-					    loadCodeStringIntoRepository(readStr, newRepository);
-						main.repository = newRepository;
-						main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
-						main.loadGlobalsView();
-					}
-					catch (err)
-					{
-						console.error(err);
-					}
+					loadCallback(fileInput.files[0].name, reader.result);
 				};
-				reader.readAsText(fileInput.files[0]);
+				if (asString)
+					reader.readAsText(fileInput.files[0]);
+				else
+					reader.readAsArrayBuffer(fileInput.files[0]);
 			}
 			document.body.removeChild(fileInput);
 		});
 		fileInput.click();
+    }
+	function doLoadWeb(main)
+	{
+		chooseFile('.plom', true, function(name, readStr) {
+			try {
+			    var newRepository = makeRepositoryWithStdLib(main);
+			    newRepository.setExtraFilesManager(new ExtraFilesManagerWeb());
+			    loadCodeStringIntoRepository(readStr, newRepository);
+				main.repository = newRepository;
+				main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
+				main.loadGlobalsView();
+			}
+			catch (err)
+			{
+				console.error(err);
+			}
+		});
 	}
-	function doSave(main)
+	function doSaveWeb(main)
 	{
 		var saveLink = document.createElement("a");
 		try
@@ -359,6 +369,21 @@ function setupPlomUi() {
 			console.error(e);
 		}
 	}
+
+	/**
+	 * Version of the ExtraFilesManager that's suitable for a web IDE
+	 * where all files are stored in memory
+	 */
+	class ExtraFilesManagerWeb
+	{
+		constructor() {}
+	    newFileUi() {
+			chooseFile(null, false, function(name, readStr) {
+				
+			});
+	    }
+	}
+
 	var hamburgerMenuDiv;   // saves a reference to the div showing the popup menu of hamburger options
 	function hookRun(main)
 	{
@@ -368,7 +393,9 @@ function setupPlomUi() {
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			doRun(main);
 		});
-		
+	}
+	function hookWebRun(main)
+	{
 		// Run things as a web page in a mini-sandbox
 		var localServerServiceWorker;  // Stores a reference to the active service worker after it has started
 		var localServerId;
@@ -458,13 +485,13 @@ function setupPlomUi() {
 		loadEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
-			doLoad(main);
+			doLoadWeb(main);
 		});
 		var saveEl = document.querySelector("a.savebutton");
 		saveEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
-			doSave(main);
+			doSaveWeb(main);
 		});
 	}
 	function initRepository(main)
@@ -472,6 +499,7 @@ function setupPlomUi() {
 	    // Load in the built-in primitives of the interpreter into the 
 	    // code repository so that they can be browsed in the UI
 	    main.repository = makeRepositoryWithStdLib(main);
+	    main.repository.setExtraFilesManager(new ExtraFilesManagerWeb());
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
 				function .{main} {@{void}} {} {
@@ -508,6 +536,7 @@ function setupPlomUi() {
 		};
 	}
 	window.hookRun = hookRun;
+	window.hookWebRun = hookWebRun;
 	window.hookLoadSave = hookLoadSave;
 	window.initRepository = initRepository;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
@@ -20,7 +21,6 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
-import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
@@ -225,6 +225,54 @@ public class GlobalsPanel implements AutoCloseable
         (SVGSVGElement)mainDiv.querySelector("svg.globalImportedVarsCode"), 
         repository.getImportedVariableDeclarationCode(), 
         null, null, null, new ErrorList(), widthCalculator, clientWidth, 0, 0, 0, 0);
+    
+    // For adding Files
+    Element newFilesAnchor = mainDiv.querySelector(".extraFilesHeading a");
+    newFilesAnchor.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      repository.getExtraFilesManager().newFileUi();
+//      // Find a unique function name
+//      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
+//      FunctionDescription func = new FunctionDescription(
+//          FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
+//          new StatementContainer());
+//      repository.addFunctionAndResetIds(func);
+//      
+//      if (functionSigCallback != null)
+//        functionSigCallback.load(func, true);
+    }, false);
+    
+    // List of functions
+    Element filesListEl = mainDiv.querySelector(".extraFilesList");
+    for (FileDescription file: repository.getAllExtraFilesSorted())
+    {
+      AnchorElement a = (AnchorElement)doc.createElement("a");
+      a.setClassName("plomUiButton");
+      a.setHref("#");
+      a.setTextContent("." + file.getPath());
+      a.addEventListener(Event.CLICK, (e) -> {
+        e.preventDefault();
+//        viewSwitchCallback.load(fnName);
+      }, false);
+      DivElement div = doc.createDivElement();
+      if (file.isImported)
+        div.getClassList().add("moduleImported");
+//      AnchorElement deleteAnchor = (AnchorElement)doc.createElement("a");
+//      deleteAnchor.setClassName("plomUiRemoveButton");
+//      deleteAnchor.setHref("#");
+//      if (file.isImported)
+//        deleteAnchor.getStyle().setDisplay(Display.NONE);
+//      deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+//        evt.preventDefault();
+//        repository.deleteFunctionAndResetIds(fnName.module, fnName.id);
+//        rebuildView();
+//      }, false);
+      div.appendChild(a);
+      div.appendChild(doc.createTextNode(" "));
+//      div.appendChild(deleteAnchor);
+      filesListEl.appendChild(div);
+    }
+
   }
   
   static String varInnerHtml(String divClass, String deleteLinkClass)

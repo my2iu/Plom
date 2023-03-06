@@ -384,6 +384,29 @@ public class ModuleCodeRepository
     public ClassDescription setImported(boolean isImported) { this.isImported = isImported; return this; }
   }
   
+  /**
+   * Extra files can also be stored in a project (right now, just used for storing web files,
+   * but I suppose other resources could be stored in a project as well later on). For the
+   * web version of Plom, these files are stored in memory, but for app versions of Ploms,
+   * these files are stored externally on disk, but we just keep a listing of them in memory
+   * so that it's easy to show them in the UI.
+   */
+  @JsType
+  public static class FileDescription 
+  {
+    /** Use '/' as a path separator? */
+    String filePath;
+    /** Can be null if file contents are stored on disk */ 
+    String base64Contents;
+    public boolean isImported;
+    public FileDescription setImported(boolean isImported) { this.isImported = isImported; return this;}
+    
+    public String getPath() { return filePath; }
+    public void setPath(String newPath) { filePath = newPath; }
+    public String getBase64Contents() { return base64Contents; }
+    public void setBase64Contents(String data) { base64Contents = data; }
+  }
+  
   private List <FunctionDescription> functions = new ArrayList<>();
   
   /** Lists global variables and their types */
@@ -400,6 +423,12 @@ public class ModuleCodeRepository
 
   /** Code for global variable declarations */
   StatementContainer variableDeclarationCode = new StatementContainer();
+  
+  /** Tracks all the extra non-Plom files stored in the module */
+  List<FileDescription> extraFiles = new ArrayList<>();
+  
+  /** Handles operations on extra files */
+  ExtraFilesManager fileManager;
   
   public ModuleCodeRepository()
   {
@@ -705,7 +734,31 @@ public class ModuleCodeRepository
     }
     return false;
   }
+  
+  private void fillChainedExtraFiles(List<FileDescription> mergedFiles)
+  {
+    for (FileDescription f: extraFiles)
+      mergedFiles.add(f);
+  }
 
+  public List<FileDescription> getAllExtraFilesSorted()
+  {
+    List<FileDescription> toReturn = new ArrayList<>();
+    for (FileDescription f: extraFiles)
+      toReturn.add(f);
+    if (chainedRepository != null)
+      chainedRepository.fillChainedExtraFiles(toReturn);
+    toReturn.sort(Comparator.comparing(f -> f.getPath()));
+    return toReturn;
+  }
+
+  public void setExtraFilesManager(ExtraFilesManager newFileManager)
+  {
+    fileManager = newFileManager; 
+  }
+  
+  public ExtraFilesManager getExtraFilesManager() { return fileManager; }
+  
   /**
    * Marks all the contents of this module as being imported
    */
@@ -717,6 +770,8 @@ public class ModuleCodeRepository
       fn.setImported(true);
     for (VariableDescription v: globalVars)
       v.isImported = true;
+    for (FileDescription f: extraFiles)
+      f.setImported(true);
   }
   
   public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
