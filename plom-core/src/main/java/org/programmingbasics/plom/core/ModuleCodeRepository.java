@@ -747,6 +747,11 @@ public class ModuleCodeRepository
     toReturn.sort(Comparator.comparing(f -> f.getPath()));
     return toReturn;
   }
+  
+  public boolean hasExtraFile(String path)
+  {
+    return extraFiles.stream().anyMatch((file) -> file.getPath().equals(path));
+  }
 
   /** Refresh the internal list of extra files in the module */
   public void refreshExtraFiles(ExtraFilesManager.EmptyCallback callback)

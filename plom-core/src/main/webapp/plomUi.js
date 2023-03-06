@@ -404,7 +404,26 @@ function setupPlomUi() {
 			if (evt.data.type != 'GET') return;
 			if (!localServerServiceWorker) return;
 			if (event.data.serverContext != localServerId) return;
-			if (evt.data.path == 'index.html') {
+			// Check if the file exists in the code repository
+			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
+				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
+					if (contents)
+						localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							headers: {'Content-Type':'text/html'},
+							data: contents
+						}, [contents]);
+					else
+						localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							data: null
+						});
+				});
+			} else if (evt.data.path == 'index.html') {
 				var dataToSend = new TextEncoder().encode('hi world');
 				localServerServiceWorker.postMessage({
 					type: 'GET',

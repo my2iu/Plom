@@ -2,6 +2,8 @@ package org.programmingbasics.plom.core;
 
 import java.util.List;
 
+import elemental.html.ArrayBuffer;
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 /**
@@ -17,6 +19,7 @@ public interface ExtraFilesManager
    */
   public void newFileUi(String pathPrefix, EmptyCallback callback);
 
+  @JsFunction
   public static interface EmptyCallback
   {
     void call();
@@ -27,8 +30,21 @@ public interface ExtraFilesManager
    */
   public void getFileList(FileListCallback callback);
   
+  @JsFunction
   public static interface FileListCallback
   {
     void call(List<String> files);
+  }
+  
+  /**
+   * Reads a file and return its contents. The ArrayBuffer containing the file
+   * contents should be transferrable to another thread
+   */
+  public void getFileContentsTransferrable(String path, FileContentsCallback callback);
+
+  @JsFunction
+  public static interface FileContentsCallback
+  {
+    void call(ArrayBuffer contents);
   }
 }

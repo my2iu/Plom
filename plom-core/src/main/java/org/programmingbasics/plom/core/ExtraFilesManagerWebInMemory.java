@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import elemental.html.ArrayBuffer;
 import jsinterop.annotations.JsType;
@@ -53,6 +54,16 @@ public class ExtraFilesManagerWebInMemory implements ExtraFilesManager
     for (FileInfo f: files)
       filenames.add(f.path);
     callback.call(filenames);
+  }
+
+  @Override
+  public void getFileContentsTransferrable(String path, FileContentsCallback callback)
+  {
+    Optional<FileInfo> fi = files.stream().filter(f -> f.path.equals(path)).findAny();
+    if (fi.isPresent())
+      callback.call(fi.get().fileData.slice(0));
+    else
+      callback.call(null);
   }
 
 }
