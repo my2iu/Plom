@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import elemental.html.ArrayBuffer;
+import elemental.html.Uint8Array;
 import jsinterop.annotations.JsType;
 
 /**
@@ -31,19 +32,8 @@ public class ExtraFilesManagerWebInMemory implements ExtraFilesManager
   public void newFileUi(String pathPrefix, EmptyCallback callback)
   {
     Main.jsShowFileChooser(null, false, (name, result) -> {
-      FileInfo newFile = new FileInfo();
       if (pathPrefix.endsWith("/")) pathPrefix.substring(0, pathPrefix.length() - 1);
-      newFile.path = pathPrefix + "/" + name;
-      newFile.fileData = (ArrayBuffer)result;
-      
-      // Remove any existing file with the same name
-      files.removeIf(fi -> fi.path.equals(newFile.path));
-      
-      // Insert the new file into the file list
-      files.add(newFile);
-      files.sort(Comparator.comparing((f) -> f.path));
-      
-      callback.call();
+      insertFile(pathPrefix + "/" + name, (ArrayBuffer)result, callback);
     });
   }
 
@@ -65,5 +55,33 @@ public class ExtraFilesManagerWebInMemory implements ExtraFilesManager
     else
       callback.call(null);
   }
+
+  @Override
+  public void getFileContents(String path, FileContentsCallback callback)
+  {
+    Optional<FileInfo> fi = files.stream().filter(f -> f.path.equals(path)).findAny();
+    if (fi.isPresent())
+      callback.call(fi.get().fileData);
+    else
+      callback.call(null);
+  }
+
+  @Override
+  public void insertFile(String path, ArrayBuffer data, EmptyCallback callback)
+  {
+    FileInfo newFile = new FileInfo();
+    newFile.path = path;
+    newFile.fileData = data;
+    
+    // Remove any existing file with the same name
+    files.removeIf(fi -> fi.path.equals(newFile.path));
+    
+    // Insert the new file into the file list
+    files.add(newFile);
+    files.sort(Comparator.comparing((f) -> f.path));
+
+    callback.call();
+  }
+
 
 }

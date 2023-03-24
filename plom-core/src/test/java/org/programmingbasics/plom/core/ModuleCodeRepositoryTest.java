@@ -1,13 +1,20 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.WebHelpers.Promise;
+import org.programmingbasics.plom.core.WebHelpers.Promise.PromiseConstructorFunction;
+import org.programmingbasics.plom.core.WebHelpersShunt.ByteArrayUint8Array;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -18,6 +25,10 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
+import elemental.client.Browser;
+import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.Collections;
 import junit.framework.TestCase;
 
 public class ModuleCodeRepositoryTest extends TestCase
@@ -326,4 +337,128 @@ public class ModuleCodeRepositoryTest extends TestCase
     loadedConstructor.sig.canReplace(constructor.sig);
   }
 
+  static class JsEmulatedPromise<T> implements WebHelpers.Promise<T>
+  {
+    CompletableFuture<T> future;
+    JsEmulatedPromise() {}
+    JsEmulatedPromise(CompletableFuture<T> toWrap) { future = toWrap; }
+    JsEmulatedPromise(PromiseConstructorFunction<T> createCallback)
+    {
+      future = new CompletableFuture<T>();
+      ForkJoinPool.commonPool().execute(() -> {
+        createCallback.call(resolvedValue -> {
+          future.complete(resolvedValue);
+        }, 
+        errVal -> {
+          // Unhandled
+        });
+      });
+    }
+    static <U> CompletableFuture<U> promiseToFuture(WebHelpers.Promise<U> toWrap) {
+      CompletableFuture<U> future = new CompletableFuture<U>();
+      toWrap.thenNow(val -> {
+        future.complete(val); 
+        return null;
+      });
+      return future;
+    }
+    @Override
+    public <U> WebHelpers.Promise<U> then(Then<T, WebHelpers.Promise<U>> fn)
+    {
+      return new JsEmulatedPromise<>(future.thenComposeAsync((T val) -> {
+        try {
+          return promiseToFuture(fn.call(val));
+        } catch (Throwable e)
+        {
+          e.printStackTrace();
+          throw e;
+        }
+      } ));
+    }
+
+    @Override
+    public <U> WebHelpers.Promise<U> thenNow(Then<T, U> fn)
+    {
+      return new JsEmulatedPromise<U>(future.<U>thenApplyAsync((T val) -> { return fn.call(val); }));
+    }
+    public static <U> Promise<ArrayOf<U>> promiseAll(ArrayOf<Promise<U>> promises)
+    {
+      return gatherPromiseAll(promises, 0, Collections.arrayOf());
+    }
+    private static <U> Promise<ArrayOf<U>> gatherPromiseAll(ArrayOf<Promise<U>> promises, int idx, ArrayOf<U> gatheredPromises)
+    {
+      if (idx >= promises.length())
+        return new JsEmulatedPromise<>(CompletableFuture.completedFuture(gatheredPromises));
+      return promises.get(idx).then(val -> {
+        gatheredPromises.push(val);
+        return gatherPromiseAll(promises, idx + 1, gatheredPromises);
+      });
+    }
+  }
+  
+  @Test
+  public void testSaveExtraFiles() throws IOException, InterruptedException, ExecutionException
+  {
+    StringBuilder strBuilder = new StringBuilder();
+
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("3", Symbol.Number)))));
+    Promise<Void> promise = new JsEmulatedPromise<Void>((resolve, reject) -> {
+      repository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
+      repository.getExtraFilesManager().insertFile("web/test.txt", 
+          ByteArrayUint8Array.fromByteArray("hello".getBytes(StandardCharsets.UTF_8)).getBuffer(), 
+          () -> {
+            repository.refreshExtraFiles(() -> {
+              resolve.accept(null);
+            });
+          });
+    })
+    .then(dummy -> {
+      PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+
+      try {
+        return repository.saveModuleWithExtraFiles(out, true,
+            new WebHelpers.PromiseCreator() {
+              @Override public <U> WebHelpers.Promise<U> create(PromiseConstructorFunction<U> createCallback)
+              {
+                return new JsEmulatedPromise<>(createCallback);
+              }
+            },
+            new WebHelpers.Promise.All() {
+              @Override public <U> WebHelpers.Promise<ArrayOf<U>> all(ArrayOf<WebHelpers.Promise<U>> promises)
+              {
+                return JsEmulatedPromise.promiseAll(promises);
+              }
+            },
+            buf -> {
+              if (buf instanceof ByteArrayUint8Array) 
+                return (Uint8Array)buf; 
+              else 
+                return null; 
+            });
+      }
+      catch (IOException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+    
+    ((JsEmulatedPromise<Void>)promise).future.get();
+    Assert.assertEquals(" module .{program} {\n" + 
+        " vardecls {\n" +
+        " }\n" +
+        " function . {get } { @ {number } } { } {\n" + 
+        " return 3\n" + 
+        " }\n" +
+        " file {web/test.txt} {aGVsbG9}\n" + 
+        " }",
+        strBuilder.toString());
+
+  }
 }

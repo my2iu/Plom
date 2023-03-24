@@ -21,8 +21,15 @@ import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
 import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
+
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
+import elemental.client.Browser;
+import elemental.html.ArrayBuffer;
+import elemental.html.Uint8Array;
+import elemental.html.Window;
+import elemental.util.ArrayOf;
+import elemental.util.Collections;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -829,6 +836,60 @@ public class ModuleCodeRepository
   
   public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
   {
+    // Save out the module contents
+    saveOpenModule(out, saveClasses);
+    
+    // Close out the module
+    out.token("}");
+  }
+  
+  public WebHelpers.Promise<Void> saveModuleWithExtraFiles(final PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses, WebHelpers.PromiseCreator promiseCreator, WebHelpers.Promise.All promiseAll, Function<ArrayBuffer, Uint8Array> bufToUint8Array) throws IOException
+  {
+    // Save out the module contents
+    saveOpenModule(out, saveClasses);
+
+    // Launch promises to get contents of files
+    List<String> filePaths = new ArrayList<>();
+    ArrayOf<WebHelpers.Promise<ArrayBuffer>> fileContentPromises = Collections.arrayOf();
+    for (FileDescription f: extraFiles)
+    {
+      filePaths.add(f.getPath());
+      fileContentPromises.push(promiseCreator.create((resolve, reject) -> {
+        fileManager.getFileContents(f.getPath(), contents -> {
+          resolve.accept(contents);
+        });
+      }));
+    }
+    
+    // Wait until all the file contents have been retrieved
+    return promiseAll.all(fileContentPromises).thenNow(fileContents -> {
+      for (int n = 0; n < filePaths.size(); n++)
+      {
+        out.token("file");
+        out.token("{");
+        out.append(filePaths.get(n));
+        out.append("}");
+        out.token("{");
+        ArrayBuffer buf = fileContents.get(n);
+        out.append(WebHelpers.Base64EncoderDecoder.encodeToString(bufToUint8Array.apply(buf), false));
+        out.append("}");
+        out.newline();
+      }
+      
+      // Close out the module
+      out.token("}");
+
+      return null;
+    });
+    
+  }
+  
+  /** 
+   * Saves out a module, but leaves it "open" so that more stuff can
+   * be added to the end of the module afterwards
+   */
+  private void saveOpenModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
+  {
     out.token("module");
     out.token(".{program}");
     out.token("{");
@@ -877,8 +938,6 @@ public class ModuleCodeRepository
           saveClass(out, cls);
       }
     }
-
-    out.token("}");
   }
   
   public static void saveClass(PlomTextWriter.PlomCodeOutputFormatter out, ClassDescription c) throws IOException

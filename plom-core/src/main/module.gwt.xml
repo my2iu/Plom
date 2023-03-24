@@ -8,6 +8,7 @@
   <entry-point class='org.programmingbasics.plom.core.Entry'/>
 
   <source path='core'/>
+  <super-source path='super'/>
 
   <define-linker name="scripttag" class="org.programmingbasics.plom.gwtlinker.ScriptTagLinker" />
   <!-- 

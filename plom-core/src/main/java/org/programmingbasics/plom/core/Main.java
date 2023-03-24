@@ -34,6 +34,7 @@ import elemental.html.FileReader;
 import elemental.html.InputElement;
 import elemental.js.util.JsArrayOf;
 import elemental.js.util.JsArrayOfString;
+import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
@@ -246,7 +247,29 @@ public class Main
     repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     return out.toString();
   }
-  
+
+  public WebHelpers.Promise<String> getModuleWithFilesAsString() throws IOException 
+  {
+    StringBuilder out = new StringBuilder();
+
+    return repository.saveModuleWithExtraFiles(new PlomTextWriter.PlomCodeOutputFormatter(out), true,
+        new WebHelpers.PromiseCreator() {
+          @Override public <U> WebHelpers.Promise<U> create(WebHelpers.Promise.PromiseConstructorFunction<U> createCallback)
+          {
+            return new WebHelpers.PromiseClass<>(createCallback);
+          }
+        },
+        new WebHelpers.Promise.All() {
+          @Override public <U> WebHelpers.Promise<ArrayOf<U>> all(ArrayOf<WebHelpers.Promise<U>> promises)
+          {
+            return WebHelpers.promiseAll(promises);
+          }
+        },
+        buf -> Browser.getWindow().newUint8Array(buf, 0, buf.getByteLength()))
+    .thenNow((dummy) -> out.toString());
+
+  }
+
   public void saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver, DeleteClassCallback classDeleter)
   {
     try {

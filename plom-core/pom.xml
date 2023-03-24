@@ -76,6 +76,7 @@
           <startupUrls>
             <startupUrl>index.html</startupUrl>
           </startupUrls>
+          <relocateSuperSource>true</relocateSuperSource>
         </configuration>
       </plugin>
       <plugin>

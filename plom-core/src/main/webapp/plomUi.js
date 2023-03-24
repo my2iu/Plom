@@ -335,10 +335,16 @@ function setupPlomUi() {
 		var saveLink = document.createElement("a");
 		try
 		{
-			var blob = new Blob([main.getModuleAsString()], {type:"text/plain"});
-			saveLink.href = URL.createObjectURL(blob);
-			saveLink.download = "program.plom";
-			saveLink.click();
+			main.getModuleWithFilesAsString().then((str) => {
+				var blob = new Blob([str], {type:"text/plain"});
+				saveLink.href = URL.createObjectURL(blob);
+				saveLink.download = "program.plom";
+				saveLink.click();
+			});
+//			var blob = new Blob([main.getModuleAsString()], {type:"text/plain"});
+//			saveLink.href = URL.createObjectURL(blob);
+//			saveLink.download = "program.plom";
+//			saveLink.click();
 		}
 		catch (e)
 		{

@@ -2,7 +2,10 @@ package org.programmingbasics.plom.core;
 
 import java.util.List;
 
+import org.programmingbasics.plom.core.ExtraFilesManager.EmptyCallback;
+
 import elemental.html.ArrayBuffer;
+import elemental.html.Uint8Array;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
@@ -42,6 +45,16 @@ public interface ExtraFilesManager
    */
   public void getFileContentsTransferrable(String path, FileContentsCallback callback);
 
+  /**
+   * Reads a file and return its contents. 
+   */
+  public void getFileContents(String path, FileContentsCallback callback);
+
+  /**
+   * Inserts data directly into the files list
+   */
+  public void insertFile(String path, ArrayBuffer data, EmptyCallback callback);
+  
   @JsFunction
   public static interface FileContentsCallback
   {
