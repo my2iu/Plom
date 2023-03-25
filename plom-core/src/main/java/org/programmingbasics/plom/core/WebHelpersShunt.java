@@ -1,12 +1,21 @@
 package org.programmingbasics.plom.core;
 
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+
+import org.programmingbasics.plom.core.WebHelpers.Promise;
+import org.programmingbasics.plom.core.WebHelpers.Promise.PromiseConstructorFunction;
+import org.programmingbasics.plom.core.WebHelpers.Promise.Then;
+
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.core.shared.GwtIncompatible;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
+import elemental.util.ArrayOf;
+import elemental.util.Collections;
 import elemental.util.SettableInt;
 
 /**
@@ -14,6 +23,7 @@ import elemental.util.SettableInt;
  * interface depending on whether we're running tests in Java
  * or running Js code
  */
+@GwtIncompatible
 public class WebHelpersShunt
 {
   /**
@@ -144,8 +154,89 @@ public class WebHelpersShunt
     }
   }
 
+  /**
+   * A partial implementation of JS promises in Java that can be
+   * used to mock JS functionality in Java tests
+   */
+  @GwtIncompatible
+  public static class JsEmulatedPromise<T> implements WebHelpers.Promise<T>
+  {
+    CompletableFuture<T> future;
+    JsEmulatedPromise() {}
+    JsEmulatedPromise(CompletableFuture<T> toWrap) { future = toWrap; }
+    JsEmulatedPromise(PromiseConstructorFunction<T> createCallback)
+    {
+      future = new CompletableFuture<T>();
+      ForkJoinPool.commonPool().execute(() -> {
+        createCallback.call(resolvedValue -> {
+          future.complete(resolvedValue);
+        }, 
+        errVal -> {
+          // Unhandled
+        });
+      });
+    }
+    static <U> CompletableFuture<U> promiseToFuture(WebHelpers.Promise<U> toWrap) {
+      CompletableFuture<U> future = new CompletableFuture<U>();
+      toWrap.thenNow(val -> {
+        future.complete(val); 
+        return null;
+      });
+      return future;
+    }
+    @Override
+    public <U> WebHelpers.Promise<U> then(Then<T, WebHelpers.Promise<U>> fn)
+    {
+      return new JsEmulatedPromise<>(future.thenComposeAsync((T val) -> {
+        try {
+          return promiseToFuture(fn.call(val));
+        } catch (Throwable e)
+        {
+          e.printStackTrace();
+          throw e;
+        }
+      } ));
+    }
+
+    @Override
+    public <U> WebHelpers.Promise<U> thenNow(Then<T, U> fn)
+    {
+      return new JsEmulatedPromise<U>(future.<U>thenApplyAsync((T val) -> { return fn.call(val); }));
+    }
+    public static <U> Promise<ArrayOf<U>> promiseAll(ArrayOf<Promise<U>> promises)
+    {
+      return gatherPromiseAll(promises, 0, Collections.arrayOf());
+    }
+    private static <U> Promise<ArrayOf<U>> gatherPromiseAll(ArrayOf<Promise<U>> promises, int idx, ArrayOf<U> gatheredPromises)
+    {
+      if (idx >= promises.length())
+        return new JsEmulatedPromise<>(CompletableFuture.completedFuture(gatheredPromises));
+      return promises.get(idx).then(val -> {
+        gatheredPromises.push(val);
+        return gatherPromiseAll(promises, idx + 1, gatheredPromises);
+      });
+    }
+  }
+
+  
   public static Uint8Array uint8ArrayforSize(int size)
   {
     return new ByteArrayUint8Array(size);
   }
+  
+  public static <U> Promise<U> promiseResolve(U val)
+  {
+    return new JsEmulatedPromise<U>(CompletableFuture.completedFuture(val));
+  }
+  
+  public static <U> Promise<U> newPromise(PromiseConstructorFunction<U> createCallback) 
+  {
+    return new JsEmulatedPromise<>(createCallback);
+  }
+
+  public static <U> Promise<ArrayOf<U>> promiseAll(ArrayOf<Promise<U>> promises)
+  {
+    return JsEmulatedPromise.promiseAll(promises);
+  }
+
 }

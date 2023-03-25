@@ -298,6 +298,30 @@ public class PlomTextReader
       return toReturn;
     }
     
+    // Reads a base 64 string used for encoding file data (it's probably also okay to lex it 
+    // using lexInput(), but I'll make a special lexer case to be safe)
+    public String lexBase64() throws PlomReadException
+    {
+      String toReturn = "";
+      while (in.peek() >= 0)
+      {
+        if (in.peek() >= 'A' && in.peek() <= 'Z')
+          toReturn += (char)in.peek();
+        else if (in.peek() >= 'a' && in.peek() <= 'z')
+          toReturn += (char)in.peek();
+        else if (in.peek() >= '0' && in.peek() <= '9')
+          toReturn += (char)in.peek();
+        else if (in.peek() == '+' || in.peek() == '/')
+          toReturn += (char)in.peek();
+        else if (in.peek() == '=' || Character.isWhitespace(in.peek()))
+          toReturn += "";
+        else
+          break;
+        in.read();
+      }
+      return toReturn;
+    }
+    
     // Check if it matches one of the expected tokens (we'll do this inefficiently for now)
     private static String prefixMatch(String toMatch)
     {

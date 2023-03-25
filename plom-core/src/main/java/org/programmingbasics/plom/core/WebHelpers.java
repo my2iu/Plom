@@ -333,6 +333,8 @@ public class WebHelpers
 
     @Override public native <U> Promise<U> then(Then<T, Promise<U>> fn);
     @Override public native <U> Promise<U> thenNow(Then<T, U> fn);
+    
+    public static native <U> Promise<U> resolve(U val);
   }
   
   // Abstracts out the creation of promises so that promises can be

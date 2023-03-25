@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
@@ -21,13 +22,10 @@ import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
 import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
-
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
-import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
-import elemental.html.Window;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
 import jsinterop.annotations.JsType;
@@ -866,9 +864,12 @@ public class ModuleCodeRepository
       for (int n = 0; n < filePaths.size(); n++)
       {
         out.token("file");
-        out.token("{");
-        out.append(filePaths.get(n));
-        out.append("}");
+
+        out.append(" ");
+        out.append("\"");
+        out.append(PlomTextWriter.escapeStringLiteral(filePaths.get(n)));
+        out.append("\"");
+
         out.token("{");
         ArrayBuffer buf = fileContents.get(n);
         out.append(WebHelpers.Base64EncoderDecoder.encodeToString(bufToUint8Array.apply(buf), false));
@@ -1047,7 +1048,7 @@ public class ModuleCodeRepository
     out.newline();
   }
   
-  public void loadModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  public WebHelpers.Promise<Void> loadModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
   {
     lexer.expectToken("module");
     lexer.expectToken(".");
@@ -1057,6 +1058,10 @@ public class ModuleCodeRepository
     
     lexer.expectToken("{");
     lexer.swallowOptionalNewlineToken();
+    
+    // Loading extra files from a module is done asynchronously, so
+    // we use promises to keep track of when loading is done.
+    ArrayOf<WebHelpers.Promise<String>> extraFilesPromises = Collections.arrayOf();
     
     while (!"}".equals(lexer.peekLexInput()))
     {
@@ -1091,11 +1096,36 @@ public class ModuleCodeRepository
         lexer.expectToken("}");
         lexer.swallowOptionalNewlineToken();
       }
+      else if ("file".equals(peek))
+      {
+        lexer.expectToken("file");
+        lexer.swallowOptionalNewlineToken();
+        String fileNameString = lexer.lexInput();
+        if (!fileNameString.startsWith("\""))
+          throw new PlomReadException("Expecting a string for file name", lexer);
+        if (!fileNameString.endsWith("\""))
+          throw new PlomReadException("Expecting a string for file name", lexer);
+        final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
+        lexer.swallowOptionalNewlineToken();
+        lexer.expectToken("{");
+        String fileData = lexer.lexBase64();
+        lexer.swallowOptionalNewlineToken();
+        lexer.expectToken("}");
+        lexer.swallowOptionalNewlineToken();
+        final Uint8Array rawData = Base64EncoderDecoder.decodeBase64ToUint8Array(fileData);
+        extraFilesPromises.push(WebHelpersShunt.newPromise((resolve, reject) -> {
+          getExtraFilesManager().insertFile(filePath, rawData.getBuffer(), () -> {
+            resolve.accept(filePath);
+          });
+        }));
+      }
       else
         throw new PlomReadException("Unexpected module contents", lexer);
     }
     
     lexer.expectToken("}");
+    
+    return WebHelpersShunt.promiseAll(extraFilesPromises).thenNow(doneArray -> null);
   }
   
   public void loadModuleStdLibFlag(PlomTextReader.PlomTextScanner lexer) throws PlomReadException

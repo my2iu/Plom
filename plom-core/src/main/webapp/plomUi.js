@@ -299,7 +299,7 @@ function setupPlomUi() {
 	{
 		var inStream = new PlomTextReader.StringTextReader(code);
 		var lexer = new PlomTextReader.PlomTextScanner(inStream);
-		repository.loadModule(lexer);
+		return repository.loadModule(lexer);
 	}
 	function loadClassCodeStringIntoRepository(code, repository)
 	{
@@ -319,10 +319,14 @@ function setupPlomUi() {
 			try {
 			    var newRepository = makeRepositoryWithStdLib(main);
 			    newRepository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
-			    loadCodeStringIntoRepository(readStr, newRepository);
+			    var extraFilesPromise = loadCodeStringIntoRepository(readStr, newRepository);
 				main.repository = newRepository;
-				main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
-				main.loadGlobalsView();
+			    extraFilesPromise.then(() => {
+			    	newRepository.refreshExtraFiles(() => {
+						main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
+						main.loadGlobalsView();
+			    	});
+			    });
 			}
 			catch (err)
 			{
