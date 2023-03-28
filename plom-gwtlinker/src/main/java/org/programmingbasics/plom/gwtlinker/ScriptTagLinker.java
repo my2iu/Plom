@@ -151,7 +151,7 @@ public class ScriptTagLinker extends CrossSiteIframeLinker {
     // installLocationIframe.js may set it.
 
     out.print("(function() {");
-    out.print("var $wnd = $wnd || window.parent;");
+    out.print("var $wnd = window.$wnd || window.parent;");
     out.newlineOpt();
     out.print("var __gwtModuleFunction = $wnd." + context.getModuleFunctionName() + ";");
     out.newlineOpt();

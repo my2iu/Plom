@@ -247,6 +247,20 @@ public class Main
     repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     return out.toString();
   }
+  
+  public WebHelpers.Promise<String> getModuleAsJsonPString() throws IOException
+  {
+    // Get module contents as a string
+    StringBuilder out = new StringBuilder();
+    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
+    
+    // Wrap string in js
+    return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((main) => {\n"
+        + "var code = `" + PlomTextWriter.escapeTemplateLiteral(out.toString()) + "`;\n"
+        + "var skipPromise = loadCodeStringIntoRepository(code, main.repository);\n"
+        + "return main;\n"
+        + "});\n");
+  }
 
   public WebHelpers.Promise<String> getModuleWithFilesAsString() throws IOException 
   {

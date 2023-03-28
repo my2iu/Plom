@@ -295,6 +295,34 @@ function setupPlomUi() {
 			errorLogger(err);
 		}
 	}
+	function runPlomStandalone(main)
+	{
+		var errorLogger = (err) => {console.log(err);} // Ignore the error
+		//var errorLogger = main.createErrorLoggerForConsole(document.querySelector('.console'));
+		//main.saveCodeToRepository();
+    	// Find code to run
+    	var fd = main.repository.getFunctionDescription("main");
+    	if (fd == null)
+    	{
+			errorLogger(new RunException("No main function"));
+			return;
+		}
+		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
+		terp.setErrorLogger(errorLogger);
+		try {
+			terp.runNoReturn(function(scope, coreTypes) {
+				StandardLibrary.createGlobals(terp, scope, coreTypes);
+				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes));
+  
+				addPrimitives(terp, coreTypes);
+			});
+		}
+		catch (err)
+		{
+			console.log(err);
+			errorLogger(err);
+		}
+	}
 	function loadCodeStringIntoRepository(code, repository)
 	{
 		var inStream = new PlomTextReader.StringTextReader(code);
@@ -337,9 +365,9 @@ function setupPlomUi() {
 	function doSaveWeb(main)
 	{
 		var saveLink = document.createElement("a");
-		try
-		{
+		try {
 			main.getModuleWithFilesAsString().then((str) => {
+			//main.getModuleAsJsonPString().then((str) => { str = "\ufeff" + str; // Insert BOM at the beginning to label it as UTF-8
 				var blob = new Blob([str], {type:"text/plain"});
 				saveLink.href = URL.createObjectURL(blob);
 				saveLink.download = "program.plom";
@@ -434,14 +462,62 @@ function setupPlomUi() {
 						});
 				});
 			} else if (evt.data.path == 'index.html') {
-				var dataToSend = new TextEncoder().encode('hi world');
-				localServerServiceWorker.postMessage({
-					type: 'GET',
-					serverContext: evt.data.serverContext,
-					path: evt.data.path,
-					headers: {'Content-Type':'text/html'},
-					data: dataToSend.buffer
-				}, [dataToSend.buffer]);
+				fetch('standaloneindex.html')
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'text/html'},
+						data: buf
+					}, [buf]));
+//				var dataToSend = new TextEncoder().encode('hi world');
+//				localServerServiceWorker.postMessage({
+//					type: 'GET',
+//					serverContext: evt.data.serverContext,
+//					path: evt.data.path,
+//					headers: {'Content-Type':'text/html'},
+//					data: dataToSend.buffer
+//				}, [dataToSend.buffer]);
+			} else if (evt.data.path == 'plomdirect.js') {
+				var plomdirectLoc;
+				if (!!document.querySelector('iframe#plomcore')) {
+					plomdirectLoc = document.querySelector('iframe#plomcore').contentDocument.querySelector('script').src;
+				} else {
+					plomdirectLoc = 'plomdirect.js';
+				}
+				fetch(plomdirectLoc)
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'application/javascript'},
+						data: buf
+					}, [buf]));
+			} else if (evt.data.path == 'plomUi.js') {
+				fetch('plomUi.js')
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'application/javascript'},
+						data: buf
+					}, [buf]));
+			} else if (evt.data.path == 'main.plom.js') {
+				main.getModuleAsJsonPString().then((str) => {
+					// Insert BOM at the beginning to label it as UTF-8 
+					str = "\ufeff" + str; 
+					localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							headers: {'Content-Type':'application/javascript'},
+							data: str
+						})
+					});
+					
 			} else {
 				// Could not find any data to send, so send back null
 				// (it will be treated as a 404 by the service worker)
@@ -534,4 +610,5 @@ function setupPlomUi() {
 	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;
 	window.loadClassCodeStringIntoRepository = loadClassCodeStringIntoRepository;
 	window.hookSimpleHamburgerMenu = hookSimpleHamburgerMenu;
+	window.runPlomStandalone = runPlomStandalone;
 }

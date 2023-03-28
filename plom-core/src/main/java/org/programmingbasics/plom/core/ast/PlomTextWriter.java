@@ -32,7 +32,12 @@ public class PlomTextWriter
   {
     return str;
   }
-  
+
+  public static String escapeTemplateLiteral(String str)
+  {
+    return str.replace("`", "\\`").replace("$", "\\$");
+  }
+
   static final Map<Symbol, String> symbolTokenMap = new HashMap<>();
   static {
     symbolTokenMap.put(Symbol.This, "this");
