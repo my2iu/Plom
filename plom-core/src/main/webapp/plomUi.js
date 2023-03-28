@@ -462,7 +462,7 @@ function setupPlomUi() {
 						});
 				});
 			} else if (evt.data.path == 'index.html') {
-				fetch('standaloneindex.html')
+				fetch('plomweb.html')
 					.then((response) => response.arrayBuffer())
 					.then((buf) => localServerServiceWorker.postMessage({
 						type: 'GET',
