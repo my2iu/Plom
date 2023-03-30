@@ -19,6 +19,7 @@ function setupPlomMain()
 function createPlomRepositoryWithProjectCode(main, bridgeUrl)
 {
 	var repo = makeRepositoryWithStdLib();
+	repo.setExtraFilesManager(new org.programmingbasics.plom.core.ExtraFilesManagerBridge(bridgeUrl));
     fetch(bridgeUrl + 'listProjectFiles')
         .then(response => response.json())
         .then((json) =>
@@ -36,7 +37,9 @@ function createPlomRepositoryWithProjectCode(main, bridgeUrl)
                 repo.setChainedRepository(null);
             main.repository = repo;
 
-            //main.loadFunctionCodeView("main");
-            main.loadGlobalsView();
+			main.repository.refreshExtraFiles(() => {
+            	//main.loadFunctionCodeView("main");
+            	main.loadGlobalsView();
+        	});
         });
 }

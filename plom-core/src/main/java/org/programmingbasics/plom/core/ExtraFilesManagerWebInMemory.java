@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 import elemental.html.ArrayBuffer;
-import elemental.html.Uint8Array;
 import jsinterop.annotations.JsType;
 
 /**

@@ -144,6 +144,19 @@ public class PlomActivity extends AppCompatActivity {
                 return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
             }
         }
+        else if ("listExtraFiles".equals(endpoint))
+        {
+//            try {
+                JSONArray filesJson = new JSONArray();
+                for (String name : listSourceFiles())
+                    filesJson.put(name);
+                return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(filesJson.toString().getBytes(StandardCharsets.UTF_8)));
+//            }
+//            catch (JSONException e)
+//            {
+//                // Eat the error
+//            }
+        }
         else if ("exit".equals(endpoint))
         {
             finish();

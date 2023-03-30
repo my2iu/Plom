@@ -11,6 +11,8 @@ import elemental.html.ArrayBuffer;
 import elemental.html.ArrayBufferView;
 import elemental.html.Uint8Array;
 import elemental.js.util.JsGlobals;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
 import elemental.util.SettableInt;
 import jsinterop.annotations.JsFunction;
@@ -350,8 +352,18 @@ public class WebHelpers
 //    public Promise<ArrayOf<T>> all(ArrayOf<Promise<T>> promises);
 //    
 //  }
-  @JsMethod(name = "Promise.all",namespace = JsPackage.GLOBAL)
+  @JsMethod(name = "Promise.all", namespace = JsPackage.GLOBAL)
   public static native <U> Promise<ArrayOf<U>> promiseAll(ArrayOf<Promise<U>> promises);
   
+  @JsType(isNative = true, namespace = JsPackage.GLOBAL)
+  public static interface Response
+  {
+    Promise<ArrayBuffer> arrayBuffer();
+    Promise<JsonValue> json();
+    Promise<String> text();
+  }
   
+  
+  @JsMethod(name = "fetch", namespace = JsPackage.GLOBAL)
+  public static native Promise<Response> fetch(String url);
 }
