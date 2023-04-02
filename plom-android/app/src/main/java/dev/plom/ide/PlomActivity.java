@@ -31,9 +31,11 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class PlomActivity extends AppCompatActivity {
 
@@ -144,18 +146,13 @@ public class PlomActivity extends AppCompatActivity {
                 return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
             }
         }
-        else if ("listExtraFiles".equals(endpoint))
+        else if ("listFiles".equals(endpoint))
         {
-//            try {
-                JSONArray filesJson = new JSONArray();
-                for (String name : listSourceFiles())
-                    filesJson.put(name);
-                return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(filesJson.toString().getBytes(StandardCharsets.UTF_8)));
-//            }
-//            catch (JSONException e)
-//            {
-//                // Eat the error
-//            }
+            // TODO: Pass in a list of base paths and rejection filters
+            JSONArray filesJson = new JSONArray();
+            for (String name : listProjectFiles("", Arrays.asList("^src/$")))
+                filesJson.put(name);
+            return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(filesJson.toString().getBytes(StandardCharsets.UTF_8)));
         }
         else if ("exit".equals(endpoint))
         {
@@ -226,6 +223,77 @@ public class PlomActivity extends AppCompatActivity {
         DocumentFile file = projectFile.findFile(name);
         if (file != null)
             file.delete();
+    }
+
+    /** Gets the DocumentFile of the document/direcctory that represents a certain path
+     * inside a project. Returns null if the path could not be traversed.
+     */
+    DocumentFile getProjectDocumentFile(String path)
+    {
+        DocumentFile projectFile;
+        if ("file".equals(projectUri.getScheme())) {
+            projectFile = DocumentFile.fromFile(new File(projectUri.getPath()));
+        } else {
+            projectFile = DocumentFile.fromTreeUri(this, projectUri);
+        }
+        String base = path;
+        // Find the base from which we want to gather files
+        String baseNextDir = base;
+        if (base.indexOf("/") >= 0)
+            baseNextDir = baseNextDir.substring(0, base.indexOf("/"));
+        while (!baseNextDir.isEmpty())
+        {
+            projectFile = projectFile.findFile(baseNextDir);
+            if (projectFile == null)
+                return null;
+            base = base.substring(Math.min(baseNextDir.length() + 1, base.length()));
+            baseNextDir = base;
+            if (base.indexOf("/") >= 0)
+                baseNextDir = baseNextDir.substring(0, base.indexOf("/"));
+        }
+        return projectFile;
+    }
+
+    private List<String> listProjectFiles(String base, List<String> rejectList)
+    {
+        DocumentFile projectFile = getProjectDocumentFile(base);
+        // Start searching for files
+        List<String> results = new ArrayList<>();
+        if (!base.endsWith("/") && !base.isEmpty())
+            base = base + "/";
+        listProjectFiles(projectFile, base, rejectList, results);
+        return results;
+    }
+
+    void listProjectFiles(DocumentFile projectFile, String basePath, List<String> rejectList, List<String> results)
+    {
+        for (String rejectPattern : rejectList)
+        {
+            if (basePath.matches(rejectPattern))
+                return;
+        }
+        DocumentFile[] files = projectFile.listFiles();
+        for (DocumentFile f: files)
+        {
+            if (f.isDirectory())
+            {
+                listProjectFiles(f, basePath + f.getName() + "/", rejectList, results);
+            }
+            else if (f.isFile())
+            {
+                boolean reject = false;
+                for (String rejectPattern : rejectList)
+                {
+                    if (basePath.matches(rejectPattern))
+                    {
+                        reject = true;
+                        break;
+                    }
+                }
+                if (!reject)
+                    results.add(basePath + f.getName());
+            }
+        }
     }
 
     class PlomJsBridge {

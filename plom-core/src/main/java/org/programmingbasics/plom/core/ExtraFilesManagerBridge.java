@@ -34,7 +34,8 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
   @Override
   public void getFileList(FileListCallback callback)
   {
-    WebHelpers.fetch(bridgeUrl + "listExtraFiles")
+    // TODO: Pass in base paths and rejection filters
+    WebHelpers.fetch(bridgeUrl + "listFiles")
       .then((response) -> {
         return response.json();
       }).thenNow((json) -> {
