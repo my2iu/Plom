@@ -254,7 +254,7 @@ public class PlomActivity extends AppCompatActivity {
         return projectFile;
     }
 
-    private List<String> listProjectFiles(String base, List<String> rejectList)
+    List<String> listProjectFiles(String base, List<String> rejectList)
     {
         DocumentFile projectFile = getProjectDocumentFile(base);
         // Start searching for files
@@ -265,7 +265,7 @@ public class PlomActivity extends AppCompatActivity {
         return results;
     }
 
-    void listProjectFiles(DocumentFile projectFile, String basePath, List<String> rejectList, List<String> results)
+    private void listProjectFiles(DocumentFile projectFile, String basePath, List<String> rejectList, List<String> results)
     {
         for (String rejectPattern : rejectList)
         {
@@ -310,6 +310,12 @@ public class PlomActivity extends AppCompatActivity {
         @JavascriptInterface
         public void deleteClass(String name) {
             deleteSourceFile("@" + name + ".plom");
+        }
+
+        @JavascriptInterface
+        public void startVirtualWebServer(String serverId, String code)
+        {
+            // Do nothing stub for now
         }
     }
 }

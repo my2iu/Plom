@@ -1,12 +1,13 @@
 /** JavaScript that's common to the Android and iOS app versions of Plom */
 
-function setupPlomMain()
+function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler)
 {
 	setupPlomUi();
 	var main = new org.programmingbasics.plom.core.Main();
 	//initRepository(main);
 	//main.go();
 	hookRun(main);
+	hookWebRunWithBridge(main, virtualServerAddr, runHtmlCodeTransferHandler);
 	// hookLoadSave(main);
 	main.hookSubject();
 	window.addEventListener('resize', function() {

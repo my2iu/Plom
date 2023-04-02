@@ -546,6 +546,182 @@ function setupPlomUi() {
 		});
 		
 	}
+	function hookWebRunWithBridge(main, virtualServerAddr, codeTransfer)
+	{
+		// Run things as a web page in a mini-sandbox
+		var runHtmlEl = document.querySelector('a.runhtmlbutton');
+		runHtmlEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
+
+			// Generate a random id for the url that we'll serve data from
+			localServerId = Math.floor(Math.random() * 1000000000).toString();
+			
+			// Group all the Plom code together into a big blob that can
+			// be sent over to the web view (this could be done in native
+			// code since the native code has access to all the code files,
+			// but we'll do it here in JavaScript for convenience for now,
+			// though this may be slow on Android with the need to push all
+			// the code from JS to native)
+			main.getModuleAsJsonPString().then((str) => {
+				// Insert BOM at the beginning to label it as UTF-8 
+				str = "\ufeff" + str; 
+				
+				return codeTransfer(localServerId, str);
+			}).then(() => {
+				// Show the web view and point it to the running program
+				var webViewDiv = document.querySelector('.runWebView');
+				webViewDiv.style.display = 'flex';
+				webViewDiv.querySelector('iframe').src = virtualServerAddr + 'test' + localServerId + '/index.html';
+			});
+			
+			
+			
+			// Register a service worker that can serve data as if
+			// it were a web page sent from a server (even though it's
+			// actually all done locally)
+			/*
+			if (!('serviceWorker' in navigator)) {
+				console.error('Service workers not supported');
+				return;
+			}
+			navigator.serviceWorker.register('localServerServiceWorker.js')
+			.then((registration) => {
+				// Wait until the service worker becomes active
+				navigator.serviceWorker.ready.then((registration) => {
+					localServerServiceWorker = registration.active;
+					// Generate a random id for the url that we'll serve data from
+					localServerId = Math.floor(Math.random() * 1000000000).toString();
+					// Show the web view and point it to the running program
+					var webViewDiv = document.querySelector('.runWebView');
+					webViewDiv.style.display = 'flex';
+					webViewDiv.querySelector('iframe').src = 'test' + localServerId + '/index.html';
+				});
+			})
+			.catch((e) => {
+    			console.error(e);
+			});
+		});
+		
+		var serviceWorkerBroadcastChannel = new BroadcastChannel('Plom virtual web server service worker request resource');
+		serviceWorkerBroadcastChannel.addEventListener('message', (evt) => {
+			// Service worker (i.e. virtual web server) has relayed a 
+			// request for a resource to us. See if we can fulfill that
+			// request.
+			//  
+			// Expected message format: {
+			//   type:'GET',
+			//   serverContext: 'identifying string for server',
+			//   path: 'index.html' 
+			// }
+			if (evt.data.type != 'GET') return;
+			if (!localServerServiceWorker) return;
+			if (event.data.serverContext != localServerId) return;
+			// Check if the file exists in the code repository
+			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
+				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
+					if (contents)
+						localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							headers: {'Content-Type':'text/html'},
+							data: contents
+						}, [contents]);
+					else
+						localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							data: null
+						});
+				});
+			} else if (evt.data.path == 'index.html') {
+				fetch('plomweb.html')
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'text/html'},
+						data: buf
+					}, [buf]));
+//				var dataToSend = new TextEncoder().encode('hi world');
+//				localServerServiceWorker.postMessage({
+//					type: 'GET',
+//					serverContext: evt.data.serverContext,
+//					path: evt.data.path,
+//					headers: {'Content-Type':'text/html'},
+//					data: dataToSend.buffer
+//				}, [dataToSend.buffer]);
+			} else if (evt.data.path == 'plomdirect.js') {
+				var plomdirectLoc;
+				if (!!document.querySelector('iframe#plomcore')) {
+					plomdirectLoc = document.querySelector('iframe#plomcore').contentDocument.querySelector('script').src;
+				} else {
+					plomdirectLoc = 'plomdirect.js';
+				}
+				fetch(plomdirectLoc)
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'application/javascript'},
+						data: buf
+					}, [buf]));
+			} else if (evt.data.path == 'plomUi.js') {
+				fetch('plomUi.js')
+					.then((response) => response.arrayBuffer())
+					.then((buf) => localServerServiceWorker.postMessage({
+						type: 'GET',
+						serverContext: evt.data.serverContext,
+						path: evt.data.path,
+						headers: {'Content-Type':'application/javascript'},
+						data: buf
+					}, [buf]));
+			} else if (evt.data.path == 'main.plom.js') {
+				main.getModuleAsJsonPString().then((str) => {
+					// Insert BOM at the beginning to label it as UTF-8 
+					str = "\ufeff" + str; 
+					localServerServiceWorker.postMessage({
+							type: 'GET',
+							serverContext: evt.data.serverContext,
+							path: evt.data.path,
+							headers: {'Content-Type':'application/javascript'},
+							data: str
+						})
+					});
+					
+			} else {
+				// Could not find any data to send, so send back null
+				// (it will be treated as a 404 by the service worker)
+				localServerServiceWorker.postMessage({
+					type: 'GET',
+					serverContext: evt.data.serverContext,
+					path: evt.data.path,
+					data: null
+				});
+			}*/
+		});
+
+		// Button to show the running code output (just shows the web page)
+		var showHtmlEl = document.querySelector('a.showhtmlbutton');
+		showHtmlEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
+			var webViewDiv = document.querySelector('.runWebView');
+			webViewDiv.style.display = 'flex';
+		});
+		
+		// Close button on the web view showing the output of the running code
+		document.querySelector('.runWebView .runWebViewMenuBar a').addEventListener('click', (evt) => {
+			evt.preventDefault();
+			document.querySelector('.runWebView').style.display = 'none';
+		});
+		
+	}
+	
 	function hookLoadSave(main)
 	{
 		var loadEl = document.querySelector("a.loadbutton");
