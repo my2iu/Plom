@@ -10,8 +10,8 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -24,23 +24,25 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PlomActivity extends AppCompatActivity {
 
     String projectName;
     Uri projectUri;
+
+    // Plom code to run in the virtual web server
+    String plomCodeJsToRun;
 
     public static final String STATE_BUNDLE_KEY_PROJECTNAME = "com.wobastic.omber.projectname";
     public static final String STATE_BUNDLE_KEY_PROJECTURI = "com.wobastic.omber.projecturi";
@@ -82,14 +84,21 @@ public class PlomActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 if ("http".equals(request.getUrl().getScheme())
-                    && "webviewbridge.plom.dev".equals(request.getUrl().getHost())
-                    && request.getUrl().getPath().startsWith("/bridge/"))
-                {
-                    String endpoint = request.getUrl().getPath().substring("/bridge/".length());
-                    Map<String, String> params = new HashMap<>();
-                    for (String key: request.getUrl().getQueryParameterNames())
-                        params.put(key, request.getUrl().getQueryParameter(key));
-                    return handleBridgeRequest(endpoint, params);
+                    && "webviewbridge.plom.dev".equals(request.getUrl().getHost())) {
+                    if (request.getUrl().getPath().startsWith("/bridge/")) {
+                        String endpoint = request.getUrl().getPath().substring("/bridge/".length());
+                        Map<String, String> params = new HashMap<>();
+                        for (String key : request.getUrl().getQueryParameterNames())
+                            params.put(key, request.getUrl().getQueryParameter(key));
+                        return handleBridgeRequest(endpoint, params);
+                    }
+                    else if (request.getUrl().getPath().startsWith("/plomweb/")) {
+                        String endpoint = request.getUrl().getPath().substring("/plomweb/".length());
+                        Map<String, String> params = new HashMap<>();
+                        for (String key : request.getUrl().getQueryParameterNames())
+                            params.put(key, request.getUrl().getQueryParameter(key));
+                        return handleVirtualWebServerRequest(endpoint, params);
+                    }
                 }
                 return super.shouldInterceptRequest(view, request);
             }
@@ -160,6 +169,64 @@ public class PlomActivity extends AppCompatActivity {
         }
         return null;
 
+    }
+
+    /** When running Plom code, we take project files and create a fake web server to serve those
+     * files to run in JS.
+     */
+    WebResourceResponse handleVirtualWebServerRequest(String endpoint, Map<String, String> params)
+    {
+        // See if we fit the pattern of having a separate directory for each running instance
+        Matcher m = Pattern.compile("^(test[^//]*)/(.*)$").matcher(endpoint);
+        if (m.matches())
+        {
+            // We'll ignore the serverId since we'll only run one Plom program at a time
+            String serverId = m.group(1);
+            String path = m.group(2);
+            // Check if we're being asked for a special file
+            if ("plomUi.js".equals(path))
+            {
+                try {
+                    return new WebResourceResponse("application/javascript", null, getAssets().open("www/plom/plomUi.js"));
+                }
+                catch (IOException e)
+                {
+                    return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+                }
+            }
+            else if ("plomdirect.js".equals(path))
+            {
+                try {
+                    return new WebResourceResponse("application/javascript", null, getAssets().open("www/plom/plomcore/plomdirect.js"));
+                }
+                catch (IOException e)
+                {
+                    return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+                }
+            }
+            else if ("main.plom.js".equals(path))
+            {
+                return new WebResourceResponse("application/javascript", null, new ByteArrayInputStream(plomCodeJsToRun.getBytes(StandardCharsets.UTF_8)));
+            }
+            else
+            {
+                // See if the file being requested is in the web/ files folder
+                DocumentFile f = getProjectDocumentFile("web/" + path);
+                if (f != null && f.isFile())
+                {
+                    try {
+                        String guessedMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
+                        return new WebResourceResponse(guessedMimeType, null, getContentResolver().openInputStream(f.getUri()));
+                    }
+                    catch (IOException e)
+                    {
+                        return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+                    }
+                }
+            }
+
+        }
+        return null;
     }
 
     @Override
@@ -315,7 +382,8 @@ public class PlomActivity extends AppCompatActivity {
         @JavascriptInterface
         public void startVirtualWebServer(String serverId, String code)
         {
-            // Do nothing stub for now
+            // Ignore the serverId, and save the plom code to be served later from the virtual web server
+            plomCodeJsToRun = code;
         }
     }
 }

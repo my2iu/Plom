@@ -780,6 +780,7 @@ function setupPlomUi() {
 	}
 	window.hookRun = hookRun;
 	window.hookWebRun = hookWebRun;
+	window.hookWebRunWithBridge = hookWebRunWithBridge;
 	window.hookLoadSave = hookLoadSave;
 	window.initRepository = initRepository;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
