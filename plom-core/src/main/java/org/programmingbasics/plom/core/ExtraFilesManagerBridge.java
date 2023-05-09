@@ -3,6 +3,9 @@ package org.programmingbasics.plom.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.http.client.URL;
+
+import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.json.JsonArray;
 import jsinterop.annotations.JsType;
@@ -25,6 +28,16 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
   @Override
   public void newFileUi(String pathPrefix, EmptyCallback callback)
   {
+    
+    WebHelpers.fetch(bridgeUrl + "newFileUi?pathPrefix=" + URL.encodeQueryString(pathPrefix))
+      .then((response) -> {
+        return response.text();
+      }).thenNow((text) -> {
+        // Ignore the callback since in Android, we just return a dummy result immediately
+        // and just manually refresh the file list from native later on
+//        callback.call();
+        return null;
+      });
 //    Main.jsShowFileChooser(null, false, (name, result) -> {
 //      if (pathPrefix.endsWith("/")) pathPrefix.substring(0, pathPrefix.length() - 1);
 //      insertFile(pathPrefix + "/" + name, (ArrayBuffer)result, callback);

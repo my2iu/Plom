@@ -1,15 +1,23 @@
 package dev.plom.ide;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
@@ -24,12 +32,14 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +50,16 @@ public class PlomActivity extends AppCompatActivity {
 
     String projectName;
     Uri projectUri;
+    /** When showing a file picker activity to import an extra file into a project, we need
+     * to remember the path for the file when the activity returns with the file to import. */
+    String extraFileActivityPath = "";
 
     // Plom code to run in the virtual web server
     String plomCodeJsToRun;
 
     public static final String STATE_BUNDLE_KEY_PROJECTNAME = "com.wobastic.omber.projectname";
     public static final String STATE_BUNDLE_KEY_PROJECTURI = "com.wobastic.omber.projecturi";
+    public static final String STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH = "com.wobastic.omber.extrafileactivity.path";
 
     public static final String PLOM_MIME_TYPE = "application/x.dev.plom";
 
@@ -60,6 +74,7 @@ public class PlomActivity extends AppCompatActivity {
         {
             projectUri = savedInstanceState.getParcelable(STATE_BUNDLE_KEY_PROJECTURI);
             projectName = savedInstanceState.getString(STATE_BUNDLE_KEY_PROJECTNAME);
+            extraFileActivityPath = savedInstanceState.getString(STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH);
         }
 
         if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))
@@ -123,7 +138,34 @@ public class PlomActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putParcelable(STATE_BUNDLE_KEY_PROJECTURI, projectUri);
         outState.putString(STATE_BUNDLE_KEY_PROJECTNAME, projectName);
+        outState.putString(STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH, extraFileActivityPath);
     }
+
+    ActivityResultLauncher<String> importExtraFile = registerForActivityResult(
+            new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri result) {
+                    // Get the name of the file
+                    String fileName = null;
+                    try (Cursor c = getContentResolver().query(result, new String[] {OpenableColumns.DISPLAY_NAME},
+                            null, null, null)) {
+                        if (c != null && c.moveToFirst()) {
+                            fileName = c.getString(c.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                        }
+                    }
+                    if (fileName == null)
+                        fileName = result.getLastPathSegment();
+                    if (fileName == null)
+                        fileName = "file";
+                    // Copy in the file contents into the project
+                    try (InputStream in = getContentResolver().openInputStream(result)) {
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+    );
 
     WebResourceResponse handleBridgeRequest(String endpoint, Map<String, String> params)
     {
@@ -131,6 +173,7 @@ public class PlomActivity extends AppCompatActivity {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("received ".getBytes(StandardCharsets.UTF_8)));
         else if ("listProjectFiles".equals(endpoint))
         {
+            // Only list Plom files (doesn't actually use the listProjectFiles() method)
             try {
                 JSONArray filesJson = new JSONArray();
                 for (String name : listSourceFiles())
@@ -157,11 +200,26 @@ public class PlomActivity extends AppCompatActivity {
         }
         else if ("listFiles".equals(endpoint))
         {
+            // List any files (not just Plom files) that are in the project
             // TODO: Pass in a list of base paths and rejection filters
             JSONArray filesJson = new JSONArray();
             for (String name : listProjectFiles("", Arrays.asList("^src/$")))
                 filesJson.put(name);
             return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(filesJson.toString().getBytes(StandardCharsets.UTF_8)));
+        }
+        else if ("newFileUi".equals(endpoint))
+        {
+            // Show a UI allowing the user to add new extra files to the project
+            extraFileActivityPath = params.get("pathPrefix");
+            importExtraFile.launch("*/*");
+
+            // Instead of synchronizing with multiple threads and an external activity (which can't
+            // be reliably done anyways since the current activity can die while the external
+            // activity is running), we'll just send back an empty response now with an ambiguous
+            // status code. We'll manually inform the JS after the content is loaded in.
+            return new WebResourceResponse("application/json", "utf-8",
+                    202, "", Collections.emptyMap(),
+                    new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
         }
         else if ("exit".equals(endpoint))
         {

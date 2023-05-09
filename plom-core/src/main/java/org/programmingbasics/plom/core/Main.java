@@ -332,6 +332,17 @@ public class Main
       codePanel.updateAfterResize();
   }
   
+  /** Can be called from outside if there is a change to the extra files
+   * of a project (e.g. the OS file system detects that new files were added etc.). 
+   */
+  public void updateExtraFiles()
+  {
+    repository.refreshExtraFiles(() -> {
+      if (globalsPanel != null)
+        globalsPanel.rebuildFileList();
+    });
+  }
+
   /**
    * Some versions of Plom have an on-screen back button, and they need to
    * listen for changes in the breadcrumbs in case they need to hide it
