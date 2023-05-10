@@ -159,10 +159,12 @@ public class PlomActivity extends AppCompatActivity {
                         fileName = "file";
                     // Copy in the file contents into the project
                     try (InputStream in = getContentResolver().openInputStream(result)) {
-
+                        writeProjectFile(extraFileActivityPath, fileName, in);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    final WebView webView = (WebView) findViewById(R.id.webview);
+                    webView.evaluateJavascript("window.plomUpdateExtraFileList()", null);
                 }
             }
     );
@@ -218,7 +220,7 @@ public class PlomActivity extends AppCompatActivity {
             // activity is running), we'll just send back an empty response now with an ambiguous
             // status code. We'll manually inform the JS after the content is loaded in.
             return new WebResourceResponse("application/json", "utf-8",
-                    202, "", Collections.emptyMap(),
+                    202, "Starting file chooser activity", Collections.emptyMap(),
                     new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
         }
         else if ("exit".equals(endpoint))
@@ -417,6 +419,24 @@ public class PlomActivity extends AppCompatActivity {
                 }
                 if (!reject)
                     results.add(basePath + f.getName());
+            }
+        }
+    }
+
+    public void writeProjectFile(String dir, String fileName, InputStream in) throws IOException
+    {
+        // Create subdirectories if needed
+        DocumentFile base = getProjectDocumentFile(dir);
+        DocumentFile newFile = base.createFile(PLOM_MIME_TYPE, fileName);
+        if (newFile == null)
+            newFile = base.findFile(fileName);
+        try (OutputStream out = getContentResolver().openOutputStream(newFile.getUri())) {
+            byte [] buffer = new byte[8192];
+            int len = in.read(buffer);
+            while (len >= 0)
+            {
+                out.write(buffer, 0, len);
+                len = in.read(buffer);
             }
         }
     }
