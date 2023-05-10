@@ -1,6 +1,8 @@
 package dev.plom.ide;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,8 +17,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -45,7 +49,7 @@ import static dev.plom.ide.PlomActivity.PLOM_MIME_TYPE;
 public class ProjectsActivity extends AppCompatActivity {
 
     // For activity results
-    static final int ACTIVITY_RESULT_NEW_PROJECT = 1000;
+//    static final int ACTIVITY_RESULT_NEW_PROJECT = 1000;
 
     RecyclerView listWidget;
 
@@ -134,59 +138,82 @@ public class ProjectsActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ACTIVITY_RESULT_NEW_PROJECT && resultCode == Activity.RESULT_OK) {
-            if (data == null) return;
-            String projectName = data.getStringExtra("name");
-            Uri dir = (Uri)data.getParcelableExtra("externalDir");
-            String templateDir = data.getStringExtra("template");
-            // Check if we already have a project with the same name
-            for (ProjectDescription proj: projects)
-            {
-                if (projectName.equals(proj.name))
-                {
-                    new AlertDialog.Builder(this)
-                            .setTitle("Project already exists")
-                            .setMessage("A project with the same name already exists")
-                            .setPositiveButton("OK", null)
-                            .show();
-                    return;
+    static class NewProjectInfo
+    {
+        String projectName;
+        Uri dir;
+        String templateDir;
+    }
+
+    ActivityResultLauncher<Void> newProjectActivity = registerForActivityResult(
+            new ActivityResultContract<Void, NewProjectInfo>() {
+                @NonNull @Override public Intent createIntent(@NonNull Context context, Void input) {
+                    Intent intent = new Intent(ProjectsActivity.this, NewProjectActivity.class);
+                    return intent;
+                }
+                @Override public NewProjectInfo parseResult(int resultCode, @Nullable Intent data) {
+                    if (resultCode == Activity.RESULT_OK) {
+                        if (data == null) return null;
+                        NewProjectInfo toReturn = new NewProjectInfo();
+                        toReturn.projectName = data.getStringExtra("name");
+                        toReturn.dir = (Uri) data.getParcelableExtra("externalDir");
+                        toReturn.templateDir = data.getStringExtra("template");
+                        return toReturn;
+                    }
+                    return null;
+                }
+            }, new ActivityResultCallback<NewProjectInfo>() {
+                @Override
+                public void onActivityResult(NewProjectInfo data) {
+                    if (data == null) return;
+                    String projectName = data.projectName;
+                    Uri dir = data.dir;
+                    String templateDir = data.templateDir;
+                    // Check if we already have a project with the same name
+                    for (ProjectDescription proj: projects)
+                    {
+                        if (projectName.equals(proj.name))
+                        {
+                            new AlertDialog.Builder(ProjectsActivity.this)
+                                    .setTitle("Project already exists")
+                                    .setMessage("A project with the same name already exists")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                            return;
+                        }
+                    }
+                    // Create necessary directories and permissions for the project
+                    boolean isManagedByPlom;
+                    if (dir == null)
+                    {
+                        File projectDir = new File(getExternalFilesDir(null), "projects/" + projectName);
+                        projectDir.mkdirs();
+                        dir = Uri.fromFile(projectDir);
+                        isManagedByPlom = false;
+                    }
+                    else
+                    {
+                        getContentResolver().takePersistableUriPermission(dir, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        isManagedByPlom = true;
+                    }
+                    // Add the new project to the list of projects
+                    projects.add(0, new ProjectDescription(projectName, dir, isManagedByPlom));
+                    listWidget.getAdapter().notifyDataSetChanged();
+                    saveProjectList();
+                    // Fill the project with template contents
+                    fillDirWithTemplate(dir, templateDir);
+                    // Start an activity for the new project
+                    Intent intent = new Intent(ProjectsActivity.this, PlomActivity.class);
+                    intent.putExtra("name", projectName);
+                    intent.putExtra("uri", dir);
+                    startActivity(intent);
                 }
             }
-            // Create necessary directories and permissions for the project
-            boolean isManagedByPlom;
-            if (dir == null)
-            {
-                File projectDir = new File(getExternalFilesDir(null), "projects/" + projectName);
-                projectDir.mkdirs();
-                dir = Uri.fromFile(projectDir);
-                isManagedByPlom = false;
-            }
-            else
-            {
-                getContentResolver().takePersistableUriPermission(dir, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                isManagedByPlom = true;
-            }
-            // Add the new project to the list of projects
-            projects.add(0, new ProjectDescription(projectName, dir, isManagedByPlom));
-            listWidget.getAdapter().notifyDataSetChanged();
-            saveProjectList();
-            // Fill the project with template contents
-            fillDirWithTemplate(dir, templateDir);
-            // Start an activity for the new project
-            Intent intent = new Intent(this, PlomActivity.class);
-            intent.putExtra("name", projectName);
-            intent.putExtra("uri", dir);
-            startActivity(intent);
-        }
-    }
+    );
 
     public void onNewProjectClicked(View button)
     {
-        Intent intent = new Intent(this, NewProjectActivity.class);
-        startActivityForResult(intent, ACTIVITY_RESULT_NEW_PROJECT);
+        newProjectActivity.launch(null);
     }
 
     static class ProjectDescription
