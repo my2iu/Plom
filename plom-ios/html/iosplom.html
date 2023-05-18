@@ -27,7 +27,13 @@
 
 		// Run code for initializing the UI		 
 		addGwtOnLoad(function() {
-			var main = setupPlomMain();
+			var main = setupPlomMain('http://webviewbridge.plom.dev/plomweb/',
+		      (serverId, code) => {
+		        fetch('/bridge/startVirtualWebServer');
+                AndroidBridge.startVirtualWebServer(serverId, code);
+                return Promise.resolve('done');
+		      }
+            );
 
             // Load in all the code for the project
             createPlomRepositoryWithProjectCode(main, '/bridge/')
@@ -41,10 +47,10 @@
                 }, function(name) {
                     fetch('/bridge/deleteClass?name=' + encodeURIComponent(name));
                 });
-            }
-            
+            };
+
             hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
-            
+
             // Back button
             document.querySelector('.backbutton').addEventListener('click', function(evt) {
                 evt.preventDefault();
@@ -53,6 +59,10 @@
                 else
                     fetch('/bridge/exit')
             });
+            
+            window.plomUpdateExtraFileList = function() {
+                main.updateExtraFiles();
+            }
 		});
 	</script>
 
@@ -60,19 +70,28 @@
 
   <body>
     <div class="plomNavigationHeader">
-        <a class="plomUiButton backbutton" style="display: block; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
-        <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
-        <div class="breadcrumb" style="flex-grow: 1;"></div>
-        </div>
-        <a class="plomUiButton hamburgermenubutton" style="font-size: 1.5em;" href="javascript:void(0)"><div>&#8801;</div></a>
+      <a class="plomUiButton backbutton" style="display: block; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
+      <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
+          <div class="breadcrumb" style="flex-grow: 1;"></div>
+      </div>
+      <a class="plomUiButton hamburgermenubutton" style="font-size: 1.5em;" href="javascript:void(0)"><div>&#8801;</div></a>
     </div>
   <div class="testbuttons" style="display: none;">
-      <a class="runbutton plomUiButton" href="#">Run</a> </div>
+      <a class="runbutton plomUiButton" href="#">Run</a>
+    &nbsp; <a class="runhtmlbutton plomUiButton" href="#">Run web</a>
+    &nbsp; <a class="showhtmlbutton plomUiButton" href="#">Show web output</a>
+  </div>
   <div class="console"></div>
 <!--  <div class="subject">
   	<div class="breadcrumb"></div>
   </div> -->
   <div class="main">
   </div>
+
+  <div class="runWebView" style="position: absolute; display: none; flex-direction: column; top: 1em; bottom: 1em; left: 1em; right: 1em; background-color: white; border: 1px solid black;">
+    <div class="runWebViewMenuBar" style="border-bottom: 1px solid black; text-align: right; "><a class="plomUiButton" href="#">&#x25BC;</a></div>
+    <iframe style="flex-grow: 1; border: 0px;"></iframe>
+  </div>
+
   </body>
 </html>

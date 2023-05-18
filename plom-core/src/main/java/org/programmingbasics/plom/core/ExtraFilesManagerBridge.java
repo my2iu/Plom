@@ -8,6 +8,7 @@ import com.google.gwt.http.client.URL;
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import jsinterop.annotations.JsType;
 
 /**
@@ -53,7 +54,7 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
         return response.json();
       }).thenNow((json) -> {
         List<String> filenames = new ArrayList<>();
-        JsonArray filesJson = (JsonArray)json;
+        JsonArray filesJson = ((JsonObject)json).getArray("files");
         for (int n = 0; n < filesJson.length(); n++)
           filenames.add(filesJson.getString(n));
         callback.call(filenames);

@@ -207,7 +207,9 @@ public class PlomActivity extends AppCompatActivity {
             JSONArray filesJson = new JSONArray();
             for (String name : listProjectFiles("", Arrays.asList("^src/$")))
                 filesJson.put(name);
-            return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(filesJson.toString().getBytes(StandardCharsets.UTF_8)));
+            JSONObject json = new JSONObject();
+            json.put("files", filesJson);
+            return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
         }
         else if ("newFileUi".equals(endpoint))
         {

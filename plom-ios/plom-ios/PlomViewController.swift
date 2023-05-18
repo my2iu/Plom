@@ -223,7 +223,7 @@ class PlomJsBridge {
         }
     }
     
-    func readProjectFile(_ name: String) -> Data? {
+    func readProjectSrcFile(_ name: String) -> Data? {
         doProjectFileOperation( {() -> Data? in
             let srcDir = projectUrl.appendingPathComponent("src").appendingPathComponent(name)
             
@@ -231,7 +231,7 @@ class PlomJsBridge {
         }, badReturn: nil);
     }
     
-    func listProjectFiles() -> [String] {
+    func listProjectSrcFiles() -> [String] {
         doProjectFileOperation( {() -> [String] in
             let srcDir = projectUrl.appendingPathComponent("src")
             
@@ -247,6 +247,46 @@ class PlomJsBridge {
         }, badReturn: []);
     }
     
+    func listProjectFiles(base: String, rejectList: [String]) -> [String] {
+        doProjectFileOperation( {() -> [String] in
+            // Start searching for files
+            var results : [String] = []
+            var fixedBase = base
+            if !fixedBase.hasSuffix("/") && !fixedBase.isEmpty {
+                fixedBase += "/"
+            }
+            try PlomJsBridge.listProjectFiles(projectUrl: projectUrl, basePath: fixedBase, rejectList: rejectList, results: &results)
+            return results;
+        }, badReturn: []);
+    }
+    
+    private static func listProjectFiles(projectUrl: URL, basePath: String, rejectList: [String], results: inout [String]) throws {
+        for rejectPattern in rejectList {
+            if basePath.range(of: rejectPattern, options: .regularExpression) != nil {
+                return
+            }
+        }
+        let dir = projectUrl.appendingPathComponent(basePath)
+        let files = try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
+        
+        for f in files {
+            if f.hasDirectoryPath {
+                try listProjectFiles(projectUrl: projectUrl, basePath: basePath + f.lastPathComponent + "/", rejectList: rejectList, results: &results)
+            } else {
+                var reject = false
+                for rejectPattern in rejectList {
+                    if basePath.range(of: rejectPattern, options: .regularExpression) != nil {
+                        reject = true
+                        break
+                    }
+                }
+                if !reject {
+                    results.append(basePath + f.lastPathComponent)
+                }
+            }
+        }
+    }
+
     func writeStringToSrcDir(fileName: String, contents: String)
     {
         doProjectFileOperation( {() -> Void in
@@ -299,13 +339,32 @@ class PlomJsBridge {
 
         case "listProjectFiles":
             let jsonEncoder = JSONEncoder()
-            let toReturn: ProjectFilesList = ProjectFilesList(files: listProjectFiles())
+            let toReturn: ProjectFilesList = ProjectFilesList(files: listProjectSrcFiles())
             let toReturnJson = try jsonEncoder.encode(toReturn)
             return PlomPostResponse(mime: "application/json", data: toReturnJson)
             
         case "readProjectFile":
             let name = params["name"]!
-            return PlomPostResponse(mime: PLOM_MIME_TYPE, data: readProjectFile(name) ?? Data(capacity: 0))
+            return PlomPostResponse(mime: PLOM_MIME_TYPE, data: readProjectSrcFile(name) ?? Data(capacity: 0))
+
+        case "listFiles":
+            let jsonEncoder = JSONEncoder()
+            let toReturn: ProjectFilesList = ProjectFilesList(files: listProjectFiles(base: "", rejectList: ["^src/$"]))
+            let toReturnJson = try jsonEncoder.encode(toReturn)
+            return PlomPostResponse(mime: "application/json", data: toReturnJson)
+            
+        case "newFileUi":
+            // Show a UI allowing the user to add new extra files to the project
+            let extraFileActivityPath = params["pathPrefix"]
+            //importExtraFile.launch("*/*")
+
+            // Instead of synchronizing with multiple threads and an external activity (which can't
+            // be reliably done anyways since the current activity can die while the external
+            // activity is running), we'll just send back an empty response now with an ambiguous
+            // status code. We'll manually inform the JS after the content is loaded in.
+            return PlomPostResponse(mime:"application/json", string: "")
+                    //202, "Starting file chooser activity", Collections.emptyMap(),
+                    //new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         case "exit":
             view?.navigationController?.popViewController(animated: true)
