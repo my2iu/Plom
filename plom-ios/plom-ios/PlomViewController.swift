@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 import WebKit
 
 private let PLOM_MIME_TYPE = "application/x.dev.plom";
@@ -165,7 +166,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
                             urlSchemeTask.didFinish()
                         default:
                             // See if the file being requested is in the web/ files folder
-                            let extraWebFilePath = projectUrl.appendingPathComponent("web/" + path)
+//                            let extraWebFilePath = projectUrl.appendingPathComponent("web/" + path)
                             if let data = bridge.readProjectFile("web/" + path) {
                                 let mime = extensionToMime(urlSchemeTask.request.url!.pathExtension)
                                 urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: mime, expectedContentLength: data.count, textEncodingName: "UTF-8"))
@@ -260,9 +261,26 @@ class PlomJsBridge {
     weak var view: PlomViewController?
     var projectUrl: URL
     
+    class PickerDelegate : NSObject, UIDocumentPickerDelegate {
+        weak var bridge: PlomJsBridge?
+        var extraFilePath = ""
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            var url = urls[0]
+            do {
+                try FileManager.default.copyItem(at: url, to: bridge!.projectUrl.appendingPathComponent(extraFilePath).appendingPathComponent(url.lastPathComponent))
+                bridge?.view?.webView.evaluateJavaScript("plomUpdateExtraFileList()", completionHandler: nil)
+            } catch {
+                // Ignore errors
+            }
+        }
+    }
+    var pickerDelegate = PickerDelegate()
+
+    
     init(_ view: PlomViewController, url: URL) {
         self.view = view
         self.projectUrl = url
+        self.pickerDelegate.bridge = self
     }
     
     func doProjectFileOperation<T>(_ op: () throws -> T, badReturn:T) -> T {
@@ -413,9 +431,15 @@ class PlomJsBridge {
             
         case "newFileUi":
             // Show a UI allowing the user to add new extra files to the project
-            let extraFileActivityPath = params["pathPrefix"]
-            //importExtraFile.launch("*/*")
+            let documentPicker =
+                UIDocumentPickerViewController(documentTypes: [kUTTypeContent as String], in: .import)
 
+            pickerDelegate.extraFilePath = params["pathPrefix"] ?? ""
+            documentPicker.delegate = pickerDelegate
+            documentPicker.modalPresentationStyle = .popover
+            documentPicker.popoverPresentationController?.sourceView = view?.webView
+            view?.present(documentPicker, animated: true, completion: nil)
+            
             // Instead of synchronizing with multiple threads and an external activity (which can't
             // be reliably done anyways since the current activity can die while the external
             // activity is running), we'll just send back an empty response now with an ambiguous
