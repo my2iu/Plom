@@ -27,11 +27,14 @@
 
 		// Run code for initializing the UI		 
 		addGwtOnLoad(function() {
-			var main = setupPlomMain('http://webviewbridge.plom.dev/plomweb/',
+			var main = setupPlomMain('plomrun://virtualserver/plomweb/',
 		      (serverId, code) => {
-		        fetch('/bridge/startVirtualWebServer');
-                AndroidBridge.startVirtualWebServer(serverId, code);
-                return Promise.resolve('done');
+		        return fetch('/bridge/startVirtualWebServer?serverId=' + encodeURIComponent(serverId), {
+                    method: 'POST',
+                    body: code
+                });
+                // AndroidBridge.startVirtualWebServer(serverId, code);
+                // return Promise.resolve('done');
 		      }
             );
 

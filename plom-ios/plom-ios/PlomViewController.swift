@@ -16,6 +16,9 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     var projectUrl: URL!
     var bridge : PlomJsBridge!
     
+    // Plom code to run in the virtual web server
+    var plomCodeJsToRun : String = ""
+    
     var oldNavigationBarHidden = false
     
     @IBOutlet weak var webViewHolder: UIView!
@@ -89,6 +92,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
         config.setURLSchemeHandler(self, forURLScheme: "plombridge")
+        config.setURLSchemeHandler(self, forURLScheme: "plomrun")
         #if DEBUG
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
         #endif
@@ -99,6 +103,11 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         webView.allowsBackForwardNavigationGestures = false
         webView.contentMode = .scaleToFill
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight,.flexibleTopMargin, .flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
+        #if DEBUG
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+        #endif
         webViewHolder.addSubview(webView)
         
         self.webView.load(URLRequest(url: URL(string: "plombridge://app/iosplom.html")!))
@@ -133,7 +142,47 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         let url = urlSchemeTask.request.url!
-        if (url.host == "app") {
+        if url.scheme == "plomrun" && url.host == "virtualserver" {
+            do {
+                if url.path.hasPrefix("/plomweb/") {
+                    let urlPath = String(url.path.suffix(from: "/plomweb/".endIndex))
+                    // See if we fit the pattern of having a separate directory for each running instance
+                    let pattern = try! NSRegularExpression(pattern: "^(test[^/]*)/(.*)$")
+                    if let m = pattern.firstMatch(in:urlPath,range:NSRange(location: 0, length: urlPath.utf16.count)) {
+                        // We'll ignore the serverId since we'll only run one Plom program at a time
+                        let serverId = urlPath[Range(m.range(at: 1), in: urlPath)!]
+                        let path = urlPath[Range(m.range(at: 2), in: urlPath)!]
+                        // Check if we're being asked for a special file
+                        switch (path) {
+                        case "plomUi.js":
+                            try serveAppFileForUrlScheme(file: htmlPath.appending("plom/plomUi.js"), urlScheme: urlSchemeTask)
+                        case "plomdirect.js":
+                            try serveAppFileForUrlScheme(file: htmlPath.appending("plom/plomcore/plomdirect.js"), urlScheme: urlSchemeTask)
+                        case "main.plom.js":
+                            let data = plomCodeJsToRun.data(using: .utf8)!
+                            urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: "application/javascript", expectedContentLength: data.count, textEncodingName: "UTF-8"))
+                            urlSchemeTask.didReceive(data)
+                            urlSchemeTask.didFinish()
+                        default:
+                            // See if the file being requested is in the web/ files folder
+                            let extraWebFilePath = projectUrl.appendingPathComponent("web/" + path)
+                            if let data = bridge.readProjectFile("web/" + path) {
+                                let mime = extensionToMime(urlSchemeTask.request.url!.pathExtension)
+                                urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: mime, expectedContentLength: data.count, textEncodingName: "UTF-8"))
+                                urlSchemeTask.didReceive(data)
+                                urlSchemeTask.didFinish()
+                            } else {
+                                urlSchemeTask.didFailWithError(NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError, userInfo: nil))
+                            }
+                        }
+
+                    }
+
+                }
+            } catch {
+                urlSchemeTask.didFailWithError(NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError, userInfo: nil))
+            }
+        } else if url.scheme == "plombridge" && url.host == "app" {
             do {
                 if (url.path.hasPrefix("/bridge/")) {
                     // Special handling of /bridge/ paths
@@ -157,11 +206,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
                     urlSchemeTask.didFinish()
                     return;
                 }
-                let mime = extensionToMime(url.pathExtension)
-                let data = try Data(contentsOf: NSURL.fileURL(withPath: htmlPath.appending(url.path)), options: .init())
-                urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: mime, expectedContentLength: data.count, textEncodingName: "UTF-8"))
-                urlSchemeTask.didReceive(data)
-                urlSchemeTask.didFinish()
+                try serveAppFileForUrlScheme(file: htmlPath.appending(url.path), urlScheme: urlSchemeTask)
             } catch {
                 print ("File could not be opened " + url.path)
                 urlSchemeTask.didFailWithError(NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError, userInfo: nil))
@@ -173,6 +218,15 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
         
+    }
+    
+    // Takes one of the app's files and serve it in response to a url scheme
+    func serveAppFileForUrlScheme(file path: String, urlScheme urlSchemeTask: WKURLSchemeTask) throws {
+        let mime = extensionToMime(urlSchemeTask.request.url!.pathExtension)
+        let data = try Data(contentsOf: NSURL.fileURL(withPath: path), options: .init())
+        urlSchemeTask.didReceive(URLResponse(url: urlSchemeTask.request.url!, mimeType: mime, expectedContentLength: data.count, textEncodingName: "UTF-8"))
+        urlSchemeTask.didReceive(data)
+        urlSchemeTask.didFinish()
     }
     
     // Called from the scene delegate when going into the background so that the current project can be saved
@@ -224,11 +278,7 @@ class PlomJsBridge {
     }
     
     func readProjectSrcFile(_ name: String) -> Data? {
-        doProjectFileOperation( {() -> Data? in
-            let srcDir = projectUrl.appendingPathComponent("src").appendingPathComponent(name)
-            
-            return try Data(contentsOf: srcDir)
-        }, badReturn: nil);
+        return readProjectFile("src/" + name)
     }
     
     func listProjectSrcFiles() -> [String] {
@@ -245,6 +295,14 @@ class PlomJsBridge {
             return toReturn
 
         }, badReturn: []);
+    }
+    
+    func readProjectFile(_ name: String) -> Data? {
+        doProjectFileOperation( {() -> Data? in
+            let srcDir = projectUrl.appendingPathComponent(name)
+            
+            return try Data(contentsOf: srcDir)
+        }, badReturn: nil);
     }
     
     func listProjectFiles(base: String, rejectList: [String]) -> [String] {
@@ -366,6 +424,12 @@ class PlomJsBridge {
                     //202, "Starting file chooser activity", Collections.emptyMap(),
                     //new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
+        case "startVirtualWebServer":
+            // Ignore the serverId, and save the plom code to be served later from the virtual web server
+            let serverId = params["serverId"]
+            view?.plomCodeJsToRun = String(data: data!, encoding: .utf8)!
+            return PlomPostResponse(mime: "text/plain", string: "done")
+            
         case "exit":
             view?.navigationController?.popViewController(animated: true)
             return PlomPostResponse(mime: "text/plain", string: "")
