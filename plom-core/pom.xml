@@ -79,6 +79,55 @@
           <relocateSuperSource>true</relocateSuperSource>
         </configuration>
       </plugin>
+<!--
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.7.0</version>
+        <executions>
+          <execution>
+            <id>get-jszip</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>https://unpkg.com/jszip@3.10.1/dist/jszip.min.js</url>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+-->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>get-jszip</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                    <groupId>org.webjars</groupId>
+                    <artifactId>jszip</artifactId>
+                    <version>3.10.1</version>
+                    <type>jar</type>
+                    <overWrite>true</overWrite>
+                    <fileMappers>
+                      <org.codehaus.plexus.components.io.filemappers.FlattenFileMapper/>
+                    </fileMappers>
+                    <includes>META-INF/resources/webjars/jszip/*/jszip.min.js</includes>
+                    <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
