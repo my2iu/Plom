@@ -19,6 +19,7 @@ import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 
@@ -366,4 +367,30 @@ public class WebHelpers
   
   @JsMethod(name = "fetch", namespace = JsPackage.GLOBAL)
   public static native Promise<Response> fetch(String url);
+  
+  // Bindings to jszip
+  @JsType(isNative = true, namespace = JsPackage.GLOBAL)
+  public static class JSZip
+  {
+    public JSZip() {}
+    public native JSZip file(String name, String data);
+    @JsMethod(name = "file") public native JSZip filePromiseString(String name, Promise<String> data);
+    public native JSZip file(String name, ArrayBuffer data);
+    @JsMethod(name = "file") public native JSZip filePromiseArrayBuffer(String name, Promise<ArrayBuffer> data);
+    public native JSZip file(String name, Uint8Array data);
+    @JsMethod(name = "file") public native JSZip filePromiseUint8Array(String name, Promise<Uint8Array> data);
+    public native JSZip folder(String name);
+    public native Promise<Object> generateAsync(JSZipGenerateAsyncOptions options);
+  }
+  
+  @JsType(isNative = true)
+  public static interface JSZipGenerateAsyncOptions
+  {
+    @JsProperty(name = "type") void setType(String type);
+    @JsOverlay default void setTypeBlob() { setType("blob"); }
+    @JsOverlay default void setTypeArrayBuffer() { setType("arraybuffer"); }
+    @JsProperty(name = "compression") void setCompression(String compression);
+    @JsOverlay default void setCompressionStore() { setCompression("STORE"); }
+    @JsOverlay default void setCompressionDeflate() { setCompression("DEFLATE"); }
+  }
 }

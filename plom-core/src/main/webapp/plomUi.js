@@ -737,6 +737,20 @@ function setupPlomUi() {
 			doSaveWeb(main);
 		});
 	}
+	function hookExportZip(main)
+	{
+		var exportEl = document.querySelector("a.exportzipbutton");
+		exportEl.addEventListener('click', function(evt) {
+			evt.preventDefault();
+			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
+			main.exportAsZip(new JSZip()).then((blob) => {
+				var saveLink = document.createElement("a");
+				saveLink.href = URL.createObjectURL(blob);
+				saveLink.download = "plom.zip";
+				saveLink.click();
+			});
+		});
+	}
 	function initRepository(main)
 	{
 	    // Load in the built-in primitives of the interpreter into the 
@@ -782,6 +796,7 @@ function setupPlomUi() {
 	window.hookWebRun = hookWebRun;
 	window.hookWebRunWithBridge = hookWebRunWithBridge;
 	window.hookLoadSave = hookLoadSave;
+	window.hookExportZip = hookExportZip;
 	window.initRepository = initRepository;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
 	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;

@@ -29,14 +29,21 @@ import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
+import elemental.html.ArrayBuffer;
+import elemental.html.Blob;
 import elemental.html.DivElement;
 import elemental.html.FileReader;
+import elemental.html.IFrameElement;
 import elemental.html.InputElement;
+import elemental.html.ScriptElement;
 import elemental.js.util.JsArrayOf;
 import elemental.js.util.JsArrayOfString;
+import elemental.json.Json;
 import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 @JsType
 public class Main
@@ -248,6 +255,7 @@ public class Main
     return out.toString();
   }
   
+  /** Packages up code in a single .js file that's suitable for running in a web browser */
   public WebHelpers.Promise<String> getModuleAsJsonPString() throws IOException
   {
     // Get module contents as a string
@@ -321,6 +329,35 @@ public class Main
       // Ignore errors
       e.printStackTrace();
     }
+  }
+  
+  /**
+   * Bundles up all code and related files into a single zip that can
+   * be uploaded as a website and run
+   */
+  public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip)
+  {
+    zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch("plomweb.html").then(response -> response.arrayBuffer()));
+    
+    String plomDirectLoc;
+    if (Js.isTruthy(Browser.getDocument().querySelector("iframe#plomcore")))
+      plomDirectLoc = ((ScriptElement)((IFrameElement)Browser.getDocument().querySelector("iframe#plomcore")).getContentDocument().querySelector("script")).getSrc();
+    else
+      plomDirectLoc = "plomdirect.js";
+    zip.filePromiseArrayBuffer("plomdirect.js", WebHelpers.fetch(plomDirectLoc).then(response -> response.arrayBuffer()));
+    zip.filePromiseArrayBuffer("plomUi.js", WebHelpers.fetch("plomUi.js").then(response -> response.arrayBuffer()));
+    try {
+      zip.filePromiseString("main.plom.js", getModuleAsJsonPString()
+          // Insert BOM at the beginning to label it as UTF-8 
+          .thenNow(str -> "\ufeff" + str));
+    } catch (IOException e) {
+      Browser.getWindow().getConsole().log(e);
+    }
+    
+    WebHelpers.JSZipGenerateAsyncOptions zipOptions = (WebHelpers.JSZipGenerateAsyncOptions)JsPropertyMap.of();
+    zipOptions.setTypeBlob();
+    zipOptions.setCompressionDeflate();
+    return zip.generateAsync(zipOptions);
   }
   
   /**

@@ -4,6 +4,7 @@
     <meta name = "viewport" content = "user-scalable=no, initial-scale=1">
     <link type="text/css" rel="stylesheet" href="ide.css">
     <link type="text/css" rel="stylesheet" href="app.css">
+    <script type="text/javascript" language="javascript" src="jszip.min.js"></script>
     <script type="text/javascript" language="javascript" src="gwtPreload.js"></script>
     <script type="text/javascript" language="javascript" src="plomcore/plomcore.nocache.js"></script>
     <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
@@ -34,6 +35,7 @@
     		hookRun(main);
     		hookWebRun(main);
     		hookLoadSave(main);
+    		hookExportZip(main);
     		main.hookSubject();
     		window.addEventListener('resize', function() {
     			main.updateAfterResize();
@@ -76,8 +78,10 @@
   <a class="runbutton plomUiButton" href="#">Run</a> 
   &nbsp; <a class="runhtmlbutton plomUiButton" href="#">Run web</a> 
   &nbsp; <a class="showhtmlbutton plomUiButton" href="#">Show web output</a> 
-  &nbsp; <a class="loadbutton plomUiButton" href="#">Load</a> &nbsp; 
-  <a class="savebutton plomUiButton" href="#">Save</a> </div>
+  &nbsp; <a class="loadbutton plomUiButton" href="#">Load</a>
+  &nbsp; <a class="savebutton plomUiButton" href="#">Save</a> 
+  &nbsp; <a class="exportzipbutton plomUiButton" href="#">Export as .zip</a> 
+  </div>
 
   <div class="console"></div>
   <!-- 
