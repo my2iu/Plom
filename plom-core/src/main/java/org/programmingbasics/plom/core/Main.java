@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
@@ -209,7 +210,8 @@ public class Main
         e.preventDefault();
         if (fileInput.getFiles().getLength() != 0)
         {
-            FileReader reader = Browser.getWindow().newFileReader();
+            FileReader reader = (FileReader)new WebHelpers.FileReader();
+//            FileReader reader = Browser.getWindow().newFileReader();
             reader.setOnload((loadedEvt) -> {
                 loadCallback.fileLoaded(fileInput.getFiles().item(0).getName(), reader.getResult());
             });
@@ -337,8 +339,12 @@ public class Main
    */
   public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip)
   {
-    zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch("plomweb.html").then(response -> response.arrayBuffer()));
+    // Check if there's an index.html defined in the extra files, if not, create one
+    List<FileDescription> extraFiles = repository.getAllExtraFilesSorted();
+    if (!extraFiles.stream().anyMatch(fd -> "web/index.html".equals(fd.filePath)))
+      zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch("plomweb.html").then(response -> response.arrayBuffer()));
     
+    // Various required js files
     String plomDirectLoc;
     if (Js.isTruthy(Browser.getDocument().querySelector("iframe#plomcore")))
       plomDirectLoc = ((ScriptElement)((IFrameElement)Browser.getDocument().querySelector("iframe#plomcore")).getContentDocument().querySelector("script")).getSrc();
@@ -346,6 +352,28 @@ public class Main
       plomDirectLoc = "plomdirect.js";
     zip.filePromiseArrayBuffer("plomdirect.js", WebHelpers.fetch(plomDirectLoc).then(response -> response.arrayBuffer()));
     zip.filePromiseArrayBuffer("plomUi.js", WebHelpers.fetch("plomUi.js").then(response -> response.arrayBuffer()));
+    
+    // Extra files
+    WebHelpers.PromiseCreator promiseCreator = new WebHelpers.PromiseCreator() {
+      @Override public <U> WebHelpers.Promise<U> create(WebHelpers.Promise.PromiseConstructorFunction<U> createCallback)
+      {
+        return new WebHelpers.PromiseClass<>(createCallback);
+      }
+    };
+    ExtraFilesManager fileManager = repository.getExtraFilesManager();
+    for (FileDescription fd: extraFiles)
+    {
+      String nameInZip = fd.getPath();
+      if (!nameInZip.startsWith("web/")) continue;
+      nameInZip = nameInZip.substring("web/".length());
+      zip.filePromiseArrayBuffer(nameInZip, promiseCreator.create((resolve, reject) -> {
+        fileManager.getFileContents(fd.getPath(), contents -> {
+          resolve.accept(contents);
+        });
+      }));
+    }
+    
+    // Main Plom code
     try {
       zip.filePromiseString("main.plom.js", getModuleAsJsonPString()
           // Insert BOM at the beginning to label it as UTF-8 

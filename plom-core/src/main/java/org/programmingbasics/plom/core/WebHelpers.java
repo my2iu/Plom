@@ -4,14 +4,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.core.shared.GwtIncompatible;
 
-import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.ArrayBufferView;
 import elemental.html.Uint8Array;
-import elemental.js.util.JsGlobals;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
 import elemental.util.SettableInt;
@@ -21,7 +17,6 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
-import jsinterop.base.Js;
 
 
 /**
@@ -367,6 +362,17 @@ public class WebHelpers
   
   @JsMethod(name = "fetch", namespace = JsPackage.GLOBAL)
   public static native Promise<Response> fetch(String url);
+
+  // The GWT Elemental FileReader uses the iframe's FileReader instead of
+  // $wnd's FileReader, which can cause failures with instanceof, so we 
+  // need to define our own FileReader which will be correctly instantiated
+  // using the $wnd's version
+  @JsType(isNative = true, name = "FileReader", namespace = JsPackage.GLOBAL)
+  public static class FileReader
+  {
+    public FileReader() {}
+  }
+
   
   // Bindings to jszip
   @JsType(isNative = true, namespace = JsPackage.GLOBAL)
