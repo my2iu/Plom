@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
@@ -202,6 +203,32 @@ public class WebHelpersShunt
     public <U> WebHelpers.Promise<U> thenNow(Then<T, U> fn)
     {
       return new JsEmulatedPromise<U>(future.<U>thenApplyAsync((T val) -> { return fn.call(val); }));
+    }
+    @Override
+    public Promise<T> catchErr(Then<Object, Promise<T>> fn)
+    {
+      return new JsEmulatedPromise<>(future.exceptionally((err) -> {
+        try {
+          return promiseToFuture(fn.call(err)).get();
+        } 
+        catch(ExecutionException | InterruptedException e) 
+        {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        } 
+        catch (Throwable e)
+        {
+          e.printStackTrace();
+          throw e;
+        }
+      }));
+    }
+    @Override
+    public Promise<T> catchErrNow(Then<Object, T> fn)
+    {
+      return new JsEmulatedPromise<>(future.exceptionally((err) -> {
+        return fn.call(err);
+      }));
     }
     public static <U> Promise<ArrayOf<U>> promiseAll(ArrayOf<Promise<U>> promises)
     {

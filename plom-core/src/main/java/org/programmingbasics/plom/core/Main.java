@@ -337,21 +337,21 @@ public class Main
    * Bundles up all code and related files into a single zip that can
    * be uploaded as a website and run
    */
-  public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip)
+  public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip, String plomSystemFilePrefix)
   {
     // Check if there's an index.html defined in the extra files, if not, create one
     List<FileDescription> extraFiles = repository.getAllExtraFilesSorted();
     if (!extraFiles.stream().anyMatch(fd -> "web/index.html".equals(fd.filePath)))
-      zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch("plomweb.html").then(response -> response.arrayBuffer()));
+      zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch(plomSystemFilePrefix + "plomweb.html").then(response -> response.arrayBuffer()));
     
     // Various required js files
     String plomDirectLoc;
     if (Js.isTruthy(Browser.getDocument().querySelector("iframe#plomcore")))
       plomDirectLoc = ((ScriptElement)((IFrameElement)Browser.getDocument().querySelector("iframe#plomcore")).getContentDocument().querySelector("script")).getSrc();
     else
-      plomDirectLoc = "plomdirect.js";
+      plomDirectLoc = plomSystemFilePrefix + "plomcore/plomdirect.js";
     zip.filePromiseArrayBuffer("plomdirect.js", WebHelpers.fetch(plomDirectLoc).then(response -> response.arrayBuffer()));
-    zip.filePromiseArrayBuffer("plomUi.js", WebHelpers.fetch("plomUi.js").then(response -> response.arrayBuffer()));
+    zip.filePromiseArrayBuffer("plomUi.js", WebHelpers.fetch(plomSystemFilePrefix + "plomUi.js").then(response -> response.arrayBuffer()));
     
     // Extra files
     WebHelpers.PromiseCreator promiseCreator = new WebHelpers.PromiseCreator() {

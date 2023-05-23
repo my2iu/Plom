@@ -30,7 +30,7 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
   public void newFileUi(String pathPrefix, EmptyCallback callback)
   {
     
-    WebHelpers.fetch(bridgeUrl + "newFileUi?pathPrefix=" + URL.encodeQueryString(pathPrefix))
+    WebHelpers.fetch(bridgeUrl + "newFileUi?pathPrefix=" + URL.encodePathSegment(pathPrefix))
       .then((response) -> {
         return response.text();
       }).thenNow((text) -> {
@@ -65,21 +65,24 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
   @Override
   public void getFileContentsTransferrable(String path, FileContentsCallback callback)
   {
-//    Optional<FileInfo> fi = files.stream().filter(f -> f.path.equals(path)).findAny();
-//    if (fi.isPresent())
-//      callback.call(fi.get().fileData.slice(0));
-//    else
-//      callback.call(null);
+    // getFileContents() returns a new array buffer each time it is called
+    // when using the bridge
+    getFileContents(path, callback);
   }
 
   @Override
   public void getFileContents(String path, FileContentsCallback callback)
   {
-//    Optional<FileInfo> fi = files.stream().filter(f -> f.path.equals(path)).findAny();
-//    if (fi.isPresent())
-//      callback.call(fi.get().fileData);
-//    else
-//      callback.call(null);
+    WebHelpers.fetch(bridgeUrl + "getFile?path=" + URL.encodePathSegment(path))
+      .then((response) -> {
+        return response.arrayBuffer();
+      }).thenNow((arrbuf) -> {
+        callback.call(arrbuf);
+        return null;
+      }).catchErrNow((err) -> {
+        callback.call(null);
+        return null;
+      });
   }
 
   @Override

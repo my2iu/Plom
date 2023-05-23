@@ -305,6 +305,9 @@ public class WebHelpers
     <U> Promise<U> then(Then<T, Promise<U>> fn);
     @JsMethod(name="then")
     <U> Promise<U> thenNow(Then<T, U> fn);
+    Promise<T> catchErr(Then<Object, Promise<T>> fn);
+    @JsMethod(name="catch")
+    Promise<T> catchErrNow(Then<Object, T> fn);
     @JsFunction
     public static interface Then<U, V>
     {
@@ -331,6 +334,8 @@ public class WebHelpers
 
     @Override public native <U> Promise<U> then(Then<T, Promise<U>> fn);
     @Override public native <U> Promise<U> thenNow(Then<T, U> fn);
+    @Override public native Promise<T> catchErr(Then<Object, Promise<T>> fn);
+    @Override public native Promise<T> catchErrNow(Then<Object, T> fn);
     
     public static native <U> Promise<U> resolve(U val);
   }
