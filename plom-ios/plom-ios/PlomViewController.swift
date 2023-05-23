@@ -448,12 +448,42 @@ class PlomJsBridge {
                     //202, "Starting file chooser activity", Collections.emptyMap(),
                     //new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
+        case "getFile":
+            if let path = params["path"]?.removingPercentEncoding, let data = readProjectFile(path) {
+                let mime = view!.extensionToMime(URL(fileURLWithPath: path).pathExtension)
+                return PlomPostResponse(mime: mime, data: data)
+            } else {
+                throw BridgeError.badArguments
+            }
+
         case "startVirtualWebServer":
             // Ignore the serverId, and save the plom code to be served later from the virtual web server
             let serverId = params["serverId"]
             view?.plomCodeJsToRun = String(data: data!, encoding: .utf8)!
             return PlomPostResponse(mime: "text/plain", string: "done")
             
+        case "saveOutFile":
+            let name = params["name"] ?? "file"
+            var files : [URL] = []
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            do {
+                guard let passedData = data else { throw BridgeError.badArguments }
+                try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: false, attributes: nil)
+                try passedData.write(to: tempDir.appendingPathComponent(name))
+                files.append(tempDir.appendingPathComponent(name))
+            } catch {
+                throw BridgeError.badArguments
+            }
+            let activity = UIActivityViewController(activityItems: files, applicationActivities: nil)
+            // The popup is from a random location on the screen, so we'll just have it drop down
+            // from the top
+            if let popoverPresentationController = activity.popoverPresentationController {
+                popoverPresentationController.sourceView = self.view!.view
+                popoverPresentationController.sourceRect = CGRect(x: self.view!.view.bounds.midX, y: 0, width: 0, height: 0)
+            }
+            self.view!.present(activity, animated: true)
+            return PlomPostResponse(mime: "text/plain", string: "done")
+
         case "exit":
             view?.navigationController?.popViewController(animated: true)
             return PlomPostResponse(mime: "text/plain", string: "")
