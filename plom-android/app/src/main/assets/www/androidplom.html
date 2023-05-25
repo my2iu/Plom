@@ -3,6 +3,7 @@
   <head>
     <meta name = "viewport" content = "user-scalable=no, initial-scale=1">
     <link type="text/css" rel="stylesheet" href="androidplom.css">
+    <script type="text/javascript" language="javascript" src="plom/jszip.min.js"></script>
     <script type="text/javascript" language="javascript" src="plom/gwtPreload.js"></script>
     <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
     <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
@@ -12,10 +13,22 @@
 		// Run code for initializing the UI
 		addGwtOnLoad(function() {
 		    var main = setupPlomMain('http://webviewbridge.plom.dev/plomweb/',
+              // Start virtual web server with the given Plom code
 		      (serverId, code) => {
                 AndroidBridge.startVirtualWebServer(serverId, code);
                 return Promise.resolve('done');
-		      }
+		      },
+              // For saving out files
+              (filename, blob) => {
+                console.log("saving out file");
+                // I'm having trouble using POST with a blob, so I'll convert to arraybuffer first
+//                blob.arrayBuffer().then((arrbuf) => fetch('/bridge/saveOutFile?name=' + encodeURIComponent(filename),
+//                  {
+//                    method: 'POST',
+//                    body: arrbuf
+//                  }));
+                }
+
             );
 
             // Load in all the code for the project
@@ -60,6 +73,7 @@
       <a class="runbutton plomUiButton" href="#">Run</a>
     &nbsp; <a class="runhtmlbutton plomUiButton" href="#">Run web</a>
     &nbsp; <a class="showhtmlbutton plomUiButton" href="#">Show web output</a>
+    &nbsp;  <a class="exportzipbutton plomUiButton" href="#">Export as .zip</a>
   </div>
   <div class="console"></div>
   <!--  <div class="subject">

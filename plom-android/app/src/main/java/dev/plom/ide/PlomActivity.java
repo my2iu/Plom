@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewFeature;
 
 import android.content.Intent;
@@ -95,6 +96,11 @@ public class PlomActivity extends AppCompatActivity {
                 WebSettingsCompat.setForceDark(webView.getSettings(), WebSettingsCompat.FORCE_DARK_OFF);
         }
         webView.addJavascriptInterface(new PlomJsBridge(), "AndroidBridge");
+        WebViewAssetLoader localFileServer = new WebViewAssetLoader.Builder()
+                .setDomain("androidwebview.plom.dev")
+                .setHttpAllowed(true)
+                .addPathHandler("/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -105,7 +111,11 @@ public class PlomActivity extends AppCompatActivity {
                         Map<String, String> params = new HashMap<>();
                         for (String key : request.getUrl().getQueryParameterNames())
                             params.put(key, request.getUrl().getQueryParameter(key));
-                        return handleBridgeRequest(endpoint, params);
+                        WebResourceResponse response = handleBridgeRequest(endpoint, params);
+                        if (response.getResponseHeaders() == null)
+                            response.setResponseHeaders(new HashMap<>());
+                        response.getResponseHeaders().put("Access-Control-Allow-Origin", "*");
+                        return response;
                     }
                     else if (request.getUrl().getPath().startsWith("/plomweb/")) {
                         String endpoint = request.getUrl().getPath().substring("/plomweb/".length());
@@ -115,6 +125,19 @@ public class PlomActivity extends AppCompatActivity {
                         return handleVirtualWebServerRequest(endpoint, params);
                     }
                 }
+                else if ("http".equals(request.getUrl().getScheme())
+                    && "androidwebview.plom.dev".equals(request.getUrl().getHost()))
+                {
+                    try {
+                        return localFileServer.shouldInterceptRequest(request.getUrl());
+                    } catch (Throwable e) {
+                        // Android's lousy local assets server can't handle "file not found"
+                        // and doesn't even catch the exception properly, so we need to grab it here
+                        // with a generic exception handler
+                        return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+                    }
+
+                }
                 return super.shouldInterceptRequest(view, request);
             }
         });
@@ -122,7 +145,7 @@ public class PlomActivity extends AppCompatActivity {
             webView.setSafeBrowsingWhitelist(Arrays.asList("webviewbridge.plom.dev"), null);
         }
 //        webView.loadUrl("file:///android_asset/www/androidplom.html");
-        webView.loadUrl("file:///android_asset/www/androidplom.html");
+        webView.loadUrl("http://androidwebview.plom.dev/www/androidplom.html");
 
     }
 
@@ -171,63 +194,84 @@ public class PlomActivity extends AppCompatActivity {
 
     WebResourceResponse handleBridgeRequest(String endpoint, Map<String, String> params)
     {
-        if ("test".equals(endpoint))
-            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("received ".getBytes(StandardCharsets.UTF_8)));
-        else if ("listProjectFiles".equals(endpoint))
+        switch (endpoint)
         {
-            // Only list Plom files (doesn't actually use the listProjectFiles() method)
-            try {
-                JSONArray filesJson = new JSONArray();
-                for (String name : listSourceFiles())
-                    filesJson.put(name);
-                JSONObject json = new JSONObject();
-                json.put("files", filesJson);
-                return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
-            }
-            catch (JSONException e)
+            case "test":
+                return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("received ".getBytes(StandardCharsets.UTF_8)));
+            case "listProjectFiles":
+                // Only list Plom files (doesn't actually use the listProjectFiles() method)
+                try {
+                    JSONArray filesJson = new JSONArray();
+                    for (String name : listSourceFiles())
+                        filesJson.put(name);
+                    JSONObject json = new JSONObject();
+                    json.put("files", filesJson);
+                    return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
+                }
+                catch (JSONException e)
+                {
+                    // Eat the error
+                }
+                break;
+            case "readProjectFile":
+                try {
+                    DocumentFile file = readSourceFile(params.get("name"));
+                    return new WebResourceResponse("text/plain", "utf-8", getContentResolver().openInputStream(file.getUri()));
+                }
+                catch (IOException e)
+                {
+                    return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
+                }
+            case "listFiles":
+                // List any files (not just Plom files) that are in the project
+                // TODO: Pass in a list of base paths and rejection filters
+                try {
+                    JSONArray filesJson = new JSONArray();
+                    for (String name : listProjectFiles("", Arrays.asList("^src/$")))
+                        filesJson.put(name);
+                    JSONObject json = new JSONObject();
+                    json.put("files", filesJson);
+                    return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
+                }
+                catch (JSONException e)
+                {
+                    // Eat the error
+                }
+                break;
+            case "newFileUi":
             {
-                // Eat the error
-            }
-        }
-        else if ("readProjectFile".equals(endpoint))
-        {
-            DocumentFile file = readSourceFile(params.get("name"));
-            try {
-                return new WebResourceResponse("text/plain", "utf-8", getContentResolver().openInputStream(file.getUri()));
-            }
-            catch (IOException e)
-            {
-                return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
-            }
-        }
-        else if ("listFiles".equals(endpoint))
-        {
-            // List any files (not just Plom files) that are in the project
-            // TODO: Pass in a list of base paths and rejection filters
-            JSONArray filesJson = new JSONArray();
-            for (String name : listProjectFiles("", Arrays.asList("^src/$")))
-                filesJson.put(name);
-            JSONObject json = new JSONObject();
-            json.put("files", filesJson);
-            return new WebResourceResponse("application/json", "utf-8", new ByteArrayInputStream(json.toString().getBytes(StandardCharsets.UTF_8)));
-        }
-        else if ("newFileUi".equals(endpoint))
-        {
-            // Show a UI allowing the user to add new extra files to the project
-            extraFileActivityPath = params.get("pathPrefix");
-            importExtraFile.launch("*/*");
+                // Show a UI allowing the user to add new extra files to the project
+                extraFileActivityPath = params.get("pathPrefix");
+                importExtraFile.launch("*/*");
 
-            // Instead of synchronizing with multiple threads and an external activity (which can't
-            // be reliably done anyways since the current activity can die while the external
-            // activity is running), we'll just send back an empty response now with an ambiguous
-            // status code. We'll manually inform the JS after the content is loaded in.
-            return new WebResourceResponse("application/json", "utf-8",
-                    202, "Starting file chooser activity", Collections.emptyMap(),
-                    new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
-        }
-        else if ("exit".equals(endpoint))
-        {
-            finish();
+                // Instead of synchronizing with multiple threads and an external activity (which can't
+                // be reliably done anyways since the current activity can die while the external
+                // activity is running), we'll just send back an empty response now with an ambiguous
+                // status code. We'll manually inform the JS after the content is loaded in.
+                return new WebResourceResponse("application/json", "utf-8",
+                        202, "Starting file chooser activity", Collections.emptyMap(),
+                        new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+            }
+            case "getFile":
+            {
+                // See if the file being requested is in the web/ files folder
+                String path = params.get("path");
+                DocumentFile f = getProjectDocumentFile(path);
+                if (f != null && f.isFile())
+                {
+                    try {
+                        String guessedMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
+                        return new WebResourceResponse(guessedMimeType, null, getContentResolver().openInputStream(f.getUri()));
+                    }
+                    catch (IOException e)
+                    {
+                        // Fall through
+                    }
+                }
+                return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+            }
+            case "exit":
+                finish();
         }
         return null;
 

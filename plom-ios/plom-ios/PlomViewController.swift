@@ -449,7 +449,7 @@ class PlomJsBridge {
                     //new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
 
         case "getFile":
-            if let path = params["path"]?.removingPercentEncoding, let data = readProjectFile(path) {
+            if let path = params["path"], let data = readProjectFile(path) {
                 let mime = view!.extensionToMime(URL(fileURLWithPath: path).pathExtension)
                 return PlomPostResponse(mime: mime, data: data)
             } else {
