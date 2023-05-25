@@ -1,6 +1,6 @@
 /** JavaScript that's common to the Android and iOS app versions of Plom */
 
-function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, saveOutBlobHandler)
+function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, exportZipAsBase64, saveOutBlobHandler)
 {
 	setupPlomUi();
 	var main = new org.programmingbasics.plom.core.Main();
@@ -9,7 +9,7 @@ function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, saveOutBlo
 	hookRun(main);
 	hookWebRunWithBridge(main, virtualServerAddr, runHtmlCodeTransferHandler);
 	// hookLoadSave(main);
-    hookExportZip(main, 'plom/', saveOutBlobHandler);
+    hookExportZip(main, 'plom/', exportZipAsBase64, saveOutBlobHandler);
 	main.hookSubject();
 	window.addEventListener('resize', function() {
 		main.updateAfterResize();

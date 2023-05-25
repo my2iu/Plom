@@ -399,6 +399,7 @@ public class WebHelpers
   {
     @JsProperty(name = "type") void setType(String type);
     @JsOverlay default void setTypeBlob() { setType("blob"); }
+    @JsOverlay default void setTypeBase64() { setType("base64"); }
     @JsOverlay default void setTypeArrayBuffer() { setType("arraybuffer"); }
     @JsProperty(name = "compression") void setCompression(String compression);
     @JsOverlay default void setCompressionStore() { setCompression("STORE"); }

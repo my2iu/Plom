@@ -36,6 +36,8 @@
                     body: code
                 });
 		      },
+		      // Export .zip as blob
+		      false,  
               // For saving out files
               (filename, blob) => {
                 // I'm having trouble using POST with a blob, so I'll convert to arraybuffer first

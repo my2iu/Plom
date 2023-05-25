@@ -337,7 +337,7 @@ public class Main
    * Bundles up all code and related files into a single zip that can
    * be uploaded as a website and run
    */
-  public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip, String plomSystemFilePrefix)
+  public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip, String plomSystemFilePrefix, boolean exportAsBase64)
   {
     // Check if there's an index.html defined in the extra files, if not, create one
     List<FileDescription> extraFiles = repository.getAllExtraFilesSorted();
@@ -383,7 +383,10 @@ public class Main
     }
     
     WebHelpers.JSZipGenerateAsyncOptions zipOptions = (WebHelpers.JSZipGenerateAsyncOptions)JsPropertyMap.of();
-    zipOptions.setTypeBlob();
+    if (exportAsBase64)
+      zipOptions.setTypeBase64();
+    else
+      zipOptions.setTypeBlob();
     zipOptions.setCompressionDeflate();
     return zip.generateAsync(zipOptions);
   }

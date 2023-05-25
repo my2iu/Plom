@@ -3,22 +3,21 @@ package dev.plom.ide;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewFeature;
 
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
-import android.util.Log;
+import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
@@ -32,6 +31,8 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,14 +56,37 @@ public class PlomActivity extends AppCompatActivity {
      * to remember the path for the file when the activity returns with the file to import. */
     String extraFileActivityPath = "";
 
+    /** When showing the Create Document activity to save out a .zip file of the project,
+     * we need to remember the name of the temporary zip file that is being copied out */
+    String exportedZipFilePath;
+
     // Plom code to run in the virtual web server
     String plomCodeJsToRun;
 
-    public static final String STATE_BUNDLE_KEY_PROJECTNAME = "com.wobastic.omber.projectname";
-    public static final String STATE_BUNDLE_KEY_PROJECTURI = "com.wobastic.omber.projecturi";
-    public static final String STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH = "com.wobastic.omber.extrafileactivity.path";
+    public static final String STATE_BUNDLE_KEY_PROJECTNAME = "dev.plom.projectname";
+    public static final String STATE_BUNDLE_KEY_PROJECTURI = "dev.plom.projecturi";
+    public static final String STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH = "dev.plom.extrafileactivity.path";
+    public static final String STATE_BUNDLE_KEY_EXPORT_ZIPFILE_PATH = "dev.plom.exportzipfile.path";
 
     public static final String PLOM_MIME_TYPE = "application/x.dev.plom";
+
+    ActivityResultLauncher<String> saveOutZipFileActivity = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("application/zip"),
+            new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri dest) {
+                    try {
+                        File f = new File(exportedZipFilePath);
+                        try (FileInputStream in = new FileInputStream(f);
+                             ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(dest, "w");
+                             FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor())) {
+                            FileManagement.copyStreams(in, fileOutputStream);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +100,7 @@ public class PlomActivity extends AppCompatActivity {
             projectUri = savedInstanceState.getParcelable(STATE_BUNDLE_KEY_PROJECTURI);
             projectName = savedInstanceState.getString(STATE_BUNDLE_KEY_PROJECTNAME);
             extraFileActivityPath = savedInstanceState.getString(STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH);
+            exportedZipFilePath = savedInstanceState.getString(STATE_BUNDLE_KEY_EXPORT_ZIPFILE_PATH);
         }
 
         if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))
@@ -162,6 +187,7 @@ public class PlomActivity extends AppCompatActivity {
         outState.putParcelable(STATE_BUNDLE_KEY_PROJECTURI, projectUri);
         outState.putString(STATE_BUNDLE_KEY_PROJECTNAME, projectName);
         outState.putString(STATE_BUNDLE_KEY_EXTRAFILEACTIVITY_PATH, extraFileActivityPath);
+        outState.putString(STATE_BUNDLE_KEY_EXPORT_ZIPFILE_PATH, exportedZipFilePath);
     }
 
     ActivityResultLauncher<String> importExtraFile = registerForActivityResult(
@@ -508,6 +534,37 @@ public class PlomActivity extends AppCompatActivity {
         {
             // Ignore the serverId, and save the plom code to be served later from the virtual web server
             plomCodeJsToRun = code;
+        }
+
+        @JavascriptInterface
+        public void saveOutZipFile(String name, String fileBase64)
+        {
+            File cacheDir = getExternalCacheDir();
+            File shareDir = new File(cacheDir, "share");
+            shareDir.mkdir();
+            try {
+                File f = new File(shareDir, name);
+                OutputStream out = new FileOutputStream(f, false);
+                out.write(Base64.decode(fileBase64, Base64.DEFAULT));
+                out.close();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            exportedZipFilePath = f.getCanonicalPath();
+                            saveOutZipFileActivity.launch(f.getName());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 }

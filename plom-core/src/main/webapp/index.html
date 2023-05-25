@@ -35,7 +35,7 @@
     		hookRun(main);
     		hookWebRun(main);
     		hookLoadSave(main);
-    		hookExportZip(main, '', (filename, blob) => {
+    		hookExportZip(main, '', false, (filename, blob) => {
     			var saveLink = document.createElement("a");
     			// I've had problems in the past in Firefox with revoking blob URLs, so I'll not do that here
 				saveLink.href = URL.createObjectURL(blob);

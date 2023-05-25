@@ -13,7 +13,7 @@
 
         </activity>
         <activity android:name=".NewProjectActivity" />
-        <activity android:name=".ProjectsActivity">
+        <activity android:name=".ProjectsActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -18,16 +18,12 @@
                 AndroidBridge.startVirtualWebServer(serverId, code);
                 return Promise.resolve('done');
 		      },
+		      // Export .zip as base64 instead of using blobs
+		      true,
               // For saving out files
-              (filename, blob) => {
-                console.log("saving out file");
-                // I'm having trouble using POST with a blob, so I'll convert to arraybuffer first
-//                blob.arrayBuffer().then((arrbuf) => fetch('/bridge/saveOutFile?name=' + encodeURIComponent(filename),
-//                  {
-//                    method: 'POST',
-//                    body: arrbuf
-//                  }));
-                }
+              (filename, base64) => {
+                AndroidBridge.saveOutZipFile(filename, base64);
+              }
 
             );
 

@@ -297,16 +297,10 @@ public class ProjectsActivity extends AppCompatActivity {
                 if (destFile != null) return;
                 destFile = dest.createFile(PLOM_MIME_TYPE, srcName);
                 // It might be a file
-                byte [] data = new byte[8192];
                 try (InputStream in = getAssets().open(src);
                      OutputStream out = getContentResolver().openOutputStream(destFile.getUri()))
                 {
-                    int len = in.read(data);
-                    while (len >= 0)
-                    {
-                        out.write(data, 0, len);
-                        len = in.read(data);
-                    }
+                    FileManagement.copyStreams(in, out);
                 }
             }
             else
