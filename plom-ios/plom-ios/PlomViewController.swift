@@ -323,6 +323,14 @@ class PlomJsBridge {
         }, badReturn: nil);
     }
     
+    func writeProjectFile(_ name: String, data: Data) {
+        doProjectFileOperation( {() -> Void in
+            let path = projectUrl.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: path.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+            try data.write(to: path, options: .atomic)
+        }, badReturn: nil);
+    }
+    
     func listProjectFiles(base: String, rejectList: [String]) -> [String] {
         doProjectFileOperation( {() -> [String] in
             // Start searching for files
@@ -482,6 +490,12 @@ class PlomJsBridge {
                 popoverPresentationController.sourceRect = CGRect(x: self.view!.view.bounds.midX, y: 0, width: 0, height: 0)
             }
             self.view!.present(activity, animated: true)
+            return PlomPostResponse(mime: "text/plain", string: "done")
+
+        case "writeFile":
+            if let name = params["name"], let passedData = data {
+                writeProjectFile(name, data: passedData)
+            }
             return PlomPostResponse(mime: "text/plain", string: "done")
 
         case "exit":

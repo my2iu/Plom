@@ -9,6 +9,7 @@ import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 /**
@@ -19,12 +20,19 @@ import jsinterop.annotations.JsType;
 @JsType
 public class ExtraFilesManagerBridge implements ExtraFilesManager
 {
-  public ExtraFilesManagerBridge(String bridgeUrl)
+  public ExtraFilesManagerBridge(String bridgeUrl, WriteFile fileWriter)
   {
     this.bridgeUrl = bridgeUrl;
+    this.fileWriter = fileWriter;
   }
   
   String bridgeUrl;
+  WriteFile fileWriter;
+  
+  @JsFunction
+  static interface WriteFile {
+    public WebHelpers.Promise<Void> writeFile(String name, ArrayBuffer data);
+  }
   
   @Override
   public void newFileUi(String pathPrefix, EmptyCallback callback)
@@ -88,6 +96,10 @@ public class ExtraFilesManagerBridge implements ExtraFilesManager
   @Override
   public void insertFile(String path, ArrayBuffer data, EmptyCallback callback)
   {
+    fileWriter.writeFile(path, data).thenNow((val) -> {
+      callback.call();
+      return null;
+    });
 //    FileInfo newFile = new FileInfo();
 //    newFile.path = path;
 //    newFile.fileData = data;

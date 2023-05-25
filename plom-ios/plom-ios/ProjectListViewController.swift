@@ -134,8 +134,11 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
                         url.stopAccessingSecurityScopedResource()
                     }
                 }
-                bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
-
+                if #available(iOS 14.0, *), ProcessInfo.processInfo.isiOSAppOnMac {
+                    bookmark = try url.bookmarkData(options: .withoutImplicitSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                } else {
+                    bookmark = try url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil)
+                }
             }
 #else
             bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)

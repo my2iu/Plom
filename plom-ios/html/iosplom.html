@@ -50,7 +50,15 @@
             );
 
             // Load in all the code for the project
-            createPlomRepositoryWithProjectCode(main, '/bridge/')
+            createPlomRepositoryWithProjectCode(main, '/bridge/',
+                // Write out extra files
+                (filename, data) => {
+                    return fetch('/bridge/writeFile?name=' + encodeURIComponent(filename),
+                    {
+                        method: 'POST',
+                        body: data
+                    })
+                });
                 
             // Callback to save on exit
             window.plomPrepareToUnload = function() {

@@ -18,10 +18,10 @@ function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, exportZipA
 	return main;
 }
 
-function createPlomRepositoryWithProjectCode(main, bridgeUrl)
+function createPlomRepositoryWithProjectCode(main, bridgeUrl, writeFileHandler)
 {
 	var repo = makeRepositoryWithStdLib();
-	repo.setExtraFilesManager(new org.programmingbasics.plom.core.ExtraFilesManagerBridge(bridgeUrl));
+	repo.setExtraFilesManager(new org.programmingbasics.plom.core.ExtraFilesManagerBridge(bridgeUrl, writeFileHandler));
     fetch(bridgeUrl + 'listProjectFiles')
         .then(response => response.json())
         .then((json) =>
