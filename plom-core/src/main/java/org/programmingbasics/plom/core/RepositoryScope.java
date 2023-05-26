@@ -196,6 +196,7 @@ public class RepositoryScope extends VariableScope
   @Override
   public Type typeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
   {
+    if (unboundType == null) throw new RunException();
     if (unboundType.mainToken.type == Symbol.FunctionTypeName) 
     {
       return helperFunctionTypeFromUnboundType(unboundType, subTypeCreator);
