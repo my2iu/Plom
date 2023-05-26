@@ -461,6 +461,12 @@ a.runbutton {
 	font-style: italic;
 }
 
+.globalspanel .extraFilesList>div {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding-left: 0.5em;
+}
+
 .classpanel .methodsList>div, 
 .classpanel .staticMethodsList>div,
 .classpanel .constructorMethodsList>div {
