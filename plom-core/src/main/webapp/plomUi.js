@@ -151,6 +151,87 @@ function setupPlomUi() {
 					var v = Value.create(selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 					blockWait.unblockAndReturn(v);
 				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var param5 = machine.currentScope().lookup("param5").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4, param5), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var param5 = machine.currentScope().lookup("param5").val;
+					var param6 = machine.currentScope().lookup("param6").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4, param5, param6), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var param5 = machine.currentScope().lookup("param5").val;
+					var param6 = machine.currentScope().lookup("param6").val;
+					var param7 = machine.currentScope().lookup("param7").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4, param5, param6, param7), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:and:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var param5 = machine.currentScope().lookup("param5").val;
+					var param6 = machine.currentScope().lookup("param6").val;
+					var param7 = machine.currentScope().lookup("param7").val;
+					var param8 = machine.currentScope().lookup("param8").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4, param5, param6, param7, param8), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:with:and:and:and:and:and:and:and:and:"),
+				function(blockWait, machine) {
+					var method = machine.currentScope().lookup("method").getStringValue();
+					var param1 = machine.currentScope().lookup("param1").val;
+					var param2 = machine.currentScope().lookup("param2").val;
+					var param3 = machine.currentScope().lookup("param3").val;
+					var param4 = machine.currentScope().lookup("param4").val;
+					var param5 = machine.currentScope().lookup("param5").val;
+					var param6 = machine.currentScope().lookup("param6").val;
+					var param7 = machine.currentScope().lookup("param7").val;
+					var param8 = machine.currentScope().lookup("param8").val;
+					var param9 = machine.currentScope().lookup("param9").val;
+					var selfVal = machine.currentScope().lookupThis();
+					var v = Value.create(selfVal.val[method](param1, param2, param3, param4, param5, param6, param7, param8, param9), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+					blockWait.unblockAndReturn(v);
+				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
@@ -442,18 +523,25 @@ function setupPlomUi() {
 			if (evt.data.type != 'GET') return;
 			if (!localServerServiceWorker) return;
 			if (event.data.serverContext != localServerId) return;
+			console.log(evt.data.path);
 			// Check if the file exists in the code repository
 			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
 				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
-					if (contents)
+					if (contents) {
+						let mime = 'text/html';
+						if (evt.data.path.endsWith('.jpg') || evt.data.path.endsWith('.jpeg'))
+							mime = 'image/jpeg';
+						else if (evt.data.path.endsWith('.png'))
+							mime = 'image/png';
+							
 						localServerServiceWorker.postMessage({
 							type: 'GET',
 							serverContext: evt.data.serverContext,
 							path: evt.data.path,
-							headers: {'Content-Type':'text/html'},
+							headers: {'Content-Type':mime},
 							data: contents
 						}, [contents]);
-					else
+					} else
 						localServerServiceWorker.postMessage({
 							type: 'GET',
 							serverContext: evt.data.serverContext,
@@ -577,132 +665,6 @@ function setupPlomUi() {
 			
 			
 			
-			// Register a service worker that can serve data as if
-			// it were a web page sent from a server (even though it's
-			// actually all done locally)
-			/*
-			if (!('serviceWorker' in navigator)) {
-				console.error('Service workers not supported');
-				return;
-			}
-			navigator.serviceWorker.register('localServerServiceWorker.js')
-			.then((registration) => {
-				// Wait until the service worker becomes active
-				navigator.serviceWorker.ready.then((registration) => {
-					localServerServiceWorker = registration.active;
-					// Generate a random id for the url that we'll serve data from
-					localServerId = Math.floor(Math.random() * 1000000000).toString();
-					// Show the web view and point it to the running program
-					var webViewDiv = document.querySelector('.runWebView');
-					webViewDiv.style.display = 'flex';
-					webViewDiv.querySelector('iframe').src = 'test' + localServerId + '/index.html';
-				});
-			})
-			.catch((e) => {
-    			console.error(e);
-			});
-		});
-		
-		var serviceWorkerBroadcastChannel = new BroadcastChannel('Plom virtual web server service worker request resource');
-		serviceWorkerBroadcastChannel.addEventListener('message', (evt) => {
-			// Service worker (i.e. virtual web server) has relayed a 
-			// request for a resource to us. See if we can fulfill that
-			// request.
-			//  
-			// Expected message format: {
-			//   type:'GET',
-			//   serverContext: 'identifying string for server',
-			//   path: 'index.html' 
-			// }
-			if (evt.data.type != 'GET') return;
-			if (!localServerServiceWorker) return;
-			if (event.data.serverContext != localServerId) return;
-			// Check if the file exists in the code repository
-			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
-				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
-					if (contents)
-						localServerServiceWorker.postMessage({
-							type: 'GET',
-							serverContext: evt.data.serverContext,
-							path: evt.data.path,
-							headers: {'Content-Type':'text/html'},
-							data: contents
-						}, [contents]);
-					else
-						localServerServiceWorker.postMessage({
-							type: 'GET',
-							serverContext: evt.data.serverContext,
-							path: evt.data.path,
-							data: null
-						});
-				});
-			} else if (evt.data.path == 'index.html') {
-				fetch('plomweb.html')
-					.then((response) => response.arrayBuffer())
-					.then((buf) => localServerServiceWorker.postMessage({
-						type: 'GET',
-						serverContext: evt.data.serverContext,
-						path: evt.data.path,
-						headers: {'Content-Type':'text/html'},
-						data: buf
-					}, [buf]));
-//				var dataToSend = new TextEncoder().encode('hi world');
-//				localServerServiceWorker.postMessage({
-//					type: 'GET',
-//					serverContext: evt.data.serverContext,
-//					path: evt.data.path,
-//					headers: {'Content-Type':'text/html'},
-//					data: dataToSend.buffer
-//				}, [dataToSend.buffer]);
-			} else if (evt.data.path == 'plomdirect.js') {
-				var plomdirectLoc;
-				if (!!document.querySelector('iframe#plomcore')) {
-					plomdirectLoc = document.querySelector('iframe#plomcore').contentDocument.querySelector('script').src;
-				} else {
-					plomdirectLoc = 'plomdirect.js';
-				}
-				fetch(plomdirectLoc)
-					.then((response) => response.arrayBuffer())
-					.then((buf) => localServerServiceWorker.postMessage({
-						type: 'GET',
-						serverContext: evt.data.serverContext,
-						path: evt.data.path,
-						headers: {'Content-Type':'application/javascript'},
-						data: buf
-					}, [buf]));
-			} else if (evt.data.path == 'plomUi.js') {
-				fetch('plomUi.js')
-					.then((response) => response.arrayBuffer())
-					.then((buf) => localServerServiceWorker.postMessage({
-						type: 'GET',
-						serverContext: evt.data.serverContext,
-						path: evt.data.path,
-						headers: {'Content-Type':'application/javascript'},
-						data: buf
-					}, [buf]));
-			} else if (evt.data.path == 'main.plom.js') {
-				main.getModuleAsJsonPString().then((str) => {
-					// Insert BOM at the beginning to label it as UTF-8 
-					str = "\ufeff" + str; 
-					localServerServiceWorker.postMessage({
-							type: 'GET',
-							serverContext: evt.data.serverContext,
-							path: evt.data.path,
-							headers: {'Content-Type':'application/javascript'},
-							data: str
-						})
-					});
-					
-			} else {
-				// Could not find any data to send, so send back null
-				// (it will be treated as a 404 by the service worker)
-				localServerServiceWorker.postMessage({
-					type: 'GET',
-					serverContext: evt.data.serverContext,
-					path: evt.data.path,
-					data: null
-				});
-			}*/
 		});
 
 		// Button to show the running code output (just shows the web page)
