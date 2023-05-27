@@ -7,9 +7,12 @@ import com.google.gwt.core.shared.GWT;
 
 import elemental.html.ArrayBuffer;
 import elemental.html.ArrayBufferView;
+import elemental.html.Blob;
+import elemental.html.File;
 import elemental.html.Uint8Array;
 import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
+import elemental.util.ArrayOfString;
 import elemental.util.SettableInt;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsMethod;
@@ -17,6 +20,7 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import jsinterop.base.Js;
 
 
 /**
@@ -364,7 +368,6 @@ public class WebHelpers
     Promise<String> text();
   }
   
-  
   @JsMethod(name = "fetch", namespace = JsPackage.GLOBAL)
   public static native Promise<Response> fetch(String url);
 
@@ -404,5 +407,33 @@ public class WebHelpers
     @JsProperty(name = "compression") void setCompression(String compression);
     @JsOverlay default void setCompressionStore() { setCompression("STORE"); }
     @JsOverlay default void setCompressionDeflate() { setCompression("DEFLATE"); }
+  }
+  
+  @JsType(isNative = true)
+  public static interface AsyncIterator<T>
+  {
+  }
+
+  @JsType(isNative = true)
+  public static interface FileSystemHandle
+  {
+    @JsProperty(name = "name") String getName();
+    @JsProperty(name = "kind") String getKind();
+  }
+  
+  @JsType(isNative = true)
+  public static interface FileSystemFileHandle extends FileSystemHandle
+  {
+    Promise<File> getFile();
+  }
+  
+  @JsType(isNative = true)
+  public static interface FileSystemDirectoryHandle extends FileSystemHandle
+  {
+    AsyncIterator<?> entries();
+    AsyncIterator<FileSystemHandle> values();
+    Promise<FileSystemFileHandle> getFileHandle(String name);
+    Promise<FileSystemDirectoryHandle> getDirectoryHandle(String name);
+    Promise<ArrayOfString> resolve(FileSystemHandle possibleDescendant);
   }
 }

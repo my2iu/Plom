@@ -12,6 +12,8 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -228,6 +230,73 @@ public class Main
   public static interface ShowFileChooserCallback
   {
     void fileLoaded(String name, Object result);
+  }
+  
+  public void openFromProjectDir(WebHelpers.FileSystemDirectoryHandle baseDirHandle, AsyncFilesCollector collector, ModuleCodeRepository newRepo)
+  {
+    newRepo.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
+    baseDirHandle.getDirectoryHandle("src")
+        .then(srcHandle -> collector.<WebHelpers.FileSystemHandle>gather(srcHandle.values()))
+        .then((ArrayOf<WebHelpers.FileSystemHandle> handles) -> {
+          ArrayOf<WebHelpers.Promise<String>> srcFiles = elemental.util.Collections.arrayOf();
+          for (int n = 0; n < handles.length(); n++)
+          {
+            if (handles.get(n).getKind().equals("directory"))
+              continue;
+            String filename = handles.get(n).getName();
+            WebHelpers.FileSystemFileHandle fileHandle = (WebHelpers.FileSystemFileHandle)handles.get(n);
+            srcFiles.insert(srcFiles.length(), fileHandle.getFile()
+                .then((file) -> {
+                    WebHelpers.Promise<String> done = WebHelpersShunt.newPromise((resolve, reject) -> {
+                      FileReader reader = Browser.getWindow().newFileReader();
+                      reader.setOnloadend((evt) -> {
+                        String code = (String)reader.getResult();
+                        try {
+                          if ("program.plom".equals(filename))
+                          {
+                            PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(code);
+                            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+                            newRepo.loadModule(lexer);
+                          }
+                          else
+                          {
+                            PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(code);
+                            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+                            newRepo.loadClassIntoModule(lexer);
+                          }
+                        } catch (PlomReadException e)
+                        {
+                          e.printStackTrace();
+                        }
+                        resolve.accept(filename);
+                      });
+                      reader.readAsText(file);
+                    }); 
+                    return done;
+            }));
+          }
+          return WebHelpers.promiseAll(srcFiles);
+        })
+        .thenNow((done) -> {
+            if (newRepo.isNoStdLibFlag)
+              newRepo.setChainedRepository(null);
+            repository = newRepo;
+
+            repository.refreshExtraFiles(() -> {
+                closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
+
+                loadGlobalsView();
+            });
+            return null;
+        });
+    
+    
+    
+  }
+  
+  @JsFunction
+  public static interface AsyncFilesCollector {
+    <T> WebHelpers.Promise<ArrayOf<T>> gather(WebHelpers.AsyncIterator<?> fileKeyValues);
   }
   
   /** If any code is currently being displayed in the code panel, save it

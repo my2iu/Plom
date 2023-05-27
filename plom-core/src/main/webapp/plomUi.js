@@ -736,6 +736,24 @@ function setupPlomUi() {
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			doSaveWeb(main);
 		});
+		if (window.showDirectoryPicker) {
+			var openDirEl = document.querySelector("a.openprojectdirbutton");
+			openDirEl.style.display = null;
+			openDirEl.addEventListener('click', function(evt) {
+				evt.preventDefault();
+				if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
+				window.showDirectoryPicker({mode: 'readwrite'}).then((dirHandle) => {
+					var repo = makeRepositoryWithStdLib();
+					main.openFromProjectDir(dirHandle, async (asyncFiles) => {
+						var collectedFiles = [];
+						for await (const val of asyncFiles) {
+							collectedFiles.push(val);
+						}
+						return collectedFiles;
+					}, repo);
+				});
+			});
+		}
 	}
 	function hookExportZip(main, plomSystemFilePrefix, exportZipAsBase64, saveOutBlobHandler)
 	{
