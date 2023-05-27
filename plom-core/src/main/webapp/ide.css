@@ -388,6 +388,11 @@ a.breadcrumb-item:visited {
 		flex-direction: column;
 }
 
+.testbuttons >a {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}
+
 .console {
 }
 
