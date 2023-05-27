@@ -137,9 +137,12 @@ public class PlomActivity extends AppCompatActivity {
                         for (String key : request.getUrl().getQueryParameterNames())
                             params.put(key, request.getUrl().getQueryParameter(key));
                         WebResourceResponse response = handleBridgeRequest(endpoint, params);
-                        if (response.getResponseHeaders() == null)
-                            response.setResponseHeaders(new HashMap<>());
-                        response.getResponseHeaders().put("Access-Control-Allow-Origin", "*");
+                        if (response != null)
+                        {
+                            if (response.getResponseHeaders() == null)
+                                response.setResponseHeaders(new HashMap<>());
+                            response.getResponseHeaders().put("Access-Control-Allow-Origin", "*");
+                        }
                         return response;
                     }
                     else if (request.getUrl().getPath().startsWith("/plomweb/")) {

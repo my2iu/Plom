@@ -523,7 +523,6 @@ function setupPlomUi() {
 			if (evt.data.type != 'GET') return;
 			if (!localServerServiceWorker) return;
 			if (event.data.serverContext != localServerId) return;
-			console.log(evt.data.path);
 			// Check if the file exists in the code repository
 			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
 				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
