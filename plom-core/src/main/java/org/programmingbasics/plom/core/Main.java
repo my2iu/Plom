@@ -444,9 +444,10 @@ public class Main
     
     // Main Plom code
     try {
-      zip.filePromiseString("main.plom.js", getModuleAsJsonPString()
+      zip.filePromiseString("main.plom.js", getModuleAsJsonPString());
           // Insert BOM at the beginning to label it as UTF-8 
-          .thenNow(str -> "\ufeff" + str));
+//          .thenNow(str -> "\ufeff" + str));
+          // Actually, the BOM is not appreciated by some browsers when served from some servers
     } catch (IOException e) {
       Browser.getWindow().getConsole().log(e);
     }

@@ -1234,6 +1234,11 @@ new_methods:
         lexer.expectToken("}");
         lexer.swallowOptionalNewlineToken();
       }
+      else if (PlomTextReader.isNewline(peek))
+      {
+        // Skip over blank lines
+        lexer.swallowOptionalNewlineToken();
+      }
       else
         throw new PlomReadException("Unexpected class contents", lexer);
     }

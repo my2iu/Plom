@@ -364,7 +364,7 @@ public class PlomTextReader
   }
 
 
-  private static boolean isNewline(String toMatch)
+  public static boolean isNewline(String toMatch)
   {
     return toMatch.equals("\r") || toMatch.equals("\r\n") || toMatch.equals("\n");
   }
