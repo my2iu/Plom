@@ -524,8 +524,9 @@ function setupPlomUi() {
 			if (!localServerServiceWorker) return;
 			if (event.data.serverContext != localServerId) return;
 			// Check if the file exists in the code repository
-			if (main.repository.hasExtraFile('web/' + evt.data.path)) {
-				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + evt.data.path, (contents) => {
+			const decodedPath = decodeURIComponent(evt.data.path);
+			if (main.repository.hasExtraFile('web/' + decodedPath)) {
+				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + decodedPath, (contents) => {
 					if (contents) {
 						let mime = 'text/html';
 						if (evt.data.path.endsWith('.jpg') || evt.data.path.endsWith('.jpeg'))
