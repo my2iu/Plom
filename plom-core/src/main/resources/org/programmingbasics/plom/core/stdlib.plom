@@ -68,6 +68,9 @@
  function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
+ function . {passthrough to Plom } { @ {object } } { } {
+ primitive
+ }
  function . {set: { . {key } @ {string } }to: { . {value } @ {object } } } { @ {void } } { } {
  primitive
  }
@@ -84,6 +87,9 @@
  primitive
  }
  classfunction . {globals } { @ {JS object } } { } {
+ primitive
+ }
+ classfunction . {passthrough to JS: { . {value } @ {object } } } { @ {JS object } } { } {
  primitive
  }
  }

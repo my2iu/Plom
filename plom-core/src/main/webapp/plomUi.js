@@ -117,6 +117,14 @@ function setupPlomUi() {
 						// Simply return the function as a JS object, which can be invoked as a normal function using apply()
 						blockWait.unblockAndReturn(Value.create(selfVal.val, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))));
 				});
+		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "passthrough to Plom"),
+				function(blockWait, machine) {
+					var selfVal = machine.currentScope().lookupThis();
+					if (selfVal.val == null)
+						blockWait.unblockAndReturn(machine.coreTypes().getNullValue());
+					else
+						blockWait.unblockAndReturn(selfVal.val);
+				});
 		coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "call:"),
 				function(blockWait, machine) {
 					var method = machine.currentScope().lookup("method").getStringValue();
@@ -317,7 +325,7 @@ function setupPlomUi() {
 					}
 					else
 					{
-						JsObjectType = machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"));
+						const JsObjectType = machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"));
 						const jsProxy = function() {
 							var plomArgVals = [];
 							for (var n = 0; n < arguments.length; n++)
@@ -334,6 +342,14 @@ function setupPlomUi() {
 						blockWait.unblockAndReturn(v);
 					}
 				});
+		coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "passthrough to JS:"),
+				function(blockWait, machine) {
+					const JsObjectType = machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"));
+					var val = Value.createCopy(machine.currentScope().lookup("value"));
+					var v = Value.create(val, JsObjectType);
+					blockWait.unblockAndReturn(v);
+				});
+				
 	}
 	function makeStdLibRepository()
 	{
