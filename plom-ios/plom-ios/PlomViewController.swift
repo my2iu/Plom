@@ -358,14 +358,15 @@ class PlomJsBridge {
                 try listProjectFiles(projectUrl: projectUrl, basePath: basePath + f.lastPathComponent + "/", rejectList: rejectList, results: &results)
             } else {
                 var reject = false
+                let filePath = basePath + f.lastPathComponent
                 for rejectPattern in rejectList {
-                    if basePath.range(of: rejectPattern, options: .regularExpression) != nil {
+                    if filePath.range(of: rejectPattern, options: .regularExpression) != nil {
                         reject = true
                         break
                     }
                 }
                 if !reject {
-                    results.append(basePath + f.lastPathComponent)
+                    results.append(filePath)
                 }
             }
         }
