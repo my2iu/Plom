@@ -3,12 +3,17 @@ package org.programmingbasics.plom.core;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+
 import com.google.gwt.core.shared.GWT;
 
+import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.ArrayBufferView;
 import elemental.html.Blob;
 import elemental.html.File;
+import elemental.html.FileReader;
 import elemental.html.Uint8Array;
 import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
@@ -458,4 +463,31 @@ public class WebHelpers
     Promise<FileSystemDirectoryHandle> getDirectoryHandle(String name);
     Promise<ArrayOfString> resolve(FileSystemHandle possibleDescendant);
   }
+  
+  public static Promise<String> readFileAsText(File file)
+  {
+    WebHelpers.Promise<String> done = WebHelpersShunt.newPromise((resolve, reject) -> {
+      elemental.html.FileReader reader = Browser.getWindow().newFileReader();
+      reader.setOnloadend((evt) -> {
+        String code = (String)reader.getResult();
+        resolve.accept(code);
+      });
+      reader.readAsText(file);
+    }); 
+    return done;
+  }
+  
+  public static Promise<ArrayBuffer> readFileAsArrayBuffer(File file)
+  {
+    WebHelpers.Promise<ArrayBuffer> done = WebHelpersShunt.newPromise((resolve, reject) -> {
+      elemental.html.FileReader reader = Browser.getWindow().newFileReader();
+      reader.setOnloadend((evt) -> {
+        ArrayBuffer code = (ArrayBuffer)reader.getResult();
+        resolve.accept(code);
+      });
+      reader.readAsArrayBuffer(file);
+    }); 
+    return done;
+  }
+
 }

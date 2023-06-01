@@ -258,10 +258,7 @@ public class Main
             WebHelpers.FileSystemFileHandle fileHandle = (WebHelpers.FileSystemFileHandle)handles.get(n);
             srcFiles.insert(srcFiles.length(), fileHandle.getFile()
                 .then((file) -> {
-                    WebHelpers.Promise<String> done = WebHelpersShunt.newPromise((resolve, reject) -> {
-                      FileReader reader = Browser.getWindow().newFileReader();
-                      reader.setOnloadend((evt) -> {
-                        String code = (String)reader.getResult();
+                      return WebHelpers.readFileAsText(file).thenNow((code) -> {
                         try {
                           if ("program.plom".equals(filename))
                           {
@@ -279,11 +276,8 @@ public class Main
                         {
                           e.printStackTrace();
                         }
-                        resolve.accept(filename);
+                        return filename;
                       });
-                      reader.readAsText(file);
-                    }); 
-                    return done;
             }));
           }
           return WebHelpers.promiseAll(srcFiles);

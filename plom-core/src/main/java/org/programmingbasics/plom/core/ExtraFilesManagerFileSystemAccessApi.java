@@ -66,17 +66,6 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
       callback.call(results);
       return null;
     });
-//    WebHelpers.fetch(bridgeUrl + "listFiles")
-//      .then((response) -> {
-//        return response.json();
-//      }).thenNow((json) -> {
-//        List<String> filenames = new ArrayList<>();
-//        JsonArray filesJson = ((JsonObject)json).getArray("files");
-//        for (int n = 0; n < filesJson.length(); n++)
-//          filenames.add(filesJson.getString(n));
-//        callback.call(filenames);
-//        return null;
-//      });
   }
 
   @Override
@@ -90,16 +79,21 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
   @Override
   public void getFileContents(String path, FileContentsCallback callback)
   {
-    WebHelpers.fetch(bridgeUrl + "getFile?path=" + URL.encodePathSegment(path))
-      .then((response) -> {
-        return response.arrayBuffer();
-      }).thenNow((arrbuf) -> {
-        callback.call(arrbuf);
-        return null;
-      }).catchErrNow((err) -> {
-        callback.call(null);
-        return null;
-      });
+    getProjectPathHandle(path).thenNow((handle) -> {
+      if (handle.getKindEnum() == WebHelpers.FileSystemHandleKind.FILE)
+      {
+        return ((WebHelpers.FileSystemFileHandle)handle).getFile()
+            .then((file) -> WebHelpers.readFileAsArrayBuffer(file))
+            .thenNow((arrbuf) -> {
+              callback.call(arrbuf);
+              return null;
+            }).catchErrNow((err) -> {
+              callback.call(null);
+              return null;
+            });
+      }
+      throw new IllegalArgumentException("Path does not point to a file");
+    });
   }
 
   @Override
@@ -151,7 +145,7 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
     }
     if (!baseNextDir.isEmpty())
     {
-      Main.asyncIteratorToArray.gather(projectHandle.values()).thenNow((handles) -> {
+      return Main.asyncIteratorToArray.gather(projectHandle.values()).thenNow((handles) -> {
         for (int n = 0; n < handles.length(); n++)
         {
           if (baseNextDir.equals(handles.get(n).getName()))
@@ -166,6 +160,8 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
             return getProjectPathHandle((WebHelpers.FileSystemDirectoryHandle)nextHandle, leftover); 
           }
         }
+        else
+          return PromiseClass.resolve(nextHandle);
         throw new IllegalArgumentException("Path not found");
       });
     }
