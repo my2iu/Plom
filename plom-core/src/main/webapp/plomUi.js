@@ -13,6 +13,14 @@ function setupPlomUi() {
 	const toJS = Symbol();
 	// Used to store whether a JS object has a Plom equivalent/proxy
 	const toPlom = Symbol();
+	// Pass in some external JS code for working with async iterators since GWT can't handle them natively
+	Main.setAsyncIteratorToArray(async (asyncFiles) => {
+		var collectedFiles = [];
+		for await (const val of asyncFiles) {
+			collectedFiles.push(val);
+		}
+		return collectedFiles;
+	});
 
 	// Code for the custom auto-resizing DOM input element	
 	class AutoResizingInputElement extends HTMLElement {
@@ -722,13 +730,7 @@ function setupPlomUi() {
 				if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 				window.showDirectoryPicker({mode: 'readwrite'}).then((dirHandle) => {
 					var repo = makeRepositoryWithStdLib();
-					main.openFromProjectDir(dirHandle, async (asyncFiles) => {
-						var collectedFiles = [];
-						for await (const val of asyncFiles) {
-							collectedFiles.push(val);
-						}
-						return collectedFiles;
-					}, repo);
+					main.openFromProjectDir(dirHandle, repo);
 				});
 			});
 		}

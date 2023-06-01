@@ -413,12 +413,34 @@ public class WebHelpers
   public static interface AsyncIterator<T>
   {
   }
+  
+  /** 
+   * GWT's JSNI doesn't support modern Java features needed for operations
+   * working on async iterators, so we need external JS code to be passed
+   * in to GWT to operate on them.
+   */
+  @JsFunction
+  public static interface AsyncIteratorCollector {
+    <T> WebHelpers.Promise<ArrayOf<T>> gather(WebHelpers.AsyncIterator<T> iterator);
+  }
 
   @JsType(isNative = true)
   public static interface FileSystemHandle
   {
     @JsProperty(name = "name") String getName();
     @JsProperty(name = "kind") String getKind();
+    
+    @JsOverlay default FileSystemHandleKind getKindEnum() {
+      if ("file".equals(getKind()))
+        return FileSystemHandleKind.FILE;
+      else
+        return FileSystemHandleKind.DIRECTORY;
+    }
+  }
+  
+  enum FileSystemHandleKind
+  {
+    FILE, DIRECTORY
   }
   
   @JsType(isNative = true)

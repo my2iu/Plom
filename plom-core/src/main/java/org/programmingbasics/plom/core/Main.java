@@ -44,6 +44,7 @@ import elemental.js.util.JsArrayOfString;
 import elemental.json.Json;
 import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
@@ -115,6 +116,14 @@ public class Main
   FunctionDescription currentMethodBeingViewed = null;
 //  private ErrorLogger errorLogger = createErrorLoggerForConsole(Browser.getDocument().querySelector(".console"));
 
+  /** The File System Access API uses async iterators, and GWT doesn't
+   * work well with async iterators, so to work with them, we need some
+   * external JS code to be injected in
+   */
+  static WebHelpers.AsyncIteratorCollector asyncIteratorToArray;
+  public static void setAsyncIteratorToArray(WebHelpers.AsyncIteratorCollector fn) { asyncIteratorToArray = fn; }
+  
+  
   public ErrorLogger createErrorLoggerForConsole(Element consoleEl)
   {
     return (err) -> {
@@ -232,16 +241,18 @@ public class Main
     void fileLoaded(String name, Object result);
   }
   
-  public void openFromProjectDir(WebHelpers.FileSystemDirectoryHandle baseDirHandle, AsyncFilesCollector collector, ModuleCodeRepository newRepo)
+  public void openFromProjectDir(WebHelpers.FileSystemDirectoryHandle baseDirHandle, ModuleCodeRepository newRepo)
   {
-    newRepo.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
+    newRepo.setExtraFilesManager(new ExtraFilesManagerFileSystemAccessApi(baseDirHandle));
     baseDirHandle.getDirectoryHandle("src")
-        .then(srcHandle -> collector.<WebHelpers.FileSystemHandle>gather(srcHandle.values()))
+        .then(srcHandle -> {
+          return asyncIteratorToArray.<WebHelpers.FileSystemHandle>gather(srcHandle.values()); 
+        })
         .then((ArrayOf<WebHelpers.FileSystemHandle> handles) -> {
           ArrayOf<WebHelpers.Promise<String>> srcFiles = elemental.util.Collections.arrayOf();
           for (int n = 0; n < handles.length(); n++)
           {
-            if (handles.get(n).getKind().equals("directory"))
+            if (handles.get(n).getKindEnum() == WebHelpers.FileSystemHandleKind.DIRECTORY)
               continue;
             String filename = handles.get(n).getName();
             WebHelpers.FileSystemFileHandle fileHandle = (WebHelpers.FileSystemFileHandle)handles.get(n);
@@ -293,12 +304,7 @@ public class Main
     
     
   }
-  
-  @JsFunction
-  public static interface AsyncFilesCollector {
-    <T> WebHelpers.Promise<ArrayOf<T>> gather(WebHelpers.AsyncIterator<?> fileKeyValues);
-  }
-  
+    
   /** If any code is currently being displayed in the code panel, save it
    * to the repository
    */

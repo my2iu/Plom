@@ -484,16 +484,17 @@ public class PlomActivity extends AppCompatActivity {
             else if (f.isFile())
             {
                 boolean reject = false;
+                String filePath = basePath + f.getName();
                 for (String rejectPattern : rejectList)
                 {
-                    if (basePath.matches(rejectPattern))
+                    if (filePath.matches(rejectPattern))
                     {
                         reject = true;
                         break;
                     }
                 }
                 if (!reject)
-                    results.add(basePath + f.getName());
+                    results.add(filePath);
             }
         }
     }
