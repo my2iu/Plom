@@ -7,12 +7,7 @@ import java.util.List;
 import org.programmingbasics.plom.core.WebHelpers.FileSystemHandleKind;
 import org.programmingbasics.plom.core.WebHelpers.PromiseClass;
 
-import com.google.gwt.http.client.URL;
-
-import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
@@ -31,8 +26,6 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
   }
   
   WebHelpers.FileSystemDirectoryHandle baseDirHandle;
-  String bridgeUrl;
-  WriteFile fileWriter;
   
   @JsFunction
   static interface WriteFile {
@@ -42,20 +35,10 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
   @Override
   public void newFileUi(String pathPrefix, EmptyCallback callback)
   {
-    
-    WebHelpers.fetch(bridgeUrl + "newFileUi?pathPrefix=" + URL.encodePathSegment(pathPrefix))
-      .then((response) -> {
-        return response.text();
-      }).thenNow((text) -> {
-        // Ignore the callback since in Android, we just return a dummy result immediately
-        // and just manually refresh the file list from native later on
-//        callback.call();
-        return null;
-      });
-//    Main.jsShowFileChooser(null, false, (name, result) -> {
-//      if (pathPrefix.endsWith("/")) pathPrefix.substring(0, pathPrefix.length() - 1);
-//      insertFile(pathPrefix + "/" + name, (ArrayBuffer)result, callback);
-//    });
+    Main.jsShowFileChooser(null, false, (name, result) -> {
+      if (pathPrefix.endsWith("/")) pathPrefix.substring(0, pathPrefix.length() - 1);
+      insertFile(pathPrefix + "/" + name, (ArrayBuffer)result, callback);
+    });
   }
 
   @Override
@@ -99,10 +82,7 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
   @Override
   public void insertFile(String path, ArrayBuffer data, EmptyCallback callback)
   {
-    fileWriter.writeFile(path, data).thenNow((val) -> {
-      callback.call();
-      return null;
-    });
+    throw new IllegalArgumentException("File insertion not implemented yet");
 //    FileInfo newFile = new FileInfo();
 //    newFile.path = path;
 //    newFile.fileData = data;
@@ -117,7 +97,7 @@ public class ExtraFilesManagerFileSystemAccessApi implements ExtraFilesManager
 //    callback.call();
   }
   
-  /** Gets the FileSystemHandle of the document/direcctory that represents a certain path
+  /** Gets the FileSystemHandle of the document/directory that represents a certain path
    * inside a project. Returns null if the path could not be traversed.
    */
   WebHelpers.Promise<WebHelpers.FileSystemHandle> getProjectPathHandle(String path)
