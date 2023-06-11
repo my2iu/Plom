@@ -329,16 +329,21 @@ public class SimpleInterpreter
           });
   }
 
-  @JsFunction
-  public static interface ErrorLogger
+  @JsType
+  public static abstract class ErrorLogger
   {
-    public void error(Object errObj);
+    public abstract void error(Object errObj);
   }
 
   public SimpleInterpreter setErrorLogger(ErrorLogger errorLogger)
   {
     this.errorLogger = errorLogger;
     return this;
+  }
+  
+  public ErrorLogger getErrorLogger()
+  {
+    return errorLogger;
   }
   
   public void continueRun()

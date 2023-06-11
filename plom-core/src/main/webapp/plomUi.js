@@ -375,15 +375,18 @@ function setupPlomUi() {
 	}
 	function doRun(main)
 	{
-		var errorLogger = main.createErrorLoggerForConsole(document.querySelector('.console'));
 		main.saveCodeToRepository();
+		var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
+
     	// Find code to run
     	var fd = main.repository.getFunctionDescription("main");
     	if (fd == null)
     	{
-			errorLogger(new RunException("No main function"));
+			errorLogger.error(new RunException("No main function"));
 			return;
 		}
+
+		// Run it
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
 		terp.setErrorLogger(errorLogger);
 		try {
@@ -397,21 +400,22 @@ function setupPlomUi() {
 		catch (err)
 		{
 			console.log(err);
-			errorLogger(err);
+			errorLogger.error(err);
 		}
 	}
 	function runPlomStandalone(main)
 	{
-		var errorLogger = (err) => {console.log(err);} // Ignore the error
-		//var errorLogger = main.createErrorLoggerForConsole(document.querySelector('.console'));
-		//main.saveCodeToRepository();
+		var errorLogger = main.createErrorLoggerForConsole();
+
     	// Find code to run
     	var fd = main.repository.getFunctionDescription("main");
     	if (fd == null)
     	{
-			errorLogger(new RunException("No main function"));
+			errorLogger.error(new RunException("No main function"));
 			return;
 		}
+
+		// Run it
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
 		terp.setErrorLogger(errorLogger);
 		try {
@@ -425,7 +429,7 @@ function setupPlomUi() {
 		catch (err)
 		{
 			console.log(err);
-			errorLogger(err);
+			errorLogger.error(err);
 		}
 	}
 	function loadCodeStringIntoRepository(code, repository)
@@ -472,7 +476,6 @@ function setupPlomUi() {
 		var saveLink = document.createElement("a");
 		try {
 			main.getModuleWithFilesAsString().then((str) => {
-			//main.getModuleAsJsonPString().then((str) => { str = "\ufeff" + str; // Insert BOM at the beginning to label it as UTF-8
 				var blob = new Blob([str], {type:"text/plain"});
 				saveLink.href = URL.createObjectURL(blob);
 				saveLink.download = "program.plom";
@@ -618,7 +621,7 @@ function setupPlomUi() {
 						data: buf
 					}, [buf]));
 			} else if (evt.data.path == 'main.plom.js') {
-				main.getModuleAsJsonPString().then((str) => {
+				main.getModuleAsJsonPString(true).then((str) => {
 					// Insert BOM at the beginning to label it as UTF-8 
 					str = "\ufeff" + str; 
 					localServerServiceWorker.postMessage({
@@ -675,7 +678,7 @@ function setupPlomUi() {
 			// but we'll do it here in JavaScript for convenience for now,
 			// though this may be slow on Android with the need to push all
 			// the code from JS to native)
-			main.getModuleAsJsonPString().then((str) => {
+			main.getModuleAsJsonPString(true).then((str) => {
 				// Insert BOM at the beginning to label it as UTF-8 
 				str = "\ufeff" + str; 
 				

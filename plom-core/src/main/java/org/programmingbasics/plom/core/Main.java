@@ -116,6 +116,14 @@ public class Main
   FunctionDescription currentMethodBeingViewed = null;
 //  private ErrorLogger errorLogger = createErrorLoggerForConsole(Browser.getDocument().querySelector(".console"));
 
+  /**
+   * This flag tells the Plom engine that it is running from a virtual 
+   * web server, and there is a debugger environment available that can
+   * be used to send debug messages and control messages back to the
+   * main IDE. 
+   */
+  public boolean debuggerEnvironmentAvailableFlag = false;
+  
   /** The File System Access API uses async iterators, and GWT doesn't
    * work well with async iterators, so to work with them, we need some
    * external JS code to be injected in
@@ -123,46 +131,58 @@ public class Main
   static WebHelpers.AsyncIteratorCollector asyncIteratorToArray;
   public static void setAsyncIteratorToArray(WebHelpers.AsyncIteratorCollector fn) { asyncIteratorToArray = fn; }
   
-  
-  public ErrorLogger createErrorLoggerForConsole(Element consoleEl)
+  public ErrorLogger createErrorLoggerForConsole()
   {
-    return (err) -> {
-      Document doc = Browser.getDocument();
-      consoleEl.setInnerHTML("");
-      DivElement msg = doc.createDivElement();
-      if (err instanceof ParseException)
+    return new ErrorLogger() {
+      @Override public void error(Object err)
       {
-        ParseException parseErr = (ParseException)err;
-        int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
-        if (lineNo == 0)
-          msg.setTextContent("Syntax Error");
+        Browser.getWindow().getConsole().log(err);
+      }  
+    };
+  }
+  
+  public ErrorLogger createErrorLoggerForDiv(Element consoleEl)
+  {
+    return new ErrorLogger() {
+      @Override public void error(Object err)
+      {
+        Document doc = Browser.getDocument();
+        consoleEl.setInnerHTML("");
+        DivElement msg = doc.createDivElement();
+        if (err instanceof ParseException)
+        {
+          ParseException parseErr = (ParseException)err;
+          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
+          if (lineNo == 0)
+            msg.setTextContent("Syntax Error");
+          else
+            msg.setTextContent("Syntax Error (line " + lineNo + ")");
+        }
+        else if (err instanceof RunException)
+        {
+          RunException runErr = (RunException)err;
+          Token errTok = runErr.getErrorTokenSource();
+          int lineNo = 0;
+          String errString = "Run Error";
+          if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
+            errString = runErr.getMessage();
+          if (errTok != null) 
+            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
+          if (lineNo == 0)
+            msg.setTextContent(errString);
+          else
+            msg.setTextContent(errString + " (line " + lineNo + ")");
+        }
+        else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
+        {
+          msg.setTextContent(((Throwable)err).getMessage());
+        }
         else
-          msg.setTextContent("Syntax Error (line " + lineNo + ")");
-      }
-      else if (err instanceof RunException)
-      {
-        RunException runErr = (RunException)err;
-        Token errTok = runErr.getErrorTokenSource();
-        int lineNo = 0;
-        String errString = "Run Error";
-        if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
-          errString = runErr.getMessage();
-        if (errTok != null) 
-          lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
-        if (lineNo == 0)
-          msg.setTextContent(errString);
-        else
-          msg.setTextContent(errString + " (line " + lineNo + ")");
-      }
-      else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
-      {
-        msg.setTextContent(((Throwable)err).getMessage());
-      }
-      else
-      {
-        msg.setTextContent(err.toString());
-      }
-      consoleEl.appendChild(msg);
+        {
+          msg.setTextContent(err.toString());
+        }
+        consoleEl.appendChild(msg);
+      }  
     };
   }
 
@@ -327,7 +347,7 @@ public class Main
   }
   
   /** Packages up code in a single .js file that's suitable for running in a web browser */
-  public WebHelpers.Promise<String> getModuleAsJsonPString() throws IOException
+  public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment) throws IOException
   {
     // Get module contents as a string
     StringBuilder out = new StringBuilder();
@@ -335,6 +355,7 @@ public class Main
     
     // Wrap string in js
     return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((main) => {\n"
+        + (withDebugEnvironment ? "main.debuggerEnvironmentAvailableFlag = true;\n" : "")
         + "var code = `" + PlomTextWriter.escapeTemplateLiteral(out.toString()) + "`;\n"
         + "var skipPromise = loadCodeStringIntoRepository(code, main.repository);\n"
         + "return main;\n"
@@ -444,7 +465,7 @@ public class Main
     
     // Main Plom code
     try {
-      zip.filePromiseString("main.plom.js", getModuleAsJsonPString());
+      zip.filePromiseString("main.plom.js", getModuleAsJsonPString(false));
           // Insert BOM at the beginning to label it as UTF-8 
 //          .thenNow(str -> "\ufeff" + str));
           // Actually, the BOM is not appreciated by some browsers when served from some servers
