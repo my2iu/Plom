@@ -18,6 +18,7 @@ import elemental.html.Uint8Array;
 import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
 import elemental.util.ArrayOfString;
+import elemental.util.Indexable;
 import elemental.util.SettableInt;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsMethod;
@@ -488,6 +489,17 @@ public class WebHelpers
       reader.readAsArrayBuffer(file);
     }); 
     return done;
+  }
+
+  @JsType(isNative = true)
+  public static interface FixedMessagePort
+  {
+    // The elemental MessagePort has the incorrect method signature
+    // for postMessage, so we need an alternate interface
+    void postMessage(Object message);
+    void postMessage(Object message, Indexable transferList);
+    void close();
+    void start();
   }
 
 }

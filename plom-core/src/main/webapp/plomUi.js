@@ -407,9 +407,9 @@ function setupPlomUi() {
 	{
 		var errorLogger;
 		if (main.debuggerEnvironmentAvailableFlag) {
-			errorLogger = main.createErrorLoggerForConsole();
 			var debuggerEnv = main.createDebuggerEnvironment();
 			debuggerEnv.startConnection();
+			errorLogger = debuggerEnv.getErrorLogger();
 		} else {
 			errorLogger = main.createErrorLoggerForConsole();
 		}
@@ -536,7 +536,7 @@ function setupPlomUi() {
 					var webViewDiv = document.querySelector('.runWebView');
 					webViewDiv.style.display = 'flex';
 					var iframe = webViewDiv.querySelector('iframe'); 
-					var debugConnection = main.makeDebuggerConnection(iframe);
+					var debugConnection = main.makeDebuggerConnection(iframe, webViewDiv.querySelector('.runWebViewConsoleLog'));
 					debugConnection.startConnection(); 
 					iframe.src = 'test' + localServerId + '/index.html';
 				});
@@ -698,7 +698,7 @@ function setupPlomUi() {
 				var webViewDiv = document.querySelector('.runWebView');
 				webViewDiv.style.display = 'flex';
 				var iframe = webViewDiv.querySelector('iframe'); 
-				var debugConnection = main.makeDebuggerConnection(iframe);
+				var debugConnection = main.makeDebuggerConnection(iframe, webViewDiv.querySelector('.runWebViewConsoleLog'));
 				debugConnection.startConnection(); 
 				iframe.src = virtualServerAddr + 'test' + localServerId + '/index.html';
 			});

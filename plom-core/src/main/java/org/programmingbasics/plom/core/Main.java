@@ -216,9 +216,9 @@ public class Main
    * given iframe (the iframe should be pointing to the specified
    * URL)
    */
-  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl)
+  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl, Element consoleDiv)
   {
-    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl);
+    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl, consoleDiv);
   }
   
 //  public ErrorLogger getErrorLogger()

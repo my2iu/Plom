@@ -3,10 +3,12 @@ package org.programmingbasics.plom.core;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.client.Browser;
+import elemental.dom.Element;
 import elemental.events.EventRemover;
 import elemental.events.MessageChannel;
 import elemental.events.MessageEvent;
 import elemental.events.MessagePort;
+import elemental.html.DivElement;
 import elemental.html.IFrameElement;
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -33,9 +35,10 @@ public abstract class DebuggerConnection
    */
   public static class ServiceWorkerDebuggerConnection extends DebuggerConnection
   {
-    ServiceWorkerDebuggerConnection(IFrameElement iframe)
+    ServiceWorkerDebuggerConnection(IFrameElement iframe, Element consoleDiv)
     {
       this.iframe = iframe;
+      this.consoleDiv = consoleDiv;
 //      this.targetUrl = targetUrl;
 //      this.targetUrl = "*";
     }
@@ -43,7 +46,9 @@ public abstract class DebuggerConnection
     IFrameElement iframe;
 //    String targetUrl;
     
-    MessagePort connectionPort;
+    Element consoleDiv;
+    
+    WebHelpers.FixedMessagePort connectionPort;
     
     // Listens for the initial connection from the Plom window/debugger.
     // Once the connection is made, we no longer need the listener, so
@@ -68,18 +73,47 @@ public abstract class DebuggerConnection
         if (!msgObj.hasKey("type")) return;
         if (!DebuggerEnvironment.INITIAL_ESTABLISH_CONNECTION_STRING.equals(msgObj.getString("type"))) return;
         if (m.getPorts().length() < 1) return;
-        connectionPort = (MessagePort)m.getPorts().at(0);
         m.preventDefault();
         Browser.getWindow().getConsole().log("Established");
+
+        // No longer need to listen for connection messages from the debugger
         if (windowMessageListener != null)
         {
           windowMessageListener.remove();
           windowMessageListener = null;
         }
+        
+        // Add a listener to the message channel port to the debugger
+        connectionPort = (WebHelpers.FixedMessagePort)m.getPorts().at(0);
+        listenMessageChannelPort((MessagePort)m.getPorts().at(0));
+        
+        // TODO: Send all breakpoints and other debug commands to the Plom program
+        // TODO: Send a "RUN" message to the Plom program to get it to start running
       }, false);
 
     }
 
+    private void listenMessageChannelPort(MessagePort port)
+    {
+      port.addEventListener("message", evt -> {
+        MessageEvent mevt = (MessageEvent)evt;
+        JsonObject msgObj = (JsonObject)mevt.getData();
+
+        switch (msgObj.getString("type"))
+        {
+          case DebuggerEnvironment.MESSAGE_TYPE_LOG:
+          {
+            String msg = msgObj.getString("msg");
+            logToConsole(msg);
+            break;
+            
+          }
+        }
+
+      }, false);
+      connectionPort.start();
+    }
+    
     @Override public void close()
     {
       if (windowMessageListener != null)
@@ -87,7 +121,18 @@ public abstract class DebuggerConnection
         windowMessageListener.remove();
         windowMessageListener = null;
       }
+      if (connectionPort != null)
+      {
+        connectionPort.close();
+        connectionPort = null;
+      }
     }
     
+    void logToConsole(String msg)
+    {
+      DivElement msgDiv = Browser.getDocument().createDivElement();
+      msgDiv.setTextContent(msg);
+      consoleDiv.appendChild(msgDiv);
+    }
   }
 }
