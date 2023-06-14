@@ -536,10 +536,9 @@ function setupPlomUi() {
 					var webViewDiv = document.querySelector('.runWebView');
 					webViewDiv.style.display = 'flex';
 					var iframe = webViewDiv.querySelector('iframe'); 
+					var debugConnection = main.makeDebuggerConnection(iframe);
+					debugConnection.startConnection(); 
 					iframe.src = 'test' + localServerId + '/index.html';
-					var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
-					debugConnection.connect(); 
-					
 				});
 			})
 			.catch((e) => {
@@ -606,10 +605,6 @@ function setupPlomUi() {
 //					data: dataToSend.buffer
 //				}, [dataToSend.buffer]);
 			} else if (evt.data.path == 'plomdirect.js') {
-					var iframe = document.querySelector('iframe'); 
-								var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
-					debugConnection.connect(); 
-			
 				var plomdirectLoc;
 				if (!!document.querySelector('iframe#plomcore')) {
 					plomdirectLoc = document.querySelector('iframe#plomcore').contentDocument.querySelector('script').src;
@@ -636,7 +631,7 @@ function setupPlomUi() {
 						data: buf
 					}, [buf]));
 			} else if (evt.data.path == 'main.plom.js') {
-				main.getModuleAsJsonPString(true).then((str) => {
+				main.getModuleAsJsonPString(true, window.location.origin).then((str) => {
 					// Insert BOM at the beginning to label it as UTF-8 
 					str = "\ufeff" + str; 
 					localServerServiceWorker.postMessage({
@@ -693,7 +688,7 @@ function setupPlomUi() {
 			// but we'll do it here in JavaScript for convenience for now,
 			// though this may be slow on Android with the need to push all
 			// the code from JS to native)
-			main.getModuleAsJsonPString(true).then((str) => {
+			main.getModuleAsJsonPString(true, window.location.origin).then((str) => {
 				// Insert BOM at the beginning to label it as UTF-8 
 				str = "\ufeff" + str; 
 				
@@ -703,9 +698,9 @@ function setupPlomUi() {
 				var webViewDiv = document.querySelector('.runWebView');
 				webViewDiv.style.display = 'flex';
 				var iframe = webViewDiv.querySelector('iframe'); 
+				var debugConnection = main.makeDebuggerConnection(iframe);
+				debugConnection.startConnection(); 
 				iframe.src = virtualServerAddr + 'test' + localServerId + '/index.html';
-				var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
-				debugConnection.connect(); 
 			});
 			
 			

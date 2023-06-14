@@ -124,6 +124,13 @@ public class Main
    */
   public boolean debuggerEnvironmentAvailableFlag = false;
   
+  /**
+   * The url of the parent window of the Plom program. This parent
+   * window holds the IDE that the debugger will try to connect
+   * to
+   */
+  public String debuggerIdeParentWindowOrigin;
+  
   /** The File System Access API uses async iterators, and GWT doesn't
    * work well with async iterators, so to work with them, we need some
    * external JS code to be injected in
@@ -201,7 +208,7 @@ public class Main
     {
       // Running from a service worker
     }
-    return new DebuggerEnvironment.ServiceWorkerDebuggerEnvironment();
+    return new DebuggerEnvironment.ServiceWorkerDebuggerEnvironment(debuggerIdeParentWindowOrigin);
   }
   
   /**
@@ -209,9 +216,9 @@ public class Main
    * given iframe (the iframe should be pointing to the specified
    * URL)
    */
-  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl, String targetUrl)
+  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl)
   {
-    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl, targetUrl);
+    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl);
   }
   
 //  public ErrorLogger getErrorLogger()
@@ -375,7 +382,7 @@ public class Main
   }
   
   /** Packages up code in a single .js file that's suitable for running in a web browser */
-  public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment) throws IOException
+  public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment, String debuggerTargetOriginUrl) throws IOException
   {
     // Get module contents as a string
     StringBuilder out = new StringBuilder();
@@ -383,7 +390,7 @@ public class Main
     
     // Wrap string in js
     return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((main) => {\n"
-        + (withDebugEnvironment ? "main.debuggerEnvironmentAvailableFlag = true;\n" : "")
+        + (withDebugEnvironment ? "main.debuggerEnvironmentAvailableFlag = true;\nmain.debuggerIdeParentWindowOrigin = '" + debuggerTargetOriginUrl + "';\n" : "")
         + "var code = `" + PlomTextWriter.escapeTemplateLiteral(out.toString()) + "`;\n"
         + "var skipPromise = loadCodeStringIntoRepository(code, main.repository);\n"
         + "return main;\n"
@@ -493,7 +500,7 @@ public class Main
     
     // Main Plom code
     try {
-      zip.filePromiseString("main.plom.js", getModuleAsJsonPString(false));
+      zip.filePromiseString("main.plom.js", getModuleAsJsonPString(false, null));
           // Insert BOM at the beginning to label it as UTF-8 
 //          .thenNow(str -> "\ufeff" + str));
           // Actually, the BOM is not appreciated by some browsers when served from some servers
