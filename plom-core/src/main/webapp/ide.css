@@ -396,6 +396,20 @@ a.breadcrumb-item:visited {
 .console {
 }
 
+.runWebView {
+}
+
+.runWebView .runWebViewConsoleLog:empty {
+	display: none;
+}
+
+.runWebView .runWebViewConsoleLog {
+	max-height: max(5em, 20vh);
+	border-bottom: 1px dotted black;
+	background-color; #fffef9;
+	overflow: auto;
+}
+
 a.runbutton {
 	
 }

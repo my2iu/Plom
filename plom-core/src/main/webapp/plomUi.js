@@ -405,7 +405,14 @@ function setupPlomUi() {
 	}
 	function runPlomStandalone(main)
 	{
-		var errorLogger = main.createErrorLoggerForConsole();
+		var errorLogger;
+		if (main.debuggerEnvironmentAvailableFlag) {
+			errorLogger = main.createErrorLoggerForConsole();
+			var debuggerEnv = main.createDebuggerEnvironment();
+			debuggerEnv.startConnection();
+		} else {
+			errorLogger = main.createErrorLoggerForConsole();
+		}
 
     	// Find code to run
     	var fd = main.repository.getFunctionDescription("main");
@@ -528,7 +535,11 @@ function setupPlomUi() {
 					// Show the web view and point it to the running program
 					var webViewDiv = document.querySelector('.runWebView');
 					webViewDiv.style.display = 'flex';
-					webViewDiv.querySelector('iframe').src = 'test' + localServerId + '/index.html';
+					var iframe = webViewDiv.querySelector('iframe'); 
+					iframe.src = 'test' + localServerId + '/index.html';
+					var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
+					debugConnection.connect(); 
+					
 				});
 			})
 			.catch((e) => {
@@ -595,6 +606,10 @@ function setupPlomUi() {
 //					data: dataToSend.buffer
 //				}, [dataToSend.buffer]);
 			} else if (evt.data.path == 'plomdirect.js') {
+					var iframe = document.querySelector('iframe'); 
+								var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
+					debugConnection.connect(); 
+			
 				var plomdirectLoc;
 				if (!!document.querySelector('iframe#plomcore')) {
 					plomdirectLoc = document.querySelector('iframe#plomcore').contentDocument.querySelector('script').src;
@@ -687,7 +702,10 @@ function setupPlomUi() {
 				// Show the web view and point it to the running program
 				var webViewDiv = document.querySelector('.runWebView');
 				webViewDiv.style.display = 'flex';
-				webViewDiv.querySelector('iframe').src = virtualServerAddr + 'test' + localServerId + '/index.html';
+				var iframe = webViewDiv.querySelector('iframe'); 
+				iframe.src = virtualServerAddr + 'test' + localServerId + '/index.html';
+				var debugConnection = main.makeDebuggerConnection(iframe, iframe.src);
+				debugConnection.connect(); 
 			});
 			
 			

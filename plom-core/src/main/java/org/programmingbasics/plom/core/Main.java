@@ -186,6 +186,34 @@ public class Main
     };
   }
 
+  public DebuggerEnvironment createDebuggerEnvironment()
+  {
+    if (Browser.getWindow().getLocation().getProtocol().startsWith("plomrun")) 
+    {
+      // Running as an iOS app in the WKWebView
+    }
+    else if (Browser.getWindow().getLocation().getProtocol().startsWith("http")
+        && Browser.getWindow().getLocation().getHost().equals("webviewbridge.plom.dev"))
+    {
+      // Running as an Android app in the Android web view
+    }
+    else
+    {
+      // Running from a service worker
+    }
+    return new DebuggerEnvironment.ServiceWorkerDebuggerEnvironment();
+  }
+  
+  /**
+   * Sets up a debug connection to the Plom program running in the
+   * given iframe (the iframe should be pointing to the specified
+   * URL)
+   */
+  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl, String targetUrl)
+  {
+    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl, targetUrl);
+  }
+  
 //  public ErrorLogger getErrorLogger()
 //  {
 //    return errorLogger;
