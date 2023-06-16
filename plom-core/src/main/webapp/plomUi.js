@@ -535,8 +535,10 @@ function setupPlomUi() {
 					// Show the web view and point it to the running program
 					var webViewDiv = document.querySelector('.runWebView');
 					webViewDiv.style.display = 'flex';
-					var iframe = webViewDiv.querySelector('iframe'); 
-					var debugConnection = main.makeDebuggerConnection(iframe, webViewDiv.querySelector('.runWebViewConsoleLog'));
+					var iframe = webViewDiv.querySelector('iframe');
+					var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
+					consoleDiv.innerHTML = '';
+					var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv);
 					debugConnection.startConnection(); 
 					iframe.src = 'test' + localServerId + '/index.html';
 				});
@@ -698,7 +700,9 @@ function setupPlomUi() {
 				var webViewDiv = document.querySelector('.runWebView');
 				webViewDiv.style.display = 'flex';
 				var iframe = webViewDiv.querySelector('iframe'); 
-				var debugConnection = main.makeDebuggerConnection(iframe, webViewDiv.querySelector('.runWebViewConsoleLog'));
+				var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
+				consoleDiv.innerHTML = '';
+				var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv);
 				debugConnection.startConnection(); 
 				iframe.src = virtualServerAddr + 'test' + localServerId + '/index.html';
 			});

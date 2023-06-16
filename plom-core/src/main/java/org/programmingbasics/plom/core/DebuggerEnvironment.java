@@ -63,6 +63,17 @@ public abstract class DebuggerEnvironment
           port.postMessage(msg);
         }
       }
+      @Override public void log(Object value)
+      {
+        Browser.getWindow().getConsole().log(value);
+        if (port != null)
+        {
+          JsonObject msg = Json.createObject();
+          msg.put("type", MESSAGE_TYPE_LOG);
+          msg.put("msg", value.toString());
+          port.postMessage(msg);
+        }
+      }
 
     };
     

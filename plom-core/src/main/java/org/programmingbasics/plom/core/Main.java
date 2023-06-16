@@ -144,7 +144,11 @@ public class Main
       @Override public void error(Object err)
       {
         Browser.getWindow().getConsole().log(err);
-      }  
+      }
+      @Override public void log(Object value)
+      {
+        Browser.getWindow().getConsole().log(value);
+      }
     };
   }
   
@@ -153,17 +157,15 @@ public class Main
     return new ErrorLogger() {
       @Override public void error(Object err)
       {
-        Document doc = Browser.getDocument();
-        consoleEl.setInnerHTML("");
-        DivElement msg = doc.createDivElement();
+        String msgString;
         if (err instanceof ParseException)
         {
           ParseException parseErr = (ParseException)err;
           int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
           if (lineNo == 0)
-            msg.setTextContent("Syntax Error");
+            msgString = "Syntax Error";
           else
-            msg.setTextContent("Syntax Error (line " + lineNo + ")");
+            msgString = "Syntax Error (line " + lineNo + ")";
         }
         else if (err instanceof RunException)
         {
@@ -176,20 +178,28 @@ public class Main
           if (errTok != null) 
             lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
           if (lineNo == 0)
-            msg.setTextContent(errString);
+            msgString = errString;
           else
-            msg.setTextContent(errString + " (line " + lineNo + ")");
+            msgString = errString + " (line " + lineNo + ")";
         }
         else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
         {
-          msg.setTextContent(((Throwable)err).getMessage());
+          msgString = ((Throwable)err).getMessage();
         }
         else
         {
-          msg.setTextContent(err.toString());
+          msgString = err.toString();
         }
+        log(msgString);
+      }
+      @Override public void log(Object value)
+      {
+        Document doc = Browser.getDocument();
+        consoleEl.setInnerHTML("");
+        DivElement msg = doc.createDivElement();
+        msg.setTextContent(value.toString());
         consoleEl.appendChild(msg);
-      }  
+      }
     };
   }
 

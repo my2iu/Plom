@@ -465,6 +465,13 @@ public class StandardLibrary
             doc.getBody().appendChild(container);
             container.querySelector("input").focus();
           });
+      
+      coreTypes.addPrimitive(CodeUnitLocation.forFunction("log string:"), 
+          (blockWait, machine) -> {
+            machine.getErrorLogger().log(machine.currentScope().lookup("value").getStringValue());
+            blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
+          });
+
     }
   }
 

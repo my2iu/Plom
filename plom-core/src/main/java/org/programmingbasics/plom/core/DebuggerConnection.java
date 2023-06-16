@@ -74,7 +74,6 @@ public abstract class DebuggerConnection
         if (!DebuggerEnvironment.INITIAL_ESTABLISH_CONNECTION_STRING.equals(msgObj.getString("type"))) return;
         if (m.getPorts().length() < 1) return;
         m.preventDefault();
-        Browser.getWindow().getConsole().log("Established");
 
         // No longer need to listen for connection messages from the debugger
         if (windowMessageListener != null)

@@ -15,6 +15,14 @@
  // Prints a value to the screen
  . {print string: { . {value } . {to string } } }
  }
+ function . {log: { . {value } @ {object } } } { @ {void } } { } {
+ // Writes a value into the debug log
+ . {log string: { . {value } . {to string } } }
+ }
+ function . {log string: { . {value } @ {string } } } { @ {void } } { } {
+ // Writes a string into the debug log
+ primitive
+ }
  function . {range from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {number iterator } } { } {
  return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
  }

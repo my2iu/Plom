@@ -7,6 +7,14 @@
  // Displays a prompt asking for input and returns the value entered by the user
  primitive
  }
+ function . {log string: { . {value } @ {string } } } { @ {void } } { } {
+ // Writes a string into the debug log
+ primitive
+ }
+ function . {log: { . {value } @ {object } } } { @ {void } } { } {
+ // Writes a value into the debug log
+ . {log string: { . {value } . {to string } } }
+ }
  function . {print string: { . {value } @ {string } } } { @ {void } } { } {
  // Prints a string to the screen
  primitive

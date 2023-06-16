@@ -333,8 +333,15 @@ public class SimpleInterpreter
   public static abstract class ErrorLogger
   {
     public abstract void error(Object errObj);
+    public abstract void log(Object value);
   }
 
+  public static class NullErrorLogger extends ErrorLogger
+  {
+    @Override public void error(Object errObj) {}
+    @Override public void log(Object value) {}
+  }
+  
   public SimpleInterpreter setErrorLogger(ErrorLogger errorLogger)
   {
     this.errorLogger = errorLogger;
@@ -362,6 +369,7 @@ public class SimpleInterpreter
   {
     try {
       ctx = new MachineContext();
+      ctx.setErrorLogger(getErrorLogger());
       if (globalConfigurator != null)
         globalConfigurator.configure(ctx.getGlobalScope(), ctx.coreTypes());
       if (parsedCode == null)
@@ -406,6 +414,7 @@ public class SimpleInterpreter
       SimpleInterpreter terp = new SimpleInterpreter(null);
       // Reuse the global scope from the context where the lambda was created
       terp.ctx = MachineContext.fromOutsideContext(oldCtx.coreTypes(), oldCtx.getGlobalScope());
+      terp.ctx.setErrorLogger(terp.getErrorLogger());
       
       // Set up arguments
       ExecutableFunction fn = lambda.toExecutableFunction();

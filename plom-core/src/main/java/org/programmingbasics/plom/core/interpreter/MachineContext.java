@@ -49,6 +49,21 @@ public class MachineContext
   }
   
   /**
+   * I need a central place to store the object for tracking errors.
+   * I'm not sure if this is the best place (perhaps the global scope
+   * would be better or even have it be stored in Plom as part of the
+   * runtime), but I'll store it here for now
+   */
+  SimpleInterpreter.ErrorLogger errorLogger = new SimpleInterpreter.NullErrorLogger();
+  
+  /**
+   * Object for logging errors and other debug information of a running
+   * Plom program
+   */
+  public SimpleInterpreter.ErrorLogger getErrorLogger() { return errorLogger; }
+  public void setErrorLogger(SimpleInterpreter.ErrorLogger errLog) { errorLogger = errLog; } 
+  
+  /**
    * In some cases, we already have a global scope from another
    * context, and we can just reuse the same one instead of 
    * configuring an entirely new one (used primarily when we
