@@ -13,7 +13,6 @@ import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 
 import elemental.util.ArrayOf;
-import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 /**
@@ -333,13 +332,38 @@ public class SimpleInterpreter
   public static abstract class ErrorLogger
   {
     public abstract void error(Object errObj);
-    public abstract void log(Object value);
+    public abstract void debugLog(Object value);
+    public abstract void log(String msg, LogLevel logLevel, ProgramCodeLocation location);
+    
+    public static LogLevel DEBUG = LogLevel.DEBUG;
+    public static LogLevel WARN = LogLevel.WARN;
+    public static LogLevel ERROR = LogLevel.ERROR;
+    
+  }
+  
+  @JsType
+  public static enum LogLevel
+  {
+    DEBUG(0), WARN(1), ERROR(2);
+    private int level;
+    LogLevel(int level) { this.level = level; }
+    public int getLevel() { return level; }
+    public static LogLevel from(int val)
+    {
+      for (LogLevel level: values())
+      {
+        if (level.level == val)
+          return level;
+      }
+      return DEBUG;
+    }
   }
 
   public static class NullErrorLogger extends ErrorLogger
   {
     @Override public void error(Object errObj) {}
-    @Override public void log(Object value) {}
+    @Override public void debugLog(Object value) {}
+    @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location) {}
   }
   
   public SimpleInterpreter setErrorLogger(ErrorLogger errorLogger)

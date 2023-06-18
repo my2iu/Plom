@@ -123,4 +123,10 @@ public class CodePosition
     toReturn += "]";
     return toReturn;
   }
+  public CodePosition clone()
+  {
+    CodePosition pos = new CodePosition();
+    pos.offsets = new ArrayList<>(offsets);
+    return pos;
+  }
 }

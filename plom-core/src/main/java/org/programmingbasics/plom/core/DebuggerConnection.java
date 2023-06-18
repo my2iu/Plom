@@ -1,5 +1,9 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
+import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.LogLevel;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.client.Browser;
@@ -11,6 +15,7 @@ import elemental.events.MessagePort;
 import elemental.html.DivElement;
 import elemental.html.IFrameElement;
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
@@ -103,7 +108,25 @@ public abstract class DebuggerConnection
           case DebuggerEnvironment.MESSAGE_TYPE_LOG:
           {
             String msg = msgObj.getString("msg");
-            logToConsole(msg);
+            LogLevel logLevel = LogLevel.from((int)msgObj.getNumber("level"));
+            // Read out code position if it's included
+            String className = msgObj.getString("class");
+            String methodName = msgObj.getString("method");
+            boolean isStatic = msgObj.getBoolean("static");
+            CodePosition pos = null;
+            JsonArray posJson = msgObj.getArray("pos");
+            if (posJson != null)
+            {
+              int [] posArray = new int[posJson.length()];
+              for (int n = 0; n < posArray.length; n++)
+                posArray[n] = (int)posJson.getNumber(n);
+              pos = CodePosition.fromOffsets(posArray);
+            }
+            ProgramCodeLocation location = null;
+            if (className != null || methodName != null || pos != null)
+              location = new ProgramCodeLocation(className, methodName, isStatic, pos);
+            // Send the message to the screen
+            logToConsole(msg, logLevel, location);
             break;
             
           }
@@ -127,7 +150,7 @@ public abstract class DebuggerConnection
       }
     }
     
-    void logToConsole(String msg)
+    void logToConsole(String msg, LogLevel logLevel, ProgramCodeLocation codeLocation)
     {
       DivElement msgDiv = Browser.getDocument().createDivElement();
       msgDiv.setTextContent(msg);

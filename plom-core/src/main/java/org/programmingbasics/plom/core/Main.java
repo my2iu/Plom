@@ -18,8 +18,10 @@ import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.LogLevel;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -32,8 +34,6 @@ import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
-import elemental.html.ArrayBuffer;
-import elemental.html.Blob;
 import elemental.html.DivElement;
 import elemental.html.FileReader;
 import elemental.html.IFrameElement;
@@ -41,10 +41,8 @@ import elemental.html.InputElement;
 import elemental.html.ScriptElement;
 import elemental.js.util.JsArrayOf;
 import elemental.js.util.JsArrayOfString;
-import elemental.json.Json;
 import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
@@ -145,9 +143,13 @@ public class Main
       {
         Browser.getWindow().getConsole().log(err);
       }
-      @Override public void log(Object value)
+      @Override public void debugLog(Object value)
       {
         Browser.getWindow().getConsole().log(value);
+      }
+      @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location)
+      {
+        Browser.getWindow().getConsole().log(msg);
       }
     };
   }
@@ -190,14 +192,18 @@ public class Main
         {
           msgString = err.toString();
         }
-        log(msgString);
+        debugLog(msgString);
       }
-      @Override public void log(Object value)
+      @Override public void debugLog(Object value)
+      {
+        log(value.toString(), DEBUG, null);
+      }
+      @Override public void log(String value, LogLevel logLevel, ProgramCodeLocation location)
       {
         Document doc = Browser.getDocument();
         consoleEl.setInnerHTML("");
         DivElement msg = doc.createDivElement();
-        msg.setTextContent(value.toString());
+        msg.setTextContent(value);
         consoleEl.appendChild(msg);
       }
     };

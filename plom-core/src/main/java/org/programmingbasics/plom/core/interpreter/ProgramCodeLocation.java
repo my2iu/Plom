@@ -23,6 +23,14 @@ public class ProgramCodeLocation
   /** Position within a function/method */
   CodePosition position;
   
+  public ProgramCodeLocation(String className, String functionMethodName, boolean isStatic, CodePosition pos)
+  {
+    this.className = className;
+    this.functionMethodName = functionMethodName;
+    this.isStatic = isStatic;
+    this.position = pos.clone();
+  }
+  
   public String getClassName()
   {
     return className;

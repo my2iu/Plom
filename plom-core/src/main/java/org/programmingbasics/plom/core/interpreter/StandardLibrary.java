@@ -468,7 +468,7 @@ public class StandardLibrary
       
       coreTypes.addPrimitive(CodeUnitLocation.forFunction("log string:"), 
           (blockWait, machine) -> {
-            machine.getErrorLogger().log(machine.currentScope().lookup("value").getStringValue());
+            machine.getErrorLogger().debugLog(machine.currentScope().lookup("value").getStringValue());
             blockWait.unblockAndReturn(Value.createVoidValue(machine.coreTypes()));
           });
 

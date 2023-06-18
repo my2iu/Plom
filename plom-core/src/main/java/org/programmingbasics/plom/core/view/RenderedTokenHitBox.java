@@ -3,14 +3,10 @@ package org.programmingbasics.plom.core.view;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.HitDetect.HitDetectParam;
-import org.programmingbasics.plom.core.view.HitDetect.TokenHitDetection;
-import org.programmingbasics.plom.core.view.HitDetect.TokenHitLocation;
-import org.programmingbasics.plom.core.view.HitDetect.TypeInternalHitDetection;
 
 /**
  * Returns a hitbox surrounding a token in the code (it might also

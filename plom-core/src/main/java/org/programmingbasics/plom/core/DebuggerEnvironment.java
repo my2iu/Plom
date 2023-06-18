@@ -1,18 +1,24 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.CodePosition;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.LogLevel;
 
 import elemental.client.Browser;
 import elemental.events.MessageChannel;
 import elemental.events.MessageEvent;
 import elemental.events.MessagePort;
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
 import elemental.util.Indexable;
 import jsinterop.annotations.JsType;
-import jsinterop.base.Js;
 
 /**
  * Keeps track of debugger stuff and interfaces with an IDE to exchange
@@ -52,18 +58,48 @@ public abstract class DebuggerEnvironment
 
     
     ErrorLogger errorLogger = new ErrorLogger() {
-      @Override public void error(Object errObj)
+      @Override public void error(Object err)
       {
-        Browser.getWindow().getConsole().log(errObj);
-        if (port != null)
+        String msgString;
+        if (err instanceof ParseException)
         {
-          JsonObject msg = Json.createObject();
-          msg.put("type", MESSAGE_TYPE_LOG);
-          msg.put("msg", errObj.toString());
-          port.postMessage(msg);
+          ParseException parseErr = (ParseException)err;
+//          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
+//          if (lineNo == 0)
+            msgString = "Syntax Error";
+//          else
+//            msgString = "Syntax Error (line " + lineNo + ")";
         }
+        else if (err instanceof RunException)
+        {
+          RunException runErr = (RunException)err;
+          Token errTok = runErr.getErrorTokenSource();
+          int lineNo = 0;
+          String errString = "Run Error";
+          if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
+            errString = runErr.getMessage();
+//          if (errTok != null) 
+//            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
+//          if (lineNo == 0)
+            msgString = errString;
+//          else
+//            msgString = errString + " (line " + lineNo + ")";
+        }
+        else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
+        {
+          msgString = ((Throwable)err).getMessage();
+        }
+        else
+        {
+          msgString = err.toString();
+        }
+        log(msgString, ERROR, null);
       }
-      @Override public void log(Object value)
+      @Override public void debugLog(Object value)
+      {
+        log(value.toString(), DEBUG, null);
+      }
+      @Override public void log(String value, LogLevel logLevel, ProgramCodeLocation location)
       {
         Browser.getWindow().getConsole().log(value);
         if (port != null)
@@ -71,10 +107,27 @@ public abstract class DebuggerEnvironment
           JsonObject msg = Json.createObject();
           msg.put("type", MESSAGE_TYPE_LOG);
           msg.put("msg", value.toString());
+          msg.put("level", logLevel.getLevel());
+          if (location != null)
+          {
+            if (location.getClassName() != null)
+              msg.put("class", location.getClassName());
+            if (location.getFunctionMethodName() != null)
+              msg.put("method", location.getFunctionMethodName());
+            if (location.getClassName() != null && location.getFunctionMethodName() != null)
+              msg.put("static", location.isStatic());
+            if (location.getPosition() != null)
+            {
+              CodePosition pos = location.getPosition();
+              JsonArray posArray = Json.createArray();
+              for (int n = 0; pos.getOffset(n) >= 0; n++)
+                posArray.set(n, pos.getOffset(n));
+              msg.put("pos", posArray);
+            }
+          }
           port.postMessage(msg);
         }
       }
-
     };
     
     WebHelpers.FixedMessagePort port;
