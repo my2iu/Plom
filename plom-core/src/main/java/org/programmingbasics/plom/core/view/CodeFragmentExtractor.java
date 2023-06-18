@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import java.io.IOException;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;

@@ -1,6 +1,6 @@
 package org.programmingbasics.plom.core;
 
-import org.programmingbasics.plom.core.view.CodePosition;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 
 import elemental.css.CSSStyleDeclaration.Display;

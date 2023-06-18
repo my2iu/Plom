@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import java.util.Collections;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.TokenWithSymbol;

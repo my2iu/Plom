@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.view;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;

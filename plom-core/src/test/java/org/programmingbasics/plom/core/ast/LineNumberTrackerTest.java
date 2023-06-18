@@ -3,7 +3,6 @@ package org.programmingbasics.plom.core.ast;
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.GetToken;
 
 import junit.framework.TestCase;

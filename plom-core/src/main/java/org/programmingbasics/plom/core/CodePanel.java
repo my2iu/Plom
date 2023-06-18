@@ -2,9 +2,9 @@ package org.programmingbasics.plom.core;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition;

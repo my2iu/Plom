@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
@@ -29,7 +30,6 @@ import org.programmingbasics.plom.core.suggestions.Suggester;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
-import org.programmingbasics.plom.core.view.CodePosition;
 import org.programmingbasics.plom.core.view.EraseLeft;
 import org.programmingbasics.plom.core.view.EraseSelection;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;

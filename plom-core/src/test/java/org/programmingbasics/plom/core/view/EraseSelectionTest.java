@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;

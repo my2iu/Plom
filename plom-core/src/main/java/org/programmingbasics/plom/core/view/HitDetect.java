@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.view;
 
 import java.util.ArrayList;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
