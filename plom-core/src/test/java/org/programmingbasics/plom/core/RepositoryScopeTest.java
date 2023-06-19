@@ -6,6 +6,9 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
@@ -16,6 +19,7 @@ import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
 import junit.framework.TestCase;
@@ -117,5 +121,45 @@ public class RepositoryScopeTest extends TestCase
     Assert.assertEquals("boolean", ((Type.LambdaFunctionType)fnTypeWithNames).returnType.name);
     Assert.assertEquals(1, ((Type.LambdaFunctionType)fnTypeWithNames).args.size());
     Assert.assertEquals("number", ((Type.LambdaFunctionType)fnTypeWithNames).args.get(0).name);
-  }  
+  }
+  
+  @Test
+  public void testBadFunctionSignature() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("3", Symbol.Number)))));
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(UnboundType.forClassLookupName("unknown type"), "bad return"),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("null", Symbol.NullLiteral)))));
+
+    // Run some code
+    try {
+      SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+          new TokenContainer(ParameterToken.fromContents(".get", Symbol.DotVariable)),
+          new TokenContainer(ParameterToken.fromContents(".bad return", Symbol.DotVariable))
+          ));
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      terp.runNoReturn(scopeConfig);
+    }
+    catch (RunException e)
+    {
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getPosition());
+      Assert.assertEquals("bad return", e.getErrorLocation().getFunctionMethodName());
+      Assert.fail("TODO: Store more specific error information and where the error occurred");
+      
+      return;
+    }
+    Assert.fail("Expecting error in function signature");
+  }
 }

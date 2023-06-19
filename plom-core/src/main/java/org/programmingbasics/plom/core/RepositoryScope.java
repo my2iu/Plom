@@ -17,6 +17,7 @@ import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
 import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
+import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -145,7 +146,13 @@ public class RepositoryScope extends VariableScope
     if (func != null)
     {
       Value val = new Value();
-      val.type = makeFunctionType(func);
+      try {
+        val.type = makeFunctionType(func);
+      } 
+      catch (RunException e)
+      {
+        throw new RunException("Function signature is invalid", e, ProgramCodeLocation.forFunction(name));
+      }
       
       AstNode code;
       try {

@@ -28,8 +28,14 @@ public class ProgramCodeLocation
     this.className = className;
     this.functionMethodName = functionMethodName;
     this.isStatic = isStatic;
-    this.position = pos.clone();
+    this.position = pos == null ? null : pos.clone();
   }
+
+  public static ProgramCodeLocation forFunction(String name)
+  {
+    return new ProgramCodeLocation(null, name, true, null);
+  }
+
   
   public String getClassName()
   {
@@ -50,5 +56,4 @@ public class ProgramCodeLocation
   {
     return position;
   }
-
 }

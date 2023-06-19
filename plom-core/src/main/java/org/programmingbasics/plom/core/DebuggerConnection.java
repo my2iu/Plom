@@ -12,6 +12,7 @@ import elemental.events.EventRemover;
 import elemental.events.MessageChannel;
 import elemental.events.MessageEvent;
 import elemental.events.MessagePort;
+import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.IFrameElement;
 import elemental.json.Json;
@@ -154,7 +155,18 @@ public abstract class DebuggerConnection
     {
       DivElement msgDiv = Browser.getDocument().createDivElement();
       msgDiv.setTextContent(msg);
-      consoleDiv.appendChild(msgDiv);
+      Element msgEl;
+      if (codeLocation != null)
+      {
+        AnchorElement a = (AnchorElement)Browser.getDocument().createElement("a");
+        a.appendChild(msgDiv);
+        a.appendChild(Browser.getDocument().createTextNode(" \u2192"));
+        a.setHref("javascript:void(0)");
+        msgEl = a;
+      }
+      else
+        msgEl = msgDiv;
+      consoleDiv.appendChild(msgEl);
     }
   }
 }

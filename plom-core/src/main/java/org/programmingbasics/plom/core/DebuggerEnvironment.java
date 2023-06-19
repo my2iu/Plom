@@ -66,7 +66,7 @@ public abstract class DebuggerEnvironment
           ParseException parseErr = (ParseException)err;
 //          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
 //          if (lineNo == 0)
-            msgString = "Syntax Error";
+            log("Syntax Error", ERROR, null);
 //          else
 //            msgString = "Syntax Error (line " + lineNo + ")";
         }
@@ -81,19 +81,18 @@ public abstract class DebuggerEnvironment
 //          if (errTok != null) 
 //            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
 //          if (lineNo == 0)
-            msgString = errString;
 //          else
 //            msgString = errString + " (line " + lineNo + ")";
+            log(errString, ERROR, runErr.getErrorLocation());
         }
         else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
         {
-          msgString = ((Throwable)err).getMessage();
+          log(((Throwable)err).getMessage(), ERROR, null);
         }
         else
         {
-          msgString = err.toString();
+          log(err.toString(), ERROR, null);
         }
-        log(msgString, ERROR, null);
       }
       @Override public void debugLog(Object value)
       {
