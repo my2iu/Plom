@@ -232,9 +232,29 @@ public class Main
    * given iframe (the iframe should be pointing to the specified
    * URL)
    */
-  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl, Element consoleDiv)
+  public DebuggerConnection makeDebuggerConnection(IFrameElement iframeEl, Element consoleDiv, OnLocationJump onLocationJump)
   {
-    return new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl, consoleDiv);
+    DebuggerConnection.ServiceWorkerDebuggerConnection debugConnection;
+    debugConnection = new DebuggerConnection.ServiceWorkerDebuggerConnection(iframeEl, consoleDiv);
+    // CodeLocationJumper that's suitable for a full IDE with classes, methods, etc.
+    debugConnection.setCodeLocationJumper((loc) -> {
+      if (loc.getClassName() == null && loc.getFunctionMethodName() != null && loc.getPosition() == null)
+      {
+        FunctionDescription sig = repository.getFunctionDescription(loc.getFunctionMethodName());
+        if (sig != null)
+        {
+          onLocationJump.onJump();
+          loadFunctionSignatureView(sig, false);
+        }
+      }
+    });
+    return debugConnection;
+  }
+  
+  @JsFunction
+  static interface OnLocationJump 
+  {
+    public void onJump();
   }
   
 //  public ErrorLogger getErrorLogger()

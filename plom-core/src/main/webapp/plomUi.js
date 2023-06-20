@@ -538,7 +538,10 @@ function setupPlomUi() {
 					var iframe = webViewDiv.querySelector('iframe');
 					var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
 					consoleDiv.innerHTML = '';
-					var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv);
+					var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv,
+						() => {
+							document.querySelector('.runWebView').style.display = 'none';
+						});
 					debugConnection.startConnection(); 
 					iframe.src = 'test' + localServerId + '/index.html';
 				});
@@ -702,7 +705,10 @@ function setupPlomUi() {
 				var iframe = webViewDiv.querySelector('iframe'); 
 				var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
 				consoleDiv.innerHTML = '';
-				var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv);
+				var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv, 
+					() => {
+						document.querySelector('.runWebView').style.display = 'none';
+					});
 				debugConnection.startConnection(); 
 				iframe.src = virtualServerAddr + 'test' + localServerId + '/index.html';
 			});

@@ -9,18 +9,13 @@ import com.google.gwt.core.client.JavaScriptObject;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.EventRemover;
-import elemental.events.MessageChannel;
 import elemental.events.MessageEvent;
 import elemental.events.MessagePort;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.IFrameElement;
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.util.ArrayOf;
-import elemental.util.Collections;
-import elemental.util.Indexable;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 
@@ -53,6 +48,7 @@ public abstract class DebuggerConnection
 //    String targetUrl;
     
     Element consoleDiv;
+    CodeLocationJumper locationJumper = (loc) -> {};
     
     WebHelpers.FixedMessagePort connectionPort;
     
@@ -60,6 +56,11 @@ public abstract class DebuggerConnection
     // Once the connection is made, we no longer need the listener, so
     // it can be removed
     EventRemover windowMessageListener;
+
+    public void setCodeLocationJumper(CodeLocationJumper locationJumper)
+    {
+      this.locationJumper = locationJumper;
+    }
     
     @Override public void startConnection()
     {
@@ -154,19 +155,51 @@ public abstract class DebuggerConnection
     void logToConsole(String msg, LogLevel logLevel, ProgramCodeLocation codeLocation)
     {
       DivElement msgDiv = Browser.getDocument().createDivElement();
-      msgDiv.setTextContent(msg);
       Element msgEl;
+      // Add extra location information in message string
+      // TODO: (perhaps also display line number information)
+      if (codeLocation != null)
+      {
+        String contextString = "";
+        if (codeLocation.getClassName() != null)
+          contextString += codeLocation.getClassName();
+        if (codeLocation.getFunctionMethodName() != null)
+        {
+          if (!contextString.isEmpty())
+            contextString += " ";
+          contextString += "." + codeLocation.getFunctionMethodName();
+        }
+        msgDiv.setTextContent((contextString != null ? "(" + contextString + ") " : "") + msg);
+      }
+      else
+        msgDiv.setTextContent(msg);
+      
+      // Clicking an error should jump to the source of the error 
       if (codeLocation != null)
       {
         AnchorElement a = (AnchorElement)Browser.getDocument().createElement("a");
         a.appendChild(msgDiv);
         a.appendChild(Browser.getDocument().createTextNode(" \u2192"));
         a.setHref("javascript:void(0)");
+        a.setOnclick((evt) -> {
+          evt.preventDefault();
+          locationJumper.jumpToLocation(codeLocation);
+        });
         msgEl = a;
       }
       else
         msgEl = msgDiv;
       consoleDiv.appendChild(msgEl);
     }
+  }
+  
+  /**
+   * Function that will be called if the user clicks on errors on 
+   * the console in order to jump to different code locations
+   */
+  @FunctionalInterface
+  public static interface CodeLocationJumper
+  {
+    public void jumpToLocation(ProgramCodeLocation loc);
   }
 }
