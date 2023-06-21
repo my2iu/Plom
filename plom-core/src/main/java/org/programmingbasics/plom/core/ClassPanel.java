@@ -91,7 +91,7 @@ public class ClassPanel
     TypeEntryField extendsField = new TypeEntryField(cls.parent.mainToken, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         (context) -> {},
         widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
@@ -190,7 +190,7 @@ public class ClassPanel
     variableArea.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         null);
     variableArea.setListener((isCodeChanged) -> {
@@ -284,7 +284,7 @@ public class ClassPanel
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         (context) -> {},
         widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));

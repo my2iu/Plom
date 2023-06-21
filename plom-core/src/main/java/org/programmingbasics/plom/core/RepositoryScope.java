@@ -20,6 +20,7 @@ import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.GatheredSuggestions;
 import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
@@ -42,7 +43,7 @@ public class RepositoryScope extends VariableScope
   private Map<String, ClassDescription> codeRepositoryClasses;
   private List<String> globalVariableSuggestions = new ArrayList<>();
   
-  public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes)
+  public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes, ErrorLogger errLogger)
   {
     this.repository = repository;
     this.coreTypes = coreTypes;
@@ -110,6 +111,8 @@ public class RepositoryScope extends VariableScope
             type = typeFromUnboundType(unboundType, this);
           } catch (RunException e) {
             // skip any errors
+            if (errLogger != null)
+              errLogger.warn(new RunException("Could not determine type for global variable " + name, e));
             type = null;
           }
           if (type == null) type = coreTypes.getVoidType();
@@ -129,6 +132,13 @@ public class RepositoryScope extends VariableScope
         variableDeclarer, errors);
     VariableDeclarationInterpreter.fromStatements(repository.getVariableDeclarationCode(),
         variableDeclarer, errors);
+    if (errLogger != null)
+    {
+      for (Exception e: errors.getCodeErrors())
+      {
+        errLogger.warn(new RunException("Problem with variable declarations", e));
+      }
+    }
     globalVariableSuggestions.sort(null);
   }
   

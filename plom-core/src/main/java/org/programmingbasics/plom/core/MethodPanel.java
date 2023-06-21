@@ -82,7 +82,7 @@ public class MethodPanel
     methodWidget2 = new MethodNameWidget2(sig, inputPanels, 
         (scope, coreTypes) -> {
       StandardLibrary.createGlobals(null, scope, coreTypes);
-      scope.setParent(new RepositoryScope(repository, coreTypes));
+      scope.setParent(new RepositoryScope(repository, coreTypes, null));
     }, widthCalculator, 
         (Element)containerDiv.querySelector(".nameHeading"),
         maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
@@ -138,7 +138,7 @@ public class MethodPanel
       returnTypeArea.setVariableContextConfigurator(
           (scope, coreTypes) -> {
             StandardLibrary.createGlobals(null, scope, coreTypes);
-            scope.setParent(new RepositoryScope(repository, coreTypes));
+            scope.setParent(new RepositoryScope(repository, coreTypes, null));
           },
           null);
       returnTypeArea.setListener((isCodeChanged) -> {

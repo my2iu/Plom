@@ -1,7 +1,9 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,8 +17,11 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
+import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
+import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.LogLevel;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -28,9 +33,10 @@ public class RepositoryScopeTest extends TestCase
 {
   static class GlobalSaver implements ConfigureGlobalScope
   {
-    GlobalSaver(SimpleInterpreter terp, ModuleCodeRepository repository) { this.terp = terp; this.repository = repository; }
+    GlobalSaver(SimpleInterpreter terp, ModuleCodeRepository repository, ErrorLogger errLogger) { this.terp = terp; this.repository = repository; this.errLogger = errLogger; }
     SimpleInterpreter terp;
     ModuleCodeRepository repository;
+    ErrorLogger errLogger;
     
     VariableScope globalScope;
     @Override
@@ -38,10 +44,18 @@ public class RepositoryScopeTest extends TestCase
     {
       globalScope = scope;
       StandardLibrary.createGlobals(terp, scope, coreTypes);
-      scope.setParent(new RepositoryScope(repository, coreTypes));
+      scope.setParent(new RepositoryScope(repository, coreTypes, errLogger));
     }
   }
 
+  static class ErrorLoggerSaver extends SimpleInterpreter.ErrorLogger
+  {
+    List<Object> errs = new ArrayList<>();
+    @Override public void error(Object errObj) { errs.add(errObj); }
+    @Override public void debugLog(Object value) { errs.add(value); }
+    @Override public void warn(Object errObj) { errs.add(errObj); }
+    @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location) { errs.add(msg); }
+  }
   
   @Test
   public void testSimpleRun() throws IOException, ParseException, RunException
@@ -76,7 +90,7 @@ public class RepositoryScopeTest extends TestCase
             new Token.SimpleToken("1", Symbol.Number))
 
         ));
-    GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
     terp.runNoReturn(scopeConfig);
     
     Assert.assertEquals(3, scopeConfig.globalScope.lookup("b").getNumberValue(), 0.001);
@@ -109,7 +123,7 @@ public class RepositoryScopeTest extends TestCase
     
     // Run some code
     SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer());
-    GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
     terp.runNoReturn(scopeConfig);
     
     Type fnType = scopeConfig.globalScope.lookupType("b");
@@ -147,7 +161,7 @@ public class RepositoryScopeTest extends TestCase
           new TokenContainer(ParameterToken.fromContents(".get", Symbol.DotVariable)),
           new TokenContainer(ParameterToken.fromContents(".bad return", Symbol.DotVariable))
           ));
-      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
       terp.runNoReturn(scopeConfig);
     }
     catch (RunException e)
@@ -182,7 +196,7 @@ public class RepositoryScopeTest extends TestCase
       SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
           new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
           ));
-      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
       terp.runNoReturn(scopeConfig);
     }
     catch (RunException e)
@@ -217,7 +231,7 @@ public class RepositoryScopeTest extends TestCase
       SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
           new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
           ));
-      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
       terp.runNoReturn(scopeConfig);
     }
     catch (RunException e)
@@ -234,6 +248,44 @@ public class RepositoryScopeTest extends TestCase
 
     // TODO: Track parse errors in function signature
     Assert.fail("Expecting error in function signature");
+  }
+
+  @Test
+  public void testBadGlobalVariables() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.setVariableDeclarationCode(new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            new Token.SimpleToken("var", Symbol.Var)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@badtype", Symbol.AtType)
+            )
+        ));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        ));
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+    terp.runNoReturn(scopeConfig);
+    
+    Assert.assertEquals(3, errLogger.errs.size());
+    
+    Assert.assertEquals("Could not determine type for global variable b", ((Throwable)errLogger.errs.get(0)).getMessage());
+    Assert.assertEquals("Unknown class: @badtype", ((Throwable)errLogger.errs.get(0)).getCause().getMessage());
+    // TODO: Track down why there are two var errors 
+    Assert.assertEquals("Problem with variable declarations", ((Throwable)errLogger.errs.get(1)).getMessage());
+    Assert.assertEquals("Problem with variable declarations", ((Throwable)errLogger.errs.get(2)).getMessage());
   }
 
 }

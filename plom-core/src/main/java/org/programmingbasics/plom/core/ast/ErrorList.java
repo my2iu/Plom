@@ -10,6 +10,7 @@ public class ErrorList
   {
     codeErrors.add(e);
   }
+  public List<Exception> getCodeErrors() { return codeErrors; }
   public boolean containsToken(Token token)
   {
     for (Exception e: codeErrors)

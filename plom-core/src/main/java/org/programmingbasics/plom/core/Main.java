@@ -143,6 +143,10 @@ public class Main
       {
         Browser.getWindow().getConsole().log(err);
       }
+      @Override public void warn(Object err)
+      {
+        Browser.getWindow().getConsole().log(err);
+      }
       @Override public void debugLog(Object value)
       {
         Browser.getWindow().getConsole().log(value);
@@ -157,7 +161,7 @@ public class Main
   public ErrorLogger createErrorLoggerForDiv(Element consoleEl)
   {
     return new ErrorLogger() {
-      @Override public void error(Object err)
+      private void logErr(Object err, LogLevel logLevel)
       {
         String msgString;
         if (err instanceof ParseException)
@@ -193,6 +197,14 @@ public class Main
           msgString = err.toString();
         }
         debugLog(msgString);
+      }
+      @Override public void error(Object err)
+      {
+        logErr(err, ERROR);
+      }
+      @Override public void warn(Object err)
+      {
+        logErr(err, WARN);
       }
       @Override public void debugLog(Object value)
       {
@@ -816,7 +828,7 @@ public class Main
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         (context) -> {
           if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)

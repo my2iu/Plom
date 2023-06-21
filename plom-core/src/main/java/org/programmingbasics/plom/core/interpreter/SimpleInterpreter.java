@@ -333,6 +333,7 @@ public class SimpleInterpreter
   {
     public abstract void error(Object errObj);
     public abstract void debugLog(Object value);
+    public abstract void warn(Object errObj);
     public abstract void log(String msg, LogLevel logLevel, ProgramCodeLocation location);
     
     public static LogLevel DEBUG = LogLevel.DEBUG;
@@ -362,6 +363,7 @@ public class SimpleInterpreter
   public static class NullErrorLogger extends ErrorLogger
   {
     @Override public void error(Object errObj) {}
+    @Override public void warn(Object errObj) {}
     @Override public void debugLog(Object value) {}
     @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location) {}
   }

@@ -182,7 +182,7 @@ public class GlobalsPanel implements AutoCloseable
     variableArea.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         null);
     variableArea.setListener((isCodeChanged) -> {
@@ -313,7 +313,7 @@ public class GlobalsPanel implements AutoCloseable
     TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes));
+          scope.setParent(new RepositoryScope(repository, coreTypes, null));
         },
         (context) -> {},
         widthCalculator, maxTypeWidth, mainDiv.querySelector(".globaldetails"), mainDiv.querySelector(".globaldetails .scrollable-interior"));
