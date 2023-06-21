@@ -135,8 +135,22 @@ public class RepositoryScope extends VariableScope
   {
     Type [] argTypes = new Type[func.sig.getNumArgs()];
     for (int n = 0; n < func.sig.getNumArgs(); n++)
-      argTypes[n] = typeFromUnboundType(func.sig.getArgType(n), this);
-    return Type.makeFunctionType(typeFromUnboundType(func.sig.getReturnType(), this), argTypes);    
+    {
+      try {
+        argTypes[n] = typeFromUnboundType(func.sig.getArgType(n), this);
+      }
+      catch (RunException e)
+      {
+        throw new RunException("Problem with function argument " + (n + 1), e);
+      }
+    }
+    try {
+      return Type.makeFunctionType(typeFromUnboundType(func.sig.getReturnType(), this), argTypes);
+    }
+    catch (RunException e)
+    {
+      throw new RunException("Problem with return type", e);
+    }
   }
   
   @Override
@@ -160,7 +174,6 @@ public class RepositoryScope extends VariableScope
       } 
       catch (ParseException e)
       {
-        // TODO: Augment parse info with function name etc.
         throw new RunException(e);
       }
       List<String> argPosToName = new ArrayList<>();
@@ -225,7 +238,7 @@ public class RepositoryScope extends VariableScope
         if (codeRepositoryClasses.containsKey(name))
           toReturn = new Type(name); 
         else
-          throw new RunException("Unknown class");
+          throw new RunException("Unknown class: @" + name);
         break;
       }
     }

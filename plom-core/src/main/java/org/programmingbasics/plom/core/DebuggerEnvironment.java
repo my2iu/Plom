@@ -75,9 +75,9 @@ public abstract class DebuggerEnvironment
           RunException runErr = (RunException)err;
           Token errTok = runErr.getErrorTokenSource();
           int lineNo = 0;
-          String errString = "Run Error";
-          if (runErr.getMessage() != null && !runErr.getMessage().isEmpty())
-            errString = runErr.getMessage();
+          String errString = gatherChainedErrorMessages(runErr);
+          if (errString.isEmpty())
+            errString = "Run Error";
 //          if (errTok != null) 
 //            lineNo = lineNumbers.tokenLine.getOrDefault(errTok, 0);
 //          if (lineNo == 0)
@@ -93,6 +93,19 @@ public abstract class DebuggerEnvironment
         {
           log(err.toString(), ERROR, null);
         }
+      }
+      String gatherChainedErrorMessages(Throwable e)
+      {
+        String toReturn = e.getMessage();
+        if (toReturn == null || toReturn.isEmpty())
+          return "";
+        if (e.getCause() != null)
+        {
+          String chainedMessage = gatherChainedErrorMessages(e.getCause()); 
+          if (!chainedMessage.isEmpty())
+          toReturn += "\n" + chainedMessage;
+        }
+        return toReturn;
       }
       @Override public void debugLog(Object value)
       {

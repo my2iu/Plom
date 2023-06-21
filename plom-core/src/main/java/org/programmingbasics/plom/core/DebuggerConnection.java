@@ -169,17 +169,34 @@ public abstract class DebuggerConnection
             contextString += " ";
           contextString += "." + codeLocation.getFunctionMethodName();
         }
-        msgDiv.setTextContent((contextString != null ? "(" + contextString + ") " : "") + msg);
+        msgDiv.setTextContent(contextString != null ? "(" + contextString + ") " : "");
       }
-      else
-        msgDiv.setTextContent(msg);
+
+      // Break up message into multiple lines if needed
+      boolean isFirstLine = true;
+      while (msg.indexOf("\n") >= 0)
+      {
+        int newLineIdx = msg.indexOf("\n");
+        if (!isFirstLine)
+          msgDiv.appendChild(Browser.getDocument().createTextNode("\u00a0"));
+        msgDiv.appendChild(Browser.getDocument().createTextNode(msg.substring(0, newLineIdx)));
+        if (isFirstLine && codeLocation != null)
+          msgDiv.appendChild(Browser.getDocument().createTextNode(" \u2192"));
+        msgDiv.appendChild(Browser.getDocument().createBRElement());
+        isFirstLine = false;
+        msg = msg.substring(newLineIdx + 1);
+      }
+      if (!isFirstLine)
+        msgDiv.appendChild(Browser.getDocument().createTextNode("\u00a0"));
+      msgDiv.appendChild(Browser.getDocument().createTextNode(msg));
+      if (isFirstLine && codeLocation != null)
+        msgDiv.appendChild(Browser.getDocument().createTextNode(" \u2192"));
       
       // Clicking an error should jump to the source of the error 
       if (codeLocation != null)
       {
         AnchorElement a = (AnchorElement)Browser.getDocument().createElement("a");
         a.appendChild(msgDiv);
-        a.appendChild(Browser.getDocument().createTextNode(" \u2192"));
         a.setHref("javascript:void(0)");
         a.setOnclick((evt) -> {
           evt.preventDefault();

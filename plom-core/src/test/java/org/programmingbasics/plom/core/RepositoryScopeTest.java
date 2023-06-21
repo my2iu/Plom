@@ -124,7 +124,7 @@ public class RepositoryScopeTest extends TestCase
   }
   
   @Test
-  public void testBadFunctionSignature() throws ParseException, RunException
+  public void testBadFunctionSignatureBadReturnType() throws ParseException, RunException
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
@@ -156,10 +156,71 @@ public class RepositoryScopeTest extends TestCase
       Assert.assertNull(e.getErrorLocation().getClassName());
       Assert.assertNull(e.getErrorLocation().getPosition());
       Assert.assertEquals("bad return", e.getErrorLocation().getFunctionMethodName());
-      Assert.fail("TODO: Store more specific error information and where the error occurred");
-      
+      Assert.assertEquals("Function signature is invalid", e.getMessage());
+      Assert.assertEquals("Problem with return type", e.getCause().getMessage());
+      Assert.assertEquals("Unknown class: @unknown type", e.getCause().getCause().getMessage());
+      Assert.assertNull(e.getCause().getCause().getCause());
       return;
     }
     Assert.fail("Expecting error in function signature");
   }
+  
+  @Test
+  public void testBadFunctionSignatureBadArgType() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents("@asdf2", Symbol.AtType))), null),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("3", Symbol.Number)))));
+
+    // Run some code
+    try {
+      SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+          new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
+          ));
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      terp.runNoReturn(scopeConfig);
+    }
+    catch (RunException e)
+    {
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getPosition());
+      Assert.assertEquals("test:", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals("Function signature is invalid", e.getMessage());
+      Assert.assertEquals("Problem with function argument 1", e.getCause().getMessage());
+      Assert.assertEquals("Unknown class: @asdf2", e.getCause().getCause().getMessage());
+      Assert.assertNull(e.getCause().getCause().getCause());
+      return;
+    }
+    Assert.fail("Expecting error in function signature");
+  }
+
+  @Test
+  public void testBadFunctionSignatureBadArgParse() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents(".asdf2", Symbol.DotVariable))), null),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("3", Symbol.Number)))));
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
+        ));
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+    terp.runNoReturn(scopeConfig);
+
+    // TODO: Track parse errors in function signature
+//    Assert.fail("Expecting error in function signature");
+  }
+
 }
