@@ -741,6 +741,16 @@ public class ModuleCodeRepository
     return false;
   }
   
+  public ClassDescription findClassWithName(String name)
+  {
+    for (ClassDescription c: classes)
+    {
+      if (c.getName().equals(name)) 
+        return c;
+    }
+    return null;
+  }
+  
   private void fillChainedExtraFiles(List<FileDescription> mergedFiles)
   {
     for (FileDescription f: extraFiles)

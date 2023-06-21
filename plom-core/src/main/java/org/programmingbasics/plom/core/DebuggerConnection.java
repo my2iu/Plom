@@ -162,7 +162,7 @@ public abstract class DebuggerConnection
       {
         String contextString = "";
         if (codeLocation.getClassName() != null)
-          contextString += codeLocation.getClassName();
+          contextString += "@" + codeLocation.getClassName();
         if (codeLocation.getFunctionMethodName() != null)
         {
           if (!contextString.isEmpty())

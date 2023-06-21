@@ -43,10 +43,17 @@ public class RepositoryScope extends VariableScope
   private Map<String, ClassDescription> codeRepositoryClasses;
   private List<String> globalVariableSuggestions = new ArrayList<>();
   
+  /** Since all code in the repository will go through this object when
+   * the program is run run, we can also do error logging for code errors 
+   * in this object
+   */
+  private ErrorLogger errLogger;
+  
   public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes, ErrorLogger errLogger)
   {
     this.repository = repository;
     this.coreTypes = coreTypes;
+    this.errLogger = errLogger;
 
     // Hash the different classes so that we can look them up more quickly later
     codeRepositoryClasses = new HashMap<>();
@@ -373,6 +380,8 @@ public class RepositoryScope extends VariableScope
           } catch (RunException e) {
             // skip any errors
             type = null;
+            if (errLogger != null)
+              errLogger.warn(new RunException("Could not determine type for member variable " + name, e, ProgramCodeLocation.forClass(cls.getName())));
           }
           if (type == null) type = coreTypes.getVoidType();
           toReturn.addMemberVariable(name, type);
@@ -389,6 +398,14 @@ public class RepositoryScope extends VariableScope
     VariableDeclarationInterpreter.fromStatements(
         cls.getVariableDeclarationCode(),
         variableDeclarer, errors);
+    if (errLogger != null)
+    {
+      for (Exception e: errors.getCodeErrors())
+      {
+        errLogger.warn(new RunException("Problem with member variable declarations", e, ProgramCodeLocation.forClass(cls.getName())));
+      }
+    }
+
   }
   
   @Override

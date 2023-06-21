@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -286,6 +287,69 @@ public class RepositoryScopeTest extends TestCase
     // TODO: Track down why there are two var errors 
     Assert.assertEquals("Problem with variable declarations", ((Throwable)errLogger.errs.get(1)).getMessage());
     Assert.assertEquals("Problem with variable declarations", ((Throwable)errLogger.errs.get(2)).getMessage());
+  }
+
+  @Test
+  public void testBadClassMemberVariables() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    ClassDescription classA = repository.addClassAndResetIds("classA");
+    classA.setSuperclass(UnboundType.forClassLookupName("classB"));
+    classA.setVariableDeclarationCode(new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            new Token.SimpleToken("var", Symbol.Var)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType)
+            ),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@badtype", Symbol.AtType)
+            )
+        ));
+    ClassDescription classB = repository.addClassAndResetIds("classB");
+    classB.setSuperclass(UnboundType.forClassLookupName("object"));
+    classB.setVariableDeclarationCode(new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".c", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@badtype2", Symbol.AtType)
+            )
+        ));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@classA", Symbol.AtType)
+            )
+        ));
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+    terp.runNoReturn(scopeConfig);
+    
+    Assert.assertEquals(5, errLogger.errs.size());
+    
+    Assert.assertEquals("Could not determine type for member variable c", ((Throwable)errLogger.errs.get(0)).getMessage());
+    Assert.assertEquals("classB", ((RunException)errLogger.errs.get(0)).getErrorLocation().getClassName());
+    Assert.assertEquals("Unknown class: @badtype2", ((Throwable)errLogger.errs.get(0)).getCause().getMessage());
+    Assert.assertEquals("Could not determine type for member variable c", ((Throwable)errLogger.errs.get(1)).getMessage());
+    Assert.assertEquals("classB", ((RunException)errLogger.errs.get(1)).getErrorLocation().getClassName());
+    Assert.assertEquals("Unknown class: @badtype2", ((Throwable)errLogger.errs.get(1)).getCause().getMessage());
+    Assert.assertEquals("Could not determine type for member variable b", ((Throwable)errLogger.errs.get(2)).getMessage());
+    Assert.assertEquals("classA", ((RunException)errLogger.errs.get(2)).getErrorLocation().getClassName());
+    Assert.assertEquals("Unknown class: @badtype", ((Throwable)errLogger.errs.get(2)).getCause().getMessage());
+    // TODO: Track down why there are two var errors 
+    Assert.assertEquals("Problem with member variable declarations", ((Throwable)errLogger.errs.get(3)).getMessage());
+    Assert.assertEquals("classA", ((RunException)errLogger.errs.get(3)).getErrorLocation().getClassName());
+    Assert.assertEquals("Problem with member variable declarations", ((Throwable)errLogger.errs.get(4)).getMessage());
+    Assert.assertEquals("classA", ((RunException)errLogger.errs.get(4)).getErrorLocation().getClassName());
   }
 
 }

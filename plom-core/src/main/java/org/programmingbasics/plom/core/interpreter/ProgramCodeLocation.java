@@ -35,6 +35,11 @@ public class ProgramCodeLocation
   {
     return new ProgramCodeLocation(null, name, true, null);
   }
+  
+  public static ProgramCodeLocation forClass(String name)
+  {
+    return new ProgramCodeLocation(name, null, true, null);
+  }
 
   
   public String getClassName()
