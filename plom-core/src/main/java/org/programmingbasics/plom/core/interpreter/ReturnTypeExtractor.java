@@ -28,10 +28,7 @@ public class ReturnTypeExtractor
         line,
         returnTypeSaver,
         null);
-    if (returnTypeSaver.type != null)
-      return returnTypeSaver.type;
-    else
-      return UnboundType.forClassLookupName("void");
+    return returnTypeSaver.type;
   }
   
   public static void fromReturnField(TokenContainer line,

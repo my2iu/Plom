@@ -431,7 +431,7 @@ public class MethodPanel
             // necessary since the StatementContainer in the variable area
             // is set to the same object as the one in the repository, but
             // I'm doing an explicit update in case that changes)
-            sig.setArgCode(argIdx, returnArea.getSingleLineCode());
+            sig.setArgCode(argIdx, returnArea.getSingleLineCode(), null);
             onCommittedChangeInUi();
             
             // Update error list
@@ -503,7 +503,7 @@ public class MethodPanel
         sig.nameParts.set(n, nameEls.get(n).getValue());
       for (int n = 0; n < argCodeAreas.size(); n++)
       {
-        sig.setArgCode(n, argCodeAreas.get(n).getSingleLineCode());
+        sig.setArgCode(n, argCodeAreas.get(n).getSingleLineCode(), null);
 //        sig.argNames.set(n, argEls.get(n).getValue());
 //        sig.argTypes.set(n, argTypeFields.get(n).type);
       }

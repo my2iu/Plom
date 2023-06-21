@@ -213,14 +213,27 @@ public class RepositoryScopeTest extends TestCase
                 new Token.SimpleToken("3", Symbol.Number)))));
 
     // Run some code
-    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
-        new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
-        ));
-    GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
-    terp.runNoReturn(scopeConfig);
+    try {
+      SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+          new TokenContainer(ParameterToken.fromContents(".test:", Symbol.DotVariable, new TokenContainer(new Token.SimpleToken("3", Symbol.Number))))
+          ));
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository);
+      terp.runNoReturn(scopeConfig);
+    }
+    catch (RunException e)
+    {
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getPosition());
+      Assert.assertEquals("test:", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals("Function signature is invalid", e.getMessage());
+      Assert.assertEquals("Problem with argument 1", e.getCause().getMessage());
+      Assert.assertNull(e.getCause().getCause());
+      return;
+    }
 
     // TODO: Track parse errors in function signature
-//    Assert.fail("Expecting error in function signature");
+    Assert.fail("Expecting error in function signature");
   }
 
 }

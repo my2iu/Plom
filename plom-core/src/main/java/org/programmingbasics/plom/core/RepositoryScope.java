@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -153,35 +154,58 @@ public class RepositoryScope extends VariableScope
     }
   }
   
+  private ParsedFunction parseFunction(String name, FunctionDescription func) throws RunException
+  {
+    ParsedFunction funCache = new ParsedFunction();
+    funCache.sig = func.sig;
+    List<Throwable> signatureWarnings = new ArrayList<>();
+    funCache.sig.gatherSignatureParseWarnings(signatureWarnings);
+    if (!signatureWarnings.isEmpty())
+      throw new RunException("Function signature is invalid", signatureWarnings.get(0), ProgramCodeLocation.forFunction(name));
+    
+    try {
+      funCache.type = makeFunctionType(func);
+    } 
+    catch (RunException e)
+    {
+      throw new RunException("Function signature is invalid", e, ProgramCodeLocation.forFunction(name));
+    }
+    
+    try {
+      funCache.code = ParseToAst.parseStatementContainer(func.code);
+    } 
+    catch (ParseException e)
+    {
+      throw new RunException(e);
+    }
+    return funCache;
+
+  }
+  
   @Override
   public Value lookup(String name) throws RunException
   {
-    FunctionDescription func = repository.getFunctionDescription(name);
-    if (func != null)
+    ParsedFunction funCache = functionLookupCache.get(name);
+    if (funCache == null)
+    {
+      FunctionDescription func = repository.getFunctionDescription(name);
+      if (func != null)
+      {
+        funCache = parseFunction(name, func);
+        functionLookupCache.put(name, funCache);
+      }
+    }
+    if (funCache != null)
     {
       Value val = new Value();
-      try {
-        val.type = makeFunctionType(func);
-      } 
-      catch (RunException e)
-      {
-        throw new RunException("Function signature is invalid", e, ProgramCodeLocation.forFunction(name));
-      }
+      val.type = funCache.type;
       
-      AstNode code;
-      try {
-        code = ParseToAst.parseStatementContainer(func.code);
-      } 
-      catch (ParseException e)
-      {
-        throw new RunException(e);
-      }
       List<String> argPosToName = new ArrayList<>();
-      for (int n = 0; n < func.sig.getNumArgs(); n++)
+      for (int n = 0; n < funCache.sig.getNumArgs(); n++)
       {
-        argPosToName.add(func.sig.getArgName(n));
+        argPosToName.add(funCache.sig.getArgName(n));
       }
-      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), code, argPosToName);
+      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), funCache.code, argPosToName);
       return val;
     }
     return super.lookup(name);
@@ -190,17 +214,25 @@ public class RepositoryScope extends VariableScope
   @Override
   public Type lookupType(String name)
   {
-    FunctionDescription func = repository.getFunctionDescription(name);
-    if (func != null)
+    ParsedFunction funCache = functionLookupCache.get(name);
+    if (funCache == null)
     {
-      try {
-        return makeFunctionType(func);
-      }
-      catch (RunException e)
+      FunctionDescription func = repository.getFunctionDescription(name);
+      if (func != null)
       {
-        // Fall through
+        try {
+          funCache = parseFunction(name, func);
+        }
+        catch (RunException e)
+        {
+          // Fall through
+        }
+        functionLookupCache.put(name, funCache);
       }
     }
+    
+    if (funCache != null) 
+      return funCache.type;
     return super.lookupType(name);
   }
 
@@ -211,8 +243,16 @@ public class RepositoryScope extends VariableScope
   }
 
   // TODO: String not good enough for generics
-  private Map<String, Type> typeLookupCache = new HashMap<>(); 
-
+  private Map<String, Type> typeLookupCache = new HashMap<>();
+  
+  static class ParsedFunction
+  {
+    FunctionSignature sig;
+    Type type;
+    AstNode code;
+  }
+  private Map<String, ParsedFunction> functionLookupCache = new HashMap<>(); 
+  
   @Override
   public Type typeFromUnboundType(UnboundType unboundType, VariableScope subTypeCreator) throws RunException
   {

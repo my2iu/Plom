@@ -20,6 +20,7 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
 import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -109,7 +110,7 @@ public class ModuleCodeRepository
       argCode.remove(idx); 
     }
     public TokenContainer getArgCode(int idx) { return argCode.get(idx); }
-    public void setArgCode(int idx, TokenContainer argCode)
+    public void setArgCode(int idx, TokenContainer argCode, List<Throwable> warnings)
     {
       this.argCode.set(idx, argCode);
       class NameAndType {
@@ -132,13 +133,31 @@ public class ModuleCodeRepository
         argNames.set(idx, nameAndType.name);
         argTypes.set(idx, nameAndType.type);
       }
+      else
+      {
+        if (warnings != null)
+          warnings.add(new RunException("Problem with argument " + (idx + 1)));
+      }
     }
     public UnboundType getReturnType() { return returnType; }
     public TokenContainer getReturnTypeCode() { return returnTypeCode; }
-    public void setReturnTypeCode(TokenContainer code)
+    public void setReturnTypeCode(TokenContainer code, List<Throwable> warnings)
     {
       returnTypeCode = code;
       returnType = ReturnTypeExtractor.fromReturnFieldTokenContainer(code);
+      if (returnType == null)
+      {
+        returnType = UnboundType.forClassLookupName("void");
+        if (warnings != null)
+          warnings.add(new RunException("Problem with return type"));
+      }
+
+    }
+    public void gatherSignatureParseWarnings(List<Throwable> warnings)
+    {
+      setReturnTypeCode(returnTypeCode, warnings);
+      for (int n =  0; n < argCode.size(); n++)
+        setArgCode(n, argCode.get(n), warnings);
     }
     // Does a function signature match another one (i.e. do they refer to the same function)
     public boolean canReplace(FunctionSignature fn)
@@ -183,34 +202,20 @@ public class ModuleCodeRepository
     }
     public static FunctionSignature from(UnboundType returnType, List<String> nameParts, List<String> argNames, List<UnboundType> argTypes, FunctionSignature oldSig)
     {
-      FunctionSignature sig = new FunctionSignature();
-      sig.setReturnTypeCode(new TokenContainer(returnType.mainToken));
-      sig.nameParts = nameParts;
-      sig.argNames = argNames;
-      sig.argTypes = argTypes;
+      List<TokenContainer> newArgCodes = new ArrayList<>();
       for (int n = 0; n < argNames.size(); n++)
-      {
-        TokenContainer code = argCodeFromNameType(argNames.get(n), argTypes.get(n));
-        sig.addNewArgCode();
-        sig.setArgCode(n, code);
-      }
-      if (oldSig != null)
-      {
-        sig.isConstructor = oldSig.isConstructor;
-        sig.isBuiltIn = oldSig.isBuiltIn;
-        sig.isStatic = oldSig.isStatic;
-      }
-      return sig;
+        newArgCodes.add(argCodeFromNameType(argNames.get(n), argTypes.get(n)));
+      return from(new TokenContainer(returnType.mainToken), nameParts, newArgCodes, oldSig);
     }
     public static FunctionSignature from(TokenContainer returnTypeCode, List<String> nameParts, List<TokenContainer> argCodes, FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.setReturnTypeCode(returnTypeCode);
+      sig.setReturnTypeCode(returnTypeCode, null);
       sig.nameParts = nameParts;
       for (int n = 0; n < argCodes.size(); n++)
       {
         sig.addNewArgCode();
-        sig.setArgCode(n, argCodes.get(n).copy());
+        sig.setArgCode(n, argCodes.get(n).copy(), null);
       }
       if (oldSig != null)
       {
@@ -223,7 +228,7 @@ public class ModuleCodeRepository
     public static FunctionSignature copyOf(FunctionSignature oldSig)
     {
       FunctionSignature sig = new FunctionSignature();
-      sig.setReturnTypeCode(oldSig.returnTypeCode);
+      sig.setReturnTypeCode(oldSig.returnTypeCode, null);
       sig.nameParts = new ArrayList<>(oldSig.nameParts);
       sig.argNames = new ArrayList<>(oldSig.argNames);
       sig.argTypes = new ArrayList<>();
