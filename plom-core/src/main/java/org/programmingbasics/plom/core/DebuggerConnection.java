@@ -155,6 +155,7 @@ public abstract class DebuggerConnection
     void logToConsole(String msg, LogLevel logLevel, ProgramCodeLocation codeLocation)
     {
       DivElement msgDiv = Browser.getDocument().createDivElement();
+      msgDiv.setClassName("runWebViewConsoleLogEntry");
       Element msgEl;
       // Add extra location information in message string
       // TODO: (perhaps also display line number information)

@@ -120,6 +120,7 @@ TODO list from TOJam 2023
 
 - SimpleInterpreter should allow a method be given as the entrypoint (or special entrypoint code that invokes main) so that function names are preserved for debugging
 - Remove the VariableDescription stuff since it's no longer used and it's confusing
+- Rewrite everything in Kotlin
 
  */
 

@@ -410,6 +410,14 @@ a.breadcrumb-item:visited {
 	overflow: auto;
 }
 
+.runWebView .runWebViewConsoleLog > .runWebViewConsoleLogEntry:nth-child(n + 2) {
+	border-top: 1px dotted rgba(0, 0, 0, 0.5);
+}
+
+.runWebView .runWebViewConsoleLog > a:nth-child(n + 2) .runWebViewConsoleLogEntry {
+	border-top: 1px dotted rgba(0, 0, 0, 0.5);
+}
+
 a.runbutton {
 	
 }
