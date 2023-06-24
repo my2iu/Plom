@@ -352,4 +352,58 @@ public class RepositoryScopeTest extends TestCase
     Assert.assertEquals("classA", ((RunException)errLogger.errs.get(4)).getErrorLocation().getClassName());
   }
 
+  @Test
+  public void testBadClassMethodSignature() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    ClassDescription classA = repository.addClassAndResetIds("classA");
+    classA.setSuperclass(UnboundType.forClassLookupName("object"));
+    
+    FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("badType"), "badf");
+    classA.addMethod(new FunctionDescription(
+        sig, 
+        new StatementContainer()));
+    
+    sig = FunctionSignature.from(UnboundType.forClassLookupName("void"), "construct:", 
+        Arrays.asList("arg"), Arrays.asList(UnboundType.forClassLookupName("badtype2")));
+    sig.setIsConstructor(true);
+    classA.addMethod(new FunctionDescription(
+        sig, 
+        new StatementContainer()));
+        
+    sig = FunctionSignature.from(UnboundType.forClassLookupName("void"), "f");
+    sig.setIsStatic(true);
+    classA.addMethod(new FunctionDescription(
+        sig, 
+        new StatementContainer()));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@classA", Symbol.AtType),
+            Token.ParameterToken.fromContents(".f", Symbol.DotVariable)
+            )
+        ));
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+    terp.runNoReturn(scopeConfig);
+    
+    Assert.assertEquals(2, errLogger.errs.size());
+    
+    Assert.assertEquals("Method signature is invalid", ((Throwable)errLogger.errs.get(0)).getMessage());
+    Assert.assertEquals("classA", ((RunException)errLogger.errs.get(0)).getErrorLocation().getClassName());
+    Assert.assertEquals("badf", ((RunException)errLogger.errs.get(0)).getErrorLocation().getFunctionMethodName());
+    Assert.assertFalse(((RunException)errLogger.errs.get(0)).getErrorLocation().isStatic());
+    Assert.assertEquals("Problem with return type", ((Throwable)errLogger.errs.get(0)).getCause().getMessage());
+    Assert.assertEquals("Unknown class: @badType", ((Throwable)errLogger.errs.get(0)).getCause().getCause().getMessage());
+
+    Assert.assertEquals("Method signature is invalid", ((Throwable)errLogger.errs.get(1)).getMessage());
+    Assert.assertEquals("classA", ((RunException)errLogger.errs.get(1)).getErrorLocation().getClassName());
+    Assert.assertEquals("construct:", ((RunException)errLogger.errs.get(1)).getErrorLocation().getFunctionMethodName());
+    Assert.assertTrue(((RunException)errLogger.errs.get(1)).getErrorLocation().isStatic());
+    Assert.assertEquals("Problem with function argument 1", ((Throwable)errLogger.errs.get(1)).getCause().getMessage());
+    Assert.assertEquals("Unknown class: @badtype2", ((Throwable)errLogger.errs.get(1)).getCause().getCause().getMessage());
+  }
+
 }

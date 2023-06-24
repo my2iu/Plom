@@ -268,6 +268,19 @@ public class Main
           loadClassView(cls, false);
         }
       }
+      else if (loc.getClassName() != null && loc.getFunctionMethodName() != null)
+      {
+        ClassDescription cls = repository.findClassWithName(loc.getClassName());
+        if (cls != null)
+        {
+          FunctionDescription method = cls.findMethod(loc.getFunctionMethodName(), loc.isStatic()); 
+          if (method != null)
+          {
+            onLocationJump.onJump();
+            loadMethodSignatureView(cls, method, false);
+          }
+        }
+      }
     });
     return debugConnection;
   }

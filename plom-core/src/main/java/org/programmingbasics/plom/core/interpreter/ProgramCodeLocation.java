@@ -41,6 +41,11 @@ public class ProgramCodeLocation
     return new ProgramCodeLocation(name, null, true, null);
   }
 
+  public static ProgramCodeLocation forMethod(String className, String methodName, boolean isStatic)
+  {
+    return new ProgramCodeLocation(className, methodName, isStatic, null);
+  }
+
   
   public String getClassName()
   {

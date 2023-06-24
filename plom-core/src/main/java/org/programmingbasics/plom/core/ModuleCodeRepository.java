@@ -317,6 +317,12 @@ public class ModuleCodeRepository
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
           .stream().filter(fn -> fn.sig.isConstructor).collect(Collectors.toList());
     }
+    public FunctionDescription findMethod(String name, boolean isStaticOrConstructor)
+    {
+      return methods.stream().filter(fn -> 
+        (fn.sig.isStatic || fn.sig.isConstructor) == isStaticOrConstructor 
+        && fn.sig.getLookupName().equals(name)).findAny().orElse(null);
+    }
     public void addMethod(FunctionDescription f)
     {
       f.id = methods.size();

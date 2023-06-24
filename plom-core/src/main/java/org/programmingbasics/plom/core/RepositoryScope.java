@@ -313,17 +313,37 @@ public class RepositoryScope extends VariableScope
       for (FunctionDescription fn: cls.methods)
       {
         if (fn.sig.isBuiltIn) continue;
-        Type[] args = new Type[fn.sig.getNumArgs()];
-        for (int n = 0; n < fn.sig.getNumArgs(); n++)
-          args[n] = typeFromUnboundType(fn.sig.getArgType(n), subTypeCreator);
         try {
+          List<Throwable> signatureWarnings = new ArrayList<>();
+          fn.sig.gatherSignatureParseWarnings(signatureWarnings);
+          if (!signatureWarnings.isEmpty())
+            throw new RunException("Syntax error in method signature", signatureWarnings.get(0), ProgramCodeLocation.forFunction(name));
+          Type[] args = new Type[fn.sig.getNumArgs()];
+          for (int n = 0; n < fn.sig.getNumArgs(); n++)
+          {
+            try {
+              args[n] = typeFromUnboundType(fn.sig.getArgType(n), subTypeCreator);
+            }
+            catch (RunException e)
+            {
+              throw new RunException("Problem with function argument " + (n + 1), e);
+            }
+          }
           AstNode code = ParseToAst.parseStatementContainer(fn.code);
           if (fn.sig.isStatic)
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
+            Type returnType;
+            try {
+              returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 
+            }
+            catch (RunException e)
+            {
+              throw new RunException("Problem with return type", e);
+            }
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
-                typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator), args);
+                returnType, args);
           }
           else if (fn.sig.isConstructor)
           {
@@ -337,19 +357,33 @@ public class RepositoryScope extends VariableScope
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
                 code, fn.sig.argNames);
+            Type returnType;
+            try {
+              returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 
+            }
+            catch (RunException e)
+            {
+              throw new RunException("Problem with return type", e);
+            }
             toReturn.addMethod(fn.sig.getLookupName(), execFn, 
-                typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator), args);
+                returnType, args);
           }
         } 
         catch (ParseException e)
         {
           // Ignore parse exceptions for now (allowing us to run
           // code that might have errors in unrelated methods)
+          if (errLogger != null)
+            errLogger.warn(new RunException("Method signature is invalid", e, 
+                ProgramCodeLocation.forMethod(cls.getName(), fn.sig.getLookupName(), fn.sig.isStatic || fn.sig.isConstructor)));
         }
         catch (RunException e)
         {
           // RunException might be generated if functions use bad types
           // in their signatures
+          if (errLogger != null)
+            errLogger.warn(new RunException("Method signature is invalid", e, 
+                ProgramCodeLocation.forMethod(cls.getName(), fn.sig.getLookupName(), fn.sig.isStatic || fn.sig.isConstructor)));
         }
       }
     }
