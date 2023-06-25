@@ -259,6 +259,12 @@ public class Main
           loadFunctionSignatureView(sig, false);
         }
       }
+      else if (loc.getClassName() == null && loc.getFunctionMethodName() != null && loc.getPosition() != null)
+      {
+        onLocationJump.onJump();
+        loadFunctionCodeView(loc.getFunctionMethodName());
+        codePanel.setCursorPosition(loc.getPosition());
+      }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() == null)
       {
         ClassDescription cls = repository.findClassWithName(loc.getClassName());

@@ -166,6 +166,15 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     return codeList.statements.get(0);
   }
   
+  public void setCursorPosition(CodePosition pos)
+  {
+    cursorPos = pos;
+    selectionCursorPos = null;
+
+    showPredictedTokenInput();
+    updateCodeView(false);
+  }
+  
 //  @JsFunction
   public static interface VariableContextConfigurator {
     public void accept(CodeCompletionContext.Builder contextBuilder);

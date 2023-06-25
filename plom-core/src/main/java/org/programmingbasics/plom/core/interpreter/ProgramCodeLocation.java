@@ -35,7 +35,12 @@ public class ProgramCodeLocation
   {
     return new ProgramCodeLocation(null, name, true, null);
   }
-  
+
+  public static ProgramCodeLocation forFunction(String name, CodePosition pos)
+  {
+    return new ProgramCodeLocation(null, name, true, pos);
+  }
+
   public static ProgramCodeLocation forClass(String name)
   {
     return new ProgramCodeLocation(name, null, true, null);
@@ -44,6 +49,11 @@ public class ProgramCodeLocation
   public static ProgramCodeLocation forMethod(String className, String methodName, boolean isStatic)
   {
     return new ProgramCodeLocation(className, methodName, isStatic, null);
+  }
+
+  public static ProgramCodeLocation forMethod(String className, String methodName, boolean isStatic, CodePosition pos)
+  {
+    return new ProgramCodeLocation(className, methodName, isStatic, pos);
   }
 
   

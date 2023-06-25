@@ -140,7 +140,7 @@ public abstract class DebuggerEnvironment
             {
               CodePosition pos = location.getPosition();
               JsonArray posArray = Json.createArray();
-              for (int n = 0; pos.getOffset(n) >= 0; n++)
+              for (int n = 0; pos.hasOffset(n); n++)
                 posArray.set(n, pos.getOffset(n));
               msg.put("pos", posArray);
             }

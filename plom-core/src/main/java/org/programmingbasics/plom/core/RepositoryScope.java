@@ -10,7 +10,9 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
+import org.programmingbasics.plom.core.ast.FindToken;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
@@ -193,7 +195,10 @@ public class RepositoryScope extends VariableScope
     } 
     catch (ParseException e)
     {
-      throw new RunException("Syntax error in function code", e, ProgramCodeLocation.forFunction(name));
+      CodePosition pos = null;
+      if (e.token != null)
+        pos = FindToken.tokenToPosition(e.token, func.code);
+      throw new RunException("Syntax error in function code", e, ProgramCodeLocation.forFunction(name, pos));
     }
     return funCache;
 
@@ -374,8 +379,14 @@ public class RepositoryScope extends VariableScope
           // Ignore parse exceptions for now (allowing us to run
           // code that might have errors in unrelated methods)
           if (errLogger != null)
+          {
+            CodePosition pos = null;
+            if (e.token != null)
+              pos = FindToken.tokenToPosition(e.token, fn.code);
             errLogger.warn(new RunException("Method signature is invalid", e, 
-                ProgramCodeLocation.forMethod(cls.getName(), fn.sig.getLookupName(), fn.sig.isStatic || fn.sig.isConstructor)));
+                ProgramCodeLocation.forMethod(cls.getName(), fn.sig.getLookupName(), fn.sig.isStatic || fn.sig.isConstructor, pos)));
+            
+          }
         }
         catch (RunException e)
         {
