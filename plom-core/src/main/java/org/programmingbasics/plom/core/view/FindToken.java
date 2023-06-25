@@ -1,0 +1,439 @@
+package org.programmingbasics.plom.core.view;
+
+import java.util.ArrayList;
+
+import org.programmingbasics.plom.core.ast.CodePosition;
+import org.programmingbasics.plom.core.ast.ErrorList;
+import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.OneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.OneExpressionOneBlockToken;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.Token.SimpleToken;
+import org.programmingbasics.plom.core.ast.Token.TokenVisitor3;
+import org.programmingbasics.plom.core.ast.Token.WideToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
+
+import elemental.html.DivElement;
+
+/**
+ * Finds a token in some code and returns the code position of that token.
+ * Walks through all the tokens in the given code to see if token is there
+ */
+public class FindToken
+{
+  public static CodePosition tokenToPosition(Token token, StatementContainer codeList)
+  {
+    CodePosition pos = new CodePosition();
+    if (inStatements(token, codeList, pos, 0))
+      return pos;
+    return null;
+  }
+  
+  static boolean inStatements(Token token,
+      StatementContainer stmtContainer,
+      CodePosition pos, 
+      int level)
+  {
+    for (int n = 0; n < stmtContainer.statements.size(); n++)
+    {
+      TokenContainer line = stmtContainer.statements.get(n);
+      pos.setOffset(level, n);
+      if (inLine(token, line, pos, level + 1))
+        return true;
+      pos.setMaxOffset(level + 1);
+    }
+    return false;
+  }
+
+  static boolean inLine(Token token, TokenContainer line,
+      CodePosition pos, int level)
+  {
+    for (int n = 0; n < line.tokens.size(); n++)
+    {
+      Token tok = line.tokens.get(n);
+      pos.setOffset(level, n);
+      if (tok.visit(inToken, token, pos, level + 1))
+        return true;
+      pos.setMaxOffset(level + 1);
+    }
+    return false;
+    
+  }
+  
+  static FindInToken inToken = new FindInToken();
+  
+  static class FindInToken implements TokenVisitor3<Boolean, Token, CodePosition, Integer>
+  {
+
+    @Override
+    public Boolean visitSimpleToken(SimpleToken token, Token target, CodePosition pos, Integer level)
+    {
+      if (token == target) return true;
+      return false;
+    }
+
+    @Override
+    public Boolean visitParameterToken(ParameterToken token, Token target, CodePosition pos, Integer level)
+    {
+      if (token == target) return true;
+      pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+      for (int n = 0; n < token.parameters.size(); n++)
+      {
+        pos.setOffset(level + 1, n);
+        if (inLine(target, token.parameters.get(n), pos, level + 2))
+          return true;
+        pos.setMaxOffset(level + 2);
+      }
+      return false;
+    }
+
+    @Override
+    public Boolean visitWideToken(WideToken token, Token target, CodePosition pos, Integer level)
+    {
+      if (token == target) return true;
+      return false;
+    }
+
+    @Override
+    public Boolean visitOneBlockToken(OneBlockToken token, Token target, CodePosition pos, Integer level)
+    {
+      if (token == target) return true;
+      pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+      if (inStatements(target, token.block, pos, level + 1))
+        return true;
+      pos.setMaxOffset(level + 1);
+      return false;
+    }
+
+    @Override
+    public Boolean visitOneExpressionOneBlockToken(OneExpressionOneBlockToken token, Token target, CodePosition pos,
+        Integer level)
+    {
+      if (token == target) return true;
+      pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
+      if (inLine(target, token.expression, pos, level + 1))
+        return true;
+      pos.setMaxOffset(level + 1);
+
+      pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+      if (inStatements(target, token.block, pos, level + 1))
+        return true;
+      pos.setMaxOffset(level + 1);
+      
+      return false;
+    }
+  }
+  
+//  private static CodePosition hitDetectTokens(int x, int y, 
+//      TokenContainer tokens, RenderedHitBox renderedLineHitBoxes,
+//      CodePosition newPos, int level)
+//  {
+//    // Find which token that mouse position is over
+//    int tokenno = 0;
+//    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+//    if (renderedLineHitBoxes.children == null)
+//    {
+//      newPos.setOffset(level, 0);
+//      return newPos;
+//    }
+//    for (int n = 0; n < tokens.tokens.size(); n++)
+//    {
+//      Token token = tokens.tokens.get(n);
+//      TokenHitLocation loc = token.visit(isClickedOnTokenOrLater, x, y, renderedLineHitBoxes.children.get(n));
+//      if (loc == TokenHitLocation.AFTER)
+//        tokenno = n + 1;
+//      if (loc == TokenHitLocation.ON)
+//      {
+//        tokenno = n;
+//        break;
+//      }
+//    }
+////    // Check if mouse is past the end of the last token
+////    if (tokenno == renderedLineHitBoxes.children.size() - 1)
+////    {
+////      Element el = renderedLineHitBoxes.children.get(tokenno).el;
+////      if (el.getOffsetLeft() + el.getOffsetWidth() < x)
+////      {
+////        tokenno++;
+////      }
+////    }
+//    // Update the cursor position
+//    newPos.setOffset(level, tokenno);
+//    
+//    // For compound tokens, check if we're clicking on some element inside the token
+//    if (tokenno < tokens.tokens.size())
+//    {
+//      tokens.tokens.get(tokenno).visit(new TokenInternalHitDetection(), newPos, level + 1, new HitDetectParam(renderedLineHitBoxes.children.get(tokenno), x, y));
+//    }
+//    
+//    return newPos;
+//  }
+//
+//  static enum TokenHitLocation
+//  {
+//    NONE, ON, AFTER;
+//  }
+//  
+//  private static TokenHitLocation checkHitMultilineSpan(int x, int y,
+//      RenderedHitBox hitBox)
+//  {
+//    // TODO: Not needed for svg renderer
+//    RenderedHitBox.Rect topRect = null, bottomRect = null;
+//    for (RenderedHitBox.Rect rect: hitBox.getClientRects())
+//    {
+//      if (topRect == null || rect.getTop() < topRect.getTop()) topRect = rect;
+//      if (bottomRect == null || rect.getBottom() > bottomRect.getBottom()) bottomRect = rect;
+//    }
+////    if (y > topRect.getBottom() && y < bottomRect.getTop()) return TokenHitLocation.ON;
+//    if (y > bottomRect.getBottom() || (y > bottomRect.getTop() && x > bottomRect.getRight()))
+//      return TokenHitLocation.AFTER;
+//    if (y < topRect.getBottom() && x < topRect.getLeft()) return TokenHitLocation.NONE;
+//    if (y < topRect.getTop()) return TokenHitLocation.NONE;
+//    return TokenHitLocation.ON;
+//  }
+//
+//  static class TokenHitDetection implements Token.TokenVisitor3<TokenHitLocation, Integer, Integer, RenderedHitBox>
+//  {
+//    @Override
+//    public TokenHitLocation visitSimpleToken(SimpleToken token, Integer x,
+//        Integer y, RenderedHitBox hitBox)
+//    {
+//      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x
+//          && hitBox.getOffsetTop() < y) return TokenHitLocation.AFTER;
+//      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+//      if (hitBox.getOffsetLeft() < x && hitBox.getOffsetTop() < y) return TokenHitLocation.ON;
+//      return TokenHitLocation.NONE;
+//    }
+//    @Override
+//    public TokenHitLocation visitParameterToken(ParameterToken token,
+//        Integer x,
+//        Integer y, RenderedHitBox hitBox)
+//    {
+//      // Early escape for if it definitely isn't on the token 
+//      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+//      if (hitBox.getOffsetLeft() + hitBox.getOffsetWidth() < x
+//          && hitBox.getOffsetTop() < y) return TokenHitLocation.AFTER;
+//      if (y < hitBox.getOffsetTop()) return TokenHitLocation.NONE;
+//      if (x < hitBox.getOffsetLeft()) return TokenHitLocation.NONE;
+//      
+//      // Parameter tokens can span multiple lines, so we need to check each bounding rectangle
+//      return checkHitMultilineSpan(x, y, hitBox);
+//    }
+//    TokenHitLocation hitDetectWideToken(int x, int y, RenderedHitBox hitBox)
+//    {
+//      if (hitBox.getOffsetTop() + hitBox.getOffsetHeight() < y) return TokenHitLocation.AFTER;
+//      if (hitBox.getOffsetTop() < y) return TokenHitLocation.ON;
+//      return TokenHitLocation.NONE;
+//    }
+//    @Override
+//    public TokenHitLocation visitWideToken(WideToken token, Integer x,
+//        Integer y, RenderedHitBox hitBox)
+//    {
+//      return hitDetectWideToken(x, y, hitBox);
+//    }
+//    @Override
+//    public TokenHitLocation visitOneBlockToken(OneBlockToken token,
+//        Integer x, Integer y, RenderedHitBox hitBox)
+//    {
+//      return hitDetectWideToken(x, y, hitBox);
+//    }
+//    @Override
+//    public TokenHitLocation visitOneExpressionOneBlockToken(
+//        OneExpressionOneBlockToken token, Integer x,
+//        Integer y, RenderedHitBox hitBox)
+//    {
+//      TokenHitLocation toReturn = hitDetectWideToken(x, y, hitBox);
+//      // Since function literals are wide tokens that are inline, there is
+//      // no extra line after the wide token, so if you click on the "}" at
+//      // the end of the token, it should count as being after the token (because
+//      // that's the only way to get a cursor position there)
+//      if (token.isInline() && toReturn == TokenHitLocation.ON
+//          && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop()
+//          + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetHeight())
+//        return TokenHitLocation.AFTER;
+//      return toReturn;
+//    }
+//    
+//  }
+//  
+//  static class HitDetectParam
+//  {
+//    public HitDetectParam(RenderedHitBox hitBox, int x, int y)
+//    {
+//      this.hitBox = hitBox;
+//      this.x = x;
+//      this.y = y;
+//    }
+//    RenderedHitBox hitBox;
+//    int x, y;
+//  }
+//  
+//  // Does hit detection for compound tokens (tokens that contain expressions
+//  // and statements inside them)
+//  static class TokenInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam, RuntimeException>
+//  {
+//    @Override
+//    public Void visitSimpleToken(SimpleToken token, CodePosition pos,
+//        Integer level, HitDetectParam param)
+//    {
+//      return null;
+//    }
+//    @Override
+//    public Void visitParameterToken(ParameterToken token, CodePosition pos,
+//        Integer level, HitDetectParam param)
+//    {
+//      RenderedHitBox hitBox = param.hitBox;
+//      int x = param.x;
+//      int y = param.y;
+//      // Make sure we're actually on the token
+//      if (x < hitBox.getOffsetLeft() || y < hitBox.getOffsetTop()) return null;
+//      // Check each parameter to see if we're clicking in there
+//      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+//      if (paramHitBox == null)
+//        return null;
+//      for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
+//      {
+//        if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
+//        {
+//          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+//          pos.setOffset(level + 1, n);
+//          hitDetectTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
+//          return null;
+//        }
+//      }
+//      return null;
+//    }
+//    @Override
+//    Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
+//        StatementContainer blockContainer, CodePosition pos, int level,
+//        HitDetectParam param)
+//    {
+//      RenderedHitBox hitBox = param.hitBox;
+//      int x = param.x;
+//      int y = param.y;
+//      // Check inside the statement block
+//      if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK) != null
+//        && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop())
+//      {
+//        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+//        hitDetectStatementContainer(x, y, blockContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK), pos, level + 1);
+//      }
+//      // Check if we're inside the expression
+//      else if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR) != null
+//          && (x > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).getOffsetLeft() 
+//              || y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetTop() + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetHeight()))
+//      {
+//        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
+//        hitDetectTokens(x, y, exprContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR), pos, level + 1);
+//      }
+//      return null;
+//    }
+//  }
+//
+//  /**
+//   * Type fields are just a single token, so we have special type
+//   * detection for them.
+//   */
+//  public static CodePosition hitDetectTypeField(int x, int y, 
+//      Token type, RenderedHitBox hitBox,
+//      CodePosition newPos, int level)
+//  {
+//    // Find which token that mouse position is over
+//    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+//    TokenHitLocation loc = type.visit(isClickedOnTokenOrLater, x, y, hitBox);
+//    // Update the cursor position
+//    newPos.setOffset(level, 0);
+//    
+//    // For compound tokens, check if we're clicking on some element inside the token
+//    if (loc == TokenHitLocation.ON)
+//    {
+//      type.visit(new TypeInternalHitDetection(), newPos, level + 1, new HitDetectParam(hitBox, x, y));
+//    }
+//    
+//    return newPos;
+//  }
+//
+//  /** Although a parameter token can hold an entire expression inside,
+//   * for types, we only expect a single token at most, so we can
+//   * simplify the logic.
+//   */
+//  private static CodePosition hitDetectTypeTokens(int x, int y, 
+//      TokenContainer tokens, RenderedHitBox renderedLineHitBoxes,
+//      CodePosition newPos, int level)
+//  {
+//    newPos.setOffset(level, 0);
+//    // Find which token that mouse position is over
+//    int tokenno = 0;
+////    TokenHitDetection isClickedOnTokenOrLater = new TokenHitDetection();
+//    if (renderedLineHitBoxes.children == null)
+//    {
+//      return newPos;
+//    }
+//    tokenno = 0;
+////    for (int n = 0; n < renderedLineHitBoxes.children.size(); n++)
+////    {
+////      Token token = tokens.tokens.get(n);
+////      TokenHitLocation loc = token.visit(isClickedOnTokenOrLater, x, y, renderedLineHitBoxes.children.get(n));
+////      if (loc == TokenHitLocation.AFTER)
+////        tokenno = n;
+////      if (loc == TokenHitLocation.ON)
+////      {
+////        tokenno = n;
+////        break;
+////      }
+////    }
+//    // Update the cursor position
+//    newPos.setOffset(level, tokenno);
+//    
+//    // For compound tokens, check if we're clicking on some element inside the token
+//    if (tokenno < tokens.tokens.size())
+//    {
+//      tokens.tokens.get(tokenno).visit(new TypeInternalHitDetection(), newPos, level + 1, new HitDetectParam(renderedLineHitBoxes.children.get(tokenno), x, y));
+//    }
+//    
+//    return newPos;
+//  }
+//
+//  static class TypeInternalHitDetection extends RecurseIntoCompoundToken<Void, HitDetectParam, RuntimeException>
+//  {
+//    @Override
+//    public Void visitSimpleToken(SimpleToken token, CodePosition pos,
+//        Integer level, HitDetectParam param)
+//    {
+//      return null;
+//    }
+//    @Override
+//    public Void visitParameterToken(ParameterToken token, CodePosition pos,
+//        Integer level, HitDetectParam param)
+//    {
+//      RenderedHitBox hitBox = param.hitBox;
+//      int x = param.x;
+//      int y = param.y;
+//      // Check each parameter to see if we're clicking in there
+//      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+//      if (paramHitBox == null)
+//        return null;
+//      for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
+//      {
+//        if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
+//        {
+//          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+//          pos.setOffset(level + 1, n);
+//          hitDetectTypeTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
+//          return null;
+//        }
+//      }
+//      return null;
+//    }
+//    @Override
+//    Void handleWideToken(WideToken originalToken, TokenContainer exprContainer,
+//        StatementContainer blockContainer, CodePosition pos, int level,
+//        HitDetectParam param)
+//    {
+//      throw new IllegalArgumentException();
+//    }
+//  }
+//  
+  
+}

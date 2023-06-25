@@ -193,7 +193,7 @@ public class RepositoryScope extends VariableScope
     } 
     catch (ParseException e)
     {
-      throw new RunException(e);
+      throw new RunException("Syntax error in function code", e, ProgramCodeLocation.forFunction(name));
     }
     return funCache;
 

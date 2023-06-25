@@ -545,7 +545,7 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(32, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-
+  
   @Test
   public void testBlockingPrimitive() throws ParseException, RunException
   {

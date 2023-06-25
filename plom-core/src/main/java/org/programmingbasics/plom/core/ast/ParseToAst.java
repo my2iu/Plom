@@ -59,7 +59,7 @@ public class ParseToAst
     }
   }
 
-  public void parseParameterToken(AstNode node, Token.ParameterToken paramToken) throws ParseException
+  private void parseParameterToken(AstNode node, Token.ParameterToken paramToken) throws ParseException
   {
     if (!recurseIntoTokens) return;
     node.internalChildren = new ArrayList<>();

@@ -7,13 +7,13 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
@@ -405,5 +405,39 @@ public class RepositoryScopeTest extends TestCase
     Assert.assertEquals("Problem with function argument 1", ((Throwable)errLogger.errs.get(1)).getCause().getMessage());
     Assert.assertEquals("Unknown class: @badtype2", ((Throwable)errLogger.errs.get(1)).getCause().getCause().getMessage());
   }
+
+  @Test
+  public void testFunctionParseException() throws ParseException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(UnboundType.forClassLookupName("number"), "test"),
+        new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.SimpleToken("var", Symbol.Var)))));
+
+    // Run some code
+    try {
+      SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+          new TokenContainer(ParameterToken.fromContents(".test", Symbol.DotVariable))
+          ));
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, null);
+      terp.runNoReturn(scopeConfig);
+    }
+    catch (RunException e)
+    {
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getPosition());
+      Assert.assertEquals("test", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals("Syntax error in function code", e.getMessage());
+      Assert.assertNull(e.getCause().getMessage());
+      return;
+    }
+    Assert.fail("Expecting error in function signature");
+  }
+
 
 }
