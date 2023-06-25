@@ -71,7 +71,7 @@ public class EraseSelectionTest extends TestCase
     Assert.assertEquals(" . {a } := 1 + 1\n\n", toString(container));
     // Erase part of an expression in an if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 1));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { } {\n" + 
         " 5 + 6\n" + 
@@ -79,7 +79,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase part of a block in an if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 3));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 3));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { . {print: { 2 + 3 } } } {\n" + 
         " 5\n" + 
@@ -87,7 +87,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase part of a function call
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 2));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { . {print: { 3 } } } {\n" + 
         " 5 + 6\n" + 
@@ -162,7 +162,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase part of a line from within a block
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(3, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(3, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(3, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(3, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 1));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " . {print: { 2 + 3 } }\n" + 
         " . {b } := . {a }\n" + 
@@ -232,7 +232,7 @@ public class EraseSelectionTest extends TestCase
             );
     // Erase the end of a parameter token
     StatementContainer container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 1));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { . {print: { 2 + } } } {\n" + 
         " 5 + 6\n" + 
@@ -243,7 +243,7 @@ public class EraseSelectionTest extends TestCase
         " . {b } := . {a }\n", toString(container));
     // Erase the end of a parameter token and the rest of a parameter list
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), CodePosition.fromOffsets(1, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 1, CodePosition.PARAMTOK_POS_EXPRS, 0, 1), CodePosition.fromOffsets(1, 2));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { . {print: { 2 + 3 } } } {\n" + 
         " 5 + 6\n" + 
@@ -254,7 +254,7 @@ public class EraseSelectionTest extends TestCase
         " . {b } := . {a }\n", toString(container));
     // Erase end of a block in an if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(1, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1), CodePosition.fromOffsets(1, 2));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { . {print: { 2 + 3 } } } {\n" + 
         " 5\n" + 
@@ -264,7 +264,7 @@ public class EraseSelectionTest extends TestCase
         " . {b } := . {a }\n", toString(container));
     // Erase end of the expression in an if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { } {\n" + 
         " 5 + 6\n" + 
@@ -275,7 +275,7 @@ public class EraseSelectionTest extends TestCase
         " . {b } := . {a }\n", toString(container));
     // Erase end of the expression and block in an if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 1));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { } {\n" + 
         " }\n" + 
@@ -284,7 +284,7 @@ public class EraseSelectionTest extends TestCase
         " . {b } := . {a }\n", toString(container));
     // Erase end of a block in an if, plus some of the successive tokens in the same token container as the if
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 3));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0), CodePosition.fromOffsets(1, 3));
     Assert.assertEquals(" . {a } := 1 + 1\n" + 
         " if { } {\n" + 
         " }\n" + 
@@ -335,7 +335,7 @@ public class EraseSelectionTest extends TestCase
             );
     // Erase the first part of a parameter token
     StatementContainer container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 1));
     Assert.assertEquals(" // comment\n" + 
         " else {\n" + 
         " 1 + 2\n" + 
@@ -347,7 +347,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase part of the 2nd parameter of a parameter token
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0), CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0, CodePosition.PARAMTOK_POS_EXPRS, 1, 2));
     Assert.assertEquals(" // comment\n" + 
         " else {\n" + 
         " 1 + 2\n" + 
@@ -359,7 +359,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase the beginning of an else token (including the else)
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 1), CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 2));
     Assert.assertEquals(" // comment\n" + 
         " 2\n" + 
         " . {a: { 3 + 4 }b: { 5 + 6 } }\n" +
@@ -369,7 +369,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase the beginning of an expression of an if token (including the if)
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodePosition.EXPRBLOCK_POS_EXPR, 2));
     Assert.assertEquals(" // comment\n" + 
         " else {\n" + 
         " 1 + 2\n" + 
@@ -380,7 +380,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase the beginning of the block of an if token (including the if)
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 2), CodePosition.fromOffsets(0, 2, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1));
     Assert.assertEquals(" // comment\n" + 
         " else {\n" + 
         " 1 + 2\n" + 
@@ -390,7 +390,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase through multiple levels
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0), CodePosition.fromOffsets(0, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0), CodePosition.fromOffsets(0, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 1));
     Assert.assertEquals(" + 4\n"
         + " 5 + 6\n" + 
         " if { 7 + 8 } {\n" + 
@@ -452,7 +452,7 @@ public class EraseSelectionTest extends TestCase
             );
     // Erase between the end of one parameter in a parameter token and the beginning of another parameter
     StatementContainer container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 2), CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0, CodePosition.PARAMTOK_POS_EXPRS, 2, 1));
     Assert.assertEquals(" . {a: { . {a: { 1 + }b: { }c: { + 6 } } } }\n" + 
         " if { 7 + 8 } {\n" + 
         " 9 + 0\n" + 
@@ -463,7 +463,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase between an if expression and an if block
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 2), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 2));
     Assert.assertEquals(" . {a: { . {a: { 1 + 2 }b: { 3 + 4 }c: { 5 + 6 } } } }\n" + 
         " if { 7 + } {\n" + 
         " 0\n" + 
@@ -474,7 +474,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase between an if block and an else block
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 2), CodePosition.fromOffsets(1, 1, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 2), CodePosition.fromOffsets(1, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1));
     Assert.assertEquals(" . {a: { . {a: { 1 + 2 }b: { 3 + 4 }c: { 5 + 6 } } } }\n" + 
         " if { 7 + 8 } {\n" + 
         " 9 +\n" + 
@@ -483,7 +483,7 @@ public class EraseSelectionTest extends TestCase
         "\n", toString(container));
     // Erase from a non-wide token to inside the start of a wide token that comes before another wide token
     container = supplier.get();
-    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1), CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1));
+    EraseSelection.fromStatements(container, CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0, CodePosition.PARAMTOK_POS_EXPRS, 2, 1), CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1));
     Assert.assertEquals(" . {a: { . {a: { 1 + 2 }b: { 3 + 4 }c: { 5 } } } } + 0\n" + 
         " else {\n" + 
         " 11 + 12\n" + 

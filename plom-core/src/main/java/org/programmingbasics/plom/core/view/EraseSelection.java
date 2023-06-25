@@ -89,7 +89,7 @@ public class EraseSelection
         @Override public StatementContainer visitParameterToken(ParameterToken token, CodePosition start,
             Integer level, CodePosition end)
         {
-          if (start.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+          if (start.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
           {
             if (start.getOffset(level + 1) == end.getOffset(level + 1))
             {
@@ -151,17 +151,17 @@ public class EraseSelection
         {
           if (start.getOffset(level) == end.getOffset(level))
           {
-            if (exprContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+            if (exprContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
             {
               return handleExpression(originalToken, exprContainer, start, level + 1, end);
             }
-            else if (blockContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+            else if (blockContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
             {
               return handleStatementContainer(originalToken, blockContainer, start, level + 1, end);
             }
             throw new IllegalArgumentException();
           }
-          if (start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+          if (start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
           {
             eraseAfterFromLine(exprContainer, start, level + 1);
 //            out.newline();
@@ -264,7 +264,7 @@ public class EraseSelection
     public Void visitParameterToken(ParameterToken token, CodePosition pos,
         Integer level, Void param)
     {
-      if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+      if (pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
       {
         handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, null);
 //        out.newline();
@@ -284,7 +284,7 @@ public class EraseSelection
         StatementContainer blockContainer, CodePosition start, int level,
         Void param)
     {
-      if (exprContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+      if (exprContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
       {
         handleExpression(originalToken, exprContainer, start, level + 1, param);
 //        out.newline();
@@ -292,7 +292,7 @@ public class EraseSelection
           blockContainer.statements.clear();
 //          PlomTextWriter.writeStatementContainer(out, blockContainer);
       }
-      else if (blockContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+      else if (blockContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
       {
         handleStatementContainer(originalToken, blockContainer, start, level + 1, param);
       }
@@ -383,7 +383,7 @@ public class EraseSelection
         StatementContainer blockContainer, CodePosition end, int level,
         StatementContainer out)
     {
-      if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+      if (end.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
       {
 //        PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
         eraseBeforeFromLine(exprContainer, end, level + 1, out);
@@ -393,7 +393,7 @@ public class EraseSelection
 //        PlomTextWriter.writeBlockTokenEnd(out);
         return null;
       }
-      else if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+      else if (end.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
       {
 //        if (exprContainer != null)
 //        {

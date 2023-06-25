@@ -32,12 +32,12 @@ import elemental.svg.SVGTextElement;
 
 public class SvgCodeRenderer
 {
-  static final int EXPRBLOCK_POS_START = CodeRenderer.EXPRBLOCK_POS_START;
-  static final int EXPRBLOCK_POS_EXPR = CodeRenderer.EXPRBLOCK_POS_EXPR;
-  static final int EXPRBLOCK_POS_BLOCK = CodeRenderer.EXPRBLOCK_POS_BLOCK;
+  static final int EXPRBLOCK_POS_START = CodePosition.EXPRBLOCK_POS_START;
+  static final int EXPRBLOCK_POS_EXPR = CodePosition.EXPRBLOCK_POS_EXPR;
+  static final int EXPRBLOCK_POS_BLOCK = CodePosition.EXPRBLOCK_POS_BLOCK;
   
-  static final int PARAMTOK_POS_TEXTS = CodeRenderer.PARAMTOK_POS_TEXTS;
-  static final int PARAMTOK_POS_EXPRS = CodeRenderer.PARAMTOK_POS_EXPRS;
+  static final int PARAMTOK_POS_TEXTS = CodePosition.PARAMTOK_POS_TEXTS;
+  static final int PARAMTOK_POS_EXPRS = CodePosition.PARAMTOK_POS_EXPRS;
   
   static class RenderSupplementalInfo extends CodeRenderer.RenderSupplementalInfo
   {

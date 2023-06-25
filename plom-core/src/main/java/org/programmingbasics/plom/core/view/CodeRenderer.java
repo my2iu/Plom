@@ -26,15 +26,6 @@ import elemental.html.SpanElement;
 
 public class CodeRenderer
 {
-  static final int EXPRBLOCK_POS_START = 0;
-  static final int EXPRBLOCK_POS_EXPR = 1;
-  static final int EXPRBLOCK_POS_BLOCK = 2;
-  
-  static final int PARAMTOK_POS_TEXTS = 0;
-  static final int PARAMTOK_POS_EXPRS = 1;
-  
-//  private static final int EXPRBLOCK_POS_END = 3;
-
   public static class RenderSupplementalInfo
   {
     public ErrorList codeErrors;
@@ -159,8 +150,8 @@ public class CodeRenderer
         hitBox.children.add(null);
         textHitBoxes = RenderedHitBox.withChildren();
         exprHitBoxes = RenderedHitBox.withChildren();
-        hitBox.children.set(PARAMTOK_POS_TEXTS, textHitBoxes);
-        hitBox.children.set(PARAMTOK_POS_EXPRS, exprHitBoxes);
+        hitBox.children.set(CodePosition.PARAMTOK_POS_TEXTS, textHitBoxes);
+        hitBox.children.set(CodePosition.PARAMTOK_POS_EXPRS, exprHitBoxes);
         hitBox.el = span;
       }
 
@@ -183,8 +174,8 @@ public class CodeRenderer
           textHitBox = new RenderedHitBox(textSpan);
           textHitBoxes.children.add(textHitBox);
         }
-        boolean posInExpr = pos != null && pos.getOffset(level) == PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
-        currentTokenPos.setOffset(level, PARAMTOK_POS_EXPRS);
+        boolean posInExpr = pos != null && pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS && pos.getOffset(level + 1) == n;
+        currentTokenPos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
         currentTokenPos.setOffset(level + 1, n);
         renderLine(token.parameters.get(n), posInExpr ? pos : null, level + 2, currentTokenPos, exprSpan, false, this, exprHitBox, supplement);
         currentTokenPos.setMaxOffset(level + 1);
@@ -253,7 +244,7 @@ public class CodeRenderer
         hitBox.children.add(null);
         hitBox.children.add(null);
         startTokenHitBox = new RenderedHitBox();
-        hitBox.children.set(EXPRBLOCK_POS_START, startTokenHitBox);
+        hitBox.children.set(CodePosition.EXPRBLOCK_POS_START, startTokenHitBox);
       }
 
       // First line with optional expression
@@ -270,8 +261,8 @@ public class CodeRenderer
         start.setTextContent(tokenText + " (");
         SpanElement expression = doc.createSpanElement();
         RenderedHitBox exprHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        currentTokenPos.setOffset(level, EXPRBLOCK_POS_EXPR);
-        renderLine(exprContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_EXPR ? pos : null, level + 1, currentTokenPos, expression, false, this, exprHitBox, supplement);
+        currentTokenPos.setOffset(level, CodePosition.EXPRBLOCK_POS_EXPR);
+        renderLine(exprContainer, pos != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR ? pos : null, level + 1, currentTokenPos, expression, false, this, exprHitBox, supplement);
         currentTokenPos.setMaxOffset(level + 1);
         SpanElement middle = doc.createSpanElement();
         if (blockContainer == null)
@@ -283,7 +274,7 @@ public class CodeRenderer
         if (hitBox != null)
         {
           exprHitBox.el = expression;
-          hitBox.children.set(EXPRBLOCK_POS_EXPR, exprHitBox);
+          hitBox.children.set(CodePosition.EXPRBLOCK_POS_EXPR, exprHitBox);
         }
       }
       else
@@ -301,13 +292,13 @@ public class CodeRenderer
         DivElement block = doc.createDivElement();
         block.getStyle().setPaddingLeft(1, Unit.EM);
         RenderedHitBox blockHitBox = (hitBox != null) ? RenderedHitBox.withChildren() : null;
-        currentTokenPos.setOffset(level, EXPRBLOCK_POS_BLOCK);
-        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, currentTokenPos, blockHitBox, supplement);
+        currentTokenPos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
+        renderStatementContainer(block, blockContainer, pos != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK ? pos : null, level + 1, currentTokenPos, blockHitBox, supplement);
         currentTokenPos.setMaxOffset(level + 1);
         if (hitBox != null)
         {
           blockHitBox.el = block;
-          hitBox.children.set(EXPRBLOCK_POS_BLOCK, blockHitBox);
+          hitBox.children.set(CodePosition.EXPRBLOCK_POS_BLOCK, blockHitBox);
         }
         div.appendChild(block);
         

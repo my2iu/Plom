@@ -176,15 +176,15 @@ public class RenderedCursorPositionTest extends TestCase
     assertCursorRectEquals(new CursorRect(0, 4, 4 + 26), cursor);
 
     // start of first parameter
-    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), 0, hitBoxes);
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0), 0, hitBoxes);
     assertCursorRectEquals(new CursorRect(43, 4, 4 + 27), cursor);
 
     // after first parameter
-    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), 0, hitBoxes);
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 1), 0, hitBoxes);
     assertCursorRectEquals(new CursorRect(43 + 57, 4, 4 + 27), cursor);
     
     // second parameter that is empty
-    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), 0, hitBoxes);
+    cursor = RenderedCursorPosition.inStatements(container, CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 1, 0), 0, hitBoxes);
     assertCursorRectEquals(new CursorRect(132, 8, 8 + 17), cursor);
 
     // TODO: Before/after a multi-line parameter token

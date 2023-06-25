@@ -1,4 +1,4 @@
-package org.programmingbasics.plom.core.view;
+package org.programmingbasics.plom.core.ast;
 
 import org.junit.Assert;
 import org.junit.Test;

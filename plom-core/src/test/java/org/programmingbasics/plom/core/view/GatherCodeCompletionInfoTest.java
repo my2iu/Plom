@@ -237,22 +237,22 @@ public class GatherCodeCompletionInfoTest extends TestCase
             )
         );
 
-    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    CodeCompletionContext context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0));
     Assert.assertNull(context.getLastTypeUsed());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 1));
     Assert.assertEquals(context.coreTypes().getBooleanType(), context.getLastTypeUsed());
     
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 2));
     Assert.assertNull(context.getLastTypeUsed());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 3));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 3));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
     
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 4));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 4));
     Assert.assertNull(context.getLastTypeUsed());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 5));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(2, 0, CodePosition.EXPRBLOCK_POS_EXPR, 5));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
   }
   
@@ -275,19 +275,19 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
     Assert.assertNull(context.getExpectedExpressionType());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodePosition.PARAMTOK_POS_EXPRS, 0, 0));
     Assert.assertNull(context.getLastTypeUsed());
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodePosition.PARAMTOK_POS_EXPRS, 0, 1));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
     
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodePosition.PARAMTOK_POS_EXPRS, 1, 0));
     Assert.assertNull(context.getLastTypeUsed());
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 1));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(0, 1, CodePosition.PARAMTOK_POS_EXPRS, 1, 1));
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
     Assert.assertEquals(context.coreTypes().getNumberType(), context.getExpectedExpressionType());
 
@@ -367,15 +367,15 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
     Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0));
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
     Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 0));
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
     Assert.assertFalse(new VariableSuggester(context).gatherSuggestions("").contains("b"));
 
-    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0));
+    context = codeCompletionForPosition(code, CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0));
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("a"));
     Assert.assertTrue(new VariableSuggester(context).gatherSuggestions("").contains("b"));
 
@@ -546,19 +546,19 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertFalse(suggestions.contains("a"));
 
     // Start of the for expression
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0));
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertFalse(suggestions.contains("a"));
 
     // After the "in"
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 2));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 2));
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertFalse(suggestions.contains("a"));
 
     // Inside the block of the for
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 0));
     Assert.assertNull(context.getLastTypeUsed());
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("a"));
@@ -765,15 +765,15 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
 
     // We need the expected type to push into the lambda too?
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodePosition.EXPRBLOCK_POS_EXPR, 0));
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
 
     // Types are suggested properly for function literal args 
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 1));
     // skip test
     
     // Function literal arguments are suggested
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 0));
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("arg1"));
     Assert.assertTrue(suggestions.contains("arg2"));
@@ -783,7 +783,7 @@ public class GatherCodeCompletionInfoTest extends TestCase
     Assert.assertFalse(suggestions.contains("b"));
 
     // Function literal arguments are suggested
-    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0));
+    context = codeCompletionForPosition(code, "number", CodePosition.fromOffsets(0, 6, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0));
     suggestions = new VariableSuggester(context).gatherSuggestions("");
     Assert.assertTrue(suggestions.contains("arg1"));
     Assert.assertTrue(suggestions.contains("arg2"));
@@ -825,12 +825,12 @@ public class GatherCodeCompletionInfoTest extends TestCase
             )));
     
     // Check that function types are suggested when used as a method argument
-    CodePosition pos = CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0);
+    CodePosition pos = CodePosition.fromOffsets(1, 1, CodePosition.PARAMTOK_POS_EXPRS, 0);
     CodeCompletionContext context = codeCompletionForPosition(code, pos);
     UnboundType funType = UnboundType.forSimpleFunctionType("number", "call2:", "boolean");
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());
     
-    pos = CodePosition.fromOffsets(1, 1, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0);
+    pos = CodePosition.fromOffsets(1, 1, CodePosition.PARAMTOK_POS_EXPRS, 0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0);
     context = codeCompletionForPosition(code, pos);
     funType = UnboundType.forSimpleFunctionType("number", "call2:", "boolean");
     Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(funType), context.getExpectedExpressionType());

@@ -41,7 +41,7 @@ public class ParseContextTest extends TestCase
             )
         );
     // Inside the block of the if
-    CodePosition pos = CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
+    CodePosition pos = CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1);
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.FullStatement, parseContext.baseContext);
     Assert.assertEquals(
@@ -49,7 +49,7 @@ public class ParseContextTest extends TestCase
         parseContext.tokens);
     
     // Inside the expression of the if (beginning)
-    pos = CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0);
+    pos = CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0);
     parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ExpressionOnly, parseContext.baseContext);
     Assert.assertEquals(
@@ -57,7 +57,7 @@ public class ParseContextTest extends TestCase
         parseContext.tokens);
 
     // Inside the expression of the if (end)
-    pos = CodePosition.fromOffsets(1, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 1);
+    pos = CodePosition.fromOffsets(1, 0, CodePosition.EXPRBLOCK_POS_EXPR, 1);
     parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ExpressionOnly, parseContext.baseContext);
     Assert.assertEquals(
@@ -98,7 +98,7 @@ public class ParseContextTest extends TestCase
             )
         );
     // Inside the block of the for
-    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1);
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.FullStatement, parseContext.baseContext);
     Assert.assertEquals(
@@ -106,7 +106,7 @@ public class ParseContextTest extends TestCase
         parseContext.tokens);
     
     // Inside the expression of the for (beginning)
-    pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0);
+    pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0);
     parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ForExpressionOnly, parseContext.baseContext);
     Assert.assertEquals(
@@ -114,7 +114,7 @@ public class ParseContextTest extends TestCase
         parseContext.tokens);
 
     // Inside the expression of the for (end)
-    pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 3);
+    pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 3);
     parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ForExpressionOnly, parseContext.baseContext);
     Assert.assertEquals(
@@ -141,14 +141,14 @@ public class ParseContextTest extends TestCase
             )
         );
     // Parameter of a function type
-    CodePosition pos = CodePosition.fromOffsets(0, 2, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0);
+    CodePosition pos = CodePosition.fromOffsets(0, 2, CodePosition.PARAMTOK_POS_EXPRS, 0, 0);
     ParseContext.ParseContextForCursor parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ParameterFieldOptionalNameOnly, parseContext.baseContext);
     Assert.assertEquals(
         Arrays.asList(),
         parseContext.tokens);
     
-    pos = CodePosition.fromOffsets(0, 2, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1);
+    pos = CodePosition.fromOffsets(0, 2, CodePosition.PARAMTOK_POS_EXPRS, 0, 1);
     parseContext = ParseContext.findPredictiveParseContextForStatements(container, pos, 0);
     Assert.assertEquals(Symbol.ParameterFieldOptionalNameOnly, parseContext.baseContext);
     Assert.assertEquals(

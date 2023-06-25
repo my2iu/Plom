@@ -89,13 +89,13 @@ public class GatherCodeCompletionInfo
           switch (token.getType())
           {
             case COMPOUND_FOR:
-              if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+              if (pos.getOffset(level + 1) != CodePosition.EXPRBLOCK_POS_BLOCK) return null;
               context.setExpectedExpressionType(null);
               parseWholeLine(token.expression, Symbol.ForExpression, context);
               return null;
             case FunctionLiteral:
               // We're only interested in executing the expression part if we're recursing into the block part later on
-              if (pos.getOffset(level + 1) != CodeRenderer.EXPRBLOCK_POS_BLOCK) return null;
+              if (pos.getOffset(level + 1) != CodePosition.EXPRBLOCK_POS_BLOCK) return null;
               // Parse out the function type of the literal and extract any arguments defined in function literal type
               if (token.expression == null) return null;
               parseWholeLine(token.expression, Symbol.FunctionLiteralExpression, context);

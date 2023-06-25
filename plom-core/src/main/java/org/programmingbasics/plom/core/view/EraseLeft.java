@@ -76,7 +76,7 @@ public class EraseLeft
         public AfterAction visitParameterToken(ParameterToken token,
             CodePosition pos, Integer level, Void param)
         {
-          if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+          if (pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
           {
             int paramNum = pos.getOffset(level + 1);
             AfterAction action = eraseLeftFromLine(token.parameters.get(paramNum), pos, level + 2);
@@ -100,21 +100,21 @@ public class EraseLeft
             TokenContainer exprContainer, StatementContainer blockContainer,
             CodePosition pos, int level, Void param)
         {
-          if (exprContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+          if (exprContainer != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
           {
             AfterAction action = eraseLeftFromLine(exprContainer, pos, level + 1);
             if (action == AfterAction.ERASE_BEGINNING)
               return AfterAction.ERASE_BEGINNING;
             return AfterAction.NONE;
           }
-          else if (blockContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+          else if (blockContainer != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
           {
             AfterAction action = eraseLeftFromStatementContainer(blockContainer, pos, level + 1);
             if (action == AfterAction.ERASE_BEGINNING)
             {
               if (exprContainer != null)
               {
-                pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
+                pos.setOffset(level, CodePosition.EXPRBLOCK_POS_EXPR);
                 LastPosition.lastPositionOfLine(exprContainer, pos, level + 1);
               }
               else

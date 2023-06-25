@@ -188,8 +188,8 @@ public class HitDetect
       // the end of the token, it should count as being after the token (because
       // that's the only way to get a cursor position there)
       if (token.isInline() && toReturn == TokenHitLocation.ON
-          && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop()
-          + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetHeight())
+          && y > hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK).getOffsetTop()
+          + hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK).getOffsetHeight())
         return TokenHitLocation.AFTER;
       return toReturn;
     }
@@ -228,14 +228,14 @@ public class HitDetect
       // Make sure we're actually on the token
       if (x < hitBox.getOffsetLeft() || y < hitBox.getOffsetTop()) return null;
       // Check each parameter to see if we're clicking in there
-      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+      RenderedHitBox paramHitBox = hitBox.children.get(CodePosition.PARAMTOK_POS_EXPRS); 
       if (paramHitBox == null)
         return null;
       for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
       {
         if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
         {
-          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+          pos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
           pos.setOffset(level + 1, n);
           hitDetectTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
           return null;
@@ -252,19 +252,19 @@ public class HitDetect
       int x = param.x;
       int y = param.y;
       // Check inside the statement block
-      if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK) != null
-        && y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK).getOffsetTop())
+      if (hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK) != null
+        && y > hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK).getOffsetTop())
       {
-        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
-        hitDetectStatementContainer(x, y, blockContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK), pos, level + 1);
+        pos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
+        hitDetectStatementContainer(x, y, blockContainer, hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK), pos, level + 1);
       }
       // Check if we're inside the expression
-      else if (hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR) != null
-          && (x > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).getOffsetLeft() 
-              || y > hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetTop() + hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_START).getOffsetHeight()))
+      else if (hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR) != null
+          && (x > hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR).getOffsetLeft() 
+              || y > hitBox.children.get(CodePosition.EXPRBLOCK_POS_START).getOffsetTop() + hitBox.children.get(CodePosition.EXPRBLOCK_POS_START).getOffsetHeight()))
       {
-        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
-        hitDetectTokens(x, y, exprContainer, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR), pos, level + 1);
+        pos.setOffset(level, CodePosition.EXPRBLOCK_POS_EXPR);
+        hitDetectTokens(x, y, exprContainer, hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR), pos, level + 1);
       }
       return null;
     }
@@ -350,14 +350,14 @@ public class HitDetect
       int x = param.x;
       int y = param.y;
       // Check each parameter to see if we're clicking in there
-      RenderedHitBox paramHitBox = hitBox.children.get(CodeRenderer.PARAMTOK_POS_EXPRS); 
+      RenderedHitBox paramHitBox = hitBox.children.get(CodePosition.PARAMTOK_POS_EXPRS); 
       if (paramHitBox == null)
         return null;
       for (int n = paramHitBox.children.size() - 1; n >= 0; n--)
       {
         if (checkHitMultilineSpan(x, y, paramHitBox.children.get(n)) != TokenHitLocation.NONE)
         {
-          pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+          pos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
           pos.setOffset(level + 1, n);
           hitDetectTypeTokens(x, y, token.parameters.get(n), paramHitBox.children.get(n), pos, level + 2);
           return null;

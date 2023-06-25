@@ -107,7 +107,7 @@ public class InsertTokenTest extends TestCase
                     )
                 )
             );
-    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1);
     InsertToken.insertTokenIntoStatementContainer(container, new Token.SimpleToken("A", Symbol.Number), pos, 0, false);
     Assert.assertEquals(
         new StatementContainer(

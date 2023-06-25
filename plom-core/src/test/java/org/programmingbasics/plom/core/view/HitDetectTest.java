@@ -317,19 +317,19 @@ public class HitDetectTest extends TestCase
     // Click on first token of first parameter
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(50, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 0), newPos);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 0), newPos);
     // Click on after first parameter
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(103, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 0, 1), newPos);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 0, 1), newPos);
     // Click on after second parameter that is empty
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(133, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 1, 0), newPos);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 1, 0), newPos);
     // Click on postfix
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(175, 15, container, hitBoxes, newPos, 0);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.PARAMTOK_POS_EXPRS, 2, 1), newPos);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.PARAMTOK_POS_EXPRS, 2, 1), newPos);
     // Click after end of token
     newPos = new CodePosition();
     newPos = HitDetect.hitDetectStatementContainer(205, 15, container, hitBoxes, newPos, 0);

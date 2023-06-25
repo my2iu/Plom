@@ -73,7 +73,7 @@ public class NextPosition
         {
           if (!token.parameters.isEmpty())
           {
-            pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+            pos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
             pos.setOffset(level + 1, 0);
             pos.setOffset(level + 2, 0);
             pos.setMaxOffset(level + 3);
@@ -82,7 +82,7 @@ public class NextPosition
           return true;
         }
         // Advance inside the parameter
-        pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+        pos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
         if (nextPositionOfLine(token.parameters.get(pos.getOffset(level + 1)), pos, level + 2))
         {
           if (pos.getOffset(level + 1) + 1 < token.parameters.size())
@@ -111,14 +111,14 @@ public class NextPosition
         {
           if (exprContainer != null)
           {
-            pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_EXPR);
+            pos.setOffset(level, CodePosition.EXPRBLOCK_POS_EXPR);
             pos.setOffset(level + 1, 0);
             pos.setMaxOffset(level + 2);
             return false;
           }
           if (blockContainer != null)
           {
-            pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+            pos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
             pos.setOffset(level + 1, 0);
             pos.setOffset(level + 2, 0);
             pos.setMaxOffset(level + 3);
@@ -126,14 +126,14 @@ public class NextPosition
           }
           return true;
         }
-        else if (pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+        else if (pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
         {
           // Last position was in the expression
           if (nextPositionOfLine(exprContainer, pos, level + 1))
           {
             if (blockContainer != null)
             {
-              pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+              pos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
               pos.setOffset(level + 1, 0);
               pos.setOffset(level + 2, 0);
               pos.setMaxOffset(level + 3);
@@ -143,7 +143,7 @@ public class NextPosition
           else
             return false;
         }
-        else if (pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+        else if (pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
         {
           // Last position was in the block
           if (nextPositionOfStatements(blockContainer, pos, level + 1))

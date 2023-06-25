@@ -54,7 +54,7 @@ public class LastPosition
       {
         if (token.parameters.isEmpty())
           return false;
-        pos.setOffset(level, CodeRenderer.PARAMTOK_POS_EXPRS);
+        pos.setOffset(level, CodePosition.PARAMTOK_POS_EXPRS);
         pos.setOffset(level + 1, token.parameters.size() - 1);
         lastPositionOfLine(token.parameters.get(token.parameters.size() - 1), pos, level + 2);
         return true;
@@ -69,7 +69,7 @@ public class LastPosition
       @Override
       public Boolean visitOneBlockToken(OneBlockToken token)
       {
-        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+        pos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
         lastPositionOfStatements(token.block, pos, level + 1);
         return true;
       }
@@ -78,7 +78,7 @@ public class LastPosition
       public Boolean visitOneExpressionOneBlockToken(
           OneExpressionOneBlockToken token)
       {
-        pos.setOffset(level, CodeRenderer.EXPRBLOCK_POS_BLOCK);
+        pos.setOffset(level, CodePosition.EXPRBLOCK_POS_BLOCK);
         lastPositionOfStatements(token.block, pos, level + 1);
         return true;
       }});

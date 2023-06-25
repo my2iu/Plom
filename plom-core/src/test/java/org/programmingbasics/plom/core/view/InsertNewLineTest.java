@@ -73,7 +73,7 @@ public class InsertNewLineTest extends TestCase
                 )
             )
         );
-    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 1);
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1);
     InsertNewLine.insertNewlineIntoStatementContainer(container, pos, 0);
     Assert.assertEquals(
         new StatementContainer(
@@ -87,7 +87,7 @@ public class InsertNewLineTest extends TestCase
             )
         ),
         container);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), pos);
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0), pos);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class InsertNewLineTest extends TestCase
                 )
             )
         );
-    CodePosition pos = CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 0, 0);
+    CodePosition pos = CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 0);
     InsertNewLine.insertNewlineIntoStatementContainer(container, pos, 0);
     Assert.assertEquals(
         new StatementContainer(
@@ -137,6 +137,6 @@ public class InsertNewLineTest extends TestCase
             )
         ),
         container);
-    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodeRenderer.EXPRBLOCK_POS_EXPR, 0, CodeRenderer.EXPRBLOCK_POS_BLOCK, 1, 0), pos);    
+    Assert.assertEquals(CodePosition.fromOffsets(0, 0, CodePosition.EXPRBLOCK_POS_EXPR, 0, CodePosition.EXPRBLOCK_POS_BLOCK, 1, 0), pos);    
   }
 }

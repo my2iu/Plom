@@ -1,5 +1,7 @@
 package org.programmingbasics.plom.core;
 
+import org.programmingbasics.plom.core.ast.CodePositionTest;
+import org.programmingbasics.plom.core.ast.FindTokenTest;
 import org.programmingbasics.plom.core.ast.LL1ParserTest;
 import org.programmingbasics.plom.core.ast.LineNumberTrackerTest;
 import org.programmingbasics.plom.core.ast.ParseToAstTest;
@@ -14,10 +16,8 @@ import org.programmingbasics.plom.core.interpreter.StandardLibraryTest;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreterTest;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractorTest;
 import org.programmingbasics.plom.core.view.CodeNestingCounterTest;
-import org.programmingbasics.plom.core.view.CodePositionTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
 import org.programmingbasics.plom.core.view.EraseSelectionTest;
-import org.programmingbasics.plom.core.view.FindTokenTest;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfoTest;
 import org.programmingbasics.plom.core.view.HitDetectTest;
 import org.programmingbasics.plom.core.view.InsertNewLineTest;

@@ -48,8 +48,8 @@ public class RenderedTokenHitBox
       // Special handling for wide/block tokens
       if (line.tokens.get(pos.getOffset(level)).isWide())
       {
-        if (hitBox.children.get(pos.getOffset(level)).children.get(CodeRenderer.EXPRBLOCK_POS_START) != null)
-          tokenHitBox = hitBox.children.get(pos.getOffset(level)).children.get(CodeRenderer.EXPRBLOCK_POS_START);
+        if (hitBox.children.get(pos.getOffset(level)).children.get(CodePosition.EXPRBLOCK_POS_START) != null)
+          tokenHitBox = hitBox.children.get(pos.getOffset(level)).children.get(CodePosition.EXPRBLOCK_POS_START);
       }
       return tokenHitBox;
     }
@@ -93,9 +93,9 @@ public class RenderedTokenHitBox
     public RenderedHitBox visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
         RenderedHitBox hitBox)
     {
-      if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+      if (pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
       {
-        return inLine(token.parameters.get(pos.getOffset(level + 1)), Symbol.ExpressionOnly, pos, level + 2, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR).children.get(pos.getOffset(level + 1)));
+        return inLine(token.parameters.get(pos.getOffset(level + 1)), Symbol.ExpressionOnly, pos, level + 2, hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR).children.get(pos.getOffset(level + 1)));
       }
       throw new IllegalArgumentException();
     }
@@ -105,17 +105,17 @@ public class RenderedTokenHitBox
         CodePosition pos, int level, RenderedHitBox hitBox)
     {
       if (originalToken.getType() == Symbol.COMPOUND_FOR)
-        return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+        return inLine(exprContainer, Symbol.ForExpressionOnly, pos, level, hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR));
       else if (originalToken.getType() == Symbol.FunctionLiteral)
-        return inLine(exprContainer, Symbol.FunctionLiteralExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+        return inLine(exprContainer, Symbol.FunctionLiteralExpressionOnly, pos, level, hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR));
       else
-        return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_EXPR));
+        return inLine(exprContainer, Symbol.ExpressionOnly, pos, level, hitBox.children.get(CodePosition.EXPRBLOCK_POS_EXPR));
     }
     @Override
     RenderedHitBox handleStatementContainer(TokenWithSymbol originalToken,
         StatementContainer blockContainer, CodePosition pos, int level, RenderedHitBox hitBox)
     {
-      return inStatements(blockContainer, pos, level, hitBox.children.get(CodeRenderer.EXPRBLOCK_POS_BLOCK));
+      return inStatements(blockContainer, pos, level, hitBox.children.get(CodePosition.EXPRBLOCK_POS_BLOCK));
     }
   }
 }

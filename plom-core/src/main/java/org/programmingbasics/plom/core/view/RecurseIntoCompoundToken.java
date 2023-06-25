@@ -25,7 +25,7 @@ public class RecurseIntoCompoundToken<T, U, E extends Throwable> implements Toke
   public T visitParameterToken(ParameterToken token, CodePosition pos, Integer level, 
       U param) throws E
   {
-    if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+    if (pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
     {
       return handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, param);
     }
@@ -56,11 +56,11 @@ public class RecurseIntoCompoundToken<T, U, E extends Throwable> implements Toke
   T handleWideToken(WideToken originalToken, TokenContainer exprContainer,
       StatementContainer blockContainer, CodePosition pos, int level, U param) throws E
   {
-    if (exprContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+    if (exprContainer != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
     {
       return handleExpression(originalToken, exprContainer, pos, level + 1, param);
     }
-    else if (blockContainer != null && pos.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+    else if (blockContainer != null && pos.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
     {
       return handleStatementContainer(originalToken, blockContainer, pos, level + 1, param);
     }

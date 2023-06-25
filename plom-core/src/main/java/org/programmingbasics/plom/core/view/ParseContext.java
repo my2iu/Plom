@@ -74,7 +74,7 @@ public class ParseContext
     public ParseContextForCursor visitParameterToken(ParameterToken token,
         CodePosition pos, Integer level, Void param) throws RuntimeException
     {
-      if (pos.getOffset(level) != CodeRenderer.PARAMTOK_POS_EXPRS)
+      if (pos.getOffset(level) != CodePosition.PARAMTOK_POS_EXPRS)
         return super.visitParameterToken(token, pos, level, param);
 
       switch (token.getType())

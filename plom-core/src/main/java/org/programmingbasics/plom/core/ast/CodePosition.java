@@ -9,6 +9,15 @@ import java.util.List;
  */
 public class CodePosition
 {
+  public static final int PARAMTOK_POS_EXPRS = 1;
+  public static final int PARAMTOK_POS_TEXTS = 0;
+  
+  public static final int EXPRBLOCK_POS_BLOCK = 2;
+  public static final int EXPRBLOCK_POS_EXPR = 1;
+  public static final int EXPRBLOCK_POS_START = 0;
+
+//  private static final int EXPRBLOCK_POS_END = 3;
+
   public static CodePosition fromOffsets(int...vals)
   {
     CodePosition toReturn = new CodePosition();
@@ -19,6 +28,7 @@ public class CodePosition
     return toReturn;
   }
    private List<Integer> offsets = new ArrayList<>();
+
    public int getOffset(int level)
    {
       if (level >= offsets.size()) return 0;

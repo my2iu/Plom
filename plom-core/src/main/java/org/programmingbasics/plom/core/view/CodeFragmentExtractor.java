@@ -69,7 +69,7 @@ public class CodeFragmentExtractor
         @Override public Void visitParameterToken(ParameterToken token, CodePosition start,
             Integer level, CodePosition end) throws IOException
         {
-          if (start.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+          if (start.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
           {
             if (start.getOffset(level + 1) == end.getOffset(level + 1))
             {
@@ -100,17 +100,17 @@ public class CodeFragmentExtractor
         {
           if (start.getOffset(level) == end.getOffset(level))
           {
-            if (exprContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+            if (exprContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
             {
               return handleExpression(originalToken, exprContainer, start, level + 1, end);
             }
-            else if (blockContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+            else if (blockContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
             {
               return handleStatementContainer(originalToken, blockContainer, start, level + 1, end);
             }
             throw new IllegalArgumentException();
           }
-          if (start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+          if (start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
           {
             extractAfterFromLine(exprContainer, start, level + 1, out);
             out.newline();
@@ -208,7 +208,7 @@ public class CodeFragmentExtractor
     public Void visitParameterToken(ParameterToken token, CodePosition pos,
         Integer level, PlomCodeOutputFormatter out) throws IOException
     {
-      if (pos.getOffset(level) == CodeRenderer.PARAMTOK_POS_EXPRS)
+      if (pos.getOffset(level) == CodePosition.PARAMTOK_POS_EXPRS)
       {
         handleExpression(token, token.parameters.get(pos.getOffset(level + 1)), pos, level + 2, out);
         out.newline();
@@ -227,14 +227,14 @@ public class CodeFragmentExtractor
         StatementContainer blockContainer, CodePosition start, int level,
         PlomCodeOutputFormatter out) throws IOException
     {
-      if (exprContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+      if (exprContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
       {
         handleExpression(originalToken, exprContainer, start, level + 1, out);
         out.newline();
         if (blockContainer != null)
           PlomTextWriter.writeStatementContainer(out, blockContainer);
       }
-      else if (blockContainer != null && start.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+      else if (blockContainer != null && start.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
       {
         handleStatementContainer(originalToken, blockContainer, start, level + 1, out);
       }
@@ -311,7 +311,7 @@ public class CodeFragmentExtractor
         StatementContainer blockContainer, CodePosition end, int level,
         PlomCodeOutputFormatter out) throws IOException
     {
-      if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_EXPR)
+      if (end.getOffset(level) == CodePosition.EXPRBLOCK_POS_EXPR)
       {
         PlomTextWriter.writeBlockTokenFirstLine(out, originalToken, false);
         extractBeforeFromLine(exprContainer, end, level + 1, out);
@@ -320,7 +320,7 @@ public class CodeFragmentExtractor
         PlomTextWriter.writeBlockTokenEnd(out);
         return null;
       }
-      else if (end.getOffset(level) == CodeRenderer.EXPRBLOCK_POS_BLOCK)
+      else if (end.getOffset(level) == CodePosition.EXPRBLOCK_POS_BLOCK)
       {
         if (exprContainer != null)
         {
