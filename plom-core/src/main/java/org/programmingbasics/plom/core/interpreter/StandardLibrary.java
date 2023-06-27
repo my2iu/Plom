@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core.interpreter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -362,7 +363,7 @@ public class StandardLibrary
           ExecutableFunction execFn = ExecutableFunction.forCode(
               CodeUnitLocation.forStaticMethod(m.className, m.methodName), 
               ParseToAst.parseStatementContainer(m.code),
-              m.argNames); 
+              Optional.of(m.code), m.argNames); 
           coreTypeFromString(m.className, coreTypes).addStaticMethod(m.methodName,
               execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
         }
@@ -371,7 +372,7 @@ public class StandardLibrary
           ExecutableFunction execFn = ExecutableFunction.forCode(
               CodeUnitLocation.forConstructorMethod(m.className, m.methodName), 
               ParseToAst.parseStatementContainer(m.code),
-              m.argNames); 
+              Optional.of(m.code), m.argNames); 
           coreTypeFromString(m.className, coreTypes).addStaticMethod(m.methodName,
               execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
         }
@@ -380,7 +381,7 @@ public class StandardLibrary
           ExecutableFunction execFn = ExecutableFunction.forCode(
               CodeUnitLocation.forMethod(m.className, m.methodName), 
               ParseToAst.parseStatementContainer(m.code),
-              m.argNames); 
+              Optional.of(m.code), m.argNames); 
           coreTypeFromString(m.className, coreTypes).addMethod(m.methodName,
               execFn, coreTypeFromString(m.returnType, coreTypes), argTypes);
         }

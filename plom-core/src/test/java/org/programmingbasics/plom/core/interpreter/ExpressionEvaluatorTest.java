@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class ExpressionEvaluatorTest extends TestCase
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
     // Start running the code
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, ExpressionEvaluator.expressionHandlers);
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), Optional.empty(), null, ExpressionEvaluator.expressionHandlers);
     machine.pushScope(scope);
     machine.runToCompletion();
     // Result of the expression should be on the top of the stack
@@ -44,7 +45,7 @@ public class ExpressionEvaluatorTest extends TestCase
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
     // Start running the code
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, ExpressionEvaluator.assignmentLValueHandlers);
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), Optional.empty(), null, ExpressionEvaluator.assignmentLValueHandlers);
     machine.pushScope(scope);
     machine.runToCompletion();
   }

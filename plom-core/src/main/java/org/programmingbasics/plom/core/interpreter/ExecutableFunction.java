@@ -1,8 +1,10 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 
 /**
  * Information needed about a function for it to be executed in a MachineContext
@@ -16,10 +18,17 @@ public class ExecutableFunction
   
   public CodeUnitLocation codeUnit;
   
-  public static ExecutableFunction forCode(CodeUnitLocation codeUnit, AstNode code, List<String> argPosToName)
+  /** 
+   * Optional source reference for a function that can be used for
+   * looking up error locations
+   */
+  public Optional<StatementContainer> sourceLookup = Optional.empty();
+  
+  public static ExecutableFunction forCode(CodeUnitLocation codeUnit, AstNode code, Optional<StatementContainer> sourceLookupForDebug, List<String> argPosToName)
   {
     ExecutableFunction toReturn = new ExecutableFunction();
     toReturn.codeUnit = codeUnit;
+    toReturn.sourceLookup = sourceLookupForDebug;
     toReturn.code = code;
     toReturn.argPosToName = argPosToName;
     return toReturn;

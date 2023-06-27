@@ -4,9 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -496,7 +498,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Arrays.asList("val1", "val2"));
+            Optional.empty(), Arrays.asList("val1", "val2"));
         Value adderFnVal = Value.create(adderFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()));
         scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -530,7 +532,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         Value getFnVal = Value.create(getFn, Type.makeFunctionType(coreTypes.getNumberType()));
         scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -584,7 +586,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Arrays.asList("val"));
+            Optional.empty(), Arrays.asList("val"));
         Value aFnVal = Value.create(aFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
         scope.addVariable("a:", aFnVal.type, aFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -639,7 +641,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         coreTypes.getNumberType().addMethod("testGetVal", getFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -678,7 +680,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         coreTypes.getNumberType().addMethod("testGetVal", getFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -721,7 +723,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         testType.addStaticMethod("calcVal", getFn, coreTypes.getVoidType());
         scope.addType(testType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -735,7 +737,7 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(5, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-
+  
   @Test
   public void testConstructorCallCreateObject() throws RunException, ParseException
   {
@@ -784,7 +786,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
         ExecutableFunction valFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("test", "get"), 
@@ -796,7 +798,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         testType.addMethod("get", valFn, coreTypes.getNumberType());
         scope.addType(testType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -851,7 +853,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
         scope.addType(childType);
 
@@ -870,7 +872,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         subChildType.addStaticMethod("new", subCreateFn, coreTypes.getVoidType());
         scope.addType(subChildType);
 
@@ -886,7 +888,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         subChildType.addMethod("get", valFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -937,7 +939,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList("start"));
+            Optional.empty(), Arrays.asList("start"));
         iteratorType.addStaticMethod("start:", createFn, coreTypes.getVoidType(), coreTypes.getNumberType());
         ExecutableFunction atEndFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", ".at end"), 
@@ -951,7 +953,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         iteratorType.addMethod("at end", atEndFn, coreTypes.getBooleanType());
         ExecutableFunction valFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", "value"), 
@@ -963,7 +965,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         iteratorType.addMethod("value", valFn, coreTypes.getNumberType());
         ExecutableFunction nextFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", "next"), 
@@ -982,7 +984,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Arrays.asList());
+            Optional.empty(), Arrays.asList());
         iteratorType.addMethod("next", nextFn, iteratorType);
         scope.addType(iteratorType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -1262,4 +1264,31 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(16, returned.getNumberValue(), 0.01);
   }
 
+  @Test
+  public void testMissingFunctionInsideUnnamed() throws ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".missing function", Symbol.DotVariable)
+            ));
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("Cannot find value .missing function", e.getMessage());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(1, 0), e.getErrorLocation().getPosition());
+      return;
+    }
+    Assert.fail("Expecting an exception");
+  }
 }

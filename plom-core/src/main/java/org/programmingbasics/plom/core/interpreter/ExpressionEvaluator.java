@@ -261,7 +261,14 @@ public class ExpressionEvaluator
               machine.ip.pushAndAdvanceIdx(node.internalChildren.get(idx), expressionHandlers);
               return;
             }
-            Value toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
+            Value toReturn;
+            try {
+              toReturn = machine.currentScope().lookup(((Token.ParameterToken)node.token).getLookupName());
+            }
+            catch (RunException e)
+            {
+              throw e.addProgramLocationFromNodeIfNeeded(node, machine);
+            }
             if (toReturn.type.isCallable())
             {
               if (toReturn.type.isNormalFunction())
@@ -314,13 +321,14 @@ public class ExpressionEvaluator
                 // We're calling a lambda function
                 Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)self.type;
                 if (!((Token.ParameterToken)methodNode.token).getLookupName().equals(lambdaType.name))
-                  throw new RunException();
+                  throw RunException.withLocationFromNode("Lambda function does not match", methodNode, machine);
                 LambdaFunction lambda = (LambdaFunction)self.val;
                 machine.ip.pop();
                 callMethodOrFunction(machine, null, lambda.toExecutableFunction(), false, null, true, lambda.closureScope);
                 return;
               }
-              ExecutableFunction method = self.type.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+              String lookupName = ((Token.ParameterToken)methodNode.token).getLookupName();
+              ExecutableFunction method = self.type.lookupMethod(lookupName);
               if (method != null)
               {
                 machine.ip.pop();
@@ -331,7 +339,7 @@ public class ExpressionEvaluator
               {
                 PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
                 if (primitiveMethod == null)
-                  throw new RunException();
+                  throw RunException.withLocationFromNode("Cannot find method with the name ." + lookupName, methodNode, machine);
                 List<Value> args = new ArrayList<>();
                 for (int n = 0; n < methodNode.internalChildren.size(); n++)
                 {
@@ -355,7 +363,8 @@ public class ExpressionEvaluator
             else if (idx == methodNode.internalChildren.size()) 
             {
               Type calleeType = machine.currentScope().typeFromUnboundTypeFromScope(VariableDeclarationInterpreter.gatherUnboundTypeInfo(node.children.get(0)));
-              ExecutableFunction method = calleeType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+              String lookupName = ((Token.ParameterToken)methodNode.token).getLookupName();
+              ExecutableFunction method = calleeType.lookupStaticMethod(lookupName);
               if (method != null)
               {
                 if (method.codeUnit.isStatic)
@@ -373,7 +382,7 @@ public class ExpressionEvaluator
               }
               else
               {
-                throw new RunException();
+                throw RunException.withLocationFromNode("Cannot find static method with the name ." + lookupName, methodNode, machine);
               }
             }
             else  // idx == methodNode.internalChildren.size() + 1
@@ -404,12 +413,12 @@ public class ExpressionEvaluator
                     callMethodOrFunction(machine, null, method, true, machine.getTopStackFrame().constructorConcreteType, false, null);
                   }
                   else
-                    throw new RunException("Can only use super to call other constructors from within a constructor");
+                    throw RunException.withLocationFromNode("Can only use super to call other constructors from within a constructor", methodNode, machine);
                   return;
                 }
                 else
                 {
-                  throw new RunException();
+                  throw RunException.withLocationFromNode("Cannot find super method with that name", methodNode, machine);
                 }
               }
               else  // idx == methodNode.internalChildren.size() + 1
@@ -484,6 +493,7 @@ public class ExpressionEvaluator
             LambdaFunction fun = new LambdaFunction();
             fun.functionBody = contentsAst;
             fun.codeUnit = codeUnit;
+            fun.sourceLookup = machine.getTopStackFrame().sourceLookup;
             fun.argPosToName = argPosToName;
             fun.closureScope = machine.currentScope();
 //            fun.self = machine.currentScope().lookupThisOrNull();
@@ -539,14 +549,14 @@ public class ExpressionEvaluator
     // Push a new stack frame for the function and set up other variable scope
     if (!isLambda)
     {
-      machine.pushStackFrame(method.code, method.codeUnit, constructorType, SimpleInterpreter.statementHandlers);
+      machine.pushStackFrame(method.code, method.codeUnit, method.sourceLookup, constructorType, SimpleInterpreter.statementHandlers);
       if (isConstructor)
         machine.pushConstructorScope();
       else if (self != null)
         machine.pushObjectScope(self);
     }
     else
-      machine.pushStackFrame(method.code, method.codeUnit, closureScope, constructorType, SimpleInterpreter.statementHandlers);
+      machine.pushStackFrame(method.code, method.codeUnit, method.sourceLookup, closureScope, constructorType, SimpleInterpreter.statementHandlers);
 
     // Push arguments onto the scope stack
     machine.pushNewScope();

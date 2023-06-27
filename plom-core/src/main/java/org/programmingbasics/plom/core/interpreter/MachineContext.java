@@ -3,8 +3,10 @@ package org.programmingbasics.plom.core.interpreter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
@@ -256,6 +258,11 @@ public class MachineContext
     CodeUnitLocation codeUnit;
     
     /**
+     * Debug reference to the source where the function is from
+     */
+    Optional<StatementContainer> sourceLookup;
+    
+    /**
      * Holds the instruction pointer of where execution is in the 
      * current function/method
      */
@@ -298,17 +305,18 @@ public class MachineContext
   private List<StackFrame> stackFrames = new ArrayList<>();
   private StackFrame topStackFrame;
 
-  public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, Type constructorType, NodeHandlers instructionHandlers)
+  public void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, Optional<StatementContainer> sourceLookup, Type constructorType, NodeHandlers instructionHandlers)
   {
-    pushStackFrame(node, codeUnit, getGlobalScope(), constructorType, instructionHandlers);
+    pushStackFrame(node, codeUnit, sourceLookup, getGlobalScope(), constructorType, instructionHandlers);
   }
 
-  protected void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, VariableScope baseScope, Type constructorType, NodeHandlers instructionHandlers)
+  protected void pushStackFrame(AstNode node, CodeUnitLocation codeUnit, Optional<StatementContainer> sourceLookup, VariableScope baseScope, Type constructorType, NodeHandlers instructionHandlers)
   {
     StackFrame frame = new StackFrame();
     frame.ip.push(node, instructionHandlers);
     frame.topScope = baseScope;
     frame.codeUnit = codeUnit;
+    frame.sourceLookup = sourceLookup;
     frame.constructorConcreteType = constructorType;
     
     stackFrames.add(frame);

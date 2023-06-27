@@ -82,8 +82,6 @@ TODO list from TOJam 2023
 - [ ] Escape the HTML put in strings
 - [ ] Warning when nothing returned from method when something expected
 - [ ] Auto fill of lambda function args strips out the leading . from arg name
-- [ ] If there is a problem with a method signature (e.g. unknown return type because of unknown class name) then flag it in UI
-- [ ] If there is a problem with a variable declaration (e.g. unknown type due to unknown class name) then flag it in UI
 - [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures
 - [ ] RepositoryScope unboundtypetotype should log errors when constructing types

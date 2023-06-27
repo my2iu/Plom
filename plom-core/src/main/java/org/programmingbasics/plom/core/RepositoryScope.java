@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
@@ -15,6 +16,7 @@ import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.FindToken;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
 import org.programmingbasics.plom.core.interpreter.CoreTypeLibrary;
@@ -27,6 +29,7 @@ import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.interpreter.Value.LValue;
+
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreter;
 import org.programmingbasics.plom.core.interpreter.VariableScope;
 
@@ -191,6 +194,7 @@ public class RepositoryScope extends VariableScope
     }
     
     try {
+      funCache.sourceLookup = Optional.of(func.code);
       funCache.code = ParseToAst.parseStatementContainer(func.code);
     } 
     catch (ParseException e)
@@ -227,7 +231,7 @@ public class RepositoryScope extends VariableScope
       {
         argPosToName.add(funCache.sig.getArgName(n));
       }
-      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), funCache.code, argPosToName);
+      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), funCache.code, funCache.sourceLookup, argPosToName);
       return val;
     }
     return super.lookup(name);
@@ -272,6 +276,7 @@ public class RepositoryScope extends VariableScope
     FunctionSignature sig;
     Type type;
     AstNode code;
+    Optional<StatementContainer> sourceLookup;
   }
   private Map<String, ParsedFunction> functionLookupCache = new HashMap<>(); 
   
@@ -338,7 +343,7 @@ public class RepositoryScope extends VariableScope
           if (fn.sig.isStatic)
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, fn.sig.argNames);
+                code, Optional.of(fn.code), fn.sig.argNames);
             Type returnType;
             try {
               returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 
@@ -353,7 +358,7 @@ public class RepositoryScope extends VariableScope
           else if (fn.sig.isConstructor)
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, fn.sig.argNames);
+                code, Optional.of(fn.code), fn.sig.argNames);
             // Use @void as the return type for constructors
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
                 coreTypes.getVoidType(), args);
@@ -361,7 +366,7 @@ public class RepositoryScope extends VariableScope
           else
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, fn.sig.argNames);
+                code, Optional.of(fn.code), fn.sig.argNames);
             Type returnType;
             try {
               returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 

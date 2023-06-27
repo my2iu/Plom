@@ -40,7 +40,7 @@ public class VariableScope
     {
       if (parent != null)
         return parent.lookup(name);
-      throw new RunException("Cannot find value " + name);
+      throw new RunException("Cannot find value ." + name);
     }
     return val;
   }

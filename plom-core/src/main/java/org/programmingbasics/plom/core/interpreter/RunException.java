@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.interpreter;
 
+import org.programmingbasics.plom.core.ast.AstNode;
+import org.programmingbasics.plom.core.ast.CodePosition;
+import org.programmingbasics.plom.core.ast.FindToken;
 import org.programmingbasics.plom.core.ast.Token;
 
 import jsinterop.annotations.JsIgnore;
@@ -19,6 +22,11 @@ public class RunException extends Exception
   @JsIgnore public RunException(String msg, Throwable t) { this(msg, t, null); }
   @JsIgnore public RunException(Throwable t) { this(null, t, null); }
 
+  @JsIgnore
+  public static RunException withLocationFromNode(String msg, AstNode node, MachineContext machine)
+  {
+    return new RunException(msg).addProgramLocationFromNodeIfNeeded(node, machine);
+  }
   
   /** Stores the location where an error occurred */
   public void setErrorLocation(ProgramCodeLocation loc)
@@ -42,4 +50,25 @@ public class RunException extends Exception
     return errorTokenSource;
   }
 
+  /** 
+   * Sometimes, we can add additional context about an exception
+   * outside of the location where we actually throw the exception.
+   * So instead of wrapping an exception, we can use this method
+   * to add a program location before rethrowing the same exception
+   */
+  public RunException addProgramLocationFromNodeIfNeeded(AstNode node, MachineContext machine)
+  {
+    if (getErrorLocation() == null)
+    {
+      Token errorToken = node.scanForToken();
+      if (errorToken != null)
+      {
+        CodePosition errorPos = null;
+        if (machine.getTopStackFrame().sourceLookup.isPresent())
+          errorPos = FindToken.tokenToPosition(errorToken, machine.getTopStackFrame().sourceLookup.get());
+        setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, errorPos));
+      }
+    }
+    return this;
+  }
 }

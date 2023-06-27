@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.ParseToAst;
@@ -401,7 +402,7 @@ public class SimpleInterpreter
       if (parsedCode == null)
         parsedCode = ParseToAst.parseStatementContainer(code);
       
-      ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), null, statementHandlers);
+      ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), Optional.of(code), null, statementHandlers);
       ctx.runToCompletion();
     }
     catch (Throwable e)
@@ -422,7 +423,7 @@ public class SimpleInterpreter
     if (parsedCode == null)
       parsedCode = ParseToAst.parseStatementContainer(code);
     
-    ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), null, statementHandlers);
+    ctx.pushStackFrame(parsedCode, CodeUnitLocation.forUnknown(), Optional.of(code), null, statementHandlers);
     if (scope != null)
       ctx.pushScope(scope);
     ctx.runToEndOfFrame();

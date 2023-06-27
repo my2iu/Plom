@@ -1,6 +1,7 @@
 package org.programmingbasics.plom.core.interpreter;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class MachineContextTest extends TestCase
     ParseToAst parser = new ParseToAst(line.tokens, Symbol.EndStatement, null);
     AstNode parsed = parser.parseToEnd(Symbol.Expression);
     MachineContext machine = new MachineContext();
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, new MachineContext.NodeHandlers());
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), Optional.empty(), null, new MachineContext.NodeHandlers());
     machine.runToCompletion();
   }
   
@@ -75,7 +76,7 @@ public class MachineContextTest extends TestCase
     AstNode parsed = ParseToAst.parseStatementContainer(code);
     MachineContext machine = new MachineContext();
     machine.coreTypes = coreTypes;
-    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), null, SimpleInterpreter.statementHandlers);
+    machine.pushStackFrame(parsed, CodeUnitLocation.forUnknown(), Optional.of(code), null, SimpleInterpreter.statementHandlers);
     machine.pushScope(scope);
     // Machine should block
     Assert.assertFalse(machine.runToCompletion());

@@ -56,6 +56,10 @@ public class ProgramCodeLocation
     return new ProgramCodeLocation(className, methodName, isStatic, pos);
   }
 
+  public static ProgramCodeLocation fromCodeUnit(CodeUnitLocation codeUnit, CodePosition pos)
+  {
+    return new ProgramCodeLocation(codeUnit.className, codeUnit.functionName, codeUnit.isConstructor || codeUnit.isStatic, pos);
+  }
   
   public String getClassName()
   {

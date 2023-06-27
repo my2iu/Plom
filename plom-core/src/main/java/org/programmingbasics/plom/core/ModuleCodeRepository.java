@@ -205,7 +205,14 @@ public class ModuleCodeRepository
       List<TokenContainer> newArgCodes = new ArrayList<>();
       for (int n = 0; n < argNames.size(); n++)
         newArgCodes.add(argCodeFromNameType(argNames.get(n), argTypes.get(n)));
-      return from(new TokenContainer(returnType.mainToken), nameParts, newArgCodes, oldSig);
+      TokenContainer returnTypeCode = new TokenContainer();
+      returnTypeCode.tokens.add(returnType.mainToken);
+      if (returnType.returnType != null)
+      {
+        returnTypeCode.tokens.add(new Token.SimpleToken("returns", Symbol.Returns));
+        returnTypeCode.tokens.addAll(returnType.returnType.tokens);
+      }
+      return from(returnTypeCode, nameParts, newArgCodes, oldSig);
     }
     public static FunctionSignature from(TokenContainer returnTypeCode, List<String> nameParts, List<TokenContainer> argCodes, FunctionSignature oldSig)
     {

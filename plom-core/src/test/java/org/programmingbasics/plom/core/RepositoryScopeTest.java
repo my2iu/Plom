@@ -3,6 +3,7 @@ package org.programmingbasics.plom.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -497,4 +498,110 @@ public class RepositoryScopeTest extends TestCase
     Assert.assertEquals("Problem with function argument 1", ((Throwable)errLogger.errs.get(1)).getCause().getMessage());
     Assert.assertEquals("Unknown class: @badtype2", ((Throwable)errLogger.errs.get(1)).getCause().getCause().getMessage());
   }
+  
+  @Test
+  public void testMissingMethodFromLambdaInStaticMethodException() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    ClassDescription classA = repository.addClassAndResetIds("classA");
+    classA.setSuperclass(UnboundType.forClassLookupName("object"));
+    
+    FunctionSignature sig = FunctionSignature.from(UnboundType.forSimpleFunctionType("void", "has bad method call"), "make lambda");
+    sig.isStatic = true;
+    classA.addMethod(new FunctionDescription(
+        sig, 
+        new StatementContainer(
+            new TokenContainer(),
+            new TokenContainer(
+                new Token.SimpleToken("return", Symbol.Return),
+                new Token.OneExpressionOneBlockToken("lambda", Symbol.FunctionLiteral,
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents("f@has bad method call", Symbol.FunctionTypeName),
+                        new Token.SimpleToken("returns", Symbol.Returns),
+                        Token.ParameterToken.fromContents("@void", Symbol.AtType)),
+                    new StatementContainer(
+                        new TokenContainer(
+                            new Token.SimpleToken("hello", Symbol.String),
+                            Token.ParameterToken.fromContents(".missing method", Symbol.DotVariable)
+                            )
+                        ))
+                ))));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@classA", Symbol.AtType),
+            Token.ParameterToken.fromContents(".make lambda", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".has bad method call", Symbol.DotVariable)
+            )
+        ));
+    try {
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+      terp.runNoReturn(scopeConfig);
+    
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals(0, errLogger.errs.size());
+
+      Assert.assertEquals("Cannot find method with the name .missing method", e.getMessage());
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertEquals("classA", e.getErrorLocation().getClassName());
+      Assert.assertEquals("make lambda", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(1, 1, CodePosition.EXPRBLOCK_POS_BLOCK, 0, 1), e.getErrorLocation().getPosition());
+      Assert.assertNull(e.getCause());
+      return;
+    }
+    Assert.fail("Expecting error when running code");
+
+  }
+
+  @Test
+  public void testMissingStaticMethodFromFunctionException() throws ParseException, RunException
+  {
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    
+    ClassDescription classA = repository.addClassAndResetIds("classA");
+    classA.setSuperclass(UnboundType.forClassLookupName("object"));
+
+    repository.addFunctionAndResetIds(new FunctionDescription(
+        FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@void", Symbol.AtType)), Arrays.asList("test"), Collections.emptyList(), null),
+        new StatementContainer(
+            new TokenContainer(),
+            new TokenContainer(
+                ParameterToken.fromContents("@classA", Symbol.AtType),
+                ParameterToken.fromContents(".go", Symbol.DotVariable)
+                ))));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".test", Symbol.DotVariable)
+            )
+        ));
+    try {
+      GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+      terp.runNoReturn(scopeConfig);
+    
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals(0, errLogger.errs.size());
+
+      Assert.assertEquals("Cannot find static method with the name .go", e.getMessage());
+      Assert.assertNotNull(e.getErrorLocation());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertEquals("test", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(1, 1), e.getErrorLocation().getPosition());
+      Assert.assertNull(e.getCause());
+      return;
+    }
+    Assert.fail("Expecting error when running code");
+
+  }
+
 }
