@@ -1291,4 +1291,40 @@ public class SimpleInterpreterTest extends TestCase
     }
     Assert.fail("Expecting an exception");
   }
+  
+  @Test
+  public void testMethodOnNull() throws ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@number", Symbol.AtType),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("null", Symbol.NullLiteral)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".test", Symbol.DotVariable)
+            ));
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("Cannot find method @null .test", e.getMessage());
+      Assert.assertNull(e.getErrorLocation().getClassName());
+      Assert.assertNull(e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(1, 1), e.getErrorLocation().getPosition());
+      return;
+    }
+    Assert.fail("Expecting an exception");
+  }
+
 }

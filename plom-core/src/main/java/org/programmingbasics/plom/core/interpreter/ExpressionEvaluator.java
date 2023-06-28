@@ -339,7 +339,7 @@ public class ExpressionEvaluator
               {
                 PrimitiveFunction.PrimitiveMethod primitiveMethod = self.type.lookupPrimitiveMethod(((Token.ParameterToken)methodNode.token).getLookupName());
                 if (primitiveMethod == null)
-                  throw RunException.withLocationFromNode("Cannot find method with the name ." + lookupName, methodNode, machine);
+                  throw RunException.withLocationFromNode("Cannot find method @" + self.type.name + " ." + lookupName, methodNode, machine);
                 List<Value> args = new ArrayList<>();
                 for (int n = 0; n < methodNode.internalChildren.size(); n++)
                 {

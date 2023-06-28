@@ -546,7 +546,7 @@ public class RepositoryScopeTest extends TestCase
     {
       Assert.assertEquals(0, errLogger.errs.size());
 
-      Assert.assertEquals("Cannot find method with the name .missing method", e.getMessage());
+      Assert.assertEquals("Cannot find method @string .missing method", e.getMessage());
       Assert.assertNotNull(e.getErrorLocation());
       Assert.assertEquals("classA", e.getErrorLocation().getClassName());
       Assert.assertEquals("make lambda", e.getErrorLocation().getFunctionMethodName());
