@@ -79,7 +79,6 @@ TODO list from TOJam 2023
 - [ ] Should throw an error if you don’t chain your constructors—especially to @object.new
 - [ ] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
 - [ ] Run error shows the line but not the file
-- [ ] Escape the HTML put in strings
 - [ ] Warning when nothing returned from method when something expected
 - [ ] Auto fill of lambda function args strips out the leading . from arg name
 - [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards

@@ -45,6 +45,25 @@ public class SvgCodeRendererTest extends TestCase
     Assert.assertEquals(30, returned.width, 0.001);
     Assert.assertEquals(18, returned.height, 0.002);
   }
+
+  @Test
+  public void testSimpleTokenEscaping()
+  {
+    SvgCodeRenderer.RenderSupplementalInfo supplementalInfo = new SvgCodeRenderer.RenderSupplementalInfo();
+    supplementalInfo.codeErrors = new ErrorList();
+    SvgCodeRenderer.TextWidthCalculator widthCalculator = new SimpleWidthCalculator(); 
+    SvgCodeRenderer.TokenRenderer tokenRenderer = new SvgCodeRenderer.TokenRenderer(null, supplementalInfo, 10, widthCalculator);
+    Token tok = new Token.SimpleToken("\"This is a string with & and < and other symbols\"", Symbol.String);
+    SvgCodeRenderer.TokenRendererReturn returned = new SvgCodeRenderer.TokenRendererReturn();
+    RenderedHitBox hitBox = new RenderedHitBox();
+    SvgCodeRenderer.TokenRendererPositioning positioning = new SvgCodeRenderer.TokenRendererPositioning(DEFAULT_CANVAS_WIDTH, widthCalculator);
+    positioning.maxNestingForLine = 1;
+    positioning.currentNestingInLine = 0;
+    tok.visit(tokenRenderer, returned, positioning, 0, new CodePosition(), hitBox);
+    Assert.assertEquals("<rect x='0.0' y='0.0' width='570.0' height='18' class='codetoken'/><text x='5.0' y='13.0' class='codetoken'>\"This is a string with &amp; and &lt; and other symbols\"</text>", returned.svgString);
+    Assert.assertEquals(570, returned.width, 0.001);
+    Assert.assertEquals(18, returned.height, 0.002);
+  }
   
   @Test
   public void testLineOfSimpleToken()

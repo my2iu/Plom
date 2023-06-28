@@ -586,6 +586,11 @@ public class SvgCodeRenderer
 //      el.getStyle().setPaddingTop((nesting * 0.25) + "em");
 //      el.getStyle().setPaddingBottom((nesting * 0.25) + "em");
 //    }
+    private String escapeStringForHtml(String str)
+    {
+      return str.replace("&", "&amp;").replace("<", "&lt;");
+    }
+    
     @Override
     public Void visitSimpleToken(SimpleToken token, TokenRendererReturn toReturn, TokenRendererPositioning positioning, Integer level, CodePosition currentTokenPos, RenderedHitBox notUsed)
     {
@@ -599,6 +604,7 @@ public class SvgCodeRenderer
       String text = token.contents;
       if (token.getType() == Symbol.Returns && text.equals("returns"))
         text = "\u2192";
+      text = escapeStringForHtml(text);
       double textWidth = widthCalculator.calculateWidth(text);
       toReturn.reset();
       double x = positioning.x;
