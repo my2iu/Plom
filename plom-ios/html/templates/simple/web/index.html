@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
     <script>$wnd = window; var $gwtOnLoad = []; function addGwtOnLoad(fn) { $gwtOnLoad.push(fn); }</script>
     <script type="text/javascript" language="javascript" src="plomdirect.js"></script>
     <script type="text/javascript" language="javascript" src="plomUi.js"></script>
@@ -21,6 +22,11 @@
 			return main;
 		});
 	
+	</script>
+	<script>
+	window.addEventListener('message', evt => {
+		console.log('message received');
+	}, false);
 	</script>
 </head>
 <body>

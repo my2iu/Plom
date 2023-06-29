@@ -101,13 +101,12 @@ TODO list from TOJam 2023
 - [ ] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
 - [ ] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
 - [ ] Undo support
-- [ ] Specify UTF8 in index.html to ensure that .js files also default to UTF8?
 - [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
 - [ ] Slow performance on slow Android phones maybe with larger projects?
 - [ ] Need break and continue commands
 - [ ] Iterator for @array
 - [ ] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
-- [ ] Add meta viewport tag to default index.html
+- [X] Add meta viewport tag to default index.html
 - [ ] Empty return in @void method not allowed
 - [ ] Increase size of minimize web output button so that you don’t accidentally keep hitting the hamburger menu instead
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
