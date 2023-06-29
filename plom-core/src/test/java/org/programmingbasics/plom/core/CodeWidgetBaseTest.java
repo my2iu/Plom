@@ -17,7 +17,7 @@ public class CodeWidgetBaseTest extends TestCase
   @Test
   public void testMakeTokensForType()
   {
-    Type.LambdaFunctionType type = new Type.LambdaFunctionType("call:", new Type("number"), Arrays.asList(".arg1"), Arrays.asList(new Type("string")));
+    Type.LambdaFunctionType type = new Type.LambdaFunctionType("call:", new Type("number"), Arrays.asList("arg1"), Arrays.asList(new Type("string")));
     List<Token> result = CodeWidgetBase.makeTokensForType(type); 
     Assert.assertEquals(
         Arrays.asList(

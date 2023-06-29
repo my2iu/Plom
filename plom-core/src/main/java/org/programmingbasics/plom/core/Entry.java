@@ -80,7 +80,6 @@ TODO list from TOJam 2023
 - [ ] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
 - [ ] Run error shows the line but not the file
 - [ ] Warning when nothing returned from method when something expected
-- [ ] Auto fill of lambda function args strips out the leading . from arg name
 - [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures
 - [ ] RepositoryScope unboundtypetotype should log errors when constructing types

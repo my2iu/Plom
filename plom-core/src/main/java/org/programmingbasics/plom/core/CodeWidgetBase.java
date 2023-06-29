@@ -581,7 +581,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       {
         if (lambdaType.optionalArgNames.get(n) != null && !lambdaType.optionalArgNames.get(n).isEmpty())
         {
-          newToken.parameters.get(n).tokens.add(Token.ParameterToken.fromContents(lambdaType.optionalArgNames.get(n), Symbol.DotVariable));
+          newToken.parameters.get(n).tokens.add(Token.ParameterToken.fromContents("." + lambdaType.optionalArgNames.get(n), Symbol.DotVariable));
         }
         newToken.parameters.get(n).tokens.addAll(makeTokensForType(lambdaType.args.get(n)));
       }
