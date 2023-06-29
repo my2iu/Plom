@@ -604,4 +604,42 @@ public class RepositoryScopeTest extends TestCase
 
   }
 
+  @Test
+  public void testConstructor() throws ParseException, RunException
+  {
+    // Constructors will often have an empty or invalid return type,
+    // and it shouldn't matter since the return type is not used
+    
+    ModuleCodeRepository repository = new ModuleCodeRepository();
+    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    ClassDescription classA = repository.addClassAndResetIds("classA");
+    classA.setSuperclass(UnboundType.forClassLookupName("object"));
+    
+    FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("void"), "make");
+    sig.setReturnTypeCode(new TokenContainer(), null);
+    sig.isConstructor = true;
+    classA.addMethod(new FunctionDescription(
+        sig, 
+        new StatementContainer(
+            new TokenContainer(),
+            new TokenContainer(
+                new Token.SimpleToken("super", Symbol.Super),
+                Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                ))));
+    ErrorLoggerSaver errLogger = new ErrorLoggerSaver();
+
+    // Run some code
+    SimpleInterpreter terp = new SimpleInterpreter(new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@classA", Symbol.AtType),
+            Token.ParameterToken.fromContents(".make", Symbol.DotVariable)
+            )
+        ));
+    GlobalSaver scopeConfig = new GlobalSaver(terp, repository, errLogger);
+    terp.runNoReturn(scopeConfig);
+    
+    // No errors expected
+    Assert.assertEquals(0, errLogger.errs.size());
+  }
+  
 }

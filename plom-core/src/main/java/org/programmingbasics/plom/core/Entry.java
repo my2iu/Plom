@@ -82,7 +82,6 @@ TODO list from TOJam 2023
 - [ ] Warning when nothing returned from method when something expected
 - [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures
-- [ ] RepositoryScope unboundtypetotype should log errors when constructing types
 - [ ] Are event handlers (jsobject from function) logging errors?
 - [ ] Are methods listed alphabetically in suggestions?
 - [ ] Android version should filter out .git folders in extra files (or any dir starting with .)?

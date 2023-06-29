@@ -148,7 +148,7 @@ public class ModuleCodeRepository
       if (returnType == null)
       {
         returnType = UnboundType.forClassLookupName("void");
-        if (warnings != null)
+        if (warnings != null && !isConstructor)
           warnings.add(new RunException("Problem with return type"));
       }
 

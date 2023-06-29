@@ -7,7 +7,6 @@ import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
-import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
@@ -20,13 +19,11 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Document;
 import elemental.dom.Element;
-import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
 import elemental.svg.SVGDocument;
-import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
 
 /**
