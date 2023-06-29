@@ -78,7 +78,7 @@ TODO list from TOJam 2023
 - [ ] On iOS, you possibly have to double tap to get copy and erase buttons of selections to register
 - [ ] Should throw an error if you don’t chain your constructors—especially to @object.new
 - [ ] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
-- [ ] Run error shows the line but not the file
+- [X] Run error shows the line but not the file
 - [ ] Warning when nothing returned from method when something expected
 - [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures

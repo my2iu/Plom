@@ -170,7 +170,7 @@ public abstract class DebuggerConnection
             contextString += " ";
           contextString += "." + codeLocation.getFunctionMethodName();
         }
-        msgDiv.setTextContent(contextString != null ? "(" + contextString + ") " : "");
+        msgDiv.setTextContent(!contextString.isEmpty() ? "(" + contextString + ") " : "");
       }
 
       // Break up message into multiple lines if needed

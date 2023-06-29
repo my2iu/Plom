@@ -17,6 +17,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
@@ -297,10 +298,18 @@ public class Main
     public void onJump();
   }
   
-//  public ErrorLogger getErrorLogger()
-//  {
-//    return errorLogger;
-//  }
+  /**
+   * Creates a small code fragment that invokes the .main function.
+   * This small code fragment can be used as the entrypoint code
+   * for a Plom program
+   */
+  public StatementContainer makeEntryPointCodeToInvokeMain()
+  {
+    return new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".main", Symbol.DotVariable)
+            ));
+  }
   
   public static String getStdLibCodeText()
   {

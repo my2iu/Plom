@@ -378,16 +378,9 @@ function setupPlomUi() {
 		main.saveCodeToRepository();
 		var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
 
-    	// Find code to run
-    	var fd = main.repository.getFunctionDescription("main");
-    	if (fd == null)
-    	{
-			errorLogger.error(new RunException("No main function"));
-			return;
-		}
-
 		// Run it
-		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
+		var code = main.makeEntryPointCodeToInvokeMain();
+		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
@@ -414,16 +407,9 @@ function setupPlomUi() {
 			errorLogger = main.createErrorLoggerForConsole();
 		}
 
-    	// Find code to run
-    	var fd = main.repository.getFunctionDescription("main");
-    	if (fd == null)
-    	{
-			errorLogger.error(new RunException("No main function"));
-			return;
-		}
-
 		// Run it
-		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(fd.code);
+		var code = main.makeEntryPointCodeToInvokeMain();
+		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
