@@ -21,6 +21,21 @@ public class ObjectScope extends VariableScope
   Type type;
 
   /**
+   * In a constructor, the object is not constructed until the 
+   * supertype constructor is called. But for error checking, we
+   * still want to check for accesses to member variables before
+   * the object is fully constructed, so we just need the type
+   * for that (it shouldn't be the type of the final constructed
+   * type, just the type holding the constructor)
+   */
+  public static ObjectScope placeHolderForConstructor(Type type)
+  {
+    ObjectScope obj = new ObjectScope(null);
+    obj.type = type;
+    return obj;
+  }
+  
+  /**
    * Looks up the value of "this" i.e. the current object
    */
   @Override public Value lookupThis() throws RunException

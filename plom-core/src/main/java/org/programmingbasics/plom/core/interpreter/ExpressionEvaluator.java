@@ -395,6 +395,8 @@ public class ExpressionEvaluator
             // Currently we only support constructor chaining, so check if we're in a constructor
             if (machine.getTopStackFrame().constructorConcreteType != null)
             {
+              // TODO: Don't use getClassFromStackFrame(). Instead, we should
+              //   do a lookup through to the ObjectScope to get it
               Type constructorType = getClassFromStackFrame(machine).parent;
               AstNode methodNode = node.children.get(0);
               if (idx < methodNode.internalChildren.size())
@@ -423,12 +425,19 @@ public class ExpressionEvaluator
               }
               else  // idx == methodNode.internalChildren.size() + 1
               {
-                // Upon returning from calling a chained constructor, we should use the
-                // returned value to set the current "this" object
-                Value thisValue = machine.popValue(); 
-                machine.currentScope().overwriteThis(thisValue);
-                machine.pushValue(Value.createVoidValue(machine.coreTypes()));
-                machine.ip.pop();
+                ExecutableFunction method = constructorType.lookupStaticMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+                if (method != null)
+                {
+                  if (method.codeUnit.isConstructor)
+                  {
+                    // Upon returning from calling a chained constructor, we should use the
+                    // returned value to set the current "this" object
+                    Value thisValue = machine.popValue(); 
+                    machine.currentScope().overwriteThis(thisValue);
+                    machine.pushValue(Value.createVoidValue(machine.coreTypes()));
+                    machine.ip.pop();
+                  }
+                }
               }
               return;
             }
@@ -551,7 +560,7 @@ public class ExpressionEvaluator
     {
       machine.pushStackFrame(method.code, method.codeUnit, method.sourceLookup, constructorType, SimpleInterpreter.statementHandlers);
       if (isConstructor)
-        machine.pushConstructorScope();
+        machine.pushConstructorScope(method.owningClass);
       else if (self != null)
         machine.pushObjectScope(self);
     }

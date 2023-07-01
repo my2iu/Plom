@@ -105,9 +105,9 @@ public class MachineContext
     VariableScope scope = new ObjectScope(self);
     pushScope(scope);
   }
-  public void pushConstructorScope()
+  public void pushConstructorScope(Type placeholderType)
   {
-    VariableScope scope = new ObjectScope(null);
+    VariableScope scope = ObjectScope.placeHolderForConstructor(placeholderType);
     pushScope(scope);
   }
   public void pushNewScope()

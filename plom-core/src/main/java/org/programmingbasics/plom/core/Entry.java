@@ -73,14 +73,14 @@ TODO list from TOJam 2023
 - [ ] New project in external folder doesn’t copy external files or other files on iOS
 - [ ] iOS showing stuff outside web/ folder in extra files
 - [ ] Open project directories straight from web version
-- [ ] Send logging messages and crash messages back to show in console or elsewhere
+- [X] Send logging messages and crash messages back to show in console or elsewhere
 - [ ] Clear console messages
 - [ ] On iOS, you possibly have to double tap to get copy and erase buttons of selections to register
 - [ ] Should throw an error if you don’t chain your constructors—especially to @object.new
 - [ ] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
 - [X] Run error shows the line but not the file
 - [ ] Warning when nothing returned from method when something expected
-- [ ] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
+- [X] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures
 - [ ] Are event handlers (jsobject from function) logging errors?
 - [ ] Are methods listed alphabetically in suggestions?
@@ -115,6 +115,7 @@ TODO list from TOJam 2023
 - SimpleInterpreter should allow a method be given as the entrypoint (or special entrypoint code that invokes main) so that function names are preserved for debugging
 - Remove the VariableDescription stuff since it's no longer used and it's confusing
 - Rewrite everything in Kotlin
+- Use the ExecutableFunction.owningClass to constrain the ObjectScope to only allow access to member variables belonging to the owning class and not subclasses
 
  */
 

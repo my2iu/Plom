@@ -498,7 +498,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Optional.empty(), Arrays.asList("val1", "val2"));
+            null, Optional.empty(), Arrays.asList("val1", "val2"));
         Value adderFnVal = Value.create(adderFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()));
         scope.addVariable("add:to:", Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getNumberType(), coreTypes.getNumberType()), adderFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -532,7 +532,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Optional.empty(), Arrays.asList());
+            null, Optional.empty(), Arrays.asList());
         Value getFnVal = Value.create(getFn, Type.makeFunctionType(coreTypes.getNumberType()));
         scope.addVariable("getVal", Type.makeFunctionType(coreTypes.getNumberType()), getFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -586,7 +586,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Optional.empty(), Arrays.asList("val"));
+            null, Optional.empty(), Arrays.asList("val"));
         Value aFnVal = Value.create(aFn, Type.makeFunctionType(coreTypes.getNumberType(), coreTypes.getStringType()));
         scope.addVariable("a:", aFnVal.type, aFnVal);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -641,7 +641,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Optional.empty(), Arrays.asList());
+            coreTypes.getNumberType(), Optional.empty(), Arrays.asList());
         coreTypes.getNumberType().addMethod("testGetVal", getFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -680,7 +680,7 @@ public class SimpleInterpreterTest extends TestCase
                         )
                     )
                 ), 
-            Optional.empty(), Arrays.asList());
+            coreTypes.getNumberType(), Optional.empty(), Arrays.asList());
         coreTypes.getNumberType().addMethod("testGetVal", getFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -723,7 +723,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            testType, Optional.empty(), Arrays.asList());
         testType.addStaticMethod("calcVal", getFn, coreTypes.getVoidType());
         scope.addType(testType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -786,7 +786,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            testType, Optional.empty(), Arrays.asList());
         testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
         ExecutableFunction valFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("test", "get"), 
@@ -798,7 +798,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            testType, Optional.empty(), Arrays.asList());
         testType.addMethod("get", valFn, coreTypes.getNumberType());
         scope.addType(testType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
@@ -853,7 +853,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            childType, Optional.empty(), Arrays.asList());
         childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
         scope.addType(childType);
 
@@ -872,7 +872,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            subChildType, Optional.empty(), Arrays.asList());
         subChildType.addStaticMethod("new", subCreateFn, coreTypes.getVoidType());
         scope.addType(subChildType);
 
@@ -888,7 +888,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            subChildType, Optional.empty(), Arrays.asList());
         subChildType.addMethod("get", valFn, coreTypes.getNumberType());
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -911,7 +911,223 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals("23", vars.globalScope.lookup("a").getStringValue());
   }
 
+  @Test
+  public void testConstructorErrorAccessMemberVarsBeforeConstructorChaining() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type testType = new Type("test", coreTypes.getObjectType());
+      testType.addMemberVariable("testMember", coreTypes.getObjectType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("test", "create"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("2", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                        )
+                )
+            ),
+            testType, Optional.empty(), Arrays.asList());
+        testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
+//        ExecutableFunction valFn = ExecutableFunction.forCode(
+//            CodeUnitLocation.forMethod("test", "get"), 
+//            ParseToAst.parseStatementContainer(
+//                new StatementContainer(
+//                    new TokenContainer(
+//                        new Token.SimpleToken("return", Symbol.Return),
+//                        Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable)
+//                    )
+//                )
+//            ),
+//            testType, Optional.empty(), Arrays.asList());
+//        testType.addMethod("get", valFn, coreTypes.getNumberType());
+//        scope.addType(testType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@test", Symbol.AtType),
+            Token.ParameterToken.fromContents(".create", Symbol.DotVariable)
+            )
+//        new TokenContainer(
+//            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+//            new Token.SimpleToken(":=", Symbol.Assignment),
+//            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+//            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+//            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
   
+  @Test
+  public void testConstructorErrorAccessThisBeforeConstructorChaining() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type testType = new Type("test", coreTypes.getObjectType());
+      testType.addMemberVariable("testMember", coreTypes.getObjectType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("test", "create"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("this", Symbol.This),
+                        Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                        )
+                )
+            ),
+            testType, Optional.empty(), Arrays.asList());
+        testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("test", "get"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        new Token.SimpleToken("5", Symbol.Number)
+                    )
+                )
+            ),
+            testType, Optional.empty(), Arrays.asList());
+        testType.addMethod("get", valFn, coreTypes.getNumberType());
+        scope.addType(testType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@test", Symbol.AtType),
+            Token.ParameterToken.fromContents(".create", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
+  @Test
+  public void testConstructorChainingErrorWhenSupertypeAccessSubtypeVariables() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getStringType(), coreTypes.getNullValue());
+      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
+      
+      Type childType = new Type("child", coreTypes.getObjectType());
+      childType.addMemberVariable("childVar", coreTypes.getStringType());
+      Type subChildType = new Type("subchild", childType);
+      subChildType.addMemberVariable("childVar", coreTypes.getStringType());
+      subChildType.addMemberVariable("subchildVar", coreTypes.getStringType());
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("child", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".childVar", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"2\"", Symbol.String)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".subchildVar", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"badvalue\"", Symbol.String)
+                    )
+
+                )
+            ),
+            childType, Optional.empty(), Arrays.asList());
+        childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
+        scope.addType(childType);
+
+        ExecutableFunction subCreateFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("subchild", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".subchildVar", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"3\"", Symbol.String)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addStaticMethod("new", subCreateFn, coreTypes.getVoidType());
+        scope.addType(subChildType);
+
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("test", "get"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".childVar", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".subchildVar", Symbol.DotVariable)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addMethod("get", valFn, coreTypes.getNumberType());
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@subchild", Symbol.AtType),
+            Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals("23", vars.globalScope.lookup("a").getStringValue());
+    Assert.fail("Should fail before here");
+  }
+
   @Test
   public void testForLoop() throws RunException, ParseException
   {
@@ -939,7 +1155,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList("start"));
+            iteratorType, Optional.empty(), Arrays.asList("start"));
         iteratorType.addStaticMethod("start:", createFn, coreTypes.getVoidType(), coreTypes.getNumberType());
         ExecutableFunction atEndFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", ".at end"), 
@@ -953,7 +1169,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            iteratorType, Optional.empty(), Arrays.asList());
         iteratorType.addMethod("at end", atEndFn, coreTypes.getBooleanType());
         ExecutableFunction valFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", "value"), 
@@ -965,7 +1181,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            iteratorType, Optional.empty(), Arrays.asList());
         iteratorType.addMethod("value", valFn, coreTypes.getNumberType());
         ExecutableFunction nextFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("number iterator", "next"), 
@@ -984,7 +1200,7 @@ public class SimpleInterpreterTest extends TestCase
                     )
                 )
             ),
-            Optional.empty(), Arrays.asList());
+            iteratorType, Optional.empty(), Arrays.asList());
         iteratorType.addMethod("next", nextFn, iteratorType);
         scope.addType(iteratorType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }

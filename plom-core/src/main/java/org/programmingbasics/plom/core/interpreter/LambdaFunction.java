@@ -21,7 +21,12 @@ public class LambdaFunction
   
   public ExecutableFunction toExecutableFunction()
   {
-    ExecutableFunction toReturn = ExecutableFunction.forCode(codeUnit, functionBody, sourceLookup, argPosToName); 
+    // Since we're using the closure scope of the containing method,
+    // we don't care about the owner of the method. That information
+    // is already stored in the closure scope
+    Type methodOwner = null;
+    
+    ExecutableFunction toReturn = ExecutableFunction.forCode(codeUnit, functionBody, methodOwner, sourceLookup, argPosToName); 
     return toReturn;
   }
 }

@@ -231,7 +231,7 @@ public class RepositoryScope extends VariableScope
       {
         argPosToName.add(funCache.sig.getArgName(n));
       }
-      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), funCache.code, funCache.sourceLookup, argPosToName);
+      val.val = ExecutableFunction.forCode(CodeUnitLocation.forFunction(name), funCache.code, null, funCache.sourceLookup, argPosToName);
       return val;
     }
     return super.lookup(name);
@@ -343,7 +343,7 @@ public class RepositoryScope extends VariableScope
           if (fn.sig.isStatic)
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forStaticMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, Optional.of(fn.code), fn.sig.argNames);
+                code, toReturn, Optional.of(fn.code), fn.sig.argNames);
             Type returnType;
             try {
               returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 
@@ -358,7 +358,7 @@ public class RepositoryScope extends VariableScope
           else if (fn.sig.isConstructor)
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, Optional.of(fn.code), fn.sig.argNames);
+                code, toReturn, Optional.of(fn.code), fn.sig.argNames);
             // Use @void as the return type for constructors
             toReturn.addStaticMethod(fn.sig.getLookupName(), execFn, 
                 coreTypes.getVoidType(), args);
@@ -366,7 +366,7 @@ public class RepositoryScope extends VariableScope
           else
           {
             ExecutableFunction execFn = ExecutableFunction.forCode(CodeUnitLocation.forMethod(cls.getName(), fn.sig.getLookupName()), 
-                code, Optional.of(fn.code), fn.sig.argNames);
+                code, toReturn, Optional.of(fn.code), fn.sig.argNames);
             Type returnType;
             try {
               returnType = typeFromUnboundType(fn.sig.getReturnType(), subTypeCreator); 
