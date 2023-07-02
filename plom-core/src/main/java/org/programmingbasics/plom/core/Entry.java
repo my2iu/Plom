@@ -76,7 +76,7 @@ TODO list from TOJam 2023
 - [X] Send logging messages and crash messages back to show in console or elsewhere
 - [ ] Clear console messages
 - [ ] On iOS, you possibly have to double tap to get copy and erase buttons of selections to register
-- [ ] Should throw an error if you don’t chain your constructors—especially to @object.new
+- [X] Should throw an error if you don’t chain your constructors—especially to @object.new
 - [ ] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
 - [X] Run error shows the line but not the file
 - [ ] Warning when nothing returned from method when something expected
@@ -112,7 +112,6 @@ TODO list from TOJam 2023
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
 - [ ] Back button in upper-left for android
 
-- SimpleInterpreter should allow a method be given as the entrypoint (or special entrypoint code that invokes main) so that function names are preserved for debugging
 - Remove the VariableDescription stuff since it's no longer used and it's confusing
 - Rewrite everything in Kotlin
 - Use the ExecutableFunction.owningClass to constrain the ObjectScope to only allow access to member variables belonging to the owning class and not subclasses
