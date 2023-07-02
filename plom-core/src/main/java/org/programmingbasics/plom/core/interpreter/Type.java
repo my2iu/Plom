@@ -40,9 +40,9 @@ public class Type
   {
     this.name = name;
     this.parent = parent;
-    if (parent != null)
-      numValueSlots = parent.numValueSlots;
-    else
+//    if (parent != null)
+//      numValueSlots = parent.numValueSlots;
+//    else
       numValueSlots = 0;
   }
   public Type parent;

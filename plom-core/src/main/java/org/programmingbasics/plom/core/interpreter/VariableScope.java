@@ -51,7 +51,7 @@ public class VariableScope
     {
       if (parent != null)
         return parent.lookupLValue(name);
-      throw new RunException("Cannot find value " + name);
+      throw new RunException("Cannot find value ." + name);
     }
     return LValue.readFromScope(this, name, val);
   }

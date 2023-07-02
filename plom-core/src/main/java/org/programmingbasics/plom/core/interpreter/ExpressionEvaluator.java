@@ -73,7 +73,7 @@ public class ExpressionEvaluator
           Value left = machine.popValue();
           ExecutableFunction method = left.type.lookupMethod(methodName);
           if (method == null)
-            throw new RunException();
+            throw RunException.withLocationFromNode("Cannot find method @" + left.type.name + " ." + methodName, node, machine);
           Value self = left;
           machine.ip.advanceIdx();
           machine.pushValue(self);
@@ -251,7 +251,13 @@ public class ExpressionEvaluator
       })
       .add(Rule.This, 
           (MachineContext machine, AstNode node, int idx) -> {
-            machine.pushValue(machine.currentScope().lookupThis());
+            try {
+              machine.pushValue(machine.currentScope().lookupThis());
+            }
+            catch (RunException e)
+            {
+              throw e.addProgramLocationFromNodeIfNeeded(node, machine);
+            }
             machine.ip.pop();
       })
       .add(Rule.DotVariable, 
@@ -661,7 +667,14 @@ public class ExpressionEvaluator
             switch (idx)
             {
             case 0:
-              LValue toReturn = machine.currentScope().lookupLValue(((Token.ParameterToken)node.token).getLookupName());
+              LValue toReturn;
+              try {
+                toReturn = machine.currentScope().lookupLValue(((Token.ParameterToken)node.token).getLookupName());
+              } 
+              catch (RunException e)
+              {
+                throw e.addProgramLocationFromNodeIfNeeded(node, machine);
+              }
               if (toReturn.type.isCallable())
               {
                 machine.ip.pushAndAdvanceIdx(node, expressionHandlers);

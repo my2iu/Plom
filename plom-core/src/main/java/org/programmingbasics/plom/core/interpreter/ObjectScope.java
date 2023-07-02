@@ -40,6 +40,8 @@ public class ObjectScope extends VariableScope
    */
   @Override public Value lookupThis() throws RunException
   {
+    if (thisValue == null)
+      throw new RunException("this is not initialized yet. You may be trying to access this before calling the supertype constructor");
     return thisValue;
   }
 
@@ -54,7 +56,12 @@ public class ObjectScope extends VariableScope
     this.thisValue = thisValue;
     if (thisValue.val instanceof PlomObject)
       obj = (PlomObject)thisValue.val;
-    type = thisValue.type;
+    // Do not overwrite the type. The type is defined by 
+    // the class that owns the current method/constructor,
+    // not by the actual type of this. (type restricts the
+    // member variables viewable to only those available
+    // on the class where the method was defined)
+//    type = thisValue.type;
   }
 
   public Value lookup(String name) throws RunException
@@ -64,6 +71,8 @@ public class ObjectScope extends VariableScope
       int slot = type.lookupMemberVariable(name);
       if (slot >= 0)
       {
+        if (obj == null)
+          throw new RunException("this value not initialized. Supertype constructor possibly not called before accessing member variables.");
         return Value.createCopy(obj.slots[slot]);
       }
     }
@@ -78,6 +87,8 @@ public class ObjectScope extends VariableScope
       int slot = type.lookupMemberVariable(name);
       if (slot >= 0)
       {
+        if (obj == null)
+          throw new RunException("this value not initialized. Supertype constructor possibly not called before accessing member variables.");
         return LValue.readFromScope(this, name, Value.createCopy(obj.slots[slot]));
       }
     }
@@ -113,6 +124,8 @@ public class ObjectScope extends VariableScope
       int slot = type.lookupMemberVariable(name);
       if (slot >= 0)
       {
+        if (obj == null)
+          throw new RunException("this value not initialized. Supertype constructor possibly not called before accessing member variables.");
         obj.slots[slot] = val;
       }
       return;

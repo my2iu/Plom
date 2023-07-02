@@ -58,7 +58,7 @@ public class SimpleInterpreterTest extends TestCase
         case "object array": return coreTypes.getObjectArrayType();
         case "void": return coreTypes.getVoidType(); 
       }
-      throw new RunException("Unknown class");
+      throw new RunException("Unknown class @" + name);
     }
   }
   
@@ -924,22 +924,21 @@ public class SimpleInterpreterTest extends TestCase
       Type testType = new Type("test", coreTypes.getObjectType());
       testType.addMemberVariable("testMember", coreTypes.getObjectType());
       try {
+        StatementContainer code = new StatementContainer(
+            new TokenContainer(
+                Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable),
+                new Token.SimpleToken(":=", Symbol.Assignment),
+                new Token.SimpleToken("2", Symbol.Number)
+                ),
+            new TokenContainer(
+                new Token.SimpleToken("super", Symbol.Super),
+                Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                )
+        );
         ExecutableFunction createFn = ExecutableFunction.forCode(
             CodeUnitLocation.forConstructorMethod("test", "create"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".testMember", Symbol.DotVariable),
-                        new Token.SimpleToken(":=", Symbol.Assignment),
-                        new Token.SimpleToken("2", Symbol.Number)
-                        ),
-                    new TokenContainer(
-                        new Token.SimpleToken("super", Symbol.Super),
-                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
-                        )
-                )
-            ),
-            testType, Optional.empty(), Arrays.asList());
+            ParseToAst.parseStatementContainer(code),
+            testType, Optional.of(code), Arrays.asList());
         testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
 //        ExecutableFunction valFn = ExecutableFunction.forCode(
 //            CodeUnitLocation.forMethod("test", "get"), 
@@ -953,7 +952,7 @@ public class SimpleInterpreterTest extends TestCase
 //            ),
 //            testType, Optional.empty(), Arrays.asList());
 //        testType.addMethod("get", valFn, coreTypes.getNumberType());
-//        scope.addType(testType);
+        scope.addType(testType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
     
@@ -971,8 +970,19 @@ public class SimpleInterpreterTest extends TestCase
 //            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
 //            )
         );
-    new SimpleInterpreter(code).runNoReturn(vars);
-    Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("this value not initialized. Supertype constructor possibly not called before accessing member variables.", e.getMessage());
+      Assert.assertEquals("test", e.getErrorLocation().getClassName());
+      Assert.assertEquals("create", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertTrue(e.getErrorLocation().isStatic());
+      Assert.assertEquals(CodePosition.fromOffsets(0, 0), e.getErrorLocation().getPosition());
+      return;
+    }
+    Assert.fail("Expecting an error");
   }
   
   @Test
@@ -988,21 +998,20 @@ public class SimpleInterpreterTest extends TestCase
       Type testType = new Type("test", coreTypes.getObjectType());
       testType.addMemberVariable("testMember", coreTypes.getObjectType());
       try {
+        StatementContainer code = new StatementContainer(
+            new TokenContainer(
+                new Token.SimpleToken("this", Symbol.This),
+                Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+                ),
+            new TokenContainer(
+                new Token.SimpleToken("super", Symbol.Super),
+                Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                )
+        );
         ExecutableFunction createFn = ExecutableFunction.forCode(
             CodeUnitLocation.forConstructorMethod("test", "create"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.SimpleToken("this", Symbol.This),
-                        Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
-                        ),
-                    new TokenContainer(
-                        new Token.SimpleToken("super", Symbol.Super),
-                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
-                        )
-                )
-            ),
-            testType, Optional.empty(), Arrays.asList());
+            ParseToAst.parseStatementContainer(code),
+            testType, Optional.of(code), Arrays.asList());
         testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
         ExecutableFunction valFn = ExecutableFunction.forCode(
             CodeUnitLocation.forMethod("test", "get"), 
@@ -1028,8 +1037,19 @@ public class SimpleInterpreterTest extends TestCase
             Token.ParameterToken.fromContents(".create", Symbol.DotVariable)
             )
         );
-    new SimpleInterpreter(code).runNoReturn(vars);
-    Assert.assertEquals(2, vars.globalScope.lookup("a").getNumberValue(), 0);
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("this is not initialized yet. You may be trying to access this before calling the supertype constructor", e.getMessage());
+      Assert.assertEquals("test", e.getErrorLocation().getClassName());
+      Assert.assertTrue(e.getErrorLocation().isStatic());
+      Assert.assertEquals("create", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(0, 0), e.getErrorLocation().getPosition());
+      return;
+    }
+    Assert.fail("Expecting an error");
   }
 
   @Test
@@ -1123,7 +1143,14 @@ public class SimpleInterpreterTest extends TestCase
             Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
             )
         );
-    new SimpleInterpreter(code).runNoReturn(vars);
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("Cannot find value .subchildVar", e.getMessage());
+      return;
+    }
     Assert.assertEquals("23", vars.globalScope.lookup("a").getStringValue());
     Assert.fail("Should fail before here");
   }
