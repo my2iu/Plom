@@ -912,6 +912,50 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testConstructorNotChainedError() throws ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      
+      Type testType = new Type("test", coreTypes.getObjectType());
+      testType.addMemberVariable("testMember", coreTypes.getObjectType());
+      try {
+        StatementContainer code = new StatementContainer(
+        );
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("test", "create"), 
+            ParseToAst.parseStatementContainer(code),
+            testType, Optional.of(code), Arrays.asList());
+        testType.addStaticMethod("create", createFn, coreTypes.getVoidType());
+        scope.addType(testType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@test", Symbol.AtType),
+            Token.ParameterToken.fromContents(".create", Symbol.DotVariable)
+            )
+        );
+    try {
+      new SimpleInterpreter(code).runNoReturn(vars);
+    }
+    catch (RunException e)
+    {
+      Assert.assertEquals("this is not initialized yet. You may be trying to access this before calling the supertype constructor", e.getMessage());
+      Assert.assertEquals("test", e.getErrorLocation().getClassName());
+      Assert.assertTrue(e.getErrorLocation().isStatic());
+      Assert.assertEquals("create", e.getErrorLocation().getFunctionMethodName());
+      Assert.assertEquals(CodePosition.fromOffsets(0), e.getErrorLocation().getPosition());
+      return;
+    }
+    Assert.fail("Expecting an error");
+    
+  }
+  
+  @Test
   public void testConstructorErrorAccessMemberVarsBeforeConstructorChaining() throws RunException, ParseException
   {
     // Calls a method added to a primitive type that doesn't access

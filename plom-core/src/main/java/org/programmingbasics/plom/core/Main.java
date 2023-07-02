@@ -283,8 +283,17 @@ public class Main
           FunctionDescription method = cls.findMethod(loc.getFunctionMethodName(), loc.isStatic()); 
           if (method != null)
           {
-            onLocationJump.onJump();
-            loadMethodSignatureView(cls, method, false);
+            if (loc.getPosition() != null)
+            {
+              onLocationJump.onJump();
+              loadMethodCodeView(cls, method);
+              codePanel.setCursorPosition(loc.getPosition());
+            }
+            else
+            {
+              onLocationJump.onJump();
+              loadMethodSignatureView(cls, method, false);
+            }
           }
         }
       }

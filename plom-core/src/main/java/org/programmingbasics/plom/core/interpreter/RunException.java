@@ -60,15 +60,35 @@ public class RunException extends Exception
   {
     if (getErrorLocation() == null)
     {
-      Token errorToken = node.scanForToken();
-      if (errorToken != null)
+      if (node != null)
       {
-        CodePosition errorPos = null;
-        if (machine.getTopStackFrame().sourceLookup.isPresent())
-          errorPos = FindToken.tokenToPosition(errorToken, machine.getTopStackFrame().sourceLookup.get());
-        setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, errorPos));
+        Token errorToken = node.scanForToken();
+        if (errorToken != null)
+        {
+          CodePosition errorPos = null;
+          if (machine.getTopStackFrame().sourceLookup.isPresent())
+            errorPos = FindToken.tokenToPosition(errorToken, machine.getTopStackFrame().sourceLookup.get());
+          setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, errorPos));
+        }
       }
+      else
+        setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, null));
     }
     return this;
   }
+  
+  /**
+   * This creates an error pointing to the start of the current function/method.
+   * It creates a code position pointing to the start of the function,
+   * even if the function is empty and has no nodes.
+   */
+  public RunException addProgramLocationToMethodStartIfNeeded(MachineContext machine)
+  {
+    if (getErrorLocation() == null)
+    {
+      setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, CodePosition.fromOffsets(0)));
+    }
+    return this;
+  }
+
 }

@@ -563,7 +563,13 @@ public class MachineContext
         else
         {
           // Constructors should return the constructed object
-          popStackFrameReturning(currentScope().lookupThis());
+          try {
+            popStackFrameReturning(currentScope().lookupThis());
+          }
+          catch (RunException e)
+          {
+            throw e.addProgramLocationToMethodStartIfNeeded(this);
+          }
         }
       }
       return true;

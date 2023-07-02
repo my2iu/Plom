@@ -87,7 +87,7 @@ TODO list from TOJam 2023
 - [ ] Android version should filter out .git folders in extra files (or any dir starting with .)?
 - [ ] Method return type and extends should use proper code widget
 - [ ] When hooking in project with an existing dir in Android (possibly empty project), it copies in the wrong stuff
-- [ ] No warning when using member variables before calling super constructor in constructor
+- [X] No warning when using member variables before calling super constructor in constructor
 - [ ] Comment out code
 - [ ] Code suggestions should be case insensitive
 - [ ] Generic  JS object wrap and unwrap Plom objects
