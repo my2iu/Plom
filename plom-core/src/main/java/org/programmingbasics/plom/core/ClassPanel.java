@@ -1,15 +1,12 @@
 package org.programmingbasics.plom.core;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -165,12 +162,6 @@ public class ClassPanel
 //      }
 //    }, false);
    
-    List<DivElement> varDivs = new ArrayList<>();
-    for (VariableDescription v: cls.getAllVars())
-    {
-      addVarEntry(mainDiv, v, varDivs);
-    }
-    
     // Code panel for variables
     SubCodeArea variableArea = SubCodeArea.forVariableDeclaration(
         mainDiv.querySelector(".varsCode"), 
@@ -261,49 +252,49 @@ public class ClassPanel
     }
   }
   
-  private String classVarInnerHtml()
-  {
-    return GlobalsPanel.varInnerHtml("class_var", "delete_class_var");
-  }
+//  private String classVarInnerHtml()
+//  {
+//    return GlobalsPanel.varInnerHtml("class_var", "delete_class_var");
+//  }
   
-  private void addVarEntry(DivElement mainDiv,
-      VariableDescription v,
-      List<DivElement> varDivs)
-  {
-    String name = v.name;
-    Token.ParameterToken type = v.type; 
-    DivElement div = doc.createDivElement();
-    div.setInnerHTML(classVarInnerHtml());
-    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
-    varDivs.add(div);
-    mainDiv.querySelector(".varsList").appendChild(div);
-    int maxTypeWidth = div.querySelector(".class_var").getClientWidth();
-    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes, null));
-        },
-        (context) -> {},
-        widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
-    typeField.setChangeListener((newType, isFinal) -> {
-      v.type = newType;
-      cls.updateVariable(v);
-    });
-    typeField.render();
-    
-    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
-    nameInput.addEventListener(Event.CHANGE, (evt) -> {
-      v.name = nameInput.getValue(); 
-      cls.updateVariable(v);
-    }, false);
-    
-    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_class_var");
-    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      cls.deleteVarAndResetIds(v.id);
-      rebuildView(false);
-    }, false);
-  }
+//  private void addVarEntry(DivElement mainDiv,
+//      VariableDescription v,
+//      List<DivElement> varDivs)
+//  {
+//    String name = v.name;
+//    Token.ParameterToken type = v.type; 
+//    DivElement div = doc.createDivElement();
+//    div.setInnerHTML(classVarInnerHtml());
+//    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
+//    varDivs.add(div);
+//    mainDiv.querySelector(".varsList").appendChild(div);
+//    int maxTypeWidth = div.querySelector(".class_var").getClientWidth();
+//    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
+//        (scope, coreTypes) -> {
+//          StandardLibrary.createGlobals(null, scope, coreTypes);
+//          scope.setParent(new RepositoryScope(repository, coreTypes, null));
+//        },
+//        (context) -> {},
+//        widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
+//    typeField.setChangeListener((newType, isFinal) -> {
+//      v.type = newType;
+//      cls.updateVariable(v);
+//    });
+//    typeField.render();
+//    
+//    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
+//    nameInput.addEventListener(Event.CHANGE, (evt) -> {
+//      v.name = nameInput.getValue(); 
+//      cls.updateVariable(v);
+//    }, false);
+//    
+//    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_class_var");
+//    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+//      evt.preventDefault();
+//      cls.deleteVarAndResetIds(v.id);
+//      rebuildView(false);
+//    }, false);
+//  }
 
   @JsFunction
   public static interface ExitClassViewCallback

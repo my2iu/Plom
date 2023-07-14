@@ -1,17 +1,12 @@
 package org.programmingbasics.plom.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -24,7 +19,6 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
-import elemental.html.InputElement;
 import elemental.svg.SVGDocument;
 import elemental.svg.SVGSVGElement;
 import jsinterop.annotations.JsFunction;
@@ -160,11 +154,11 @@ public class GlobalsPanel implements AutoCloseable
 //      }
 //    }, false);
    
-    List<DivElement> globalVarDivs = new ArrayList<>();
-    for (VariableDescription v: repository.getAllGlobalVarsSorted())
-    {
-      addGlobalVarEntry(mainDiv, v, globalVarDivs);
-    }
+//    List<DivElement> globalVarDivs = new ArrayList<>();
+//    for (VariableDescription v: repository.getAllGlobalVarsSorted())
+//    {
+//      addGlobalVarEntry(mainDiv, v, globalVarDivs);
+//    }
     
     // Code panel for variables
     SubCodeArea variableArea = SubCodeArea.forVariableDeclaration(
@@ -290,54 +284,54 @@ public class GlobalsPanel implements AutoCloseable
     return "<div class=\"" + divClass + "\">.<plom-autoresizing-input></plom-autoresizing-input> <div class=\"typeEntry\">&nbsp;</div> <a href=\"#\" aria-label=\"delete\" class=\"" + deleteLinkClass + " plomUiRemoveButton\"></a></div>";
   }
   
-  private String globalVarInnerHtml()
-  {
-    return varInnerHtml("global_var", "delete_global_var");
-  }
+//  private String globalVarInnerHtml()
+//  {
+//    return varInnerHtml("global_var", "delete_global_var");
+//  }
   
-  private void addGlobalVarEntry(DivElement mainDiv,
-      VariableDescription v,
-      List<DivElement> varDivs)
-  {
-    String name = v.name;
-    Token.ParameterToken type = v.type; 
-    DivElement div = doc.createDivElement();
-    div.setInnerHTML(globalVarInnerHtml());
-    if (v.isImported)
-      div.getClassList().add("moduleImported");
-
-    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
-    varDivs.add(div);
-    mainDiv.querySelector(".globalVarsList").appendChild(div);
-    int maxTypeWidth = div.querySelector(".global_var").getClientWidth();
-    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes, null));
-        },
-        (context) -> {},
-        widthCalculator, maxTypeWidth, mainDiv.querySelector(".globaldetails"), mainDiv.querySelector(".globaldetails .scrollable-interior"));
-    typeField.setChangeListener((newType, isFinal) -> {
-      v.type = newType; 
-      repository.updateGlobalVariable(v);
-    });
-    typeField.render();
-    
-    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
-    nameInput.addEventListener(Event.CHANGE, (evt) -> {
-      v.name = nameInput.getValue(); 
-      repository.updateGlobalVariable(v);
-    }, false);
-    
-    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_global_var");
-    if (v.isImported)
-      deleteAnchor.getStyle().setDisplay(Display.NONE);
-    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
-      evt.preventDefault();
-      repository.deleteGlobalVarAndResetIds(v.module, v.id);
-      rebuildView();
-    }, false);
-  }
+//  private void addGlobalVarEntry(DivElement mainDiv,
+//      VariableDescription v,
+//      List<DivElement> varDivs)
+//  {
+//    String name = v.name;
+//    Token.ParameterToken type = v.type; 
+//    DivElement div = doc.createDivElement();
+//    div.setInnerHTML(globalVarInnerHtml());
+//    if (v.isImported)
+//      div.getClassList().add("moduleImported");
+//
+//    ((InputElement)div.querySelector("plom-autoresizing-input")).setValue(name);
+//    varDivs.add(div);
+//    mainDiv.querySelector(".globalVarsList").appendChild(div);
+//    int maxTypeWidth = div.querySelector(".global_var").getClientWidth();
+//    TypeEntryField typeField = new TypeEntryField(type, (DivElement)div.querySelector(".typeEntry"), simpleEntry, false,
+//        (scope, coreTypes) -> {
+//          StandardLibrary.createGlobals(null, scope, coreTypes);
+//          scope.setParent(new RepositoryScope(repository, coreTypes, null));
+//        },
+//        (context) -> {},
+//        widthCalculator, maxTypeWidth, mainDiv.querySelector(".globaldetails"), mainDiv.querySelector(".globaldetails .scrollable-interior"));
+//    typeField.setChangeListener((newType, isFinal) -> {
+//      v.type = newType; 
+//      repository.updateGlobalVariable(v);
+//    });
+//    typeField.render();
+//    
+//    InputElement nameInput = (InputElement)div.querySelector("plom-autoresizing-input"); 
+//    nameInput.addEventListener(Event.CHANGE, (evt) -> {
+//      v.name = nameInput.getValue(); 
+//      repository.updateGlobalVariable(v);
+//    }, false);
+//    
+//    AnchorElement deleteAnchor = (AnchorElement)div.querySelector("a.delete_global_var");
+//    if (v.isImported)
+//      deleteAnchor.getStyle().setDisplay(Display.NONE);
+//    deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
+//      evt.preventDefault();
+//      repository.deleteGlobalVarAndResetIds(v.module, v.id);
+//      rebuildView();
+//    }, false);
+//  }
 
   @JsFunction
   public static interface LoadFunctionSigViewCallback

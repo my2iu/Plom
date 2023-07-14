@@ -112,7 +112,7 @@ TODO list from TOJam 2023
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
 - [ ] Back button in upper-left for android
 
-- [ ] Remove the VariableDescription stuff since it's no longer used and it's confusing
+- [X] Remove the VariableDescription stuff since it's no longer used and it's confusing
 - [ ] Rewrite everything in Kotlin
 - [X] Use the ExecutableFunction.owningClass to constrain the ObjectScope to only allow access to member variables belonging to the owning class and not subclasses
 

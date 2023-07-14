@@ -9,7 +9,6 @@ import java.util.Optional;
 import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.ModuleCodeRepository.VariableDescription;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
@@ -91,30 +90,6 @@ public class RepositoryScope extends VariableScope
     }
 
     // Create variables for all the global variables in the module
-    for (VariableDescription v: repository.globalVars)
-    {
-      try {
-        addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
-      }
-      catch (RunException e)
-      {
-        // Ignore errors when registering variables
-      }
-    }
-    if (repository.chainedRepository != null)
-    {
-      for (VariableDescription v: repository.chainedRepository.globalVars)
-      {
-        // This code is obsolete since VariableDescription is being phased out of the UI
-        try {
-          addVariable(v.name, typeFromToken(v.type), coreTypes.getNullValue());
-        }
-        catch (RunException e)
-        {
-          // Ignore errors when registering variables
-        }
-      }
-    }
     ErrorList errors = new ErrorList();
     VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
         (name, unboundType) -> {
@@ -415,11 +390,6 @@ public class RepositoryScope extends VariableScope
       ClassDescription parentCls = codeRepositoryClasses.get(name);
       addMemberVarsFromClass(toReturn, parentCls);
     }
-    for (VariableDescription var: cls.variables)
-    {
-      // This code is obsolete since variable declarations are being phased out of the UI
-      toReturn.addMemberVariable(var.name, typeFromToken(var.type));
-    }
     // Also run the variable declaration code to get members from there
     ErrorList errors = new ErrorList();
     VariableDeclarationInterpreter.VariableDeclarer variableDeclarer =
@@ -480,17 +450,6 @@ public class RepositoryScope extends VariableScope
   public void lookupSuggestions(GatheredSuggestions suggestions)
   {
     suggestions.addAllSuggestions(repository.getAllFunctionNamesSorted());
-    for (VariableDescription v: repository.globalVars)
-    {
-      suggestions.addSuggestion(v.name);
-    }
-    if (repository.chainedRepository != null)
-    {
-      for (VariableDescription v: repository.chainedRepository.globalVars)
-      {
-        suggestions.addSuggestion(v.name);
-      }
-    }
     for (String name: globalVariableSuggestions)
       suggestions.addSuggestion(name);
   }

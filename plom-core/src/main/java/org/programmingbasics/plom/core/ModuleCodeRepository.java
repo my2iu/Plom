@@ -277,21 +277,12 @@ public class ModuleCodeRepository
     public FunctionDescription setImported(boolean isImported) { this.isImported = isImported; return this;}
   }
 
-  public static class VariableDescription extends DescriptionWithId
-  {
-    public String name;
-    public ModuleCodeRepository module;
-    public Token.ParameterToken type;
-    public boolean isImported;
-  }
-
   public static class ClassDescription extends DescriptionWithId
   {
     private String name;
     private String originalName;
     UnboundType parent;
     List<FunctionDescription> methods = new ArrayList<>();
-    List<VariableDescription> variables = new ArrayList<>();
     
     /** Code for class variable declarations */
     StatementContainer variableDeclarationCode = new StatementContainer();
@@ -348,33 +339,11 @@ public class ModuleCodeRepository
       }
       return false;
     }
-    public int addVarAndResetIds(String name, Token.ParameterToken type)
-    {
-      // Add a new variable at the beginning of the list so that it's more likely
-      // to appear near the top of the variable list
-      VariableDescription v = new VariableDescription();
-      v.name = name;
-      v.type = type;
-      variables.add(0, v);
-      return 0;
-    }
-    public void deleteVarAndResetIds(int id)
-    {
-      variables.remove(id);
-    }
-    public List<VariableDescription> getAllVars()
-    {
-      return getSortedWithIds(variables, Comparator.comparing((VariableDescription v) -> v.name));
-    }
-    public void updateVariable(VariableDescription v)
-    {
-      variables.set(v.id, v);
-    }
+    
     public StatementContainer getVariableDeclarationCode()
     {
       return variableDeclarationCode;
     }
-    
     public void setVariableDeclarationCode(StatementContainer code)
     {
       variableDeclarationCode = code;
@@ -428,9 +397,6 @@ public class ModuleCodeRepository
   
   private List <FunctionDescription> functions = new ArrayList<>();
   
-  /** Lists global variables and their types */
-  List<VariableDescription> globalVars = new ArrayList<>();
-
   /** All classes */
   List<ClassDescription> classes = new ArrayList<>();
   
@@ -647,45 +613,6 @@ public class ModuleCodeRepository
 //    functions.put(func.sig.getLookupName(), func);
   }
   
-  private void fillChainedGlobalVars(List<VariableDescription> mergedGlobalVars)
-  {
-    mergedGlobalVars.addAll(globalVars);
-  }
-  
-  public List<VariableDescription> getAllGlobalVarsSorted()
-  {
-    List<VariableDescription> mergedGlobalVars = new ArrayList<>(globalVars);
-    if (chainedRepository != null)
-      chainedRepository.fillChainedGlobalVars(mergedGlobalVars);
-    return getSortedWithIds(mergedGlobalVars, Comparator.comparing((VariableDescription v) -> v.name));
-  }
-  
-  public int addGlobalVarAndResetIds(String name, Token.ParameterToken type)
-  {
-    // Add a new variable at the beginning of the list so that it's more likely
-    // to appear near the top of the variable list
-    VariableDescription v = new VariableDescription();
-    v.name = name;
-    v.type = type;
-    v.module = this;
-    globalVars.add(0, v);
-    return 0;
-  }
-  
-  public void updateGlobalVariable(VariableDescription v)
-  {
-    if (v.id < globalVars.size() && v.module == this)
-      globalVars.set(v.id, v);
-  }
-  
-  public void deleteGlobalVarAndResetIds(ModuleCodeRepository module, int id)
-  {
-    // This only works if only the current module can delete things, and the current module is inserted into the merged global variable list first 
-    if (module != this)
-      throw new IllegalArgumentException("Not deleting global var from correct chained module");
-    globalVars.remove(id);
-  }
-  
   public StatementContainer getVariableDeclarationCode()
   {
     return variableDeclarationCode;
@@ -824,8 +751,6 @@ public class ModuleCodeRepository
       c.setImported(true);
     for (FunctionDescription fn: functions)
       fn.setImported(true);
-    for (VariableDescription v: globalVars)
-      v.isImported = true;
     for (FileDescription f: extraFiles)
       f.setImported(true);
   }
@@ -935,12 +860,6 @@ public class ModuleCodeRepository
     }
     
     // Output global variables
-    List<VariableDescription> sortedGlobalVars = new ArrayList<>(globalVars);
-    sortedGlobalVars.sort(Comparator.comparing((VariableDescription v) -> v.name));
-    for (VariableDescription v: sortedGlobalVars)
-    {
-      saveVariable(out, v);
-    }
     out.token("vardecls");
     out.token("{");
     out.newline();
@@ -992,11 +911,6 @@ public class ModuleCodeRepository
     out.token("}");
     out.newline();
 
-    for (VariableDescription v: c.getAllVars())
-    {
-      saveVariable(out, v);
-    }
-    
     for (FunctionDescription fn: c.getInstanceMethods())
     {
       if (fn.sig.isBuiltIn) continue;
@@ -1019,18 +933,6 @@ public class ModuleCodeRepository
     out.newline();
   }
 
-  private static void saveVariable(PlomTextWriter.PlomCodeOutputFormatter out,
-      VariableDescription v) throws IOException
-  {
-    out.token("var");
-    out.token(".");
-    out.token("{");
-    out.token(v.name);
-    out.token("}");
-    PlomTextWriter.writeToken(out, v.type);
-    out.newline();
-  }
-  
   static void saveFunction(PlomTextWriter.PlomCodeOutputFormatter out, FunctionDescription fn) throws IOException
   {
     if (fn.sig.isStatic)
@@ -1094,13 +996,7 @@ public class ModuleCodeRepository
     while (!"}".equals(lexer.peekLexInput()))
     {
       String peek = lexer.peekLexInput();
-      if ("var".equals(peek))
-      {
-        VariableDescription v = loadVariable(lexer);
-        addGlobalVarAndResetIds(v.name, v.type);
-        lexer.expectNewlineToken();
-      }
-      else if ("function".equals(peek))
+      if ("function".equals(peek))
       {
         FunctionDescription fn = loadFunction(lexer);
         addFunctionAndResetIds(fn);
@@ -1190,10 +1086,6 @@ public class ModuleCodeRepository
     if (!augmentClass)
     {
       cls.setSuperclass(loaded.parent);
-      for (VariableDescription v: loaded.variables)
-      {
-        cls.addVarAndResetIds(v.name, v.type);
-      }
       cls.setVariableDeclarationCode(loaded.getVariableDeclarationCode());
     }
 new_methods:
@@ -1241,13 +1133,7 @@ new_methods:
     while (!"}".equals(lexer.peekLexInput()))
     {
       String peek = lexer.peekLexInput();
-      if ("var".equals(peek))
-      {
-        VariableDescription v = loadVariable(lexer);
-        cls.addVarAndResetIds(v.name, v.type);
-        lexer.expectNewlineToken();
-      }
-      else if ("classfunction".equals(peek) || "function".equals(peek) || "constructor".equals(peek))
+      if ("classfunction".equals(peek) || "function".equals(peek) || "constructor".equals(peek))
       {
         cls.addMethod(loadFunction(lexer));
       }
@@ -1277,23 +1163,6 @@ new_methods:
     return cls;
   }
 
-  private static VariableDescription loadVariable(
-      PlomTextReader.PlomTextScanner lexer) throws PlomReadException
-  {
-    VariableDescription v = new VariableDescription();
-    lexer.expectToken("var");
-    lexer.expectToken(".");
-    lexer.expectToken("{");
-    String varName = lexer.lexParameterTokenPartOrEmpty();
-    lexer.expectToken("}");
-    
-    // Read the variable type
-    Token.ParameterToken type = (Token.ParameterToken)PlomTextReader.readToken(lexer);
-    v.name = varName;
-    v.type = type;
-    return v;
-  }
-  
   static FunctionDescription loadFunction(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
   {
     boolean isConstructor = "constructor".equals(lexer.peekLexInput());

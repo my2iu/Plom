@@ -3,9 +3,7 @@ package org.programmingbasics.plom.core;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,19 +16,17 @@ import org.programmingbasics.plom.core.WebHelpersShunt.ByteArrayUint8Array;
 import org.programmingbasics.plom.core.WebHelpersShunt.JsEmulatedPromise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
-import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
-import elemental.util.Collections;
 import junit.framework.TestCase;
 
 public class ModuleCodeRepositoryTest extends TestCase
@@ -38,9 +34,15 @@ public class ModuleCodeRepositoryTest extends TestCase
   static ModuleCodeRepository repository = new ModuleCodeRepository();
   static {
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.setVariableDeclarationCode(new StatementContainer(new TokenContainer(
-        Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
-    repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
+    repository.setVariableDeclarationCode(new StatementContainer(
+        new TokenContainer(Arrays.asList(new Token.SimpleToken("var", Symbol.Var))),
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".var", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@string", Symbol.AtType)
+            )
+        ));
+//    repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
@@ -61,9 +63,14 @@ public class ModuleCodeRepositoryTest extends TestCase
         FunctionSignature.from(UnboundType.forClassLookupName("void"), "new")
             .setIsConstructor(true),
         new StatementContainer()));
-    testClass.addVarAndResetIds("test var", Token.ParameterToken.fromContents("@test class", Symbol.AtType));
-    testClass.setVariableDeclarationCode(new StatementContainer(new TokenContainer(
-        Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
+//    testClass.addVarAndResetIds("test var", Token.ParameterToken.fromContents("@test class", Symbol.AtType));
+    testClass.setVariableDeclarationCode(new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("var", Symbol.Var),
+            Token.ParameterToken.fromContents(".test var", Symbol.DotVariable),
+            Token.ParameterToken.fromContents("@test class", Symbol.AtType)
+            ),
+        new TokenContainer(Arrays.asList(new Token.SimpleToken("var", Symbol.Var)))));
   }
   
   @Test
@@ -75,9 +82,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     ModuleCodeRepository.saveClass(out, repository.getAllClassesSorted().stream().filter(cls -> cls.getName().equals("test class")).findFirst().get());
     Assert.assertEquals(" class @ { test class } {\n" + 
         " vardecls {\n" + 
+        " var . {test var } @ {test class }\n" +
         " var\n" +
         " }\n" +
-        " var . { test var } @ {test class }\n" +
         " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
@@ -98,9 +105,9 @@ public class ModuleCodeRepositoryTest extends TestCase
     ModuleCodeRepository.saveClass(out, c);
     Assert.assertEquals(" class @ { test class } extends @ {object } {\n" + 
         " vardecls {\n" + 
+        " var . {test var } @ {test class }\n" +
         " var\n" +
         " }\n" + 
-        " var . { test var } @ {test class }\n" +
         " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
@@ -115,7 +122,7 @@ public class ModuleCodeRepositoryTest extends TestCase
   public void testLoadClass() throws PlomReadException
   {
     String codeStr = "class @{test class} {\n"
-        + "  var .{test var} @{test class}\n"
+//        + "  var .{test var} @{test class}\n"
         + "  vardecls {\n" 
         + "    var .{var decl} @{test class}\n"
         + "  }\n"
@@ -137,9 +144,9 @@ public class ModuleCodeRepositoryTest extends TestCase
         new Token.SimpleToken("var", Symbol.Var),
         Token.ParameterToken.fromContents(".var decl", Symbol.DotVariable),
         Token.ParameterToken.fromContents("@test class", Symbol.AtType)), cls.getVariableDeclarationCode().statements.get(0));
-    Assert.assertEquals(1, cls.variables.size());
-    Assert.assertEquals("test var", cls.variables.get(0).name);
-    Assert.assertEquals("test class", cls.variables.get(0).type.getLookupName());
+//    Assert.assertEquals(1, cls.variables.size());
+//    Assert.assertEquals("test var", cls.variables.get(0).name);
+//    Assert.assertEquals("test class", cls.variables.get(0).type.getLookupName());
     Assert.assertEquals(2, cls.methods.size());
     Assert.assertEquals("at x:y:", cls.methods.get(0).sig.getLookupName());
     Assert.assertEquals("y", cls.methods.get(0).sig.getArgName(1));
@@ -176,18 +183,18 @@ public class ModuleCodeRepositoryTest extends TestCase
 
     repository.saveModule(out, true);
     Assert.assertEquals(" module .{program} {\n" + 
-        " var . { var } @ {string }\n" +
         " vardecls {\n" +
         " var\n" +
+        " var . {var } @ {string }\n" +
         " }\n" +
         " function . {get } { @ {number } } { } {\n" + 
         " return 3\n" + 
         " }\n" + 
         " class @ { test class } {\n" + 
         " vardecls {\n" + 
+        " var . {test var } @ {test class }\n" + 
         " var\n" +
         " }\n" +
-        " var . { test var } @ {test class }\n" + 
         " function . {at x: { . {x } @ {number } }y: { . {y } @ {number } } } { @ {number } } { } {\n" + 
         " return . {x }\n" + 
         " }\n" + 
@@ -202,9 +209,10 @@ public class ModuleCodeRepositoryTest extends TestCase
   public void testLoadModule() throws PlomReadException
   {
     String codeStr = " module .{program} {\n" + 
-        " var . { variable } @ {string }\n" + 
+//        " var . { variable } @ {string }\n" + 
         " vardecls {\n" +
         " var\n" +
+        " var .{variable} @{string}\n" +
         " }\n" +
         " function . {get } {@ {number }} {} {\n" + 
         " return 3\n" + 
@@ -217,8 +225,8 @@ public class ModuleCodeRepositoryTest extends TestCase
         " class @ { test class 2} {\n" + 
         " }\n" + 
         " class @ { test class } {\n" + 
-        " var . { test var } @ {test class }\n" + 
         " vardecls {\n" +
+        " var . { test var } @ {test class }\n" + 
         " var\n" +
         " }\n" +
         " function . {at x: {. { x } @ {number }}y: {. { y } @ {number } }} {@ {number }} {} {\n" + 
@@ -240,16 +248,16 @@ public class ModuleCodeRepositoryTest extends TestCase
     FunctionDescription newStyleFn = loaded.getFunctionWithName("new style:function:");
     Assert.assertTrue(newStyleFn != null);
     Assert.assertEquals("new style: (.a @number) function: (.b @boolean) @void", newStyleFn.sig.getDisplayName());
-    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
-    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
-    Assert.assertEquals(loaded.getVariableDeclarationCode().statements.size(), 1);
+//    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable")));
+//    Assert.assertTrue(loaded.getAllGlobalVarsSorted().stream().anyMatch(v -> v.name.equals("variable") && v.type.getLookupName().equals("string")));
+    Assert.assertEquals(loaded.getVariableDeclarationCode().statements.size(), 2);
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.size(), 1);
     Assert.assertEquals(loaded.getVariableDeclarationCode().statements.get(0).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
     Assert.assertTrue(loaded.hasClassWithName("test class"));
     ClassDescription loadedTestClass = loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class")).findFirst().get();
-    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.size(), 1);
-    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(0).tokens.size(), 1);
-    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(0).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.size(), 2);
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(1).tokens.size(), 1);
+    Assert.assertEquals(loadedTestClass.getVariableDeclarationCode().statements.get(1).tokens.get(0), new Token.SimpleToken("var", Symbol.Var));
     // If a class already exists, just augment that class, don't create a completely new class with the same name
     Assert.assertEquals(1, loaded.getAllClassesSorted().stream().filter(c -> c.getName().equals("test class 2")).count());
   }
