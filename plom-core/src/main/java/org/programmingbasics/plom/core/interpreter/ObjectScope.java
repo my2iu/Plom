@@ -4,7 +4,7 @@ import org.programmingbasics.plom.core.interpreter.Value.LValue;
 
 public class ObjectScope extends VariableScope
 {
-  public ObjectScope(Value thisValue)
+  public ObjectScope(Value thisValue, Type type)
   {
     this.thisValue = thisValue;
     // For constructors, we create an empty object scope with no
@@ -13,7 +13,11 @@ public class ObjectScope extends VariableScope
     {
       if (thisValue.val instanceof PlomObject)
         obj = (PlomObject)thisValue.val;
-      type = thisValue.type;
+      this.type = thisValue.type;
+    }
+    if (type != null)
+    {
+      this.type = type;
     }
   }
   Value thisValue;
@@ -30,8 +34,7 @@ public class ObjectScope extends VariableScope
    */
   public static ObjectScope placeHolderForConstructor(Type type)
   {
-    ObjectScope obj = new ObjectScope(null);
-    obj.type = type;
+    ObjectScope obj = new ObjectScope(null, type);
     return obj;
   }
   

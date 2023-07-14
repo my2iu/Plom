@@ -568,7 +568,7 @@ public class ExpressionEvaluator
       if (isConstructor)
         machine.pushConstructorScope(method.owningClass);
       else if (self != null)
-        machine.pushObjectScope(self);
+        machine.pushObjectScope(self, method.owningClass);
     }
     else
       machine.pushStackFrame(method.code, method.codeUnit, method.sourceLookup, closureScope, constructorType, SimpleInterpreter.statementHandlers);

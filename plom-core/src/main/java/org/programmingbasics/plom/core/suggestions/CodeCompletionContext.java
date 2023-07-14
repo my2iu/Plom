@@ -57,7 +57,7 @@ public class CodeCompletionContext
     }
     public void pushObjectScope(Value thisValue)
     {
-      VariableScope scope = new ObjectScope(thisValue);
+      VariableScope scope = new ObjectScope(thisValue, thisValue.type);
       scope.setParent(instance.topScope);
       instance.topScope = scope;
     }

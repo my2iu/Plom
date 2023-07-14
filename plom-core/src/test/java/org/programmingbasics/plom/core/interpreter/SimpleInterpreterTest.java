@@ -695,6 +695,114 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testMethodCallSupertypeAccessSubtypeVariables() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getStringType(), coreTypes.getNullValue());
+      scope.addVariable("b", coreTypes.getStringType(), coreTypes.getNullValue());
+      
+      Type childType = new Type("child", coreTypes.getObjectType());
+//      childType.addMemberVariable("childVar", coreTypes.getStringType());
+      Type subChildType = new Type("subchild", childType);
+      subChildType.addMemberVariable("a", coreTypes.getStringType());
+//      subChildType.addMemberVariable("subchildVar", coreTypes.getStringType());
+
+      scope.addVariable("obj", subChildType, coreTypes.getNullValue());
+
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("child", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    )
+                )
+            ),
+            childType, Optional.empty(), Arrays.asList());
+        childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
+        scope.addType(childType);
+
+        ExecutableFunction modAFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("child", "modify a"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"5\"", Symbol.String)
+                    )
+                )
+            ),
+            childType, Optional.empty(), Arrays.asList());
+        childType.addMethod("modify a", modAFn, coreTypes.getVoidType());
+
+        ExecutableFunction subCreateFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("subchild", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"3\"", Symbol.String)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addStaticMethod("new", subCreateFn, coreTypes.getVoidType());
+        scope.addType(subChildType);
+
+        ExecutableFunction valFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("subchild", "get"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addMethod("get", valFn, coreTypes.getStringType());
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@subchild", Symbol.AtType),
+            Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            // Overwrites a, but should overwrite the global variable a
+            // not the member variable
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".modify a", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            // Returns the value of the a member variable defined in the
+            // subchild
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".get", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals("5", vars.globalScope.lookup("a").getStringValue());
+    Assert.assertEquals("3", vars.globalScope.lookup("b").getStringValue());
+  }
+
+  @Test
   public void testStaticMethodCall() throws RunException, ParseException
   {
     // Calls a method added to a primitive type that doesn't access
