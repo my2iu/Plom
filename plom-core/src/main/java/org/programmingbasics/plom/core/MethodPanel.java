@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
-import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
@@ -36,7 +35,8 @@ public class MethodPanel
     
     // UI elements for the type suggestion and type entry stuff
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-        (DivElement)mainDiv.querySelector("div.sidechoices"));
+        (DivElement)mainDiv.querySelector("div.sidechoices"),
+        (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent"));
     simpleEntry.setVisible(false);
     
     showMethod(mainDiv, sig, isNew);

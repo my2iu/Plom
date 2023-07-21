@@ -93,13 +93,13 @@ TODO list from TOJam 2023
 - [ ] Generic  JS object wrap and unwrap Plom objects
 - [ ] Super doesn’t work for calling non-static methods
 - [ ] No suggestions for instance methods after calling a constructor
-- [ ] Better handling of big tablets where it’s a pain to reach around the screen to press buttons
+- [X] Better handling of big tablets where it’s a pain to reach around the screen to press buttons
 - [ ] In method signature editor, when editing a name part, pressing enter should move to the argument part
 - [ ] Line after an if with lambdas might have line height too short maybe if I can find an example again
 - [ ] Lambdas with a long function signature part sometimes has wrapping problems where the return type of the function signature wraps to an incorrect location
 - [ ] Allow extra blank lines in saved Plom files in case of hand editing
 - [ ] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
-- [ ] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
+- [X] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
 - [ ] Undo support
 - [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
 - [ ] Slow performance on slow Android phones maybe with larger projects?

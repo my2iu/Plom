@@ -55,7 +55,8 @@ public class GlobalsPanel implements AutoCloseable
     
     // UI elements for the type suggestion and type entry stuff
     simpleEntry = new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-        (DivElement)mainDiv.querySelector("div.sidechoices"));
+        (DivElement)mainDiv.querySelector("div.sidechoices"),
+        (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent"));
     simpleEntry.setVisible(false);
 
     // For adding classes
@@ -166,7 +167,8 @@ public class GlobalsPanel implements AutoCloseable
         new CodeWidgetInputPanels(
             (DivElement)mainDiv.querySelector("div.choices"),
             new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-                (DivElement)mainDiv.querySelector("div.sidechoices")),
+                (DivElement)mainDiv.querySelector("div.sidechoices"),
+                (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
             new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
             true),
         (Element)mainDiv.querySelector(".scrollable-interior"),

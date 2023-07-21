@@ -8,12 +8,11 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.HitDetect;
 import org.programmingbasics.plom.core.view.RenderedCursorPosition;
+import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 import org.programmingbasics.plom.core.view.RenderedHitBox;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
-import org.programmingbasics.plom.core.view.RenderedCursorPosition.CursorRect;
 
 import elemental.client.Browser;
-import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;
@@ -89,7 +88,8 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
     focus = new CodeWidgetInputPanels(
         (DivElement)mainDiv.querySelector("div.choices"),
         new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-            (DivElement)mainDiv.querySelector("div.sidechoices")),
+            (DivElement)mainDiv.querySelector("div.sidechoices"),
+            (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
         new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
         false);
   }
@@ -111,7 +111,8 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
       focus = new CodeWidgetInputPanels(
           (DivElement)mainDiv.querySelector("div.choices"),
           new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-              (DivElement)mainDiv.querySelector("div.sidechoices")),
+              (DivElement)mainDiv.querySelector("div.sidechoices"),
+              (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
           new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
           false);
     }

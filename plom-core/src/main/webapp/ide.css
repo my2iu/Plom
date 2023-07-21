@@ -155,6 +155,12 @@ a.breadcrumb-item:visited {
 	border: 0px none;
 }
 
+.sidechoices .sidechoicescontent {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
 .codesidesplit svg.cursoroverlay,
 .methodsidesplit svg.cursoroverlay,
 .globalsidesplit svg.cursoroverlay,

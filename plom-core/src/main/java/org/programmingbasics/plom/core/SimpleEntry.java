@@ -27,7 +27,8 @@ import elemental.html.TextAreaElement;
 public class SimpleEntry
 {
   DivElement container;
-  DivElement suggestionsContainer;
+  DivElement suggestionsContainer;  // Outer container that scrolls
+  DivElement suggestionsContentContainer;  // Actual suggestions content inside the scrolling container
   Token simpleEntryToken;  // token being edited by simple entry
   InputCallback<Token> callback;
   BackspaceAllCallback backspaceCallback;
@@ -41,11 +42,12 @@ public class SimpleEntry
   String doNotCoverElOldRightPadding;
   double doNotCoverElOldScrollLeft;
   
-  SimpleEntry(DivElement el, DivElement suggestionsEl)
+  SimpleEntry(DivElement el, DivElement suggestionsEl, DivElement suggestionsContentEl)
   {
     el.setInnerHTML(UIResources.INSTANCE.getSimpleEntryContentsHtml().getText());
     container = el;
     suggestionsContainer = suggestionsEl;
+    suggestionsContentContainer = suggestionsContentEl;
     hookSimpleEntry(el);
   }
   
@@ -117,7 +119,7 @@ public class SimpleEntry
   
   void refillSuggestions(String search)
   {
-    suggestionsContainer.setInnerHTML("");
+    suggestionsContentContainer.setInnerHTML("");
     if (suggester == null) 
     {
       suggestionsContainer.getStyle().setDisplay(Display.NONE);
@@ -125,11 +127,11 @@ public class SimpleEntry
     }
     else
     {
-      suggestionsContainer.getStyle().setDisplay(Display.BLOCK);
+      suggestionsContainer.getStyle().clearDisplay();
     }
     List<String> suggestions = suggester.gatherSuggestions(search);
-    Document doc = suggestionsContainer.getOwnerDocument();
-    for (int n = 0; n < Math.min(20, suggestions.size()); n++)
+    Document doc = suggestionsContentContainer.getOwnerDocument();
+    for (int n = Math.min(20, suggestions.size() - 1); n >= 0; n--)
     {
       final String suggestionText = suggestions.get(n); 
       AnchorElement el = (AnchorElement)doc.createElement("a");
@@ -137,12 +139,14 @@ public class SimpleEntry
       DivElement div = doc.createDivElement();
       el.appendChild(div);
       div.setTextContent(suggestionText);
-      suggestionsContainer.appendChild(el);
+      suggestionsContentContainer.appendChild(el);
       el.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
         simpleEntryInput(suggestionText, true);
       }, false);
     }
+    // Scroll to bottom of the list
+    suggestionsContainer.setScrollTop(suggestionsContainer.getScrollHeight());
   }
   
   private void hookSimpleEntry(DivElement simpleEntryDiv)
