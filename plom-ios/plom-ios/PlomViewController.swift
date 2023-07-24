@@ -404,6 +404,12 @@ class PlomJsBridge {
     
     func callPostHandler(urlPath: String, data: Data?, params: [String:String]) throws -> PlomPostResponse {
         switch(urlPath) {
+        case "preparedToUnload":
+            if let wv = view?.webView {
+                wv.removeFromSuperview()
+            }
+            return PlomPostResponse(mime: "text/plain", string: "")
+
         case "test":
             let received = String(data: data!, encoding: .utf8)
             return PlomPostResponse(mime: "text/plain", string: received!.appending(" received"))

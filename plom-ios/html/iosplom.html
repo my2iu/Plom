@@ -68,6 +68,8 @@
                     fetch('/bridge/saveClass?name=' + encodeURIComponent(name), {method: 'POST', body: contents});
                 }, function(name) {
                     fetch('/bridge/deleteClass?name=' + encodeURIComponent(name));
+                }).then(() => {
+                    fetch('/bridge/preparedToUnload');
                 });
             };
 

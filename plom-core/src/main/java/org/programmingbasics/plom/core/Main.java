@@ -513,7 +513,7 @@ public class Main
 
   }
 
-  public void saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver, DeleteClassCallback classDeleter)
+  public WebHelpers.Promise<Void> saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver, DeleteClassCallback classDeleter)
   {
     try {
       StringBuilder out = new StringBuilder();
@@ -550,6 +550,7 @@ public class Main
       // Ignore errors
       e.printStackTrace();
     }
+    return WebHelpers.PromiseClass.<Void>resolve(null);
   }
   
   /**
