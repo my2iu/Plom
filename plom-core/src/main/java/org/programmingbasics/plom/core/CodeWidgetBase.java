@@ -275,15 +275,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (selectionCursorPos != null) 
     {
       contentDiv.appendChild(makeButton("Copy", true, choicesDiv, () -> {
-        // There's some weird bug in ios14 that I can't figure out
-        // where after the pointer events for dragging some handles to
-        // make a selection, if I then create a new anchor element
-        // (i.e. a Copy button), then the first touch afterwards will
-        // not result in any click events. This can be confusing because
-        // the "Copy" button will not do anything the first time you
-        // press it (only the second time). With all other buttons, that's
-        // obvious, since they give feedback, but the copy button doesn't
-        // so I need to show a message as feedback that a copy did happen.
+        // We need to show some feedback that a "Copy" has occurred because
+        // this is the only button that doesn't change the code when it is
+        // pressed.
         showToast("Copied.");
         CodePosition start;
         CodePosition end;
@@ -1135,6 +1129,18 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setHref("#");
       a.appendChild(div);
+      CodeWidgetBase.addActiveEventListenerTo(a, "pointerdown", (evt) -> {
+        // There's some weird bug in ios14 that I can't figure out
+        // where after the pointer events for dragging some handles to
+        // make a selection, if I then create a new anchor element
+        // (i.e. a Copy button), then the first touch afterwards will
+        // not result in any click events. 
+        //
+        // Creating this empty pointer event listener on the button
+        // does seem to convince ios14 to let the click event occur
+        // on the first touch (instead of requiring two touches). I
+        // don't understand why, but it seems to work.
+      }, false);
       a.addEventListener(Event.CLICK, (evt)-> {
         evt.preventDefault();
         // After a click, we often remove all the buttons, which causes

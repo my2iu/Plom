@@ -75,7 +75,7 @@ TODO list from TOJam 2023
 - [ ] Open project directories straight from web version
 - [X] Send logging messages and crash messages back to show in console or elsewhere
 - [ ] Clear console messages
-- [ ] On iOS, you possibly have to double tap to get copy and erase buttons of selections to register
+- [X] On iOS, you possibly have to double tap to get copy and erase buttons of selections to register
 - [X] Should throw an error if you don’t chain your constructors—especially to @object.new
 - [X] Wkwebview not being cleaned when exiting (after exiting and reentering to save a few times, there will be a lot of WKWebViews hanging around that the Safari debugger can find)
 - [X] Run error shows the line but not the file
