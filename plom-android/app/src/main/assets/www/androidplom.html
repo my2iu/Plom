@@ -46,11 +46,20 @@
 
     		hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
 
-            window.plomOnAndroidBackPressed = function() {
+            // Back button
+			var onback = function() {
                 if (main.canGoBack())
  		          main.goBack();
                 else
                   fetch('http://webviewbridge.plom.dev/bridge/exit');
+			};
+            document.querySelector('.backbutton').addEventListener('click', function(evt) {
+                evt.preventDefault();
+                onback();
+            });
+
+            window.plomOnAndroidBackPressed = function() {
+	            onback();
             };
 
             window.plomUpdateExtraFileList = function() {
@@ -63,7 +72,7 @@
 
   <body>
   <div class="plomNavigationHeader">
-    <a class="plomUiButton backbutton" style="display: none; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
+    <a class="plomUiButton backbutton" style="display: block; font-size: 1.5em; transform: scale(-1, 1);" href="javascript:void(0)">&#10132;</a>
     <div class="subject" style="flex-grow: 1; flex-shrink: 1;">
       <div class="breadcrumb" style="flex-grow: 1;"></div>
     </div>
@@ -83,8 +92,9 @@
   </div>
 
   <div class="runWebView" style="position: absolute; display: none; flex-direction: column; top: 1em; bottom: 1em; left: 1em; right: 1em; background-color: white; border: 1px solid black;">
-    <div class="runWebViewMenuBar" style="border-bottom: 1px solid black; text-align: right; "><a class="plomUiButton" href="#">&#x25BC;</a></div>
-    <iframe style="flex-grow: 1; border: 0px;"></iframe>
+  	<div class="runWebViewMenuBar" style="border-bottom: 1px solid black; text-align: right; "><a class="plomUiButton" style="font-size: 1.5em;" href="#">&#x25BC;</a></div>
+  	<div class="runWebViewConsoleLog"></div>
+  	<iframe style="flex-grow: 1; border: 0px;"></iframe>
   </div>
 
   </body>

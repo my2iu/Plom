@@ -1,9 +1,24 @@
 package dev.plom.ide;
 
+import static dev.plom.ide.PlomActivity.PLOM_MIME_TYPE;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import android.widget.TextView;
+
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -12,26 +27,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.OpenableColumns;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.PopupMenu;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,8 +38,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static dev.plom.ide.PlomActivity.PLOM_MIME_TYPE;
 
 public class ProjectsActivity extends AppCompatActivity {
 
@@ -83,6 +76,7 @@ public class ProjectsActivity extends AppCompatActivity {
                 textView.setText(projects.get(position).name);
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
+                        int position = holder.getAbsoluteAdapterPosition();
                         ProjectDescription proj = projects.remove(position);
                         projects.add(0, proj);
                         listWidget.getAdapter().notifyDataSetChanged();
@@ -97,6 +91,7 @@ public class ProjectsActivity extends AppCompatActivity {
                 final ImageButton moreButton = holder.itemView.findViewById(R.id.project_row_item_more);
                 moreButton.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
+                        int position = holder.getAbsoluteAdapterPosition();
                         ProjectDescription proj = projects.get(position);
                         PopupMenu popup = new PopupMenu(ProjectsActivity.this, moreButton);
                         popup.inflate(R.menu.projects_row_context_menu);
@@ -107,6 +102,7 @@ public class ProjectsActivity extends AppCompatActivity {
                         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
+                                int position = holder.getAbsoluteAdapterPosition();
                                 ProjectDescription proj = projects.get(position);
                                 switch(item.getItemId())
                                 {

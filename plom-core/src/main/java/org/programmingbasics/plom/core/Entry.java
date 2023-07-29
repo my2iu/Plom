@@ -84,9 +84,9 @@ TODO list from TOJam 2023
 - [ ] Don’t need people to click on OK after changing method signatures
 - [ ] Are event handlers (jsobject from function) logging errors?
 - [ ] Are methods listed alphabetically in suggestions?
-- [ ] Android version should filter out .git folders in extra files (or any dir starting with .)?
+- [X] Android version should filter out .git folders in extra files (or any dir starting with .)?
 - [ ] Method return type and extends should use proper code widget
-- [ ] When hooking in project with an existing dir in Android (possibly empty project), it copies in the wrong stuff
+- [?] When hooking in project with an existing dir in Android (possibly empty project), it copies in the wrong stuff
 - [X] No warning when using member variables before calling super constructor in constructor
 - [ ] Comment out code
 - [ ] Code suggestions should be case insensitive
@@ -110,7 +110,7 @@ TODO list from TOJam 2023
 - [ ] Empty return in @void method not allowed
 - [ ] Increase size of minimize web output button so that you don’t accidentally keep hitting the hamburger menu instead
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
-- [ ] Back button in upper-left for android
+- [X] Back button in upper-left for android
 
 - [X] Remove the VariableDescription stuff since it's no longer used and it's confusing
 - [ ] Rewrite everything in Kotlin

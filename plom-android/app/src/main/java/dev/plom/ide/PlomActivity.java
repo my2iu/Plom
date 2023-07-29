@@ -201,8 +201,9 @@ public class PlomActivity extends AppCompatActivity {
                     String fileName = null;
                     try (Cursor c = getContentResolver().query(result, new String[] {OpenableColumns.DISPLAY_NAME},
                             null, null, null)) {
-                        if (c != null && c.moveToFirst()) {
-                            fileName = c.getString(c.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                        int displayNameIdx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                        if (c != null && c.moveToFirst() && displayNameIdx >= 0) {
+                            fileName = c.getString(displayNameIdx);
                         }
                     }
                     if (fileName == null)
@@ -256,7 +257,7 @@ public class PlomActivity extends AppCompatActivity {
                 // TODO: Pass in a list of base paths and rejection filters
                 try {
                     JSONArray filesJson = new JSONArray();
-                    for (String name : listProjectFiles("", Arrays.asList("^src/$")))
+                    for (String name : listProjectFiles("", Arrays.asList("^src/$", "^.git/.*")))
                         filesJson.put(name);
                     JSONObject json = new JSONObject();
                     json.put("files", filesJson);
