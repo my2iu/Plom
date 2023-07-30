@@ -7,13 +7,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,8 +17,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import java.util.List;
 
 public class NewProjectActivity extends AppCompatActivity {
 
@@ -58,7 +52,7 @@ public class NewProjectActivity extends AppCompatActivity {
         useExistingDirFolderPane = findViewById(R.id.useExistingDirFolderPane);
         templateSpinner = findViewById(R.id.templateSpinner);
         ArrayAdapter<CodeTemplate> templateAdapter = new ArrayAdapter(this,
-                R.layout.support_simple_spinner_dropdown_item, templateOptions);
+                androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, templateOptions);
         templateSpinner.setAdapter(templateAdapter);
         templateSpinner.setSelection(selectedTemplateIndex);
         templateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
