@@ -92,7 +92,7 @@ TODO list from TOJam 2023
 - [ ] Code suggestions should be case insensitive
 - [ ] Generic  JS object wrap and unwrap Plom objects
 - [ ] Super doesn’t work for calling non-static methods
-- [ ] No suggestions for instance methods after calling a constructor
+- [X] No suggestions for instance methods after calling a constructor
 - [X] Better handling of big tablets where it’s a pain to reach around the screen to press buttons
 - [ ] In method signature editor, when editing a name part, pressing enter should move to the argument part
 - [ ] Line after an if with lambdas might have line height too short maybe if I can find an example again

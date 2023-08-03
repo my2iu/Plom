@@ -4,6 +4,7 @@ import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.AstNode.RecursiveWalkerVisitor;
 import org.programmingbasics.plom.core.ast.gen.Rule;
+import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
@@ -141,12 +142,28 @@ public class CodeSuggestExpressionTyper
           // in the code, so just return the type of the static call
           if (type != null)
           {
-            Type.TypeSignature sig = type.lookupStaticMethodSignature(((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName());
+            String staticMethodName = ((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName();
+            Type.TypeSignature sig = type.lookupStaticMethodSignature(staticMethodName);
             if (sig != null)
             {
-              context.lastSignatureCalled = sig; 
-              context.setLastTypeUsed(sig.returnType);
-              context.pushType(sig.returnType);
+              ExecutableFunction fn = type.lookupStaticMethod(staticMethodName);
+              boolean isConstructor = false;
+              if (fn.codeUnit != null)
+                isConstructor = fn.codeUnit.isConstructor;
+              if (isConstructor)
+              {
+                // Constructors have a @void return type, but they
+                // actually return an instance of the class
+                context.lastSignatureCalled = sig; 
+                context.setLastTypeUsed(type);
+                context.pushType(type);
+              }
+              else
+              {
+                context.lastSignatureCalled = sig; 
+                context.setLastTypeUsed(sig.returnType);
+                context.pushType(sig.returnType);
+              }
             }
             else
             {

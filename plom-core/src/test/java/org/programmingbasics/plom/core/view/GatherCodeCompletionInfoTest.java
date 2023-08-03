@@ -1,6 +1,8 @@
 package org.programmingbasics.plom.core.view;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,6 +12,8 @@ import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
+import org.programmingbasics.plom.core.interpreter.ExecutableFunction;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -455,6 +459,51 @@ public class GatherCodeCompletionInfoTest extends TestCase
 //    Assert.assertTrue(suggestions.contains("substring from:to:"));
 //    Assert.assertTrue(suggestions.contains("to string"));
 //
+  }
+
+  @Test
+  public void testConstructorSuggestions() throws RunException
+  {
+    ConfigureForCodeCompletion configuration = (ctx, globalScope) -> { 
+      Type childType = new Type("child", ctx.coreTypes().getObjectType());
+      globalScope.addType(childType);
+      childType.addStaticMethod("constructor", 
+          ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod("child", "constructor"), null, childType, Optional.empty(), Collections.emptyList()),
+          ctx.coreTypes().getVoidType());
+      childType.addMethod("testname", 
+          ExecutableFunction.forCode(CodeUnitLocation.forConstructorMethod("child", "constructor"), null, childType, Optional.empty(), Collections.emptyList()), 
+          ctx.coreTypes().getNumberType());
+    };
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents("@child", Symbol.AtType),
+            Token.ParameterToken.fromContents(".constructor", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".testname", Symbol.DotVariable)
+            ));
+
+    CodeCompletionContext context = codeCompletionForPosition(code, "object", configuration, CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+    Assert.assertEquals("child", context.getLastTypeForStaticCall().name);
+    List<String> suggestions = new StaticMemberSuggester(context, true, true).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("constructor"));
+    Assert.assertFalse(suggestions.contains("new"));
+    
+    context = codeCompletionForPosition(code, "object", configuration, CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals("child", context.getLastTypeUsed().name);
+    Assert.assertNull(context.getLastTypeForStaticCall());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("to string"));
+    Assert.assertTrue(suggestions.contains("testname"));
+    Assert.assertFalse(suggestions.contains("constructor"));
+
+    context = codeCompletionForPosition(code, "object", configuration, CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getNumberType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getLastTypeForStaticCall());
+    suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("abs"));
+    Assert.assertTrue(suggestions.contains("floor"));
+    Assert.assertTrue(suggestions.contains("ceiling"));
   }
 
   @Test
