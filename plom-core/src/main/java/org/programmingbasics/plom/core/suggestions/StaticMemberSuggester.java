@@ -27,4 +27,10 @@ public class StaticMemberSuggester implements Suggester
     type.lookupStaticMemberSuggestions(gatheredSuggestions, includeNonConstructors, includeConstructors);
     return gatheredSuggestions.mergeFinalSuggestions();
   }
+  
+  @Override
+  public boolean shouldShowAllSuggestions()
+  {
+    return true;
+  }
 }

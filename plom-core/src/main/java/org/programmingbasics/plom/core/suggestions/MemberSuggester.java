@@ -30,4 +30,10 @@ public class MemberSuggester implements Suggester
     }
     return gatheredSuggestions.mergeFinalSuggestions();
   }
+  
+  @Override
+  public boolean shouldShowAllSuggestions()
+  {
+    return true;
+  }
 }

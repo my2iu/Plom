@@ -98,7 +98,7 @@ TODO list from TOJam 2023
 - [ ] Line after an if with lambdas might have line height too short maybe if I can find an example again
 - [ ] Lambdas with a long function signature part sometimes has wrapping problems where the return type of the function signature wraps to an incorrect location
 - [ ] Allow extra blank lines in saved Plom files in case of hand editing
-- [ ] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
+- [X] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
 - [X] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
 - [ ] Undo support
 - [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
@@ -115,6 +115,7 @@ TODO list from TOJam 2023
 - [X] Remove the VariableDescription stuff since it's no longer used and it's confusing
 - [ ] Rewrite everything in Kotlin
 - [X] Use the ExecutableFunction.owningClass to constrain the ObjectScope to only allow access to member variables belonging to the owning class and not subclasses
+- finish Android extra files stuff so that it matches iOS
 
  */
 

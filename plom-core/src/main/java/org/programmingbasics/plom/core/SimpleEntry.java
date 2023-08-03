@@ -131,7 +131,10 @@ public class SimpleEntry
     }
     List<String> suggestions = suggester.gatherSuggestions(search);
     Document doc = suggestionsContentContainer.getOwnerDocument();
-    for (int n = Math.min(20, suggestions.size() - 1); n >= 0; n--)
+    int maxSuggestions = 20;
+    if (suggester.shouldShowAllSuggestions())
+      maxSuggestions = 2000;
+    for (int n = Math.min(maxSuggestions, suggestions.size() - 1); n >= 0; n--)
     {
       final String suggestionText = suggestions.get(n); 
       AnchorElement el = (AnchorElement)doc.createElement("a");
