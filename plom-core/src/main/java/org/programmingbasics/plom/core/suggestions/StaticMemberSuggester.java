@@ -24,7 +24,8 @@ public class StaticMemberSuggester implements Suggester
     GatheredSuggestions gatheredSuggestions = new GatheredSuggestions();
     gatheredSuggestions.setStringMatch(val);
     Type type = context.getLastTypeForStaticCall();
-    type.lookupStaticMemberSuggestions(gatheredSuggestions, includeNonConstructors, includeConstructors);
+    if (type != null)
+      type.lookupStaticMemberSuggestions(gatheredSuggestions, includeNonConstructors, includeConstructors);
     return gatheredSuggestions.mergeFinalSuggestions();
   }
   

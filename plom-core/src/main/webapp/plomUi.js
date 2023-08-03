@@ -338,11 +338,20 @@ function setupPlomUi() {
 							var plomArgVals = [];
 							for (var n = 0; n < arguments.length; n++)
 								plomArgVals.push(Value.create(arguments[n], JsObjectType));
-							var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
-							if (returnVal == null || returnVal.isNull()) 
-								return null;
-							else 
-								return returnVal.val; 
+							try {
+								
+								var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
+								if (returnVal == null || returnVal.isNull()) 
+									return null;
+								else 
+									return returnVal.val;
+							} 
+							catch (err)
+							{
+								var errorLogger = machine.getErrorLogger();
+								console.log(err);
+								errorLogger.error(err);
+							}
 						};
 						jsProxy[toPlom] = val;
 						val[toJS] = jsProxy;
