@@ -243,6 +243,13 @@ public class CodeSuggestExpressionTyper
         }
         return true;
       })
+      .add(Rule.FunctionLiteralExpression_FunctionType, (triggers, node, context, param) -> {
+        // We don't currently do anything with function literal expressions,
+        // but we do need to cancel out the "lastSignatureCalled" because it
+        // may have been set earlier on and will confuse things
+        context.lastSignatureCalled = null;  
+        return true;
+      })
       .add(Rule.Number, (triggers, node, context, param) -> {
         context.pushType(context.coreTypes().getNumberType());
         context.setLastTypeUsed(context.coreTypes().getNumberType());

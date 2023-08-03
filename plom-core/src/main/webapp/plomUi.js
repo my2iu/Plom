@@ -13,6 +13,12 @@ function setupPlomUi() {
 	const toJS = Symbol();
 	// Used to store whether a JS object has a Plom equivalent/proxy
 	const toPlom = Symbol();
+	// Flag that we set when we're running inside the Plom interpreter. This is useful to differentiate
+	// these two situations:
+	// 1. when we have reentered or were reentrant when calling from Plom to Js and back to Plom 
+	//   vs.
+	// 2. when we've called into Plom, set an event handler, exited, and then called into Plom again
+	var isInsidePlomCode = false;
 	// Pass in some external JS code for working with async iterators since GWT can't handle them natively
 	Main.setAsyncIteratorToArray(async (asyncFiles) => {
 		var collectedFiles = [];
@@ -338,8 +344,9 @@ function setupPlomUi() {
 							var plomArgVals = [];
 							for (var n = 0; n < arguments.length; n++)
 								plomArgVals.push(Value.create(arguments[n], JsObjectType));
+							var isTopLevel = !isInsidePlomCode;
 							try {
-								
+								isInsidePlomCode = true;
 								var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
 								if (returnVal == null || returnVal.isNull()) 
 									return null;
@@ -348,9 +355,18 @@ function setupPlomUi() {
 							} 
 							catch (err)
 							{
-								var errorLogger = machine.getErrorLogger();
-								errorLogger.error(err);
+								// We only need to log errors if we're top-level. Otherwise the error
+								// can just be propagated to the top-level
+								if (isTopLevel)
+								{
+									var errorLogger = machine.getErrorLogger();
+									errorLogger.error(err);
+								}
 								throw(err);
+							}
+							finally
+							{
+								isInsidePlomCode = !isTopLevel;
 							}
 						};
 						jsProxy[toPlom] = val;
@@ -391,6 +407,7 @@ function setupPlomUi() {
 		var code = main.makeEntryPointCodeToInvokeMain();
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
+		isInsidePlomCode = true;
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
@@ -403,6 +420,10 @@ function setupPlomUi() {
 		{
 			console.log(err);
 			errorLogger.error(err);
+		}
+		finally
+		{
+			isInsidePlomCode = false;
 		}
 	}
 	function runPlomStandalone(main)
@@ -420,6 +441,7 @@ function setupPlomUi() {
 		var code = main.makeEntryPointCodeToInvokeMain();
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
+		isInsidePlomCode = true;
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
@@ -432,6 +454,10 @@ function setupPlomUi() {
 		{
 			console.log(err);
 			errorLogger.error(err);
+		}
+		finally
+		{
+			isInsidePlomCode = false;
 		}
 	}
 	function loadCodeStringIntoRepository(code, repository)
