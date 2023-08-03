@@ -349,8 +349,8 @@ function setupPlomUi() {
 							catch (err)
 							{
 								var errorLogger = machine.getErrorLogger();
-								console.log(err);
 								errorLogger.error(err);
+								throw(err);
 							}
 						};
 						jsProxy[toPlom] = val;
