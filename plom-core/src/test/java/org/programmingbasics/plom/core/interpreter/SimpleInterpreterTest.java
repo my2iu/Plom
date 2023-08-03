@@ -547,7 +547,43 @@ public class SimpleInterpreterTest extends TestCase
     new SimpleInterpreter(code).runNoReturn(vars);
     Assert.assertEquals(32, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-  
+
+  @Test
+  public void testFunctionReturningNothingForVoid() throws ParseException, RunException
+  {
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      
+      try {
+        ExecutableFunction setAFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forFunction(""), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("25", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.SimpleToken("return", Symbol.Return)
+                        )
+                    )
+                ), 
+            null, Optional.empty(), Arrays.asList());
+        Value setA = Value.create(setAFn, Type.makeFunctionType(coreTypes.getVoidType()));
+        scope.addVariable("set a", Type.makeFunctionType(coreTypes.getVoidType()), setA);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".set a", Symbol.DotVariable)
+            ));
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals(25, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
   @Test
   public void testBlockingPrimitive() throws ParseException, RunException
   {

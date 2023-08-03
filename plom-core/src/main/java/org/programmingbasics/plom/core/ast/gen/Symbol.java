@@ -40,6 +40,7 @@ public enum Symbol
 	ValueExpression,
 	StaticMethodCallExpression,
 	SuperCallExpression,
+	ReturnExpression,
 	ForExpression,
 	ForExpressionOnly,
 	FunctionLiteralExpression,
@@ -212,6 +213,7 @@ public enum Symbol
 		case ValueExpression:
 		case StaticMethodCallExpression:
 		case SuperCallExpression:
+		case ReturnExpression:
 		case ForExpression:
 		case ForExpressionOnly:
 		case FunctionLiteralExpression:

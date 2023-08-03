@@ -40,6 +40,7 @@ enum Symbol
   ValueExpression(false),
   StaticMethodCallExpression(false),
   SuperCallExpression(false),
+  ReturnExpression(false),
   ForExpression(false),
   ForExpressionOnly(false),
   FunctionLiteralExpression(false),

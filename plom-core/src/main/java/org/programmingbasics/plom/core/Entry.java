@@ -107,7 +107,7 @@ TODO list from TOJam 2023
 - [ ] Iterator for @array
 - [ ] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
 - [X] Add meta viewport tag to default index.html
-- [ ] Empty return in @void method not allowed
+- [X] Empty return in @void method not allowed
 - [ ] Increase size of minimize web output button so that you don’t accidentally keep hitting the hamburger menu instead
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
 - [X] Back button in upper-left for android

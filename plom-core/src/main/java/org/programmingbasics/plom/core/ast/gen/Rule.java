@@ -79,7 +79,9 @@ public class Rule
 	public final static List<Symbol> DotSuperMember_DotVariable = Arrays.asList(Symbol.DotSuperMember, Symbol.DotVariable);
 	public final static List<Symbol> VarAssignment_Assignment_Expression = Arrays.asList(Symbol.VarAssignment, Symbol.Assignment, Symbol.Expression);
 	public final static List<Symbol> VarAssignment = Arrays.asList(Symbol.VarAssignment);
-	public final static List<Symbol> ReturnStatement_Return_Expression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.Expression);
+	public final static List<Symbol> ReturnStatement_Return_ReturnExpression = Arrays.asList(Symbol.ReturnStatement, Symbol.Return, Symbol.ReturnExpression);
+	public final static List<Symbol> ReturnExpression_Expression = Arrays.asList(Symbol.ReturnExpression, Symbol.Expression);
+	public final static List<Symbol> ReturnExpression = Arrays.asList(Symbol.ReturnExpression);
 	public final static List<Symbol> ForExpression_DotDeclareIdentifier_VarType_In_Expression = Arrays.asList(Symbol.ForExpression, Symbol.DotDeclareIdentifier, Symbol.VarType, Symbol.In, Symbol.Expression);
 	public final static List<Symbol> ForExpressionOnly_ForExpression_EndStatement = Arrays.asList(Symbol.ForExpressionOnly, Symbol.ForExpression, Symbol.EndStatement);
 	public final static List<Symbol> FunctionLiteralExpression_FunctionType = Arrays.asList(Symbol.FunctionLiteralExpression, Symbol.FunctionType);

@@ -101,10 +101,15 @@ public class SimpleInterpreter
             else
               machine.ip.pop();
           })
-      .add(Rule.ReturnStatement_Return_Expression, 
+      .add(Rule.ReturnStatement_Return_ReturnExpression, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 0)
-              machine.ip.pushAndAdvanceIdx(node.children.get(1), ExpressionEvaluator.expressionHandlers);
+            {
+              if (node.children.get(1).matchesRule(Rule.ReturnExpression))
+                machine.popStackFrameReturning(Value.createVoidValue(machine.coreTypes()));
+              else
+                machine.ip.pushAndAdvanceIdx(node.children.get(1), ExpressionEvaluator.expressionHandlers);
+            }
             else
               machine.popStackFrameReturning(machine.popValue());
           })
