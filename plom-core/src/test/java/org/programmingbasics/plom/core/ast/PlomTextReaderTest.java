@@ -13,7 +13,7 @@ public class PlomTextReaderTest extends TestCase
   @Test
   public void testReadKeywords() throws PlomTextReader.PlomReadException
   {
-    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("var} if{+-/*\"hello\"0.23--36//");
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("var} if{+-/*/ *\"hello\"0.23--36//");
     PlomTextReader.PlomTextScanner reader = new PlomTextReader.PlomTextScanner(in);
     Assert.assertEquals("var", reader.lexInput());
     Assert.assertEquals("}", reader.lexInput());
@@ -21,6 +21,7 @@ public class PlomTextReaderTest extends TestCase
     Assert.assertEquals("{", reader.lexInput());
     Assert.assertEquals("+", reader.lexInput());
     Assert.assertEquals("-", reader.lexInput());
+    Assert.assertEquals("/*", reader.lexInput());
     Assert.assertEquals("/", reader.lexInput());
     Assert.assertEquals("*", reader.lexInput());
     Assert.assertEquals("\"hello\"", reader.lexInput());

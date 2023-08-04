@@ -90,6 +90,7 @@ public enum Symbol
 	COMPOUND_ELSEIF,
 	COMPOUND_WHILE,
 	COMPOUND_FOR,
+	COMPOUND_COMMENT,
 	DUMMY_BEGIN,
 	DUMMY_END,
 	FullVariableDeclaration,
@@ -149,6 +150,7 @@ public enum Symbol
 		case COMPOUND_ELSEIF:
 		case COMPOUND_WHILE:
 		case COMPOUND_FOR:
+		case COMPOUND_COMMENT:
 		case DUMMY_BEGIN:
 		case DUMMY_END:
 		case ASSEMBLED_STATEMENTS_BLOCK:
@@ -167,6 +169,7 @@ public enum Symbol
 		case COMPOUND_ELSEIF:
 		case COMPOUND_WHILE:
 		case COMPOUND_FOR:
+		case COMPOUND_COMMENT:
 			return true;
 		default:
 			return false;

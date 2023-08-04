@@ -93,6 +93,7 @@ enum Symbol
   COMPOUND_ELSEIF(true),
   COMPOUND_WHILE(true),
   COMPOUND_FOR(true),
+  COMPOUND_COMMENT(true),
   DUMMY_BEGIN(true),
   DUMMY_END(true),
   

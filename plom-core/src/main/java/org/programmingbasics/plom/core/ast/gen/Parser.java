@@ -37,6 +37,7 @@ public class Parser
 		parsingTable.get(Symbol.AdditiveExpressionMore).put(Symbol.Retype, new Symbol[] {});
 		parsingTable.put(Symbol.AfterIf, new HashMap<>());
 		parsingTable.get(Symbol.AfterIf).put(Symbol.AtType, new Symbol[] {});
+		parsingTable.get(Symbol.AfterIf).put(Symbol.COMPOUND_COMMENT, new Symbol[] {});
 		parsingTable.get(Symbol.AfterIf).put(Symbol.COMPOUND_ELSE, new Symbol[] {Symbol.COMPOUND_ELSE, });
 		parsingTable.get(Symbol.AfterIf).put(Symbol.COMPOUND_ELSEIF, new Symbol[] {Symbol.COMPOUND_ELSEIF, Symbol.AfterIf, });
 		parsingTable.get(Symbol.AfterIf).put(Symbol.COMPOUND_FOR, new Symbol[] {});
@@ -126,6 +127,7 @@ public class Parser
 		parsingTable.get(Symbol.ForExpressionOnly).put(Symbol.DotVariable, new Symbol[] {Symbol.ForExpression, Symbol.EndStatement, });
 		parsingTable.put(Symbol.FullStatement, new HashMap<>());
 		parsingTable.get(Symbol.FullStatement).put(Symbol.AtType, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
+		parsingTable.get(Symbol.FullStatement).put(Symbol.COMPOUND_COMMENT, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.COMPOUND_IF, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
 		parsingTable.get(Symbol.FullStatement).put(Symbol.COMPOUND_WHILE, new Symbol[] {Symbol.StatementOrEmpty, Symbol.EndStatement, });
@@ -310,6 +312,7 @@ public class Parser
 		parsingTable.get(Symbol.ReturnTypeFieldOptionalName).put(Symbol.FunctionTypeName, new Symbol[] {Symbol.ReturnTypeField, });
 		parsingTable.put(Symbol.Statement, new HashMap<>());
 		parsingTable.get(Symbol.Statement).put(Symbol.AtType, new Symbol[] {Symbol.AssignmentExpression, });
+		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_COMMENT, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_IF, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
 		parsingTable.get(Symbol.Statement).put(Symbol.COMPOUND_WHILE, new Symbol[] {Symbol.WideStatement, Symbol.StatementOrEmpty, });
@@ -329,6 +332,7 @@ public class Parser
 		parsingTable.get(Symbol.Statement).put(Symbol.Var, new Symbol[] {Symbol.VarStatement, });
 		parsingTable.put(Symbol.StatementOrEmpty, new HashMap<>());
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.AtType, new Symbol[] {Symbol.Statement, });
+		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.COMPOUND_COMMENT, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.COMPOUND_IF, new Symbol[] {Symbol.Statement, });
 		parsingTable.get(Symbol.StatementOrEmpty).put(Symbol.COMPOUND_WHILE, new Symbol[] {Symbol.Statement, });
@@ -389,6 +393,7 @@ public class Parser
 		parsingTable.get(Symbol.VariableDeclarationOrEmpty).put(Symbol.EndStatement, new Symbol[] {});
 		parsingTable.get(Symbol.VariableDeclarationOrEmpty).put(Symbol.Var, new Symbol[] {Symbol.VariableDeclaration, });
 		parsingTable.put(Symbol.WideStatement, new HashMap<>());
+		parsingTable.get(Symbol.WideStatement).put(Symbol.COMPOUND_COMMENT, new Symbol[] {Symbol.COMPOUND_COMMENT, });
 		parsingTable.get(Symbol.WideStatement).put(Symbol.COMPOUND_FOR, new Symbol[] {Symbol.COMPOUND_FOR, });
 		parsingTable.get(Symbol.WideStatement).put(Symbol.COMPOUND_IF, new Symbol[] {Symbol.COMPOUND_IF, Symbol.AfterIf, });
 		parsingTable.get(Symbol.WideStatement).put(Symbol.COMPOUND_WHILE, new Symbol[] {Symbol.COMPOUND_WHILE, });

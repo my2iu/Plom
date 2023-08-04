@@ -399,6 +399,38 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testCompoundComment() throws ParseException, RunException
+  {
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+    VariableScope scope = new VariableScope();
+    scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    scope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = coreTypes;
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("32", Symbol.Number)
+            ),
+        new TokenContainer(
+            new Token.OneBlockToken("/*", Symbol.COMPOUND_COMMENT, 
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("16", Symbol.Number)
+                        )
+                    ))
+            ));
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
+    Assert.assertEquals(32.0, scope.lookup("a").getNumberValue(), 0.0);
+    Assert.assertEquals(scope, ctx.currentScope());
+  }
+
+  
+  @Test
   public void testBooleanVariable() throws ParseException, RunException
   {
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {

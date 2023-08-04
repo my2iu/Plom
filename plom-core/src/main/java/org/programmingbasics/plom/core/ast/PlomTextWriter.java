@@ -74,6 +74,7 @@ public class PlomTextWriter
     symbolTokenMap.put(Symbol.PrimitivePassthrough, "primitive");
     symbolTokenMap.put(Symbol.In, "in");
     symbolTokenMap.put(Symbol.DUMMY_COMMENT, "//");
+    symbolTokenMap.put(Symbol.COMPOUND_COMMENT, "/*");
     symbolTokenMap.put(Symbol.COMPOUND_IF, "if");
     symbolTokenMap.put(Symbol.COMPOUND_FOR, "for");
     symbolTokenMap.put(Symbol.COMPOUND_ELSE, "else");

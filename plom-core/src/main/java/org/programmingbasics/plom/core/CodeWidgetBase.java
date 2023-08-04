@@ -230,6 +230,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         Symbol.OpenParenthesis,
         Symbol.ClosedParenthesis,
         Symbol.DUMMY_COMMENT,
+        Symbol.COMPOUND_COMMENT,
         Symbol.Var,
         Symbol.COMPOUND_WHILE,
         Symbol.COMPOUND_FOR,
@@ -425,6 +426,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case OpenParenthesis: text = "("; break;
       case ClosedParenthesis: text = ")"; break;
       case DUMMY_COMMENT: text = "//"; break;
+      case COMPOUND_COMMENT: text = "/*"; break;
       case DotVariable: text = "."; break;
       case AtType: text = "@"; break;
       case FunctionTypeName: text = "f@"; buttonText = "\u0192@"; break;
@@ -622,6 +624,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       newToken = new Token.OneExpressionOneBlockToken(tokenText, tokenType);
       break;
     case COMPOUND_ELSE:
+    case COMPOUND_COMMENT:
       newToken = new Token.OneBlockToken(tokenText, tokenType);
       break;
     case AtType:

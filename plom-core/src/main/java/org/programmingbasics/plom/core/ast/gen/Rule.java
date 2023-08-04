@@ -17,6 +17,7 @@ public class Rule
 	public final static List<Symbol> WideStatement_COMPOUND_WHILE = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_WHILE);
 	public final static List<Symbol> WideStatement_COMPOUND_FOR = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_FOR);
 	public final static List<Symbol> WideStatement_DUMMY_COMMENT = Arrays.asList(Symbol.WideStatement, Symbol.DUMMY_COMMENT);
+	public final static List<Symbol> WideStatement_COMPOUND_COMMENT = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_COMMENT);
 	public final static List<Symbol> ExpressionOnly_Expression_EndStatement = Arrays.asList(Symbol.ExpressionOnly, Symbol.Expression, Symbol.EndStatement);
 	public final static List<Symbol> AssignmentExpression_Expression_AssignmentExpressionMore = Arrays.asList(Symbol.AssignmentExpression, Symbol.Expression, Symbol.AssignmentExpressionMore);
 	public final static List<Symbol> AssignmentExpressionMore_Assignment_Expression = Arrays.asList(Symbol.AssignmentExpressionMore, Symbol.Assignment, Symbol.Expression);
@@ -143,6 +144,7 @@ public class Rule
 	public final static List<Symbol> COMPOUND_ELSEIF = Arrays.asList(Symbol.COMPOUND_ELSEIF);
 	public final static List<Symbol> COMPOUND_WHILE = Arrays.asList(Symbol.COMPOUND_WHILE);
 	public final static List<Symbol> COMPOUND_FOR = Arrays.asList(Symbol.COMPOUND_FOR);
+	public final static List<Symbol> COMPOUND_COMMENT = Arrays.asList(Symbol.COMPOUND_COMMENT);
 	public final static List<Symbol> DUMMY_BEGIN = Arrays.asList(Symbol.DUMMY_BEGIN);
 	public final static List<Symbol> DUMMY_END = Arrays.asList(Symbol.DUMMY_END);
 	public final static List<Symbol> ASSEMBLED_STATEMENTS_BLOCK = Arrays.asList(Symbol.ASSEMBLED_STATEMENTS_BLOCK);

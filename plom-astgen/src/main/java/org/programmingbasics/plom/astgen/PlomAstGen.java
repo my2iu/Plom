@@ -39,6 +39,7 @@ public class PlomAstGen
       rule(WideStatement, COMPOUND_WHILE),
       rule(WideStatement, COMPOUND_FOR),
       rule(WideStatement, DUMMY_COMMENT),
+      rule(WideStatement, COMPOUND_COMMENT),
       rule(ExpressionOnly, Expression, EndStatement),
       rule(AssignmentExpression, Expression, AssignmentExpressionMore),
       rule(AssignmentExpressionMore, Assignment, Expression),

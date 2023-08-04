@@ -398,6 +398,7 @@ public class PlomTextReader
         return new Token.OneExpressionOneBlockToken(peek, sym, expression, block);
       }
       case COMPOUND_ELSE:
+      case COMPOUND_COMMENT:
       {
         lexer.lexInput();
         lexer.expectToken("{");
