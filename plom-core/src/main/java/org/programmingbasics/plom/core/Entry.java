@@ -70,8 +70,9 @@ TODO:
 
 
 TODO list from TOJam 2023
-- [ ] New project in external folder doesn’t copy external files or other files on iOS
+- [ ] iOS New project in external folder doesn’t copy external files or other files
 - [ ] iOS showing stuff outside web/ folder in extra files
+- [ ] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
 - [ ] Open project directories straight from web version
 - [X] Send logging messages and crash messages back to show in console or elsewhere
 - [ ] Clear console messages
@@ -83,31 +84,30 @@ TODO list from TOJam 2023
 - [X] If there is a parse error in ParseToAst, especially deep in a lambda, there is no way to report where in the code the error was found and then to propagate that onwards
 - [ ] Don’t need people to click on OK after changing method signatures
 - [X] Are event handlers (jsobject from function) logging errors?
-- [ ] Are methods listed alphabetically in suggestions?
 - [X] Android version should filter out .git folders in extra files (or any dir starting with .)?
-- [ ] Method return type and extends should use proper code widget
 - [?] When hooking in project with an existing dir in Android (possibly empty project), it copies in the wrong stuff
 - [X] No warning when using member variables before calling super constructor in constructor
-- [ ] Comment out code
+- [ ] Are methods listed alphabetically in suggestions?
 - [ ] Code suggestions should be case insensitive
-- [ ] Generic  JS object wrap and unwrap Plom objects
 - [ ] Super doesn’t work for calling non-static methods
 - [X] No suggestions for instance methods after calling a constructor
 - [X] Better handling of big tablets where it’s a pain to reach around the screen to press buttons
 - [ ] In method signature editor, when editing a name part, pressing enter should move to the argument part
 - [ ] Line after an if with lambdas might have line height too short maybe if I can find an example again
 - [ ] Lambdas with a long function signature part sometimes has wrapping problems where the return type of the function signature wraps to an incorrect location
-- [ ] Allow extra blank lines in saved Plom files in case of hand editing
 - [X] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
 - [X] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
-- [ ] Undo support
-- [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
-- [ ] Slow performance on slow Android phones maybe with larger projects?
 - [ ] Need break and continue commands
 - [ ] Iterator for @array
-- [ ] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
+- [ ] Generic  JS object wrap and unwrap Plom objects
+- [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
+- [ ] Method return type and extends should use proper code widget
+- [ ] Undo support
+- [ ] Slow performance on slow Android phones maybe with larger projects?
+- [ ] Allow extra blank lines in saved Plom files in case of hand editing
 - [X] Add meta viewport tag to default index.html
 - [X] Empty return in @void method not allowed
+- [ ] Comment out code
 - [ ] Increase size of minimize web output button so that you don’t accidentally keep hitting the hamburger menu instead
 - [ ] A separate @JSObject.from function: and @JSObject.from top level event handler: so that debugging hooks can be inserted properly
 - [X] Back button in upper-left for android
