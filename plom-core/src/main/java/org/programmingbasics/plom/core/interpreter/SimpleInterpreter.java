@@ -113,6 +113,30 @@ public class SimpleInterpreter
             else
               machine.popStackFrameReturning(machine.popValue());
           })
+      .add(Rule.Statement_Break, 
+    	(MachineContext machine, AstNode node, int idx) -> {
+    	  // Walk upwards until we reach a loop
+    	  while (machine.ip.hasNext())
+    	  {
+    	    AstNode ipNode = machine.ip.peekHead().node;
+    	    if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_WHILE))
+    	    {
+    	      machine.ip.pop();
+    	      return;
+    	    }
+    	    else if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_FOR))
+    	    {
+    	      machine.ip.pop();
+    	      break;
+    	    }
+    	    machine.ip.pop();
+    	  }
+    	  throw new RunException("break was encountered but not inside a loop");
+        })
+      .add(Rule.Statement_Continue, 
+    	(MachineContext machine, AstNode node, int idx) -> {
+      	  throw new RunException("continue not implemented");
+        })
       .add(Rule.PrimitivePassthrough, 
           (MachineContext machine, AstNode node, int idx) -> {
             CodeUnitLocation codeUnit = machine.getTopStackFrame().codeUnit;
@@ -214,7 +238,7 @@ public class SimpleInterpreter
             case 1: // Decide whether to follow the if or not
               Value val = machine.popValue();
               if (!machine.coreTypes().getBooleanType().equals(val.type))
-                throw new RunException();
+                throw new RunException("Expecting a boolean value from while expression");
               if (val.getBooleanValue())
               {
                 machine.pushNewScope();
@@ -334,6 +358,15 @@ public class SimpleInterpreter
           });
   }
 
+  static MachineContext.NodeHandlers breakHandlers = new MachineContext.NodeHandlers();
+  static {
+    breakHandlers
+      .add(Rule.WideStatement_COMPOUND_WHILE, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            machine.ip.pop();
+          });
+  }
+  
   @JsType
   public static abstract class ErrorLogger
   {

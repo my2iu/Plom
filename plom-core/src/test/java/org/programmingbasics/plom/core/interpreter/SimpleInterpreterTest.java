@@ -334,6 +334,55 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testWhileBreak() throws ParseException, RunException
+  {
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+    VariableScope scope = new VariableScope();
+    scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = coreTypes;
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("<", Symbol.Lt),
+                    new Token.SimpleToken("8", Symbol.Number)
+                    ), 
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("1", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                                new Token.SimpleToken("=", Symbol.Eq),
+                                new Token.SimpleToken("3", Symbol.Number)
+                                ), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("break", Symbol.Break)
+                            )))
+                        )
+                    )),
+              Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+              new Token.SimpleToken(":=", Symbol.Assignment),
+              Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+              new Token.SimpleToken("+", Symbol.Plus),
+              new Token.SimpleToken("2", Symbol.Number)
+            )
+        );
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
+    Assert.assertEquals(5.0, scope.lookup("a").getNumberValue(), 0.0);
+  }
+
+  @Test
   public void testIfScope() throws ParseException, RunException
   {
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
