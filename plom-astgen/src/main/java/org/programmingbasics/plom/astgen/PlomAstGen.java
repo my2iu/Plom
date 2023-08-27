@@ -33,6 +33,8 @@ public class PlomAstGen
       rule(Statement, AssignmentExpression),
       rule(Statement, VarStatement),
       rule(Statement, ReturnStatement),
+      rule(Statement, Break),
+      rule(Statement, Continue),
       rule(Statement, PrimitivePassthrough),
       rule(Statement, WideStatement, StatementOrEmpty),
       rule(WideStatement, COMPOUND_IF, AfterIf),

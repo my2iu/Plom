@@ -73,6 +73,8 @@ public class PlomTextWriter
     symbolTokenMap.put(Symbol.Return, "return");
     symbolTokenMap.put(Symbol.PrimitivePassthrough, "primitive");
     symbolTokenMap.put(Symbol.In, "in");
+    symbolTokenMap.put(Symbol.Break, "break");
+    symbolTokenMap.put(Symbol.Continue, "continue");
     symbolTokenMap.put(Symbol.DUMMY_COMMENT, "//");
     symbolTokenMap.put(Symbol.COMPOUND_COMMENT, "/*");
     symbolTokenMap.put(Symbol.COMPOUND_IF, "if");

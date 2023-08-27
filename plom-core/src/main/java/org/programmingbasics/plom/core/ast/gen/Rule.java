@@ -11,6 +11,8 @@ public class Rule
 	public final static List<Symbol> Statement_AssignmentExpression = Arrays.asList(Symbol.Statement, Symbol.AssignmentExpression);
 	public final static List<Symbol> Statement_VarStatement = Arrays.asList(Symbol.Statement, Symbol.VarStatement);
 	public final static List<Symbol> Statement_ReturnStatement = Arrays.asList(Symbol.Statement, Symbol.ReturnStatement);
+	public final static List<Symbol> Statement_Break = Arrays.asList(Symbol.Statement, Symbol.Break);
+	public final static List<Symbol> Statement_Continue = Arrays.asList(Symbol.Statement, Symbol.Continue);
 	public final static List<Symbol> Statement_PrimitivePassthrough = Arrays.asList(Symbol.Statement, Symbol.PrimitivePassthrough);
 	public final static List<Symbol> Statement_WideStatement_StatementOrEmpty = Arrays.asList(Symbol.Statement, Symbol.WideStatement, Symbol.StatementOrEmpty);
 	public final static List<Symbol> WideStatement_COMPOUND_IF_AfterIf = Arrays.asList(Symbol.WideStatement, Symbol.COMPOUND_IF, Symbol.AfterIf);
@@ -138,6 +140,8 @@ public class Rule
 	public final static List<Symbol> Return = Arrays.asList(Symbol.Return);
 	public final static List<Symbol> PrimitivePassthrough = Arrays.asList(Symbol.PrimitivePassthrough);
 	public final static List<Symbol> In = Arrays.asList(Symbol.In);
+	public final static List<Symbol> Break = Arrays.asList(Symbol.Break);
+	public final static List<Symbol> Continue = Arrays.asList(Symbol.Continue);
 	public final static List<Symbol> DUMMY_COMMENT = Arrays.asList(Symbol.DUMMY_COMMENT);
 	public final static List<Symbol> COMPOUND_IF = Arrays.asList(Symbol.COMPOUND_IF);
 	public final static List<Symbol> COMPOUND_ELSE = Arrays.asList(Symbol.COMPOUND_ELSE);

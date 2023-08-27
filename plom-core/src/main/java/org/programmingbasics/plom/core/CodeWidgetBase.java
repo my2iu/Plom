@@ -238,6 +238,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         Symbol.COMPOUND_ELSEIF,
         Symbol.COMPOUND_ELSE,
         Symbol.Return,
+        Symbol.Break,
+        Symbol.Continue,
         Symbol.Retype,
         Symbol.Is,
         Symbol.As,
@@ -448,6 +450,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       case COMPOUND_WHILE: text = "while"; break;
       case COMPOUND_FOR: text = "for"; break;
       case Return: text = "return"; break;
+      case Break: text = "break"; break;
+      case Continue: text = "continue"; break;
       case PrimitivePassthrough: text = "primitive"; break;
       default:
       }

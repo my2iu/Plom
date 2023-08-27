@@ -81,6 +81,8 @@ public enum Symbol
 	Return,
 	PrimitivePassthrough,
 	In,
+	Break,
+	Continue,
 	DotDeclareIdentifier,
 	DotMember,
 	DotSuperMember,
@@ -144,6 +146,8 @@ public enum Symbol
 		case Return:
 		case PrimitivePassthrough:
 		case In:
+		case Break:
+		case Continue:
 		case DUMMY_COMMENT:
 		case COMPOUND_IF:
 		case COMPOUND_ELSE:
@@ -257,6 +261,8 @@ public enum Symbol
 		case Return:
 		case PrimitivePassthrough:
 		case In:
+		case Break:
+		case Continue:
 		case DotDeclareIdentifier:
 		case DotMember:
 		case DotSuperMember:

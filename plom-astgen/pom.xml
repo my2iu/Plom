@@ -10,5 +10,16 @@
 
   <name>Plom AST Generator</name>
   <description>Generates AST and parser code for Plom</description>
-  
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>org.programmingbasics.plom.astgen.PlomAstGen</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

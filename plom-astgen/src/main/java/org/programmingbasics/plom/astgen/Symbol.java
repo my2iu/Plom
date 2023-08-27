@@ -82,6 +82,8 @@ enum Symbol
   Return(true),
   PrimitivePassthrough(true),
   In(true),
+  Break(true),
+  Continue(true),
   
   DotDeclareIdentifier(false),  // Expands to DotVariable
   DotMember(false),             // Expands to DotVariable
