@@ -1424,6 +1424,81 @@ public class SimpleInterpreterTest extends TestCase
     Assert.fail("Should fail before here");
   }
 
+  private Type createNumberIterator(CoreTypeLibrary coreTypes) throws ParseException 
+  {
+    Type iteratorType = new Type("number iterator", coreTypes.getObjectType());
+    iteratorType.addMemberVariable("current", coreTypes.getNumberType());
+    iteratorType.addMemberVariable("end", coreTypes.getNumberType());
+    ExecutableFunction createFn = ExecutableFunction.forCode(
+        CodeUnitLocation.forConstructorMethod("number iterator", "start:end:"), 
+        ParseToAst.parseStatementContainer(
+            new StatementContainer(
+                new TokenContainer(
+                    new Token.SimpleToken("super", Symbol.Super),
+                    Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                    new Token.SimpleToken(":=", Symbol.Assignment),
+                    Token.ParameterToken.fromContents(".start", Symbol.DotVariable)
+                ),
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".end", Symbol.DotVariable),
+                    new Token.SimpleToken(":=", Symbol.Assignment),
+                    Token.ParameterToken.fromContents(".last", Symbol.DotVariable)
+                )
+            )
+        ),
+        iteratorType, Optional.empty(), Arrays.asList("start", "last"));
+    iteratorType.addStaticMethod("start:end:", createFn, coreTypes.getVoidType(), coreTypes.getNumberType());
+    ExecutableFunction atEndFn = ExecutableFunction.forCode(
+        CodeUnitLocation.forMethod("number iterator", ".at end"), 
+        ParseToAst.parseStatementContainer(
+            new StatementContainer(
+                new TokenContainer(
+                    new Token.SimpleToken("return", Symbol.Return),
+                    Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                    new Token.SimpleToken(">=", Symbol.Ge),
+                    Token.ParameterToken.fromContents(".end", Symbol.DotVariable)
+                )
+            )
+        ),
+        iteratorType, Optional.empty(), Arrays.asList());
+    iteratorType.addMethod("at end", atEndFn, coreTypes.getBooleanType());
+    ExecutableFunction valFn = ExecutableFunction.forCode(
+        CodeUnitLocation.forMethod("number iterator", "value"), 
+        ParseToAst.parseStatementContainer(
+            new StatementContainer(
+                new TokenContainer(
+                    new Token.SimpleToken("return", Symbol.Return),
+                    Token.ParameterToken.fromContents(".current", Symbol.DotVariable)
+                )
+            )
+        ),
+        iteratorType, Optional.empty(), Arrays.asList());
+    iteratorType.addMethod("value", valFn, coreTypes.getNumberType());
+    ExecutableFunction nextFn = ExecutableFunction.forCode(
+        CodeUnitLocation.forMethod("number iterator", "next"), 
+        ParseToAst.parseStatementContainer(
+            new StatementContainer(
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                    new Token.SimpleToken(":=", Symbol.Assignment),
+                    Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
+                    new Token.SimpleToken("+", Symbol.Plus),
+                    new Token.SimpleToken("1", Symbol.Number)
+                ),
+                new TokenContainer(
+                    new Token.SimpleToken("return", Symbol.Return),
+                    new Token.SimpleToken("this", Symbol.This)
+                )
+            )
+        ),
+        iteratorType, Optional.empty(), Arrays.asList());
+    iteratorType.addMethod("next", nextFn, iteratorType);
+    return iteratorType;
+  }
+
   @Test
   public void testForLoop() throws RunException, ParseException
   {
@@ -1432,72 +1507,8 @@ public class SimpleInterpreterTest extends TestCase
       StandardLibrary.createCoreTypes(coreTypes);
       scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
 //      scope.addVariable("b", coreTypes.getObjectType(), coreTypes.getNullValue());
-      
-      Type iteratorType = new Type("number iterator", coreTypes.getObjectType());
-      iteratorType.addMemberVariable("current", coreTypes.getNumberType());
       try {
-        ExecutableFunction createFn = ExecutableFunction.forCode(
-            CodeUnitLocation.forConstructorMethod("number iterator", "start:"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.SimpleToken("super", Symbol.Super),
-                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
-                        ),
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
-                        new Token.SimpleToken(":=", Symbol.Assignment),
-                        Token.ParameterToken.fromContents(".start", Symbol.DotVariable)
-                    )
-                )
-            ),
-            iteratorType, Optional.empty(), Arrays.asList("start"));
-        iteratorType.addStaticMethod("start:", createFn, coreTypes.getVoidType(), coreTypes.getNumberType());
-        ExecutableFunction atEndFn = ExecutableFunction.forCode(
-            CodeUnitLocation.forMethod("number iterator", ".at end"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.SimpleToken("return", Symbol.Return),
-                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
-                        new Token.SimpleToken(">=", Symbol.Ge),
-                        new Token.SimpleToken("4", Symbol.Number)
-                    )
-                )
-            ),
-            iteratorType, Optional.empty(), Arrays.asList());
-        iteratorType.addMethod("at end", atEndFn, coreTypes.getBooleanType());
-        ExecutableFunction valFn = ExecutableFunction.forCode(
-            CodeUnitLocation.forMethod("number iterator", "value"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        new Token.SimpleToken("return", Symbol.Return),
-                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable)
-                    )
-                )
-            ),
-            iteratorType, Optional.empty(), Arrays.asList());
-        iteratorType.addMethod("value", valFn, coreTypes.getNumberType());
-        ExecutableFunction nextFn = ExecutableFunction.forCode(
-            CodeUnitLocation.forMethod("number iterator", "next"), 
-            ParseToAst.parseStatementContainer(
-                new StatementContainer(
-                    new TokenContainer(
-                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
-                        new Token.SimpleToken(":=", Symbol.Assignment),
-                        Token.ParameterToken.fromContents(".current", Symbol.DotVariable),
-                        new Token.SimpleToken("+", Symbol.Plus),
-                        new Token.SimpleToken("1", Symbol.Number)
-                    ),
-                    new TokenContainer(
-                        new Token.SimpleToken("return", Symbol.Return),
-                        new Token.SimpleToken("this", Symbol.This)
-                    )
-                )
-            ),
-            iteratorType, Optional.empty(), Arrays.asList());
-        iteratorType.addMethod("next", nextFn, iteratorType);
+        Type iteratorType = createNumberIterator(coreTypes);
         scope.addType(iteratorType);
       } catch (ParseException e) { throw new IllegalArgumentException(e); }
     });
@@ -1511,9 +1522,12 @@ public class SimpleInterpreterTest extends TestCase
                     Token.ParameterToken.fromContents("@number", Symbol.AtType),
                     new Token.SimpleToken("in", Symbol.In),
                     Token.ParameterToken.fromContents("@number iterator", Symbol.AtType),
-                    Token.ParameterToken.fromContents(".start:", Symbol.DotVariable, 
+                    Token.ParameterToken.fromContents(".start:end:", Symbol.DotVariable, 
                         new TokenContainer(
                             new Token.SimpleToken("2", Symbol.Number)
+                            ),
+                        new TokenContainer(
+                            new Token.SimpleToken("4", Symbol.Number)
                             ))
                     ),
                 new StatementContainer(
@@ -1532,6 +1546,64 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
 
+  @Test
+  public void testForLoopBreak() throws RunException, ParseException
+  {
+    // Create a fake iterator and use it in a loop
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      try {
+        Type iteratorType = createNumberIterator(coreTypes);
+        scope.addType(iteratorType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType),
+                    new Token.SimpleToken("in", Symbol.In),
+                    Token.ParameterToken.fromContents("@number iterator", Symbol.AtType),
+                    Token.ParameterToken.fromContents(".start:end:", Symbol.DotVariable, 
+                        new TokenContainer(
+                            new Token.SimpleToken("2", Symbol.Number)
+                            ),
+                        new TokenContainer(
+                            new Token.SimpleToken("8", Symbol.Number)
+                            ))
+                    ),
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                                new Token.SimpleToken("=", Symbol.Eq),
+                                new Token.SimpleToken("6", Symbol.Number)
+                                ), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("break", Symbol.Break)
+                            )))
+
+                        )))
+            )
+        );
+    SimpleInterpreter interpreter = new SimpleInterpreter(code);
+    interpreter.runNoReturn(vars);
+    Assert.assertEquals(0, interpreter.ctx.valueStackSize());
+    Assert.assertEquals(2 + 3 + 4 + 5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+  
   @Test
   public void testFunctionLiteralNoArgsNoClosures() throws ParseException, RunException
   {

@@ -12,6 +12,7 @@ import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.gen.Rule;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 
 import elemental.util.ArrayOf;
 import jsinterop.annotations.JsType;
@@ -55,6 +56,7 @@ public class SimpleInterpreter
 //      });
 
   static MachineContext.NodeHandlers statementHandlers = new MachineContext.NodeHandlers();
+  static MachineContext.NodeHandlers popIpHandlers = new MachineContext.NodeHandlers();
   static {
     statementHandlers
       .add(Rule.ASSEMBLED_STATEMENTS_BLOCK, 
@@ -121,15 +123,15 @@ public class SimpleInterpreter
     	    AstNode ipNode = machine.ip.peekHead().node;
     	    if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_WHILE))
     	    {
-    	      machine.ip.pop();
+    	      forcePopIp(machine);
     	      return;
     	    }
     	    else if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_FOR))
     	    {
-    	      machine.ip.pop();
-    	      break;
+              forcePopIp(machine);
+    	      return;
     	    }
-    	    machine.ip.pop();
+            forcePopIp(machine);
     	  }
     	  throw new RunException("break was encountered but not inside a loop");
         })
@@ -358,13 +360,21 @@ public class SimpleInterpreter
           });
   }
 
-  static MachineContext.NodeHandlers breakHandlers = new MachineContext.NodeHandlers();
   static {
-    breakHandlers
+    popIpHandlers
       .add(Rule.WideStatement_COMPOUND_WHILE, 
           (MachineContext machine, AstNode node, int idx) -> {
             machine.ip.pop();
           });
+  }
+  private static void forcePopIp(MachineContext machine) throws RunException
+  {
+    AstNode node = machine.ip.peekHead().node;
+    MachineNodeVisitor match = popIpHandlers.get(node.symbols);
+    if (match != null)
+      match.handleNode(machine, node, machine.ip.peekHead().idx);
+    else
+      machine.ip.pop();
   }
   
   @JsType
