@@ -978,6 +978,186 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testMethodSuperCall() throws RunException, ParseException
+  {
+    // Calls a method added to a primitive type that doesn't access
+    // any data
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getStringType(), coreTypes.getNullValue());
+      scope.addVariable("b", coreTypes.getStringType(), coreTypes.getNullValue());
+      
+      Type childType = new Type("child", coreTypes.getObjectType());
+      Type subChildType = new Type("subchild", childType);
+      subChildType.addMemberVariable("a", coreTypes.getStringType());
+      Type subSubChildType = new Type("subsubchild", subChildType);
+      // a is defined in subChildType, but we must manually define it in all subclasses too
+      subSubChildType.addMemberVariable("a", coreTypes.getStringType());
+
+      scope.addVariable("obj", subSubChildType, coreTypes.getNullValue());
+
+      try {
+        ExecutableFunction createFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("child", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    )
+                )
+            ),
+            childType, Optional.empty(), Arrays.asList());
+        childType.addStaticMethod("new", createFn, coreTypes.getVoidType());
+        scope.addType(childType);
+
+        ExecutableFunction createSubFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("subchild", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        new Token.SimpleToken("\"a\"", Symbol.String)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addStaticMethod("new", createSubFn, coreTypes.getVoidType());
+        scope.addType(subChildType);
+
+        ExecutableFunction createSubSubFn = ExecutableFunction.forCode(
+            CodeUnitLocation.forConstructorMethod("subsubchild", "new"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+                    )
+                )
+            ),
+            subSubChildType, Optional.empty(), Arrays.asList());
+        subSubChildType.addStaticMethod("new", createSubSubFn, coreTypes.getVoidType());
+        scope.addType(subSubChildType);
+
+        ExecutableFunction add1Fn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("child", "add"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"1\"", Symbol.String)
+                    )
+                )
+            ),
+            childType, Optional.empty(), Arrays.asList());
+        childType.addMethod("add", add1Fn, coreTypes.getVoidType());
+
+        ExecutableFunction add2Fn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("subchild", "add"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"2\"", Symbol.String)
+                    )
+                )
+            ),
+            subChildType, Optional.empty(), Arrays.asList());
+        subChildType.addMethod("add", add2Fn, coreTypes.getVoidType());
+
+        ExecutableFunction add3Fn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("subsubchild", "add"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"3\"", Symbol.String)
+                    )
+                )
+            ),
+            subSubChildType, Optional.empty(), Arrays.asList());
+        subSubChildType.addMethod("add", add3Fn, coreTypes.getVoidType());
+
+        ExecutableFunction add5Fn = ExecutableFunction.forCode(
+            CodeUnitLocation.forMethod("subsubchild", "add"), 
+            ParseToAst.parseStatementContainer(
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("\"5\"", Symbol.String)
+                    )
+                )
+            ),
+            subSubChildType, Optional.empty(), Arrays.asList());
+        subSubChildType.addMethod("add5", add5Fn, coreTypes.getVoidType());
+
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            Token.ParameterToken.fromContents("@subsubchild", Symbol.AtType),
+            Token.ParameterToken.fromContents(".new", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("\"0\"", Symbol.String)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+            new Token.SimpleToken(":=", Symbol.Assignment),
+            new Token.SimpleToken("\"\"", Symbol.String)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
+            ),
+        new TokenContainer(
+            Token.ParameterToken.fromContents(".obj", Symbol.DotVariable),
+            Token.ParameterToken.fromContents(".add5", Symbol.DotVariable)
+            )
+        );
+    new SimpleInterpreter(code).runNoReturn(vars);
+    Assert.assertEquals("0", vars.globalScope.lookup("a").getStringValue());
+    Assert.assertEquals("01a2a301a25", vars.globalScope.lookup("b").getStringValue());
+  }
+
+  
+  @Test
   public void testStaticMethodCall() throws RunException, ParseException
   {
     // Calls a method added to a primitive type that doesn't access

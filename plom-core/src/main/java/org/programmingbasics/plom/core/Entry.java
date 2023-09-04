@@ -97,7 +97,7 @@ TODO list from TOJam 2023
 - [ ] Lambdas with a long function signature part sometimes has wrapping problems where the return type of the function signature wraps to an incorrect location
 - [X] List of method suggestions doesn’t list everything available in a class if there are a lot of methods available
 - [X] When typing, suggestion list should scroll back to top if you’ve scrolled it a bit before looking for something
-- [ ] Need break and continue commands
+- [X] Need break and continue commands
 - [ ] Iterator for @array
 - [ ] Generic  JS object wrap and unwrap Plom objects
 - [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
