@@ -364,9 +364,47 @@ public class SimpleInterpreter
     popIpHandlers
       .add(Rule.WideStatement_COMPOUND_WHILE, 
           (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 2)
+              machine.popScope();
+            machine.ip.pop();
+          })
+      .add(Rule.WideStatement_COMPOUND_FOR, 
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 7)
+            {
+              machine.popValue();
+              machine.popScope();
+            }
+            machine.ip.pop();
+          })
+      .add(Rule.AfterIf_COMPOUND_ELSEIF_AfterIf,
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 2)
+              machine.popScope();
+            machine.ip.pop();
+          })
+      .add(Rule.WideStatement_COMPOUND_IF_AfterIf,
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx == 2)
+              machine.popScope();
+            machine.ip.pop();
+          })
+      .add(Rule.AfterIf_COMPOUND_ELSE,
+          (MachineContext machine, AstNode node, int idx) -> {
+            if (idx != 0)
+              machine.popScope();
             machine.ip.pop();
           });
   }
+  /** During a break or continue, we need to pop instructions off
+   * the instruction pointer, but there might be variable scopes
+   * need to be popped too. Calling this function with handle that
+   * too. (But it's only safe to be used from a for or while loop
+   * which insert a whole variable scope).
+   * 
+   * This is pretty inelegant and error-prone, so it might be
+   * better to find a different way of handling break and continue
+   */
   private static void forcePopIp(MachineContext machine) throws RunException
   {
     AstNode node = machine.ip.peekHead().node;

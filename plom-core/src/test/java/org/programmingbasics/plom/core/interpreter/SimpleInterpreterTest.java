@@ -379,6 +379,7 @@ public class SimpleInterpreterTest extends TestCase
             )
         );
     new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
+    Assert.assertEquals(3, countVariableScopeHeight(ctx));
     Assert.assertEquals(5.0, scope.lookup("a").getNumberValue(), 0.0);
   }
 
@@ -1601,7 +1602,18 @@ public class SimpleInterpreterTest extends TestCase
     SimpleInterpreter interpreter = new SimpleInterpreter(code);
     interpreter.runNoReturn(vars);
     Assert.assertEquals(0, interpreter.ctx.valueStackSize());
-    Assert.assertEquals(2 + 3 + 4 + 5.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+    Assert.assertEquals(2 + 3 + 4 + 5 + 6.0, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+  
+  private int countVariableScopeHeight(MachineContext ctx)
+  {
+    VariableScope scope = ctx.currentScope();
+    int height;
+    for (height = 0; scope != null; scope = scope.getParent())
+    {
+      height++;
+    }
+    return height;
   }
   
   @Test
