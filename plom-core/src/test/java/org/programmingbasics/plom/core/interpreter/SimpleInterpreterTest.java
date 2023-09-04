@@ -384,6 +384,63 @@ public class SimpleInterpreterTest extends TestCase
   }
 
   @Test
+  public void testWhileContinue() throws ParseException, RunException
+  {
+    CoreTypeLibrary coreTypes = CoreTypeLibrary.createTestLibrary();
+    VariableScope scope = new VariableScope();
+    scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    scope.addVariable("b", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+    MachineContext ctx = new MachineContext();
+    ctx.coreTypes = coreTypes;
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("while", Symbol.COMPOUND_WHILE, 
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                    new Token.SimpleToken("<", Symbol.Lt),
+                    new Token.SimpleToken("8", Symbol.Number)
+                    ), 
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("1", Symbol.Number)
+                        ),
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                                new Token.SimpleToken(">=", Symbol.Ge),
+                                new Token.SimpleToken("3", Symbol.Number)
+                                ), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("continue", Symbol.Continue)
+                            ))),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("100", Symbol.Number)
+                        )
+                    )),
+              Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+              new Token.SimpleToken(":=", Symbol.Assignment),
+              Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+              new Token.SimpleToken("+", Symbol.Plus),
+              new Token.SimpleToken("2", Symbol.Number)
+            )
+        );
+    new SimpleInterpreter(code).runFrameForTesting(ctx, scope);
+    Assert.assertEquals(3, countVariableScopeHeight(ctx));
+    Assert.assertEquals(8.0 + 2.0, scope.lookup("a").getNumberValue(), 0.0);
+    Assert.assertEquals(200.0, scope.lookup("b").getNumberValue(), 0.0);
+  }
+
+  @Test
   public void testIfScope() throws ParseException, RunException
   {
     GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
@@ -1604,7 +1661,69 @@ public class SimpleInterpreterTest extends TestCase
     Assert.assertEquals(0, interpreter.ctx.valueStackSize());
     Assert.assertEquals(2 + 3 + 4 + 5 + 6.0, vars.globalScope.lookup("a").getNumberValue(), 0);
   }
-  
+
+  @Test
+  public void testForLoopContinue() throws RunException, ParseException
+  {
+    // Create a fake iterator and use it in a loop
+    GlobalsSaver vars = new GlobalsSaver((scope, coreTypes) -> {
+      StandardLibrary.createCoreTypes(coreTypes);
+      scope.addVariable("a", coreTypes.getNumberType(), Value.createNumberValue(coreTypes, 0));
+      try {
+        Type iteratorType = createNumberIterator(coreTypes);
+        scope.addType(iteratorType);
+      } catch (ParseException e) { throw new IllegalArgumentException(e); }
+    });
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR,
+                new TokenContainer(
+                    Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                    Token.ParameterToken.fromContents("@number", Symbol.AtType),
+                    new Token.SimpleToken("in", Symbol.In),
+                    Token.ParameterToken.fromContents("@number iterator", Symbol.AtType),
+                    Token.ParameterToken.fromContents(".start:end:", Symbol.DotVariable, 
+                        new TokenContainer(
+                            new Token.SimpleToken("2", Symbol.Number)
+                            ),
+                        new TokenContainer(
+                            new Token.SimpleToken("8", Symbol.Number)
+                            ))
+                    ),
+                new StatementContainer(
+                    new TokenContainer(
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        Token.ParameterToken.fromContents(".b", Symbol.DotVariable)
+                        ),
+                    new TokenContainer(
+                        new Token.OneExpressionOneBlockToken("if", Symbol.COMPOUND_IF, 
+                            new TokenContainer(
+                                Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
+                                new Token.SimpleToken(">=", Symbol.Ge),
+                                new Token.SimpleToken("6", Symbol.Number)
+                                ), 
+                            new StatementContainer(
+                                new TokenContainer(
+                                    new Token.SimpleToken("break", Symbol.Continue)
+                            ))),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken(":=", Symbol.Assignment),
+                        Token.ParameterToken.fromContents(".a", Symbol.DotVariable),
+                        new Token.SimpleToken("+", Symbol.Plus),
+                        new Token.SimpleToken("100", Symbol.Number)
+                        )))
+            )
+        );
+    SimpleInterpreter interpreter = new SimpleInterpreter(code);
+    interpreter.runNoReturn(vars);
+    Assert.assertEquals(0, interpreter.ctx.valueStackSize());
+    Assert.assertEquals(2.0 + 3 + 4 + 5 + 6 + 7 + 100 + 100 + 100 + 100, vars.globalScope.lookup("a").getNumberValue(), 0);
+  }
+
   private int countVariableScopeHeight(MachineContext ctx)
   {
     VariableScope scope = ctx.currentScope();

@@ -56,7 +56,7 @@ public class SimpleInterpreter
 //      });
 
   static MachineContext.NodeHandlers statementHandlers = new MachineContext.NodeHandlers();
-  static MachineContext.NodeHandlers popIpHandlers = new MachineContext.NodeHandlers();
+  static MachineContext.NodeHandlers popIpHandlersForBreakContinue = new MachineContext.NodeHandlers();
   static {
     statementHandlers
       .add(Rule.ASSEMBLED_STATEMENTS_BLOCK, 
@@ -123,20 +123,36 @@ public class SimpleInterpreter
     	    AstNode ipNode = machine.ip.peekHead().node;
     	    if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_WHILE))
     	    {
-    	      forcePopIp(machine);
+    	      forcePopIpForBreakContinue(machine);
     	      return;
     	    }
     	    else if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_FOR))
     	    {
-              forcePopIp(machine);
+              forcePopIpForBreakContinue(machine);
     	      return;
     	    }
-            forcePopIp(machine);
+            forcePopIpForBreakContinue(machine);
     	  }
     	  throw new RunException("break was encountered but not inside a loop");
         })
       .add(Rule.Statement_Continue, 
     	(MachineContext machine, AstNode node, int idx) -> {
+          // Walk upwards until we reach a loop
+          while (machine.ip.hasNext())
+          {
+            AstNode ipNode = machine.ip.peekHead().node;
+            if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_WHILE))
+            {
+              // Restart execution as if the while loop has returned
+              return;
+            }
+            else if (ipNode.matchesRule(Rule.WideStatement_COMPOUND_FOR))
+            {
+              // Restart execution as if the for loop has returned
+              return;
+            }
+            forcePopIpForBreakContinue(machine);
+          }
       	  throw new RunException("continue not implemented");
         })
       .add(Rule.PrimitivePassthrough, 
@@ -361,7 +377,7 @@ public class SimpleInterpreter
   }
 
   static {
-    popIpHandlers
+    popIpHandlersForBreakContinue
       .add(Rule.WideStatement_COMPOUND_WHILE, 
           (MachineContext machine, AstNode node, int idx) -> {
             if (idx == 2)
@@ -399,16 +415,18 @@ public class SimpleInterpreter
   /** During a break or continue, we need to pop instructions off
    * the instruction pointer, but there might be variable scopes
    * need to be popped too. Calling this function with handle that
-   * too. (But it's only safe to be used from a for or while loop
-   * which insert a whole variable scope).
+   * too. (But it's only safe when used specifically for handling
+   * break and continue because those statements are only called
+   * when the value stack is (mostly) empty and when the variable
+   * scopes are known)
    * 
    * This is pretty inelegant and error-prone, so it might be
    * better to find a different way of handling break and continue
    */
-  private static void forcePopIp(MachineContext machine) throws RunException
+  private static void forcePopIpForBreakContinue(MachineContext machine) throws RunException
   {
     AstNode node = machine.ip.peekHead().node;
-    MachineNodeVisitor match = popIpHandlers.get(node.symbols);
+    MachineNodeVisitor match = popIpHandlersForBreakContinue.get(node.symbols);
     if (match != null)
       match.handleNode(machine, node, machine.ip.peekHead().idx);
     else
