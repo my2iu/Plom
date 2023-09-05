@@ -447,7 +447,56 @@ public class ExpressionEvaluator
               }
               return;
             }
-            throw new IllegalArgumentException("super is only supported for use in constructor chaining at the moment");
+            else if (!machine.getTopStackFrame().codeUnit.isStatic
+                && !machine.getTopStackFrame().codeUnit.isConstructor)
+            {
+              AstNode methodNode = node.children.get(0);
+              if (idx == 0)
+              {
+                Value self = machine.currentScope().lookupThis();
+                machine.pushValue(self);
+              }
+
+              if (idx < methodNode.internalChildren.size())
+              {
+                machine.ip.pushAndAdvanceIdx(methodNode.internalChildren.get(idx), expressionHandlers);
+                return;
+              }
+              else if (idx == methodNode.internalChildren.size()) 
+              {
+                // TODO: Don't use getClassFromStackFrame(). Instead, we should
+                //   do a lookup through to the ObjectScope to get it
+                // Class where the current method was defined on
+                Type methodClass = getClassFromStackFrame(machine);
+                ExecutableFunction method = methodClass.parent.lookupMethod(((Token.ParameterToken)methodNode.token).getLookupName());
+                if (method != null)
+                {
+                  if (!method.codeUnit.isStatic && !machine.getTopStackFrame().codeUnit.isConstructor)
+                  {
+                    Value self = machine.currentScope().lookupThis();
+                    if (self == null)
+                      throw RunException.withLocationFromNode("Cannot use super unless in a constructor or instance method", methodNode, machine);
+                    machine.ip.pop();
+                    callMethodOrFunction(machine, self, method, false, null, false, null);
+                  }
+                  else
+                    throw RunException.withLocationFromNode("Can only use super to call other instance methods from within an instance method", methodNode, machine);
+                  return;
+                }
+                // TODO: Handle primitive methods
+                else
+                {
+                  Value self = machine.currentScope().lookupThis();
+                  String lookupName = ((Token.ParameterToken)methodNode.token).getLookupName();
+                  throw RunException.withLocationFromNode("Cannot find super method for @" + self.type.name + " ." + lookupName, methodNode, machine);
+                }
+              }
+              Value self = machine.currentScope().lookupThis();
+              String lookupName = ((Token.ParameterToken)methodNode.token).getLookupName();
+              throw RunException.withLocationFromNode("Cannot find super method for @" + self.type.name + " ." + lookupName, methodNode, machine);
+              
+            }
+            throw new IllegalArgumentException("Cannot use super for static methods");
             
 //            AstNode methodNode = node.children.get(1).children.get(0);
 //            if (idx < methodNode.internalChildren.size())

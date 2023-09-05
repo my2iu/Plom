@@ -1049,10 +1049,6 @@ public class SimpleInterpreterTest extends TestCase
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
                     new TokenContainer(
-                        new Token.SimpleToken("super", Symbol.Super),
-                        Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
-                    ),
-                    new TokenContainer(
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
                         new Token.SimpleToken(":=", Symbol.Assignment),
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
@@ -1093,6 +1089,10 @@ public class SimpleInterpreterTest extends TestCase
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
                     new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
+                    ),
+                    new TokenContainer(
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
                         new Token.SimpleToken(":=", Symbol.Assignment),
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
@@ -1110,6 +1110,10 @@ public class SimpleInterpreterTest extends TestCase
             CodeUnitLocation.forMethod("subsubchild", "add"), 
             ParseToAst.parseStatementContainer(
                 new StatementContainer(
+                    new TokenContainer(
+                        new Token.SimpleToken("super", Symbol.Super),
+                        Token.ParameterToken.fromContents(".add", Symbol.DotVariable)
+                    ),
                     new TokenContainer(
                         Token.ParameterToken.fromContents(".b", Symbol.DotVariable),
                         new Token.SimpleToken(":=", Symbol.Assignment),
