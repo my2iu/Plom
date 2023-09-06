@@ -195,12 +195,17 @@ public class CodeSuggestExpressionTyper
           // No member is defined, so we should provide a type that can be used for suggestions
           if (context.getIsConstructorMethod())
           {
+            // Constructor chaining
             context.setLastTypeForStaticCall(context.getDefinedClassOfMethod().parent);
+          }
+          else if (!context.getIsStaticMethod())
+          {
+            // Instance method calling super instance method
+            context.setLastTypeUsed(context.getDefinedClassOfMethod().parent);
           }
           else
           {
-            // We only support super being used for constructor chaining
-            // at the moment
+            // Static methods can't use super
           }
         }
         else
@@ -208,14 +213,28 @@ public class CodeSuggestExpressionTyper
           // Figure out the return type of the method being called 
           if (context.getIsConstructorMethod())
           {
+            // Constructor chaining
             context.setLastTypeUsed(context.coreTypes().getVoidType());
             context.pushType(context.coreTypes().getVoidType());
             context.lastSignatureCalled = null;  // Not implemented yet 
-
+          }
+          else if (!context.getIsStaticMethod())
+          {
+            // Instance method calling super instance method
+            Type self = context.getDefinedClassOfMethod().parent;
+            Type.TypeSignature sig = self.lookupMethodSignature(((Token.ParameterToken)node.children.get(1).children.get(0).token).getLookupName());
+            Type returnType;
+            if (sig != null)
+              returnType = sig.returnType;
+            else
+              returnType = context.coreTypes().getVoidType();
+            context.lastSignatureCalled = sig; 
+            context.setLastTypeUsed(returnType);
+            context.pushType(returnType);
           }
           else
           {
-            // We only support super being used for constructor chaining at the moment
+            // Static methods can't use super
             context.lastSignatureCalled = null;  // Not implemented yet 
           }
 //          // We have a static call, and all the parts are there, so we probably aren't being

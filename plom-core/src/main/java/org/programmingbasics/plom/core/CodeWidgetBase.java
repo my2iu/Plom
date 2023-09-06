@@ -1063,11 +1063,17 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       {
         if (suggestionContext.getIsConstructorMethod())
         {
+          // Constructor chaining
           suggester = new StaticMemberSuggester(suggestionContext, false, true);
+        }
+        else if (!suggestionContext.getIsConstructorMethod() && !suggestionContext.getIsStaticMethod())
+        {
+          // Instance method can call instance methods of the parent
+          suggester = new MemberSuggester(suggestionContext);
         }
         else
         {
-          // We only support super being used for constructor chaining right now
+          // Static methods aren't handled
           suggester = null;
         }
       }

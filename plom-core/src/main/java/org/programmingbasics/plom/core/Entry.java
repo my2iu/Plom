@@ -89,7 +89,7 @@ TODO list from TOJam 2023
 - [X] No warning when using member variables before calling super constructor in constructor
 - [ ] Are methods listed alphabetically in suggestions?
 - [ ] Code suggestions should be case insensitive
-- [ ] Super doesn’t work for calling non-static methods
+- [X] Super doesn’t work for calling non-static methods
 - [X] No suggestions for instance methods after calling a constructor
 - [X] Better handling of big tablets where it’s a pain to reach around the screen to press buttons
 - [ ] In method signature editor, when editing a name part, pressing enter should move to the argument part

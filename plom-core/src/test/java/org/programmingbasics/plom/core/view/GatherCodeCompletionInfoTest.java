@@ -571,6 +571,41 @@ public class GatherCodeCompletionInfoTest extends TestCase
   }
 
   @Test
+  public void testSuperForInstanceMethodChaining() throws RunException
+  {
+    ConfigureForCodeCompletion configuration = (ctx, globalScope) -> { 
+      Type childType = new Type("child", ctx.coreTypes().getObjectType());
+      globalScope.addType(childType);
+      ctx.setDefinedClassOfMethod(childType);
+      ctx.setIsConstructorMethod(false);
+      ctx.setIsStaticMethod(false);
+    };
+    
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.SimpleToken("return", Symbol.Return),
+            new Token.SimpleToken("super", Symbol.Super),
+            Token.ParameterToken.fromContents(".to string", Symbol.DotVariable)
+            ));
+    
+    CodeCompletionContext context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 0));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 1));
+    Assert.assertNull(context.getLastTypeUsed());
+
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 2));
+    Assert.assertEquals(context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("object")), context.getLastTypeUsed());
+    Assert.assertNull(context.getLastTypeForStaticCall());
+    List<String> suggestions = new MemberSuggester(context).gatherSuggestions("");
+    Assert.assertTrue(suggestions.contains("to string"));
+
+    context = codeCompletionForPosition(code, "child", configuration, CodePosition.fromOffsets(0, 3));
+    Assert.assertEquals(context.coreTypes().getStringType(), context.getLastTypeUsed());
+    Assert.assertNull(context.getLastTypeForStaticCall());
+  }
+
+  @Test
   public void testFor() throws RunException
   {
     StatementContainer code = new StatementContainer(
