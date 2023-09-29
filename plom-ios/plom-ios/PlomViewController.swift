@@ -23,7 +23,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     var oldNavigationBarHidden = false
     
     @IBOutlet weak var webViewHolder: UIView!
-    weak var webView: WKWebView!
+    var webView: WKWebView!
     // For adjusting the webview when the soft keyboard is shown
     @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
 
@@ -53,12 +53,13 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     override func viewWillDisappear(_ animated: Bool) {
         UIView.setAnimationsEnabled(true)
         super.viewWillDisappear(animated)
+        webView.evaluateJavaScript("plomPrepareToUnload()", completionHandler: nil)
         navigationController?.setNavigationBarHidden(oldNavigationBarHidden, animated: false)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        webView.evaluateJavaScript("plomPrepareToUnload()", completionHandler: nil)
+        webView = nil
     }
     @objc
     func keyboardWillShow(_ notification: NSNotification) {
