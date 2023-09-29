@@ -334,6 +334,9 @@ class NewProjectViewController : UIViewController, UIDocumentPickerDelegate {
     }
     
     @IBAction func templateButtonPressed() {
+        // We want to force the text field for the project name to close the keyboard because otherwise there won't be room for the popover with the full list of templates, and it will end up showing only a couple of options and a scrollbar
+        self.view.endEditing(false)
+        
         // TODO: Migrate to using UIMenu on ios14
         let alert = UIAlertController(title: "Templates", message: "Choose a template for the project", preferredStyle: .actionSheet)
         var idx = 0
