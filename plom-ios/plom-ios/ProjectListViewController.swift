@@ -128,7 +128,7 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             var bookmark : Data?
 #if os(iOS) && !targetEnvironment(macCatalyst)
             do {
-                let success =  url.startAccessingSecurityScopedResource()
+                let success = url.startAccessingSecurityScopedResource()
                 defer {
                     if success {
                         url.stopAccessingSecurityScopedResource()
@@ -150,14 +150,27 @@ class ProjectListViewController: ViewController, UITableViewDataSource, UITableV
             // Copy template into the project
             if !template.isEmpty {
                 do {
+                    let permissionAcquired = url.startAccessingSecurityScopedResource()
+                    defer {
+                        if permissionAcquired {
+                            url.stopAccessingSecurityScopedResource()
+                        }
+                    }
                     let path = Bundle.main.resourcePath!.appending("/html/templates/").appending(template)
                     let subdirs = try FileManager.default.contentsOfDirectory(atPath: path)
                     for subdir in subdirs {
-                        try FileManager.default.copyItem(at: URL(fileURLWithPath: path.appending("/").appending(subdir)), to: url.appendingPathComponent(subdir))
+                        do {
+                            try FileManager.default.copyItem(at: URL(fileURLWithPath: path.appending("/").appending(subdir)), to: url.appendingPathComponent(subdir))
+                        } catch {
+                            // Move on to copying next file
+                            print("Error copying template path " + subdir)
+                        }
                     }
                 } catch {
                     // Continue even if we encounter an error
+                    print("Error copying template files")
                 }
+                print("Copy done")
             }
             
             // Show the project view
