@@ -70,9 +70,9 @@ TODO:
 
 
 TODO list from TOJam 2023
-- [ ] iOS New project in external folder doesn’t copy external files or other files
-- [ ] iOS showing stuff outside web/ folder in extra files
-- [ ] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
+- [?] iOS New project in external folder doesn’t copy external files or other files
+- [X] iOS showing stuff outside web/ folder in extra files
+- [X] Need an iOS icon, maybe a phone with code on it (curly braces? Or 5 lines with some indented)
 - [ ] Open project directories straight from web version
 - [X] Send logging messages and crash messages back to show in console or elsewhere
 - [ ] Clear console messages
