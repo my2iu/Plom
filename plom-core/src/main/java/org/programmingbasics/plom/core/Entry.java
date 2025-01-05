@@ -144,7 +144,13 @@ public class Entry implements EntryPoint
     }
     
     // Check if we're fully loaded yet
-    if ($doc.readyState == 'complete')
+    if ($doc == null) 
+    { 
+      // We're running in a web worker, so assume everything is loaded synchronously
+      // or that the user will handle synchronizing any asynchronous js loading themselves
+      executeOnLoadCode();
+    }
+    else if ($doc.readyState == 'complete')
     {
       // Execute any onload code
       executeOnLoadCode();

@@ -26,6 +26,7 @@ import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.linker.Artifact;
 import com.google.gwt.core.ext.linker.ArtifactSet;
 import com.google.gwt.core.ext.linker.CompilationResult;
+import com.google.gwt.core.ext.linker.EmittedArtifact;
 import com.google.gwt.core.ext.linker.LinkerOrder;
 import com.google.gwt.core.ext.linker.LinkerOrder.Order;
 import com.google.gwt.core.ext.linker.SelectionProperty;
@@ -151,7 +152,7 @@ public class ScriptTagLinker extends CrossSiteIframeLinker {
     // installLocationIframe.js may set it.
 
     out.print("(function() {");
-    out.print("var $wnd = window.$wnd || window.parent;");
+    out.print("var $wnd = (typeof window === 'undefined' ? self : (window.$wnd || window.parent));");
     out.newlineOpt();
     out.print("var __gwtModuleFunction = $wnd." + context.getModuleFunctionName() + ";");
     out.newlineOpt();
@@ -296,5 +297,33 @@ public class ScriptTagLinker extends CrossSiteIframeLinker {
    */
   protected boolean shouldUseSelfForWindowAndDocument(LinkerContext context) {
     return false;
+  }
+  
+//  protected EmittedArtifact emitSelectionScript(TreeLogger logger,
+//      LinkerContext context, ArtifactSet artifacts)
+//      throws UnableToCompleteException {
+//    // Output the normal selection script
+//    EmittedArtifact toReturn = super.emitSelectionScript(logger, context, artifacts);
+//    // Output a selection script usable for webworkers too
+//    EmittedArtifact workerScript = emitString(logger, "//", context.getModuleName()
+//        + ".webworker.nocache.js", System.currentTimeMillis());
+//    return toReturn;
+//  }
+  
+  @Override
+  public ArtifactSet link(TreeLogger logger, LinkerContext context,
+      ArtifactSet artifacts, boolean onePermutation)
+      throws UnableToCompleteException {
+    ArtifactSet toReturn = super.link(logger, context, artifacts, onePermutation);
+    String strongName = "";
+    for (CompilationResult compilation : toReturn.find(CompilationResult.class)) {
+      strongName = compilation.getStrongName();
+    }
+
+    toReturn.add(emitString(logger, 
+        "importScripts('" + strongName + ".cache.js');\n", 
+        context.getModuleName() + ".webworker.nocache.js", 
+        System.currentTimeMillis()));
+    return toReturn;
   }
 }
