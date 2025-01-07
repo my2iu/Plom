@@ -321,7 +321,7 @@ public class ScriptTagLinker extends CrossSiteIframeLinker {
     }
 
     toReturn.add(emitString(logger, 
-        "importScripts('" + strongName + ".cache.js');\n", 
+        "importScripts('" + context.getModuleName() + "/" + strongName + ".cache.js');\n", 
         context.getModuleName() + ".webworker.nocache.js", 
         System.currentTimeMillis()));
     return toReturn;

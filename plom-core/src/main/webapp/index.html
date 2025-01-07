@@ -50,6 +50,9 @@
     		
     		hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
     		
+    		// Testing out the launching of a web worker
+    		var languageServerWorker = new Worker('languageServerWorker.js');
+    		
     		// Back button
     		document.querySelector('.backbutton').addEventListener('click', function(evt) {
  		      main.goBack();
