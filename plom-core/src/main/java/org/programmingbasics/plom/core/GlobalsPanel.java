@@ -1,9 +1,9 @@
 package org.programmingbasics.plom.core;
 
-import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FileDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;

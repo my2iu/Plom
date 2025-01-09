@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.AstNode;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;

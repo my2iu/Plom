@@ -2,9 +2,9 @@ package org.programmingbasics.plom.core;
 
 import java.util.List;
 
-import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;

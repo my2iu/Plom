@@ -7,9 +7,9 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.programmingbasics.plom.core.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.WebHelpers.Promise.PromiseConstructorFunction;
 import org.programmingbasics.plom.core.WebHelpersShunt.ByteArrayUint8Array;
