@@ -571,6 +571,7 @@ public class Main
     else
       plomDirectLoc = plomSystemFilePrefix + "plomcore/plomdirect.js";
     zip.filePromiseArrayBuffer("plomdirect.js", WebHelpers.fetch(plomDirectLoc).then(response -> response.arrayBuffer()));
+    zip.filePromiseArrayBuffer("plomStdlibPrimitives.js", WebHelpers.fetch(plomSystemFilePrefix + "plomStdlibPrimitives.js").then(response -> response.arrayBuffer()));
     zip.filePromiseArrayBuffer("plomUi.js", WebHelpers.fetch(plomSystemFilePrefix + "plomUi.js").then(response -> response.arrayBuffer()));
     
     // Extra files
