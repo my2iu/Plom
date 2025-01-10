@@ -121,14 +121,24 @@ public class Main
    * be used to send debug messages and control messages back to the
    * main IDE. 
    */
-  public boolean debuggerEnvironmentAvailableFlag = false;
+  public static boolean debuggerEnvironmentAvailableFlag = false;
   
   /**
    * The url of the parent window of the Plom program. This parent
    * window holds the IDE that the debugger will try to connect
    * to
    */
-  public String debuggerIdeParentWindowOrigin;
+  static String debuggerIdeParentWindowOrigin;
+
+  public static void configureDebuggerEnvironmentAt(String ideParentWindowOrigin)
+  {
+    // I'm having problems writing these static variables from JS
+    // (the values written don't seem to be picked up the Java side),
+    // so I'm using a static method to set them.
+    debuggerEnvironmentAvailableFlag = true;
+    debuggerIdeParentWindowOrigin = ideParentWindowOrigin;
+  }
+
   
   /** The File System Access API uses async iterators, and GWT doesn't
    * work well with async iterators, so to work with them, we need some
@@ -483,11 +493,11 @@ public class Main
     repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     
     // Wrap string in js
-    return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((main) => {\n"
-        + (withDebugEnvironment ? "main.debuggerEnvironmentAvailableFlag = true;\nmain.debuggerIdeParentWindowOrigin = '" + debuggerTargetOriginUrl + "';\n" : "")
+    return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((repository) => {\n"
+        + (withDebugEnvironment ? "org.programmingbasics.plom.core.Main.configureDebuggerEnvironmentAt('" + debuggerTargetOriginUrl + "');\n" : "")
         + "var code = `" + PlomTextWriter.escapeTemplateLiteral(out.toString()) + "`;\n"
-        + "var skipPromise = loadCodeStringIntoRepository(code, main.repository);\n"
-        + "return main;\n"
+        + "var skipPromise = loadCodeStringIntoExecutableRepository(code, repository);\n"
+        + "return repository;\n"
         + "});\n");
   }
 

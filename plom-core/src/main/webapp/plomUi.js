@@ -1,5 +1,6 @@
 function setupPlomUi() {
 	const Main = org.programmingbasics.plom.core.Main;
+	const ModuleCodeRepository = org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 	const CodeRepositoryClient = org.programmingbasics.plom.core.CodeRepositoryClient;
 	const ExtraFilesManagerWebInMemory = org.programmingbasics.plom.core.ExtraFilesManagerWebInMemory;
 	const PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
@@ -61,23 +62,12 @@ function setupPlomUi() {
 	}
 	customElements.define('plom-autoresizing-input', AutoResizingInputElement);
 	
-	function makeStdLibRepository()
-	{
-		var newRepository = new CodeRepositoryClient();
-		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-		try {
-			loadCodeStringIntoRepository(Main.getStdLibCodeText(), newRepository);
-		}
-		catch (e)
-		{
-			console.error(e);
-		}
-		newRepository.markAsImported();
-		return newRepository;
-	}
 	function doRun(main)
 	{
 		main.saveCodeToRepository();
+		var repository = makeExecutableRepository();
+		var repoCode = main.getModuleAsString();
+		loadCodeStringIntoExecutableRepository(repoCode, repository);
 		var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
 
 		// Run it
@@ -88,7 +78,7 @@ function setupPlomUi() {
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
-				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes, errorLogger));
+				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(repository, coreTypes, errorLogger));
   
 				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
 			});
@@ -103,10 +93,10 @@ function setupPlomUi() {
 			isInsidePlomCode = false;
 		}
 	}
-	function runPlomStandalone(main)
+	function runPlomStandalone(main, repository)
 	{
 		var errorLogger;
-		if (main.debuggerEnvironmentAvailableFlag) {
+		if (Main.debuggerEnvironmentAvailableFlag) {
 			var debuggerEnv = main.createDebuggerEnvironment();
 			debuggerEnv.startConnection();
 			errorLogger = debuggerEnv.getErrorLogger();
@@ -122,7 +112,7 @@ function setupPlomUi() {
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
-				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(main.repository, coreTypes, errorLogger));
+				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(repository, coreTypes, errorLogger));
   
 				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
 			});
@@ -137,6 +127,12 @@ function setupPlomUi() {
 			isInsidePlomCode = false;
 		}
 	}
+	function loadCodeStringIntoExecutableRepository(code, repository)
+	{
+		var inStream = new PlomTextReader.StringTextReader(code);
+		var lexer = new PlomTextReader.PlomTextScanner(inStream);
+		return repository.loadModulePlain(lexer, null);
+	}
 	function loadCodeStringIntoRepository(code, repository)
 	{
 		var inStream = new PlomTextReader.StringTextReader(code);
@@ -149,12 +145,50 @@ function setupPlomUi() {
 		var lexer = new PlomTextReader.PlomTextScanner(inStream);
 		repository.loadClassIntoModule(lexer);
 	}
+	// Executable repository is a slimmed down repository specifically for
+	// just running the code (not for an IDE that searches and manipulates
+	// that code)
+	function makeExecutableRepository()
+	{
+        var repo = new ModuleCodeRepository();
+        repo.setChainedRepository(makeExecutableStdLibRepository());
+        return repo;
+	}
+	function makeExecutableStdLibRepository()
+	{
+		var newRepository = new ModuleCodeRepository();
+		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+		try {
+			loadCodeStringIntoExecutableRepository(Main.getStdLibCodeText(), newRepository);
+		}
+		catch (e)
+		{
+			console.error(e);
+		}
+		newRepository.markAsImported();
+		return newRepository;
+	}
 	function makeRepositoryWithStdLib(main)
     {
         var repo = new CodeRepositoryClient();
         repo.setChainedRepository(makeStdLibRepository());
         return repo;
     }
+    function makeStdLibRepository()
+	{
+		var newRepository = new CodeRepositoryClient();
+		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+		try {
+			loadCodeStringIntoRepository(Main.getStdLibCodeText(), newRepository);
+		}
+		catch (e)
+		{
+			console.error(e);
+		}
+		newRepository.markAsImported();
+		return newRepository;
+	}
+    
 	function doLoadWeb(main)
 	{
 		Main.jsShowFileChooser('.plom', true, function(name, readStr) {
@@ -334,7 +368,7 @@ function setupPlomUi() {
 						data: buf
 					}, [buf]));
 			} else if (evt.data.path == 'plomStdlibPrimitives.js') {
-				fetch('plomUi.js')
+				fetch('plomStdlibPrimitives.js')
 					.then((response) => response.arrayBuffer())
 					.then((buf) => localServerServiceWorker.postMessage({
 						type: 'GET',
@@ -528,7 +562,9 @@ function setupPlomUi() {
 	window.hookExportZip = hookExportZip;
 	window.initRepository = initRepository;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
+	window.makeExecutableRepository = makeExecutableRepository;
 	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;
+	window.loadCodeStringIntoExecutableRepository = loadCodeStringIntoExecutableRepository;
 	window.loadClassCodeStringIntoRepository = loadClassCodeStringIntoRepository;
 	window.hookSimpleHamburgerMenu = hookSimpleHamburgerMenu;
 	window.runPlomStandalone = runPlomStandalone;

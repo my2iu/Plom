@@ -11,15 +11,15 @@
 			addGwtOnLoad(resolve);
 		}).then(() => {
 			setupPlomUi();
-			var main = new org.programmingbasics.plom.core.Main();
-			main.repository = makeRepositoryWithStdLib(main);
-			return main;
+			var repository = makeExecutableRepository();
+			return repository;
 		});
 	</script>
     <script type="text/javascript" language="javascript" src="main.plom.js"></script>
 	<script>
-		plomEngineLoad.then((main) => {
-			runPlomStandalone(main);
+		plomEngineLoad.then((repository) => {
+			var main = new org.programmingbasics.plom.core.Main();
+			runPlomStandalone(main, repository);
 			return main;
 		});
 	
