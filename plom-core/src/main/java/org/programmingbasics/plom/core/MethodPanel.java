@@ -25,7 +25,7 @@ import elemental.svg.SVGDocument;
 
 public class MethodPanel
 {
-  MethodPanel(DivElement mainDiv, ModuleCodeRepository repository, FunctionSignature sig, boolean isNew)
+  MethodPanel(DivElement mainDiv, CodeRepositoryClient repository, FunctionSignature sig, boolean isNew)
   {
     this.repository = repository;
 
@@ -44,7 +44,7 @@ public class MethodPanel
 
   final Document doc;
   SignatureListener listener;
-  ModuleCodeRepository repository;
+  CodeRepositoryClient repository;
   SimpleEntry simpleEntry;
 //  MethodNameWidget methodWidget;
   MethodNameWidget2 methodWidget2;
@@ -277,7 +277,7 @@ public class MethodPanel
   static class MethodNameWidget2
   {
     final Document doc;
-    ModuleCodeRepository repository;
+    CodeRepositoryClient repository;
     final ConfigureGlobalScope globalScopeForTypeLookup;
     final DivElement baseDiv;
     FunctionSignature sig;

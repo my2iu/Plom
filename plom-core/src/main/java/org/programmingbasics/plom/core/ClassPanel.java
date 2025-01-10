@@ -31,14 +31,14 @@ public class ClassPanel
   Document doc = Browser.getDocument();
   SimpleEntry simpleEntry;
   DivElement mainDiv;
-  ModuleCodeRepository repository; 
+  CodeRepositoryClient repository; 
   ClassDescription cls;
   LoadMethodCodeViewCallback viewSwitchCallback;
   LoadMethodSigViewCallback methodSigViewCallback;
   ExitClassViewCallback exitCallback;
   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
-  ClassPanel(DivElement mainDiv, ModuleCodeRepository repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, ExitClassViewCallback exitCallback, boolean isNew)
+  ClassPanel(DivElement mainDiv, CodeRepositoryClient repository, ClassDescription cls, LoadMethodCodeViewCallback callback, LoadMethodSigViewCallback methodSigViewCallback, ExitClassViewCallback exitCallback, boolean isNew)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
@@ -100,7 +100,7 @@ public class ClassPanel
     Element newFunctionAnchor = mainDiv.querySelector(".methodsHeading a");
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName),
           new StatementContainer());
@@ -115,7 +115,7 @@ public class ClassPanel
     // For adding static methods
     mainDiv.querySelector(".staticMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
               .setIsStatic(true),
@@ -128,7 +128,7 @@ public class ClassPanel
     // For adding constructor methods
     mainDiv.querySelector(".constructorMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
               .setIsConstructor(true),

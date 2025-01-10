@@ -36,9 +36,9 @@ public class RepositoryScopeTest extends TestCase
 {
   static class GlobalSaver implements ConfigureGlobalScope
   {
-    GlobalSaver(SimpleInterpreter terp, ModuleCodeRepository repository, ErrorLogger errLogger) { this.terp = terp; this.repository = repository; this.errLogger = errLogger; }
+    GlobalSaver(SimpleInterpreter terp, CodeRepositoryClient repository, ErrorLogger errLogger) { this.terp = terp; this.repository = repository; this.errLogger = errLogger; }
     SimpleInterpreter terp;
-    ModuleCodeRepository repository;
+    CodeRepositoryClient repository;
     ErrorLogger errLogger;
     
     VariableScope globalScope;
@@ -63,7 +63,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testSimpleRun() throws IOException, ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.setVariableDeclarationCode(new StatementContainer(
         new TokenContainer(
@@ -102,7 +102,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testFunctionType() throws IOException, ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.setVariableDeclarationCode(new StatementContainer(
         new TokenContainer(
@@ -143,7 +143,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadFunctionSignatureBadReturnType() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
@@ -185,7 +185,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadFunctionSignatureBadArgType() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents("@asdf2", Symbol.AtType))), null),
@@ -220,7 +220,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadFunctionSignatureBadArgParse() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents(".asdf2", Symbol.DotVariable))), null),
@@ -256,7 +256,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadGlobalVariables() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.setVariableDeclarationCode(new StatementContainer(
         new TokenContainer(
@@ -294,7 +294,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadClassMemberVariables() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     ClassDescription classA = repository.addClassAndResetIds("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("classB"));
@@ -357,7 +357,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadClassMethodSignature() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     ClassDescription classA = repository.addClassAndResetIds("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
@@ -411,7 +411,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testFunctionParseException() throws ParseException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "test"),
@@ -444,7 +444,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testBadClassMethodParseException() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     ClassDescription classA = repository.addClassAndResetIds("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
@@ -502,7 +502,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testMissingMethodFromLambdaInStaticMethodException() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     ClassDescription classA = repository.addClassAndResetIds("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
@@ -561,7 +561,7 @@ public class RepositoryScopeTest extends TestCase
   @Test
   public void testMissingStaticMethodFromFunctionException() throws ParseException, RunException
   {
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     
     ClassDescription classA = repository.addClassAndResetIds("classA");
@@ -610,7 +610,7 @@ public class RepositoryScopeTest extends TestCase
     // Constructors will often have an empty or invalid return type,
     // and it shouldn't matter since the return type is not used
     
-    ModuleCodeRepository repository = new ModuleCodeRepository();
+    CodeRepositoryClient repository = new CodeRepositoryClient();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     ClassDescription classA = repository.addClassAndResetIds("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));

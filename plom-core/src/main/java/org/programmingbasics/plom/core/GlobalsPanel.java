@@ -30,14 +30,14 @@ public class GlobalsPanel implements AutoCloseable
 {
   Document doc = Browser.getDocument();
   SimpleEntry simpleEntry;
-  ModuleCodeRepository repository;
+  CodeRepositoryClient repository;
   DivElement mainDiv;
   LoadFunctionCodeViewCallback viewSwitchCallback;
   LoadFunctionSigViewCallback functionSigCallback;
   LoadClassViewCallback classViewCallback;
   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
-  GlobalsPanel(DivElement mainDiv, ModuleCodeRepository repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback)
+  GlobalsPanel(DivElement mainDiv, CodeRepositoryClient repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
@@ -64,7 +64,7 @@ public class GlobalsPanel implements AutoCloseable
     newClassAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       // Find a unique class name
-      String newClassName = ModuleCodeRepository.findUniqueName("class", (name) -> !repository.hasClassWithName(name));
+      String newClassName = CodeRepositoryClient.findUniqueName("class", (name) -> !repository.hasClassWithName(name));
       ClassDescription c = repository.addClassAndResetIds(newClassName);
       // Switch to view the class
       classViewCallback.load(c, true);
@@ -94,7 +94,7 @@ public class GlobalsPanel implements AutoCloseable
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
       // Find a unique function name
-      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
+      String newFunctionName = CodeRepositoryClient.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
           new StatementContainer());

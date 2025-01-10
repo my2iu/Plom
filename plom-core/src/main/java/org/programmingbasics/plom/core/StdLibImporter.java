@@ -25,7 +25,7 @@ public class StdLibImporter
   public static void main(String [] args)
   {
     Path stdlibBasePath = Paths.get("../plom-stdlib/src");
-    ModuleCodeRepository repo = new ModuleCodeRepository();
+    CodeRepositoryClient repo = new CodeRepositoryClient();
     
     try {
       // Load in the main module describing the global variables and functions

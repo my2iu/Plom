@@ -103,7 +103,7 @@ public class Main
 //    repository.addFunctionAndResetIds(mainFunc);
 //  }
   
-  public ModuleCodeRepository repository;
+  public CodeRepositoryClient repository;
   
   CodeWidgetBase codePanel;
   MethodPanel methodPanel;
@@ -390,7 +390,7 @@ public class Main
     void fileLoaded(String name, Object result);
   }
   
-  public void openFromProjectDir(WebHelpers.FileSystemDirectoryHandle baseDirHandle, ModuleCodeRepository newRepo)
+  public void openFromProjectDir(WebHelpers.FileSystemDirectoryHandle baseDirHandle, CodeRepositoryClient newRepo)
   {
     newRepo.setExtraFilesManager(new ExtraFilesManagerFileSystemAccessApi(baseDirHandle));
     baseDirHandle.getDirectoryHandle("src")
@@ -542,7 +542,7 @@ public class Main
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
           out = new StringBuilder();
-          ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
+          CodeRepositoryClient.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
           classSaver.saveClass(cls.getName(), out.toString());
         }
       }

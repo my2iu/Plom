@@ -926,7 +926,7 @@ public class ModuleCodeRepository
       }
       else
       {
-        if (!extraHandler.handleExtraTag(lexer))
+        if (extraHandler == null || !extraHandler.handleExtraTag(lexer))
         {
           throw new PlomReadException("Unexpected module contents", lexer);
         }

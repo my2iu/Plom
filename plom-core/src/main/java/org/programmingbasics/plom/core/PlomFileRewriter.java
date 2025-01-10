@@ -43,7 +43,7 @@ public class PlomFileRewriter
     {
       // Assume it's a module
       System.out.println("Rewriting " + f);
-      ModuleCodeRepository repo = new ModuleCodeRepository();
+      CodeRepositoryClient repo = new CodeRepositoryClient();
       repo.loadModule(lexerForFile(f));
       StringBuilder text = new StringBuilder();
       PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(text);
@@ -54,10 +54,10 @@ public class PlomFileRewriter
     {
       System.out.println("Rewriting " + f);
       // Assume it's a class
-      ClassDescription c = ModuleCodeRepository.loadClass(lexerForFile(f));
+      ClassDescription c = CodeRepositoryClient.loadClass(lexerForFile(f));
       StringBuilder text = new StringBuilder();
       PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(text);
-      ModuleCodeRepository.saveClass(out, c);
+      CodeRepositoryClient.saveClass(out, c);
       Files.write(f.toPath(), text.toString().getBytes(StandardCharsets.UTF_8));
     }
   }

@@ -13,10 +13,10 @@ import elemental.svg.SVGDocument;
 public class FileViewerPanel implements AutoCloseable
 {
   Document doc = Browser.getDocument();
-  ModuleCodeRepository repository;
+  CodeRepositoryClient repository;
   DivElement mainDiv;
 
-  public FileViewerPanel(DivElement mainDiv, ModuleCodeRepository repository)
+  public FileViewerPanel(DivElement mainDiv, CodeRepositoryClient repository)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;

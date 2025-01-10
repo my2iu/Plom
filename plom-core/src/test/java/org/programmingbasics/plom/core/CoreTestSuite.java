@@ -7,6 +7,7 @@ import org.programmingbasics.plom.core.ast.LineNumberTrackerTest;
 import org.programmingbasics.plom.core.ast.ParseToAstTest;
 import org.programmingbasics.plom.core.ast.PlomTextReaderTest;
 import org.programmingbasics.plom.core.ast.PlomTextWriterTest;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepositoryTest;
 import org.programmingbasics.plom.core.interpreter.ExpressionEvaluatorTest;
 import org.programmingbasics.plom.core.interpreter.MachineContextTest;
 import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractorTest;

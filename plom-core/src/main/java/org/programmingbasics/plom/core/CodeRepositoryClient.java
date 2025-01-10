@@ -2,28 +2,14 @@ package org.programmingbasics.plom.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
-import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.MethodArgumentExtractor;
-import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
-import org.programmingbasics.plom.core.interpreter.RunException;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
-import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
@@ -32,7 +18,7 @@ import elemental.util.Collections;
 import jsinterop.annotations.JsType;
 
 @JsType
-public class ModuleCodeRepository extends org.programmingbasics.plom.core.codestore.ModuleCodeRepository
+public class CodeRepositoryClient extends org.programmingbasics.plom.core.codestore.ModuleCodeRepository
 {
   /** Tracks all the extra non-Plom files stored in the module */
   List<FileDescription> extraFiles = new ArrayList<>();
@@ -40,7 +26,7 @@ public class ModuleCodeRepository extends org.programmingbasics.plom.core.codest
   /** Handles operations on extra files */
   ExtraFilesManager fileManager;
   
-  public ModuleCodeRepository()
+  public CodeRepositoryClient()
   {
 //    // Create a basic main function that can be filled in
 //    FunctionDescription func = new FunctionDescription(
@@ -136,9 +122,9 @@ public class ModuleCodeRepository extends org.programmingbasics.plom.core.codest
   {
     List<FileDescription> toReturn = new ArrayList<>();
     gatherAll((codeRepo) -> {
-      if (codeRepo instanceof ModuleCodeRepository)
+      if (codeRepo instanceof CodeRepositoryClient)
       {
-        ModuleCodeRepository extraCodeRepo = (ModuleCodeRepository)codeRepo;
+        CodeRepositoryClient extraCodeRepo = (CodeRepositoryClient)codeRepo;
         for (FileDescription f: extraCodeRepo.extraFiles)
           toReturn.add(f);
       }

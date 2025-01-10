@@ -42,7 +42,7 @@ import jsinterop.annotations.JsType;
 public class RepositoryScope extends VariableScope
 {
   // TODO: Add caching to this
-  private ModuleCodeRepository repository;
+  private CodeRepositoryClient repository;
   private CoreTypeLibrary coreTypes;
   private Map<String, ClassDescription> codeRepositoryClasses;
   private List<String> globalVariableSuggestions = new ArrayList<>();
@@ -53,7 +53,7 @@ public class RepositoryScope extends VariableScope
    */
   private ErrorLogger errLogger;
   
-  public RepositoryScope(ModuleCodeRepository repository, CoreTypeLibrary coreTypes, ErrorLogger errLogger)
+  public RepositoryScope(CodeRepositoryClient repository, CoreTypeLibrary coreTypes, ErrorLogger errLogger)
   {
     this.repository = repository;
     this.coreTypes = coreTypes;

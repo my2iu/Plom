@@ -1,6 +1,6 @@
 function setupPlomUi() {
 	const Main = org.programmingbasics.plom.core.Main;
-	const ModuleCodeRepository = org.programmingbasics.plom.core.ModuleCodeRepository;
+	const CodeRepositoryClient = org.programmingbasics.plom.core.CodeRepositoryClient;
 	const ExtraFilesManagerWebInMemory = org.programmingbasics.plom.core.ExtraFilesManagerWebInMemory;
 	const PlomTextReader = org.programmingbasics.plom.core.ast.PlomTextReader;
 	const CodeUnitLocation = org.programmingbasics.plom.core.interpreter.CodeUnitLocation;
@@ -63,7 +63,7 @@ function setupPlomUi() {
 	
 	function makeStdLibRepository()
 	{
-		var newRepository = new ModuleCodeRepository();
+		var newRepository = new CodeRepositoryClient();
 		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
 		try {
 			loadCodeStringIntoRepository(Main.getStdLibCodeText(), newRepository);
@@ -151,7 +151,7 @@ function setupPlomUi() {
 	}
 	function makeRepositoryWithStdLib(main)
     {
-        var repo = new ModuleCodeRepository();
+        var repo = new CodeRepositoryClient();
         repo.setChainedRepository(makeStdLibRepository());
         return repo;
     }
@@ -334,7 +334,7 @@ function setupPlomUi() {
 						data: buf
 					}, [buf]));
 			} else if (evt.data.path == 'plomStdlibPrimitives.js') {
-				fetch('plomStdlibPrimitives.js')
+				fetch('plomUi.js')
 					.then((response) => response.arrayBuffer())
 					.then((buf) => localServerServiceWorker.postMessage({
 						type: 'GET',
