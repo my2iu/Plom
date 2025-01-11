@@ -147,7 +147,7 @@ public class Main
   static WebHelpers.AsyncIteratorCollector asyncIteratorToArray;
   public static void setAsyncIteratorToArray(WebHelpers.AsyncIteratorCollector fn) { asyncIteratorToArray = fn; }
   
-  public ErrorLogger createErrorLoggerForConsole()
+  public static ErrorLogger createErrorLoggerForConsole()
   {
     return new ErrorLogger() {
       @Override public void error(Object err)
@@ -232,7 +232,7 @@ public class Main
     };
   }
 
-  public DebuggerEnvironment createDebuggerEnvironment()
+  public static DebuggerEnvironment createDebuggerEnvironment()
   {
     if (Browser.getWindow().getLocation().getProtocol().startsWith("plomrun")) 
     {
@@ -322,7 +322,7 @@ public class Main
    * This small code fragment can be used as the entrypoint code
    * for a Plom program
    */
-  public StatementContainer makeEntryPointCodeToInvokeMain()
+  public static StatementContainer makeEntryPointCodeToInvokeMain()
   {
     return new StatementContainer(
         new TokenContainer(

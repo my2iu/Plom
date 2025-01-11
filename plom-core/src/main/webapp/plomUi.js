@@ -71,7 +71,7 @@ function setupPlomUi() {
 		var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
 
 		// Run it
-		var code = main.makeEntryPointCodeToInvokeMain();
+		var code = Main.makeEntryPointCodeToInvokeMain();
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
 		isInsidePlomCode = true;
@@ -93,19 +93,19 @@ function setupPlomUi() {
 			isInsidePlomCode = false;
 		}
 	}
-	function runPlomStandalone(main, repository)
+	function runPlomStandalone(repository)
 	{
 		var errorLogger;
 		if (Main.debuggerEnvironmentAvailableFlag) {
-			var debuggerEnv = main.createDebuggerEnvironment();
+			var debuggerEnv = Main.createDebuggerEnvironment();
 			debuggerEnv.startConnection();
 			errorLogger = debuggerEnv.getErrorLogger();
 		} else {
-			errorLogger = main.createErrorLoggerForConsole();
+			errorLogger = Main.createErrorLoggerForConsole();
 		}
 
 		// Run it
-		var code = main.makeEntryPointCodeToInvokeMain();
+		var code = Main.makeEntryPointCodeToInvokeMain();
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
 		isInsidePlomCode = true;
