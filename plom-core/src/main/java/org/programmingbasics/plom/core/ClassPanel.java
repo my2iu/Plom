@@ -2,6 +2,7 @@ package org.programmingbasics.plom.core;
 
 import java.util.List;
 
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;

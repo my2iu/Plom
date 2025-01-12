@@ -78,7 +78,7 @@ function setupPlomUi() {
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
-				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(repository, coreTypes, errorLogger));
+				scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
   
 				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
 			});
@@ -112,7 +112,7 @@ function setupPlomUi() {
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
-				scope.setParent(new org.programmingbasics.plom.core.RepositoryScope(repository, coreTypes, errorLogger));
+				scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
   
 				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
 			});
