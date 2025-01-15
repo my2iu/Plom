@@ -33,7 +33,7 @@ public class CodeRepositoryClientTest
   {
     StringBuilder strBuilder = new StringBuilder();
 
-    CodeRepositoryClient repository = new CodeRepositoryClient();
+    CodeRepositoryClient repository = new CodeRepositoryClient(null);
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     repository.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
@@ -108,7 +108,7 @@ public class CodeRepositoryClientTest
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
-    CodeRepositoryClient loaded = new CodeRepositoryClient();
+    CodeRepositoryClient loaded = new CodeRepositoryClient(null);
     loaded.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
     Promise<Void> extraFilesWaiter = loaded.loadModule(lexer);
     extraFilesWaiter = extraFilesWaiter.then(dummy -> {

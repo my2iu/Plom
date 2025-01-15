@@ -30,6 +30,7 @@
 		// Run code for initializing the UI		 
 		addGwtOnLoad(function() {
 			setupPlomUi();
+    		launchLanguageServerWorker();
 			var main = new org.programmingbasics.plom.core.Main();
 			initRepository(main);
 			//main.go();
@@ -50,9 +51,6 @@
     		main.loadFunctionCodeView("main");
     		
     		hookSimpleHamburgerMenu(document.querySelector('.hamburgermenubutton'), document.querySelector('.testbuttons'));
-    		
-    		// Testing out the launching of a web worker
-    		var languageServerWorker = new Worker('languageServerWorker.js');
     		
     		// Back button
     		document.querySelector('.backbutton').addEventListener('click', function(evt) {

@@ -29,6 +29,12 @@ function setupPlomUi() {
 		return collectedFiles;
 	});
 
+	// Manages a connection to the language server worker thread
+	// I'm not sure if this is the best place for this, or if it's better to
+	// store it in Main or even to not store it and force the value to be carried
+	// around by whoever creates the language server connection
+	var languageServerConnection;
+
 	// Code for the custom auto-resizing DOM input element	
 	class AutoResizingInputElement extends HTMLElement {
 		constructor() {
@@ -170,24 +176,10 @@ function setupPlomUi() {
 	}
 	function makeRepositoryWithStdLib(main)
     {
-        var repo = new CodeRepositoryClient();
-        repo.setChainedRepository(makeStdLibRepository());
-        return repo;
+    	var repo = new CodeRepositoryClient(languageServerConnection);
+    	repo.importStdLibRepository();
+		return repo;
     }
-    function makeStdLibRepository()
-	{
-		var newRepository = new CodeRepositoryClient();
-		newRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-		try {
-			loadCodeStringIntoRepository(Main.getStdLibCodeText(), newRepository);
-		}
-		catch (e)
-		{
-			console.error(e);
-		}
-		newRepository.markAsImported();
-		return newRepository;
-	}
     
 	function doLoadWeb(main)
 	{
@@ -540,6 +532,12 @@ function setupPlomUi() {
 			console.error(err);
 		}
 	}
+	function launchLanguageServerWorker()
+	{
+	    var languageServerWorker = new Worker('languageServerWorker.js');
+	    languageServerConnection = new org.programmingbasics.plom.core.LanguageServerClientConnection(languageServerWorker);
+		return languageServerConnection;
+	}
 	function hookSimpleHamburgerMenu(menuButtonAnchor, menuDiv)
 	{
 		hamburgerMenuDiv = menuDiv;
@@ -567,5 +565,6 @@ function setupPlomUi() {
 	window.loadCodeStringIntoExecutableRepository = loadCodeStringIntoExecutableRepository;
 	window.loadClassCodeStringIntoRepository = loadClassCodeStringIntoRepository;
 	window.hookSimpleHamburgerMenu = hookSimpleHamburgerMenu;
+	window.launchLanguageServerWorker = launchLanguageServerWorker;
 	window.runPlomStandalone = runPlomStandalone;
 }
