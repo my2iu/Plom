@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomTextScanner;
@@ -25,11 +26,11 @@ public class StdLibImporter
   public static void main(String [] args)
   {
     Path stdlibBasePath = Paths.get("../plom-stdlib/src");
-    CodeRepositoryClient repo = new CodeRepositoryClient();
+    ModuleCodeRepository repo = new ModuleCodeRepository();
     
     try {
       // Load in the main module describing the global variables and functions
-      repo.loadModule(lexerForFile(stdlibBasePath.resolve("program.plom")));
+      repo.loadModulePlain(lexerForFile(stdlibBasePath.resolve("program.plom")), null);
 
       // Load in all the code from the various files for different classes
       Files.list(stdlibBasePath).forEach((subpath) -> {

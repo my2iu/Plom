@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomTextScanner;
@@ -43,8 +44,8 @@ public class PlomFileRewriter
     {
       // Assume it's a module
       System.out.println("Rewriting " + f);
-      CodeRepositoryClient repo = new CodeRepositoryClient();
-      repo.loadModule(lexerForFile(f));
+      ModuleCodeRepository repo = new ModuleCodeRepository();
+      repo.loadModulePlain(lexerForFile(f), null);
       StringBuilder text = new StringBuilder();
       PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(text);
       repo.saveModule(out, true);
@@ -54,10 +55,10 @@ public class PlomFileRewriter
     {
       System.out.println("Rewriting " + f);
       // Assume it's a class
-      ClassDescription c = CodeRepositoryClient.loadClass(lexerForFile(f));
+      ClassDescription c = ModuleCodeRepository.loadClass(lexerForFile(f));
       StringBuilder text = new StringBuilder();
       PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(text);
-      CodeRepositoryClient.saveClass(out, c);
+      ModuleCodeRepository.saveClass(out, c);
       Files.write(f.toPath(), text.toString().getBytes(StandardCharsets.UTF_8));
     }
   }

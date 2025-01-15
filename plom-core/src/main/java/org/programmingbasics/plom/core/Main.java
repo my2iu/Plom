@@ -104,7 +104,7 @@ public class Main
 //    repository.addFunctionAndResetIds(mainFunc);
 //  }
   
-  public CodeRepositoryClient repository;
+  private CodeRepositoryClient repository;
   
   CodeWidgetBase codePanel;
   MethodPanel methodPanel;
@@ -264,7 +264,7 @@ public class Main
     debugConnection.setCodeLocationJumper((loc) -> {
       if (loc.getClassName() == null && loc.getFunctionMethodName() != null && loc.getPosition() == null)
       {
-        FunctionDescription sig = repository.getFunctionDescription(loc.getFunctionMethodName());
+        FunctionDescription sig = getRepository().getFunctionDescription(loc.getFunctionMethodName());
         if (sig != null)
         {
           onLocationJump.onJump();
@@ -279,7 +279,7 @@ public class Main
       }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() == null)
       {
-        ClassDescription cls = repository.findClassWithName(loc.getClassName());
+        ClassDescription cls = getRepository().findClassWithName(loc.getClassName());
         if (cls != null)
         {
           onLocationJump.onJump();
@@ -288,7 +288,7 @@ public class Main
       }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() != null)
       {
-        ClassDescription cls = repository.findClassWithName(loc.getClassName());
+        ClassDescription cls = getRepository().findClassWithName(loc.getClassName());
         if (cls != null)
         {
           FunctionDescription method = cls.findMethod(loc.getFunctionMethodName(), loc.isStatic()); 
@@ -310,6 +310,16 @@ public class Main
       }
     });
     return debugConnection;
+  }
+  
+  public CodeRepositoryClient getRepository()
+  {
+    return repository;
+  }
+
+  public void setRepository(CodeRepositoryClient repository)
+  {
+    this.repository = repository;
   }
   
   @JsFunction
@@ -445,9 +455,9 @@ public class Main
         .thenNow((done) -> {
             if (newRepo.isNoStdLibFlag)
               newRepo.setChainedRepository(null);
-            repository = newRepo;
+            setRepository(newRepo);
 
-            repository.refreshExtraFiles(() -> {
+            getRepository().refreshExtraFiles(() -> {
                 closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
 
                 loadGlobalsView();
@@ -468,7 +478,7 @@ public class Main
     {
       if (currentFunctionBeingViewed != null)
       {
-        repository.getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
+        getRepository().getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
       }
       if (currentMethodBeingViewed != null)
      {
@@ -482,7 +492,7 @@ public class Main
   public String getModuleAsString() throws IOException 
   {
     StringBuilder out = new StringBuilder();
-    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
+    getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     return out.toString();
   }
   
@@ -491,7 +501,7 @@ public class Main
   {
     // Get module contents as a string
     StringBuilder out = new StringBuilder();
-    repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
+    getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
     
     // Wrap string in js
     return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((repository) => {\n"
@@ -506,7 +516,7 @@ public class Main
   {
     StringBuilder out = new StringBuilder();
 
-    return repository.saveModuleWithExtraFiles(new PlomTextWriter.PlomCodeOutputFormatter(out), true,
+    return getRepository().saveModuleWithExtraFiles(new PlomTextWriter.PlomCodeOutputFormatter(out), true,
         new WebHelpers.PromiseCreator() {
           @Override public <U> WebHelpers.Promise<U> create(WebHelpers.Promise.PromiseConstructorFunction<U> createCallback)
           {
@@ -528,16 +538,16 @@ public class Main
   {
     try {
       StringBuilder out = new StringBuilder();
-      repository.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), false);
+      getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), false);
       moduleSaver.saveModule(out.toString());
       
       // Delete any classes that no longer exist
-      for (ClassDescription cls: repository.deletedClasses)
+      for (ClassDescription cls: getRepository().deletedClasses)
       {
         if (cls.getOriginalName() == null) continue;
         classDeleter.deleteClass(cls.getOriginalName());
       }
-      for (ClassDescription cls: repository.classes)
+      for (ClassDescription cls: getRepository().classes)
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
@@ -548,7 +558,7 @@ public class Main
       }
       
       // Save all classes
-      for (ClassDescription cls: repository.classes)
+      for (ClassDescription cls: getRepository().classes)
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
@@ -571,7 +581,7 @@ public class Main
   public WebHelpers.Promise<Object> exportAsZip(WebHelpers.JSZip zip, String plomSystemFilePrefix, boolean exportAsBase64)
   {
     // Check if there's an index.html defined in the extra files, if not, create one
-    List<FileDescription> extraFiles = repository.getAllExtraFilesSorted();
+    List<FileDescription> extraFiles = getRepository().getAllExtraFilesSorted();
     if (!extraFiles.stream().anyMatch(fd -> "web/index.html".equals(fd.filePath)))
       zip.filePromiseArrayBuffer("index.html", WebHelpers.fetch(plomSystemFilePrefix + "plomweb.html").then(response -> response.arrayBuffer()));
     
@@ -592,7 +602,7 @@ public class Main
         return new WebHelpers.PromiseClass<>(createCallback);
       }
     };
-    ExtraFilesManager fileManager = repository.getExtraFilesManager();
+    ExtraFilesManager fileManager = getRepository().getExtraFilesManager();
     for (FileDescription fd: extraFiles)
     {
       String nameInZip = fd.getPath();
@@ -638,7 +648,7 @@ public class Main
    */
   public void updateExtraFiles()
   {
-    repository.refreshExtraFiles(() -> {
+    getRepository().refreshExtraFiles(() -> {
       if (globalsPanel != null)
         globalsPanel.rebuildFileList();
     });
@@ -796,11 +806,11 @@ public class Main
   {
     Element breadcrumbEl = getBreadcrumbEl(); 
     breadcrumbEl.setInnerHTML("");
-    fillBreadcrumbForFunction(breadcrumbEl, repository.getFunctionDescription(fnName));
+    fillBreadcrumbForFunction(breadcrumbEl, getRepository().getFunctionDescription(fnName));
     
     closeCodePanelIfOpen();
     currentFunctionBeingViewed = fnName;
-    showCodePanel(repository.getFunctionDescription(fnName).code);
+    showCodePanel(getRepository().getFunctionDescription(fnName).code);
   }
 
   void loadFunctionSignatureView(FunctionDescription sig, boolean isNew)
@@ -881,13 +891,13 @@ public class Main
   private void showCodePanel(StatementContainer code)
   {
     codePanel = CodePanel.forFullScreen(getMainDiv(), true);
-    if (repository.isNoStdLibFlag)
+    if (getRepository().isNoStdLibFlag)
       // Normally, the "primitive" keyword isn't available unless we're editing a standard library
       codePanel.setExcludeTokens(Collections.emptyList());
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes, null));
+          scope.setParent(new RepositoryScope(getRepository(), coreTypes, null));
         },
         (context) -> {
           if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
@@ -923,7 +933,7 @@ public class Main
           // Add in function arguments
           FunctionDescription fd = null;
           if (currentFunctionBeingViewed != null)
-            fd = repository.getFunctionDescription(currentFunctionBeingViewed);
+            fd = getRepository().getFunctionDescription(currentFunctionBeingViewed);
           else if (currentMethodBeingViewed != null)
             fd = currentMethodBeingViewed;
           if (fd != null)
@@ -982,7 +992,7 @@ public class Main
   {
     DivElement mainDiv = getMainDiv();
     
-    globalsPanel = new GlobalsPanel(mainDiv, repository,
+    globalsPanel = new GlobalsPanel(mainDiv, getRepository(),
         (FunctionDescription fnName) -> Main.this.loadFunctionCodeView(fnName.sig.getLookupName()),
         (FunctionDescription sig, boolean isNew) -> loadFunctionSignatureView(sig, isNew),
         (ClassDescription cls, boolean isNew) -> loadClassView(cls, isNew)
@@ -991,9 +1001,9 @@ public class Main
   
   private void showFunctionPanel(FunctionDescription sig, boolean isNew)
   {
-    methodPanel = new MethodPanel(getMainDiv(), repository, sig.sig, isNew);
+    methodPanel = new MethodPanel(getMainDiv(), getRepository(), sig.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
-      repository.changeFunctionSignature(newSig, sig);
+      getRepository().changeFunctionSignature(newSig, sig);
       if (isFinal)
         loadFunctionCodeView(newSig.getLookupName());
     });
@@ -1001,7 +1011,7 @@ public class Main
 
   private void showMethodPanel(ClassDescription cls, FunctionDescription m, boolean isNew)
   {
-    methodPanel = new MethodPanel(getMainDiv(), repository, m.sig, isNew);
+    methodPanel = new MethodPanel(getMainDiv(), getRepository(), m.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
       m.sig = newSig;
       cls.updateMethod(m);
@@ -1012,7 +1022,7 @@ public class Main
 
   private void showClassPanel(ClassDescription cls, boolean isNew)
   {
-    classPanel = new ClassPanel(getMainDiv(), repository, cls, 
+    classPanel = new ClassPanel(getMainDiv(), getRepository(), cls, 
         (ClassDescription c, FunctionDescription method) -> loadMethodCodeView(c, method),
         (ClassDescription c, FunctionDescription method, boolean isNewMethod) -> loadMethodSignatureView(c, method, isNewMethod),
         () -> loadGlobalsView(),
@@ -1038,6 +1048,4 @@ public class Main
   public static String getAutoResizingInputHtmlText() {
     return UIResources.INSTANCE.getAutoResizingInputHtml().getText();
   }
-
-
 }

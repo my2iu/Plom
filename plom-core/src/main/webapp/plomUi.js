@@ -196,7 +196,7 @@ function setupPlomUi() {
 			    var newRepository = makeRepositoryWithStdLib(main);
 			    newRepository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
 			    var extraFilesPromise = loadCodeStringIntoRepository(readStr, newRepository);
-				main.repository = newRepository;
+				main.setRepository(newRepository);
 			    extraFilesPromise.then(() => {
 			    	newRepository.refreshExtraFiles(() => {
 						main.closeCodePanelWithoutSavingIfOpen();  // Usually code panel will save over just loaded code when you switch view
@@ -299,8 +299,8 @@ function setupPlomUi() {
 			if (event.data.serverContext != localServerId) return;
 			// Check if the file exists in the code repository
 			const decodedPath = decodeURIComponent(evt.data.path);
-			if (main.repository.hasExtraFile('web/' + decodedPath)) {
-				main.repository.getExtraFilesManager().getFileContentsTransferrable('web/' + decodedPath, (contents) => {
+			if (main.getRepository().hasExtraFile('web/' + decodedPath)) {
+				main.getRepository().getExtraFilesManager().getFileContentsTransferrable('web/' + decodedPath, (contents) => {
 					if (contents) {
 						let mime = 'text/html';
 						if (evt.data.path.endsWith('.jpg') || evt.data.path.endsWith('.jpeg'))
@@ -518,8 +518,8 @@ function setupPlomUi() {
 	{
 	    // Load in the built-in primitives of the interpreter into the 
 	    // code repository so that they can be browsed in the UI
-	    main.repository = makeRepositoryWithStdLib(main);
-	    main.repository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
+	    main.setRepository(makeRepositoryWithStdLib(main));
+	    main.getRepository().setExtraFilesManager(new ExtraFilesManagerWebInMemory());
 	    // Create a basic main function that can be filled in
 	    var sampleCode = `module .{program} {
 				function .{main} {@{void}} {} {
@@ -533,7 +533,7 @@ function setupPlomUi() {
 				}	
 			}`;
 		try {
-		    loadCodeStringIntoRepository(sampleCode, main.repository);
+		    loadCodeStringIntoRepository(sampleCode, main.getRepository());
 		}
 		catch (err)
 		{
