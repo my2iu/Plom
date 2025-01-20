@@ -179,7 +179,7 @@ public class GlobalsPanel implements AutoCloseable
     variableArea.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository, coreTypes, null));
+          scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
         },
         null);
     variableArea.setListener((isCodeChanged) -> {

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.programmingbasics.plom.core.codestore.RepositoryScope;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
@@ -453,7 +454,7 @@ public class Main
           return WebHelpers.promiseAll(srcFiles);
         })
         .thenNow((done) -> {
-            if (newRepo.isNoStdLibFlag)
+            if (newRepo.isNoStdLibFlag())
               newRepo.setChainedRepository(null);
             setRepository(newRepo);
 
@@ -542,12 +543,12 @@ public class Main
       moduleSaver.saveModule(out.toString());
       
       // Delete any classes that no longer exist
-      for (ClassDescription cls: getRepository().deletedClasses)
+      for (ClassDescription cls: getRepository().getDeletedClasses())
       {
         if (cls.getOriginalName() == null) continue;
         classDeleter.deleteClass(cls.getOriginalName());
       }
-      for (ClassDescription cls: getRepository().classes)
+      for (ClassDescription cls: getRepository().getClasses())
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
@@ -558,12 +559,12 @@ public class Main
       }
       
       // Save all classes
-      for (ClassDescription cls: getRepository().classes)
+      for (ClassDescription cls: getRepository().getClasses())
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
           out = new StringBuilder();
-          CodeRepositoryClient.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
+          ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
           classSaver.saveClass(cls.getName(), out.toString());
         }
       }
@@ -891,13 +892,13 @@ public class Main
   private void showCodePanel(StatementContainer code)
   {
     codePanel = CodePanel.forFullScreen(getMainDiv(), true);
-    if (getRepository().isNoStdLibFlag)
+    if (getRepository().isNoStdLibFlag())
       // Normally, the "primitive" keyword isn't available unless we're editing a standard library
       codePanel.setExcludeTokens(Collections.emptyList());
     codePanel.setVariableContextConfigurator(
         (scope, coreTypes) -> {
           StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(getRepository(), coreTypes, null));
+          scope.setParent(new RepositoryScope(getRepository().localRepo, coreTypes, null));
         },
         (context) -> {
           if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)

@@ -743,7 +743,7 @@ public class ModuleCodeRepository
    * Saves out a module, but leaves it "open" so that more stuff can
    * be added to the end of the module afterwards
    */
-  protected void saveOpenModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
+  public void saveOpenModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
   {
     out.token("module");
     out.token(".{program}");

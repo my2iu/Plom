@@ -3,7 +3,6 @@
 function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, exportZipAsBase64, saveOutBlobHandler)
 {
 	setupPlomUi();
-	launchLanguageServerWorker();
 	var main = new org.programmingbasics.plom.core.Main();
 	//initRepository(main);
 	//main.go();
