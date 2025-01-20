@@ -17,10 +17,10 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescri
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
+import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
@@ -52,8 +52,20 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     localRepo = new ModuleCodeRepository();
   }
 
+  private static void toFix() 
+  {
+    Browser.getWindow().getConsole().log("CodeRepositoryClient unfixed call");
+  };
+
+  private static void partialFix() 
+  {
+    Browser.getWindow().getConsole().log("CodeRepositoryClient partially fixed call");
+  };
+
   public void importStdLibRepository()
   {
+    partialFix();
+    languageServer.sendImportStdLibRepository();
     ModuleCodeRepository subRepository = new ModuleCodeRepository();
     subRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     try {
@@ -71,6 +83,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public List<FileDescription> getAllExtraFilesSorted()
   {
+    toFix();
     List<FileDescription> toReturn = new ArrayList<>();
     for (FileDescription f: extraFiles)
       toReturn.add(f);
@@ -88,12 +101,14 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public boolean hasExtraFile(String path)
   {
+    toFix();
     return extraFiles.stream().anyMatch((file) -> file.getPath().equals(path));
   }
 
   /** Refresh the internal list of extra files in the module */
   public void refreshExtraFiles(ExtraFilesManager.EmptyCallback callback)
   {
+    toFix();
     if (fileManager == null) 
     {
       callback.call();
@@ -115,6 +130,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public void setExtraFilesManager(ExtraFilesManager newFileManager)
   {
+    toFix();
     fileManager = newFileManager; 
   }
   
@@ -125,6 +141,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
    */
   public void markAsImported()
   {
+    toFix();
     localRepo.markAsImported();
     for (FileDescription f: extraFiles)
       f.setImported(true);
@@ -132,6 +149,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public WebHelpers.Promise<Void> saveModuleWithExtraFiles(final PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses, WebHelpers.PromiseCreator promiseCreator, WebHelpers.Promise.All promiseAll, Function<ArrayBuffer, Uint8Array> bufToUint8Array) throws IOException
   {
+    toFix();
     // Save out the module contents
     localRepo.saveOpenModule(out, saveClasses);
 
@@ -175,8 +193,14 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   }
   
   
-  public WebHelpers.Promise<Void> loadModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  public WebHelpers.Promise<Void> loadModule(String codeStr) throws PlomReadException
   {
+    partialFix();
+    languageServer.loadModule(codeStr);
+
+    PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(codeStr);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+    
     // Loading extra files from a module is done asynchronously, so
     // we use promises to keep track of when loading is done.
     ArrayOf<WebHelpers.Promise<String>> extraFilesPromises = Collections.arrayOf();
@@ -215,112 +239,134 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public void loadClassIntoModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
   {
+    toFix();
     localRepo.loadClassIntoModule(lexer);
   }
   
   public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
   {
+    toFix();
     localRepo.saveModule(out, saveClasses);
   }
   
   public boolean isNoStdLibFlag()
   {
+    toFix();
     return localRepo.isNoStdLibFlag;
   }
   
   public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
   {
+    toFix();
     localRepo.loadBuiltInPrimitives(stdLibClasses, stdLibMethods);
   }
 
 
   public void setChainedRepository(ModuleCodeRepository other)
   {
+    toFix();
     localRepo.setChainedRepository(other);
   }
   
   public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)
   {
+    toFix();
     return ModuleCodeRepository.findUniqueName(base, isNameAvailable);
   }
 
   public List<ClassDescription> getDeletedClasses()
   {
+    toFix();
     return localRepo.deletedClasses;
   }
   
   public List<ClassDescription> getClasses()
   {
+    toFix();
     return localRepo.classes;
   }
   
   public List<ClassDescription> getAllClassesSorted()
   {
+    toFix();
     return localRepo.getAllClassesSorted();
   }
 
   public ClassDescription addClassAndResetIds(String name)
   {
+    toFix();
     return localRepo.addClassAndResetIds(name);
   }
 
   public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
   {
+    toFix();
     localRepo.deleteClassAndResetIds(module, id);
   }
 
   public boolean hasClassWithName(String name)
   {
+    toFix();
     return localRepo.hasClassWithName(name);
   }
 
   public ClassDescription findClassWithName(String name)
   {
+    toFix();
     return localRepo.findClassWithName(name);
   }
   
   public FunctionDescription getFunctionWithName(String name)
   {
+    toFix();
     return localRepo.getFunctionWithName(name);
   }
 
   public FunctionDescription getFunctionDescription(String name)
   {
+    toFix();
     return localRepo.getFunctionDescription(name);
   }
   
   public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)
   {
+    toFix();
     localRepo.changeFunctionSignature(newSig, oldSig);
   }
 
   public void addFunctionAndResetIds(FunctionDescription func)
   {
+    toFix();
     localRepo.addFunctionAndResetIds(func);
   }
 
   public List<FunctionDescription> getAllFunctionSorted()
   {
+    toFix();
     return localRepo.getAllFunctionSorted();
   }
   
   public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
   {
+    toFix();
     localRepo.deleteFunctionAndResetIds(module, id);
   }
   
   public StatementContainer getVariableDeclarationCode()
   {
+    toFix();
     return localRepo.getVariableDeclarationCode();
   }
   
   public void setVariableDeclarationCode(StatementContainer code)
   {
+    toFix();
     localRepo.setVariableDeclarationCode(code);
   }
 
   public StatementContainer getImportedVariableDeclarationCode()
   {
+    toFix();
     return localRepo.getImportedVariableDeclarationCode();
   }
   

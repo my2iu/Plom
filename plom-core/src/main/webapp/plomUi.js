@@ -135,9 +135,7 @@ function setupPlomUi() {
 	}
 	function loadCodeStringIntoRepository(code, repository)
 	{
-		var inStream = new PlomTextReader.StringTextReader(code);
-		var lexer = new PlomTextReader.PlomTextScanner(inStream);
-		return repository.loadModule(lexer);
+		return repository.loadModule(code);
 	}
 	function loadClassCodeStringIntoRepository(code, repository)
 	{

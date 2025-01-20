@@ -105,12 +105,12 @@ public class CodeRepositoryClientTest
         " file \"web/test.txt\" {aGVsbG9}\n" + 
         " }";
     
-    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
-    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+//    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
+//    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
     CodeRepositoryClient loaded = new CodeRepositoryClient(null);
     loaded.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
-    Promise<Void> extraFilesWaiter = loaded.loadModule(lexer);
+    Promise<Void> extraFilesWaiter = loaded.loadModule(codeStr);
     extraFilesWaiter = extraFilesWaiter.then(dummy -> {
       return WebHelpersShunt.newPromise((resolve, reject) -> {
         loaded.refreshExtraFiles(() -> resolve.accept(null));

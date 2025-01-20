@@ -433,9 +433,7 @@ public class Main
                         try {
                           if ("program.plom".equals(filename))
                           {
-                            PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(code);
-                            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
-                            newRepo.loadModule(lexer);
+                            newRepo.loadModule(code);
                           }
                           else
                           {
