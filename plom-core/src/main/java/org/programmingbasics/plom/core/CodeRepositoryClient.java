@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
@@ -196,7 +197,14 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   public WebHelpers.Promise<Void> loadModule(String codeStr) throws PlomReadException
   {
     partialFix();
-    languageServer.loadModule(codeStr);
+    languageServer.sendLoadModule(codeStr)
+      .<Void>thenNow((reply) -> {
+        if (!((CodeRepositoryMessages.StatusReplyMessage)reply).isOk())
+        {
+          Browser.getWindow().getConsole().log(((CodeRepositoryMessages.StatusReplyMessage)reply).getErrorMessage());
+        }
+        return null;
+      });
 
     PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(codeStr);
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);

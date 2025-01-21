@@ -15,7 +15,9 @@ import elemental.events.MessageEvent;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
+import jsinterop.base.Js;
 
 /**
  * Language server that runs in a web worker that allows Plom to 
@@ -44,9 +46,9 @@ public class LanguageServerWorker
   void handleMessage(MessageEvent mevt)
   {
     CodeRepositoryMessages.BaseMessage msg = (CodeRepositoryMessages.BaseMessage)mevt.getData();
-    switch (msg.getType()) 
+    switch (msg.getTypeEnum()) 
     {
-    case "importStdLib":
+    case IMPORT_STDLIB:
       ModuleCodeRepository subRepository = new ModuleCodeRepository();
       subRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
       try {
@@ -61,7 +63,7 @@ public class LanguageServerWorker
       subRepository.markAsImported();
       repo.setChainedRepository(subRepository);
       break;
-    case "loadModule":
+    case LOAD_MODULE:
     {
       CodeRepositoryMessages.LoadModuleMessage loadModuleMsg = (CodeRepositoryMessages.LoadModuleMessage)msg;
       PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(loadModuleMsg.getCode());
@@ -81,9 +83,11 @@ public class LanguageServerWorker
           }
           return false;
         });
+        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), true, null));
       } 
       catch (PlomReadException e)
       {
+        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), false, e.getMessage()));
         e.printStackTrace();
       }
       break;
@@ -93,5 +97,18 @@ public class LanguageServerWorker
       break;
     }
     
+  }
+  
+  /** The version of postMessage() that's specifically available in web workers */
+  @JsFunction
+  static interface WorkerPostMessage
+  {
+    void postMessage(Object msg);
+  }
+  WorkerPostMessage postMessageFunction = Js.cast(Js.global().get("postMessage")); 
+  
+  void postMessage(Object msg)
+  {
+    postMessageFunction.postMessage(msg);
   }
 }
