@@ -399,7 +399,9 @@ public class ModuleCodeRepository
   /** Tracks classes that have been deleted so that we can remove their files when the project is saved */
   public List<ClassDescription> deletedClasses = new ArrayList<>();
   
-  /** Special flag for when this module is being used to develop the standard library */
+  /** Special flag for when this module is being used to develop the standard library.
+   * The flag is set to true if the current module represents a stdlib library
+   * (i.e. is not a normal module for normal programs) */
   public boolean isNoStdLibFlag = false;
 
   /** Code for global variable declarations */

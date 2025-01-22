@@ -1,17 +1,18 @@
 package org.programmingbasics.plom.core;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ReplyMessage;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 
-import elemental.client.Browser;
 import elemental.events.MessageEvent;
 import elemental.html.Worker;
 import jsinterop.annotations.JsType;
@@ -96,6 +97,35 @@ public class LanguageServerClientConnection
       {
         throw new IllegalArgumentException(e);
       }
+    });
+  }
+  
+  public Promise<Boolean> sendIsStdLib()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.IS_STDLIB, requestId));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      CodeRepositoryMessages.IsStdLibReplyMessage stdLibMsg = (CodeRepositoryMessages.IsStdLibReplyMessage)msg;
+      return stdLibMsg.isStdLib();
+    });
+  }
+
+  public Promise<Void> sendSaveFunctionCode(String name, StatementContainer code)
+  {
+    String requestId = getNextId();
+    CodeRepositoryMessages.SaveFunctionCodeMessage msg;
+    try
+    {
+      msg = CodeRepositoryMessages.createSaveFunctionCodeMessage(requestId, name, code);
+      worker.postMessage(msg);
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+      return WebHelpersShunt.promiseResolve(null);
+    }
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      return null;
     });
   }
 }

@@ -7,6 +7,7 @@ import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -98,6 +99,25 @@ public class LanguageServerWorker
       CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
       FunctionDescription fd = repo.getFunctionDescription(nameMsg.getName());
       postMessage(CodeRepositoryMessages.createFunctionDescriptionReplyMessage(nameMsg.getRequestId(), fd));
+      break;
+    }
+    case IS_STDLIB:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg; 
+      postMessage(CodeRepositoryMessages.createIsStdLibReplyMessage(requestMsg.getRequestId(), repo.isNoStdLibFlag));
+      break;
+    }
+    case SAVE_FUNCTION_CODE:
+    {
+      CodeRepositoryMessages.SaveFunctionCodeMessage requestMsg = (CodeRepositoryMessages.SaveFunctionCodeMessage)msg;
+      try {
+        repo.getFunctionDescription(requestMsg.getName()).code = requestMsg.getCodeStatementContainer();
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
       break;
     }
     default:

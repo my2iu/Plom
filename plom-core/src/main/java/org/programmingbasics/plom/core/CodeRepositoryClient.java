@@ -39,6 +39,14 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
    */
   ModuleCodeRepository localRepo;
   
+  /**
+   * Cached information about whether the module in the language server
+   * has the isNoStdLib flag set or not. (Flag is set if the module
+   * represents a library that has no standard library, so extra
+   * low-level instructions are allowed.)
+   */
+  boolean cachedIsNoStdLib = false;
+  
   /** Tracks all the extra non-Plom files stored in the module */
   List<FileDescription> extraFiles = new ArrayList<>();
   
@@ -198,12 +206,19 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   public WebHelpers.Promise<Void> loadModule(String codeStr) throws PlomReadException
   {
     partialFix();
-    languageServer.sendLoadModule(codeStr)
+    Promise<Void> moduleLoad = languageServer.sendLoadModule(codeStr)
       .<Void>thenNow((reply) -> {
         if (!((CodeRepositoryMessages.StatusReplyMessage)reply).isOk())
         {
           Browser.getWindow().getConsole().log(((CodeRepositoryMessages.StatusReplyMessage)reply).getErrorMessage());
         }
+        return null;
+      })
+      .<Boolean>then((unused) -> {
+        return languageServer.sendIsStdLib();
+      })
+      .<Void>thenNow((stdlibFlag) -> {
+        cachedIsNoStdLib = stdlibFlag;
         return null;
       });
 
@@ -243,7 +258,9 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
       return false;
     });
     
-    return WebHelpersShunt.promiseAll(extraFilesPromises).thenNow(doneArray -> null);
+    return moduleLoad
+        .then((unused) -> WebHelpersShunt.promiseAll(extraFilesPromises))
+        .thenNow(doneArray -> null);
   }
   
   public void loadClassIntoModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
@@ -260,8 +277,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public boolean isNoStdLibFlag()
   {
-    toFix();
-    return localRepo.isNoStdLibFlag;
+    if (cachedIsNoStdLib != localRepo.isNoStdLibFlag)
+    {
+      Browser.getWindow().getConsole().log("isNoStdLibFlag is not synchronized perfectly, due to a race condition probably");
+    }
+    return cachedIsNoStdLib;
   }
   
   public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
@@ -336,10 +356,12 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendGetFunctionDescription(name);
   }
   
-  public void saveFunctionCode(String name, StatementContainer code)
+  public Promise<Void> saveFunctionCode(String name, StatementContainer code)
   {
-    toFix();
+    partialFix();
     localRepo.getFunctionDescription(name).code = code;
+    // TODO: synchronize things with the promise
+    return languageServer.sendSaveFunctionCode(name, code);
   }
   
   public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)

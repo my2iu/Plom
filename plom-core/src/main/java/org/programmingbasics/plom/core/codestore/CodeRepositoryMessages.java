@@ -139,10 +139,7 @@ public class CodeRepositoryMessages
         ModuleCodeRepository.saveFunctionSignature(out, fd.sig);
         setSignature(strBuilder.toString());
         
-        strBuilder = new StringBuilder();
-        out = new PlomCodeOutputFormatter(strBuilder);
-        PlomTextWriter.writeStatementContainer(out, fd.code);
-        setCode(strBuilder.toString());
+        setCode(statementContainerToString(fd.code));
       } 
       catch (IOException e)
       {
@@ -157,17 +154,64 @@ public class CodeRepositoryMessages
       PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
       FunctionSignature sig = ModuleCodeRepository.loadFunctionSignature(lexer);
 
-      in = new PlomTextReader.StringTextReader(getCode());
-      lexer = new PlomTextReader.PlomTextScanner(in);
-      StatementContainer code = PlomTextReader.readStatementContainer(lexer);
+      StatementContainer code = stringToStatementContainer(getCode());
       return new FunctionDescription(sig, code);
     }
   }
 
+  private static String statementContainerToString(StatementContainer code) throws IOException
+  {
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+    PlomTextWriter.writeStatementContainer(out, code);
+    return strBuilder.toString();
+  }
+  
+  private static StatementContainer stringToStatementContainer(String code) throws PlomReadException
+  {
+    if (code == null) return null;
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(code);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    return PlomTextReader.readStatementContainer(lexer);
+  }
+  
   public static FunctionDescriptionReplyMessage createFunctionDescriptionReplyMessage(String replyId, FunctionDescription fd)
   {
     FunctionDescriptionReplyMessage msg = (FunctionDescriptionReplyMessage)createReplyMessage(MessageType.REPLY, replyId);
     msg.setFunctionDescription(fd);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface IsStdLibReplyMessage extends ReplyMessage
+  {
+    @JsProperty(name = "stdlib") boolean isStdLib();
+    @JsProperty(name = "stdlib") void setStdLib(boolean stdlib);
+  }
+
+  public static IsStdLibReplyMessage createIsStdLibReplyMessage(String replyId, boolean stdlib)
+  {
+    IsStdLibReplyMessage msg = (IsStdLibReplyMessage)createReplyMessage(MessageType.REPLY, replyId);
+    msg.setStdLib(stdlib);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface SaveFunctionCodeMessage extends RequestMessage
+  {
+    @JsProperty(name = "name") String getName();
+    @JsProperty(name = "name") void setName(String name);
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
+    @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
+  }
+
+  public static SaveFunctionCodeMessage createSaveFunctionCodeMessage(String id, String name, StatementContainer code) throws IOException
+  {
+    SaveFunctionCodeMessage msg = (SaveFunctionCodeMessage)createRequestMessage(MessageType.SAVE_FUNCTION_CODE, id);
+    msg.setName(name);
+    msg.setCodeStatementContainer(code);
     return msg;
   }
 
@@ -176,7 +220,9 @@ public class CodeRepositoryMessages
     REPLY("reply"), 
     IMPORT_STDLIB("importStdLib"), 
     LOAD_MODULE("loadModule"),
-    GET_FUNCTION_DESCRIPTION("functionDescription");
+    GET_FUNCTION_DESCRIPTION("functionDescription"),
+    IS_STDLIB("isStdLib"),
+    SAVE_FUNCTION_CODE("saveFunctionCode");
     private MessageType(String val)
     {
       this.value = val;
