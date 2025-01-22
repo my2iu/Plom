@@ -5,9 +5,11 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ReplyMessage;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 
 import elemental.client.Browser;
 import elemental.events.MessageEvent;
@@ -78,5 +80,22 @@ public class LanguageServerClientConnection
     String requestId = getNextId();
     worker.postMessage(CodeRepositoryMessages.createLoadModuleMessage(requestId, codeStr));
     return waitForReplyFor(requestId);
+  }
+
+  public Promise<FunctionDescription> sendGetFunctionDescription(String name)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGetFromNameMessage(MessageType.GET_FUNCTION_DESCRIPTION, requestId, name));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try
+      {
+        CodeRepositoryMessages.FunctionDescriptionReplyMessage fdMsg = (CodeRepositoryMessages.FunctionDescriptionReplyMessage)msg;
+        return fdMsg.getFunctionDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
   }
 }

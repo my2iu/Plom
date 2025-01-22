@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
@@ -90,6 +91,13 @@ public class LanguageServerWorker
         postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), false, e.getMessage()));
         e.printStackTrace();
       }
+      break;
+    }
+    case GET_FUNCTION_DESCRIPTION:
+    {
+      CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
+      FunctionDescription fd = repo.getFunctionDescription(nameMsg.getName());
+      postMessage(CodeRepositoryMessages.createFunctionDescriptionReplyMessage(nameMsg.getRequestId(), fd));
       break;
     }
     default:

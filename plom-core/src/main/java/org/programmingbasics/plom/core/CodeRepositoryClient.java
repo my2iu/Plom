@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
+import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
@@ -330,10 +331,15 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return localRepo.getFunctionWithName(name);
   }
 
-  public FunctionDescription getFunctionDescription(String name)
+  public Promise<FunctionDescription> getFunctionDescription(String name)
+  {
+    return languageServer.sendGetFunctionDescription(name);
+  }
+  
+  public void saveFunctionCode(String name, StatementContainer code)
   {
     toFix();
-    return localRepo.getFunctionDescription(name);
+    localRepo.getFunctionDescription(name).code = code;
   }
   
   public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)

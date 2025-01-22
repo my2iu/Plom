@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
@@ -265,18 +266,23 @@ public class Main
     debugConnection.setCodeLocationJumper((loc) -> {
       if (loc.getClassName() == null && loc.getFunctionMethodName() != null && loc.getPosition() == null)
       {
-        FunctionDescription sig = getRepository().getFunctionDescription(loc.getFunctionMethodName());
-        if (sig != null)
-        {
-          onLocationJump.onJump();
-          loadFunctionSignatureView(sig, false);
-        }
+        getRepository().getFunctionDescription(loc.getFunctionMethodName())
+          .<Void>thenNow((FunctionDescription sig) -> {
+            if (sig != null)
+            {
+              onLocationJump.onJump();
+              loadFunctionSignatureView(sig, false);
+            }
+            return null;
+          });
       }
       else if (loc.getClassName() == null && loc.getFunctionMethodName() != null && loc.getPosition() != null)
       {
         onLocationJump.onJump();
-        loadFunctionCodeView(loc.getFunctionMethodName());
-        codePanel.setCursorPosition(loc.getPosition());
+        loadFunctionCodeView(loc.getFunctionMethodName()).<Void>thenNow((_void) -> {
+          codePanel.setCursorPosition(loc.getPosition());
+          return null;
+        });
       }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() == null)
       {
@@ -477,7 +483,7 @@ public class Main
     {
       if (currentFunctionBeingViewed != null)
       {
-        getRepository().getFunctionDescription(currentFunctionBeingViewed).code = codePanel.codeList;
+        getRepository().saveFunctionCode(currentFunctionBeingViewed, codePanel.codeList);
       }
       if (currentMethodBeingViewed != null)
      {
@@ -801,15 +807,19 @@ public class Main
     return breadcrumbEl;
   }
   
-  public void loadFunctionCodeView(String fnName)
+  public Promise<Void> loadFunctionCodeView(String fnName)
   {
-    Element breadcrumbEl = getBreadcrumbEl(); 
-    breadcrumbEl.setInnerHTML("");
-    fillBreadcrumbForFunction(breadcrumbEl, getRepository().getFunctionDescription(fnName));
+    return getRepository().getFunctionDescription(fnName).<Void>thenNow((fd) -> {
+      Element breadcrumbEl = getBreadcrumbEl(); 
+      breadcrumbEl.setInnerHTML("");
+      fillBreadcrumbForFunction(breadcrumbEl, fd);
+      
+      closeCodePanelIfOpen();
+      currentFunctionBeingViewed = fnName;
+      showCodePanel(fd.code);
+      return null;
+    });
     
-    closeCodePanelIfOpen();
-    currentFunctionBeingViewed = fnName;
-    showCodePanel(getRepository().getFunctionDescription(fnName).code);
   }
 
   void loadFunctionSignatureView(FunctionDescription sig, boolean isNew)
@@ -930,27 +940,33 @@ public class Main
           }
 
           // Add in function arguments
-          FunctionDescription fd = null;
+          Promise<FunctionDescription> fdWait = null; 
           if (currentFunctionBeingViewed != null)
-            fd = getRepository().getFunctionDescription(currentFunctionBeingViewed);
+            fdWait = getRepository().getFunctionDescription(currentFunctionBeingViewed);
           else if (currentMethodBeingViewed != null)
-            fd = currentMethodBeingViewed;
-          if (fd != null)
+            fdWait = WebHelpersShunt.promiseResolve(currentMethodBeingViewed);
+          if (fdWait != null)
           {
-            context.pushNewScope();
-            for (int n = 0; n < fd.sig.getNumArgs(); n++)
-            {
-              String name = fd.sig.getArgName(n);
-              UnboundType unboundType = fd.sig.getArgType(n);
-              try {
-                Type type = context.currentScope().typeFromUnboundTypeFromScope(unboundType);
-                context.currentScope().addVariable(name, type, new Value());
-              }
-              catch (RunException e)
+            fdWait.<Void>thenNow((fd) -> {
+              if (fd != null)
               {
-                // Ignore the argument if it doesn't have a valid type
+                context.pushNewScope();
+                for (int n = 0; n < fd.sig.getNumArgs(); n++)
+                {
+                  String name = fd.sig.getArgName(n);
+                  UnboundType unboundType = fd.sig.getArgType(n);
+                  try {
+                    Type type = context.currentScope().typeFromUnboundTypeFromScope(unboundType);
+                    context.currentScope().addVariable(name, type, new Value());
+                  }
+                  catch (RunException e)
+                  {
+                    // Ignore the argument if it doesn't have a valid type
+                  }
+                }
               }
-            }
+              return null;
+            });
           }
         });
     codePanel.setListener((isCodeChanged) -> {

@@ -1,5 +1,15 @@
 package org.programmingbasics.plom.core.codestore;
 
+import java.io.IOException;
+
+import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
+import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
+import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import jsinterop.annotations.JsOverlay;
@@ -99,9 +109,74 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface GetFromNameMessage extends RequestMessage
+  {
+    @JsProperty(name = "name") String getName();
+    @JsProperty(name = "name") void setName(String name);
+  }
+
+  public static GetFromNameMessage createGetFromNameMessage(MessageType type, String id, String name)
+  {
+    GetFromNameMessage msg = (GetFromNameMessage)createRequestMessage(type, id);
+    msg.setName(name);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface FunctionDescriptionReplyMessage extends ReplyMessage
+  {
+    @JsProperty(name = "signature") String getSignature();
+    @JsProperty(name = "signature") void setSignature(String signature);
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsOverlay default void setFunctionDescription(FunctionDescription fd)
+    {
+      try {
+        if (fd == null) return;
+        StringBuilder strBuilder = new StringBuilder();
+        PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+        ModuleCodeRepository.saveFunctionSignature(out, fd.sig);
+        setSignature(strBuilder.toString());
+        
+        strBuilder = new StringBuilder();
+        out = new PlomCodeOutputFormatter(strBuilder);
+        PlomTextWriter.writeStatementContainer(out, fd.code);
+        setCode(strBuilder.toString());
+      } 
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+    }
+    @JsOverlay default FunctionDescription getFunctionDescription() throws PlomReadException
+    {
+      if (getSignature() == null) return null;
+      
+      PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(getSignature());
+      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+      FunctionSignature sig = ModuleCodeRepository.loadFunctionSignature(lexer);
+
+      in = new PlomTextReader.StringTextReader(getCode());
+      lexer = new PlomTextReader.PlomTextScanner(in);
+      StatementContainer code = PlomTextReader.readStatementContainer(lexer);
+      return new FunctionDescription(sig, code);
+    }
+  }
+
+  public static FunctionDescriptionReplyMessage createFunctionDescriptionReplyMessage(String replyId, FunctionDescription fd)
+  {
+    FunctionDescriptionReplyMessage msg = (FunctionDescriptionReplyMessage)createReplyMessage(MessageType.REPLY, replyId);
+    msg.setFunctionDescription(fd);
+    return msg;
+  }
+
   public static enum MessageType
   {
-    REPLY("reply"), IMPORT_STDLIB("importStdLib"), LOAD_MODULE("loadModule");
+    REPLY("reply"), 
+    IMPORT_STDLIB("importStdLib"), 
+    LOAD_MODULE("loadModule"),
+    GET_FUNCTION_DESCRIPTION("functionDescription");
     private MessageType(String val)
     {
       this.value = val;

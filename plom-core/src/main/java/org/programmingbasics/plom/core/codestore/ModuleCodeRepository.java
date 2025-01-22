@@ -834,43 +834,48 @@ public class ModuleCodeRepository
     out.newline();
   }
 
-  public static void saveFunction(PlomTextWriter.PlomCodeOutputFormatter out, FunctionDescription fn) throws IOException
+  public static void saveFunctionSignature(PlomTextWriter.PlomCodeOutputFormatter out, FunctionSignature sig) throws IOException
   {
-    if (fn.sig.isStatic)
+    if (sig.isStatic)
       out.token("classfunction");
-    else if (fn.sig.isConstructor)
+    else if (sig.isConstructor)
       out.token("constructor");
     else
       out.token("function");
     
     out.token(".");
     out.token("{");
-    if (fn.sig.getNumArgs() == 0)
+    if (sig.getNumArgs() == 0)
     {
-      out.append(fn.sig.nameParts.get(0));
+      out.append(sig.nameParts.get(0));
     }
     else
     {
-      for (int n = 0; n < fn.sig.getNumArgs(); n++)
+      for (int n = 0; n < sig.getNumArgs(); n++)
       {
-        out.append(fn.sig.nameParts.get(n) + ":");
+        out.append(sig.nameParts.get(n) + ":");
         out.token("{");
-        PlomTextWriter.writeTokenContainer(out, fn.sig.getArgCode(n));
+        PlomTextWriter.writeTokenContainer(out, sig.getArgCode(n));
         out.token("}");
       }
     }
     out.token("}");
     
-    if (!fn.sig.isConstructor)
+    if (!sig.isConstructor)
     {
       out.token("{");
-      PlomTextWriter.writeTokenContainer(out, fn.sig.getReturnTypeCode());
+      PlomTextWriter.writeTokenContainer(out, sig.getReturnTypeCode());
       out.token("}");
     }
-
+    
     // An extra empty place where I might put comments later on
     out.token("{");
     out.token("}");
+  }
+ 
+  public static void saveFunction(PlomTextWriter.PlomCodeOutputFormatter out, FunctionDescription fn) throws IOException
+  {
+    saveFunctionSignature(out, fn.sig);
     
     out.token("{");
     out.newline();
@@ -1047,7 +1052,7 @@ new_methods:
     return cls;
   }
 
-  public static FunctionDescription loadFunction(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  public static FunctionSignature loadFunctionSignature(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
   {
     boolean isConstructor = "constructor".equals(lexer.peekLexInput());
     boolean isStatic = "classfunction".equals(lexer.peekLexInput());
@@ -1102,6 +1107,13 @@ new_methods:
     if (isStatic)
       sig.isStatic = true;
 
+    return sig;
+  }
+  
+  public static FunctionDescription loadFunction(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    FunctionSignature sig = loadFunctionSignature(lexer);
+    
     lexer.expectToken("{");
     lexer.swallowOptionalNewlineToken();
     StatementContainer code = PlomTextReader.readStatementContainer(lexer);
