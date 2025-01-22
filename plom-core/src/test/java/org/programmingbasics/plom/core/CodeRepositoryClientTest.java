@@ -120,7 +120,7 @@ public class CodeRepositoryClientTest
     ((JsEmulatedPromise<Void>)extraFilesWaiter).future.get();
     
     Assert.assertNotNull(loaded.getFunctionWithName("get"));
-    Assert.assertEquals(0, loaded.getVariableDeclarationCode().statements.size());
+    Assert.assertEquals(0, ((WebHelpersShunt.JsEmulatedPromise<StatementContainer>)loaded.getVariableDeclarationCode()).future.join().statements.size());
     Assert.assertEquals(1, loaded.getAllExtraFilesSorted().size());
     Assert.assertEquals("web/test.txt", loaded.getAllExtraFilesSorted().get(0).getPath());
     

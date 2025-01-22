@@ -5,6 +5,10 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescr
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
+
+import java.util.List;
+
+import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -22,6 +26,7 @@ import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;
 import elemental.svg.SVGSVGElement;
+import elemental.util.ArrayOf;
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -48,8 +53,43 @@ public class GlobalsPanel implements AutoCloseable
     widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
     rebuildView();
   }
-  
+
   void rebuildView()
+  {
+    // Gather up the necessary information from the language server
+    class GatheredInfo
+    {
+      List<ClassDescription> allClasses;
+      List<FunctionDescription> allFunctions;
+      StatementContainer varDeclCode;
+      StatementContainer importedVarDeclCode;
+    }
+    GatheredInfo gatheredData = new GatheredInfo();
+
+    ArrayOf<Promise<Void>> promises = elemental.util.Collections.arrayOf();
+    promises.push(repository.getAllClassesSorted().<Void>thenNow((classes) -> {
+      gatheredData.allClasses = classes;
+      return null;
+    }));
+    promises.push(repository.getAllFunctionSorted().<Void>thenNow((fns) -> {
+      gatheredData.allFunctions = fns;
+      return null;
+    }));
+    promises.push(repository.getVariableDeclarationCode().<Void>thenNow((code) -> {
+      gatheredData.varDeclCode = code;
+      return null;
+    }));
+    promises.push(repository.getImportedVariableDeclarationCode().<Void>thenNow((code) -> {
+      gatheredData.importedVarDeclCode = code;
+      return null;
+    }));
+    WebHelpersShunt.promiseAll(promises).thenNow((unused) -> {
+      rebuildView(gatheredData.allClasses, gatheredData.allFunctions,
+          gatheredData.varDeclCode, gatheredData.importedVarDeclCode);
+      return null;
+    });
+  }
+  void rebuildView(List<ClassDescription> allClasses, List<FunctionDescription> allFunctions, StatementContainer varDeclCode, StatementContainer importedVarDeclCode)
   {
     Document doc = Browser.getDocument();
     mainDiv.setInnerHTML(UIResources.INSTANCE.getGlobalsPanelHtml().getText());
@@ -73,7 +113,7 @@ public class GlobalsPanel implements AutoCloseable
 
     // List of classes
     Element classListEl = mainDiv.querySelector(".classesList");
-    for (ClassDescription cls: repository.getAllClassesSorted())
+    for (ClassDescription cls: allClasses)
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
@@ -107,7 +147,7 @@ public class GlobalsPanel implements AutoCloseable
     
     // List of functions
     Element functionListEl = mainDiv.querySelector(".functionList");
-    for (FunctionDescription fnName: repository.getAllFunctionSorted())
+    for (FunctionDescription fnName: allFunctions)
     {
       AnchorElement a = (AnchorElement)doc.createElement("a");
       a.setClassName("plomUiButton");
@@ -214,13 +254,13 @@ public class GlobalsPanel implements AutoCloseable
 //        }
 //      }
     });
-    variableArea.setCode(repository.getVariableDeclarationCode());
+    variableArea.setCode(varDeclCode);
     
     // Variable declarations imported into the module
     double clientWidth = mainDiv.querySelector(".classesHeading").getClientWidth();
     SvgCodeRenderer.renderSvgWithHitBoxes(
         (SVGSVGElement)mainDiv.querySelector("svg.globalImportedVarsCode"), 
-        repository.getImportedVariableDeclarationCode(), 
+        importedVarDeclCode, 
         null, null, null, new ErrorList(), widthCalculator, clientWidth, 0, 0, 0, 0);
     
     // For adding Files
