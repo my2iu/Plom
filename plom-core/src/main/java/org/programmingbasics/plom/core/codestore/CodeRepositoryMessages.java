@@ -1,17 +1,27 @@
 package org.programmingbasics.plom.core.codestore;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.Token.ParameterToken;
+import org.programmingbasics.plom.core.ast.TokenContainer;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.util.ArrayOf;
+import elemental.util.ArrayOfString;
+import elemental.util.Collections;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -22,6 +32,8 @@ import jsinterop.annotations.JsType;
  */
 public class CodeRepositoryMessages
 {
+  public static JsonObject createEmptyObject() { return Json.createObject(); }
+  
   public static BaseMessage createBaseMessage(MessageType type)
   {
     JsonObject obj = Json.createObject();
@@ -123,43 +135,7 @@ public class CodeRepositoryMessages
     return msg;
   }
 
-  @JsType(isNative = true)
-  public static interface FunctionDescriptionReplyMessage extends ReplyMessage
-  {
-    @JsProperty(name = "signature") String getSignature();
-    @JsProperty(name = "signature") void setSignature(String signature);
-    @JsProperty(name = "code") String getCode();
-    @JsProperty(name = "code") void setCode(String code);
-    @JsOverlay default void setFunctionDescription(FunctionDescription fd)
-    {
-      try {
-        if (fd == null) return;
-        StringBuilder strBuilder = new StringBuilder();
-        PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
-        ModuleCodeRepository.saveFunctionSignature(out, fd.sig);
-        setSignature(strBuilder.toString());
-        
-        setCode(statementContainerToString(fd.code));
-      } 
-      catch (IOException e)
-      {
-        e.printStackTrace();
-      }
-    }
-    @JsOverlay default FunctionDescription getFunctionDescription() throws PlomReadException
-    {
-      if (getSignature() == null) return null;
-      
-      PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(getSignature());
-      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
-      FunctionSignature sig = ModuleCodeRepository.loadFunctionSignature(lexer);
-
-      StatementContainer code = stringToStatementContainer(getCode());
-      return new FunctionDescription(sig, code);
-    }
-  }
-
-  private static String statementContainerToString(StatementContainer code) throws IOException
+  public static String statementContainerToString(StatementContainer code) throws IOException
   {
     StringBuilder strBuilder = new StringBuilder();
     PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
@@ -167,19 +143,46 @@ public class CodeRepositoryMessages
     return strBuilder.toString();
   }
   
-  private static StatementContainer stringToStatementContainer(String code) throws PlomReadException
+  public static StatementContainer stringToStatementContainer(String code) throws PlomReadException
   {
     if (code == null) return null;
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(code);
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     return PlomTextReader.readStatementContainer(lexer);
   }
-  
-  public static FunctionDescriptionReplyMessage createFunctionDescriptionReplyMessage(String replyId, FunctionDescription fd)
+
+  private static String tokenContainerToString(TokenContainer code) throws IOException
   {
-    FunctionDescriptionReplyMessage msg = (FunctionDescriptionReplyMessage)createReplyMessage(MessageType.REPLY, replyId);
-    msg.setFunctionDescription(fd);
-    return msg;
+    if (code == null) return null;
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+    PlomTextWriter.writeTokenContainer(out, code);
+    return strBuilder.toString();
+  }
+  
+  private static TokenContainer stringToTokenContainer(String code) throws PlomReadException
+  {
+    if (code == null) return null;
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(code);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    return PlomTextReader.readTokenContainer(lexer);
+  }
+
+  private static String tokenToString(Token code) throws IOException
+  {
+    if (code == null) return null;
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+    PlomTextWriter.writeToken(out, code);
+    return strBuilder.toString();
+  }
+  
+  private static Token stringToToken(String code) throws PlomReadException
+  {
+    if (code == null) return null;
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(code);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    return PlomTextReader.readToken(lexer);
   }
 
   @JsType(isNative = true)
@@ -215,6 +218,163 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface SingleObjectReplyMessage<T> extends ReplyMessage
+  {
+    @JsProperty(name = "payload") T getPayload();
+    @JsProperty(name = "payload") void setPayload(T data);
+  }
+  
+  public static <U> SingleObjectReplyMessage<U> createSingleObjectReplyMessage(String replyId, U obj)
+  {
+    SingleObjectReplyMessage<U> msg = (SingleObjectReplyMessage<U>)createReplyMessage(MessageType.REPLY, replyId);
+    msg.setPayload(obj);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface UnboundTypeJson
+  {
+    @JsProperty(name = "mainToken") String getMainToken();
+    @JsProperty(name = "mainToken") void setMainToken(String mainToken);
+    @JsProperty(name = "returnType") String getReturnType();
+    @JsProperty(name = "returnType") void setReturnType(String returnType);
+    @JsOverlay default UnboundType getAsUnboundType() throws PlomReadException
+    {
+      if (getMainToken() == null) return null;
+      TokenContainer returnType = stringToTokenContainer(getReturnType());
+      Token mainToken = stringToToken(getMainToken());
+      UnboundType type = new UnboundType();
+      type.mainToken = (Token.ParameterToken) mainToken;
+      type.returnType = returnType;
+      return type;
+    }
+    @JsOverlay default void setAsUnboundType(UnboundType type) throws IOException
+    {
+      if (type == null) return;
+      setMainToken(tokenToString(type.mainToken));
+      setReturnType(tokenContainerToString(type.returnType));
+    }
+  }
+
+  @JsType(isNative = true)
+  public static interface FunctionDescriptionJson
+  {
+    @JsProperty(name = "signature") String getSignature();
+    @JsProperty(name = "signature") void setSignature(String signature);
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsProperty(name = "imported") boolean isImported();
+    @JsProperty(name = "imported") void setImported(boolean imported);
+    @JsOverlay default void setAsFunctionDescription(FunctionDescription fd)
+    {
+      try {
+        if (fd == null) return;
+        StringBuilder strBuilder = new StringBuilder();
+        PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+        ModuleCodeRepository.saveFunctionSignature(out, fd.sig);
+        setSignature(strBuilder.toString());
+
+        setImported(fd.isImported);
+        setCode(statementContainerToString(fd.code));
+      } 
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+    }
+    @JsOverlay default FunctionDescription getAsFunctionDescription() throws PlomReadException
+    {
+      if (getSignature() == null) return null;
+      
+      PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(getSignature());
+      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+      FunctionSignature sig = ModuleCodeRepository.loadFunctionSignature(lexer);
+
+      StatementContainer code = stringToStatementContainer(getCode());
+      FunctionDescription fd = new FunctionDescription(sig, code);
+      fd.setImported(isImported());
+      return fd;
+    }
+  }
+
+  @JsType(isNative = true)
+  public static interface ClassDescriptionJson
+  {
+    @JsProperty(name = "name") String getName();
+    @JsProperty(name = "name") void setName(String name);
+    @JsProperty(name = "originalName") String getOriginalName();
+    @JsProperty(name = "originalName") void setOriginalName(String name);
+    @JsProperty(name = "parent") UnboundTypeJson getParent();
+    @JsProperty(name = "parent") void setParent(UnboundTypeJson unboundType);
+    @JsProperty(name = "methods") ArrayOf<FunctionDescriptionJson> getMethods();
+    @JsProperty(name = "methods") void setMethods(ArrayOf<FunctionDescriptionJson> methods);
+    @JsProperty(name = "varDecl") String getVariableDeclarationCode();
+    @JsProperty(name = "valDecl") void setVariableDeclarationCode(String code);
+    @JsProperty(name = "builtIn") boolean isBuiltIn();
+    @JsProperty(name = "builtIn") void setBuiltIn(boolean builtIn);
+    @JsProperty(name = "imported") boolean isImported();
+    @JsProperty(name = "imported") void setImported(boolean isImported);
+    
+    @JsOverlay default ClassDescription getAsClassDescription() throws PlomReadException
+    {
+      ClassDescription cl = new ClassDescription(getName(), getOriginalName());
+      cl.parent = getParent().getAsUnboundType();
+      cl.methods = arrayOfToList(getMethods(), (FunctionDescriptionJson json) -> {
+        return json.getAsFunctionDescription();
+      });
+      cl.setVariableDeclarationCode(stringToStatementContainer(getVariableDeclarationCode()));
+      cl.setBuiltIn(isBuiltIn());
+      cl.setImported(isImported());
+      return cl;
+    }
+    @JsOverlay default void setAsClassDescription(ClassDescription cl) throws IOException
+    {
+      setName(cl.getName());
+      setOriginalName(cl.getOriginalName());
+      UnboundTypeJson parent = (UnboundTypeJson)createEmptyObject();
+      parent.setAsUnboundType(cl.parent);
+      setParent(parent);
+      setMethods(listToArrayOf(cl.methods, (FunctionDescription fn) -> {
+        FunctionDescriptionJson json = (FunctionDescriptionJson)createEmptyObject();
+        json.setAsFunctionDescription(fn);
+        return json;
+      }));
+      setVariableDeclarationCode(statementContainerToString(cl.getVariableDeclarationCode()));
+      setBuiltIn(cl.isBuiltIn);
+      setImported(cl.isImported);
+    }
+  }
+
+  @FunctionalInterface
+  public static interface TransformFunction<I, O, E extends Throwable>
+  {
+    O transform(I in) throws E;
+  }
+  
+  public static <I, O, E extends Throwable> ArrayOf<O> listToArrayOf(List<I> list, TransformFunction<I, O, E> fn) throws E
+  {
+    ArrayOf<O> arr = Collections.arrayOf();
+    for (I obj: list)
+    {
+      O encoded = fn.transform(obj);
+      arr.push(encoded);
+    }
+    return arr;
+  }
+
+  public static <I, O, E extends Throwable> List<O> arrayOfToList(ArrayOf<I> arr, TransformFunction<I, O, E> fn) throws E
+  {
+    List<O> list = new ArrayList<>();
+    for (int i = 0; i < arr.length(); i++)
+    {
+      I obj = arr.get(i);
+      O encoded = fn.transform(obj);
+      list.add(encoded);
+    }
+    return list;
+  }
+
   public static enum MessageType
   {
     REPLY("reply"), 
@@ -222,7 +382,11 @@ public class CodeRepositoryMessages
     LOAD_MODULE("loadModule"),
     GET_FUNCTION_DESCRIPTION("functionDescription"),
     IS_STDLIB("isStdLib"),
-    SAVE_FUNCTION_CODE("saveFunctionCode");
+    SAVE_FUNCTION_CODE("saveFunctionCode"),
+    GET_ALL_CLASSES_SORTED("getAllClassesSorted"),
+    GET_ALL_FUNCTIONS_SORTED("getAllFunctionsSorted"),
+    GET_VARDECL_CODE("getVarDeclCode"),
+    GET_IMPORTED_VARDECL_CODE("getImportedVarDeclCode");
     private MessageType(String val)
     {
       this.value = val;

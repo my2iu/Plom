@@ -1,5 +1,8 @@
 package org.programmingbasics.plom.core.languageserver;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.programmingbasics.plom.core.Main;
 import org.programmingbasics.plom.core.WebHelpers;
 import org.programmingbasics.plom.core.WebHelpersShunt;
@@ -7,8 +10,11 @@ import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
@@ -98,7 +104,9 @@ public class LanguageServerWorker
     {
       CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
       FunctionDescription fd = repo.getFunctionDescription(nameMsg.getName());
-      postMessage(CodeRepositoryMessages.createFunctionDescriptionReplyMessage(nameMsg.getRequestId(), fd));
+      FunctionDescriptionJson json = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      json.setAsFunctionDescription(fd);
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(nameMsg.getRequestId(), json));
       break;
     }
     case IS_STDLIB:
@@ -118,6 +126,66 @@ public class LanguageServerWorker
         e.printStackTrace();
       }
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+    case GET_ALL_CLASSES_SORTED:
+    {
+      try {
+        CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+        List<ClassDescription> classes = repo.getAllClassesSorted();
+        ArrayOf<ClassDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(classes, (cl) -> {
+          ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+          clJson.setAsClassDescription(cl);
+          return clJson;
+        });
+        postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      break;
+    }
+    case GET_ALL_FUNCTIONS_SORTED:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      List<FunctionDescription> fns = repo.getAllFunctionSorted();
+      ArrayOf<FunctionDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(fns, (fd) -> {
+        FunctionDescriptionJson fdJson = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+        fdJson.setAsFunctionDescription(fd);
+        return fdJson;
+      });
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));
+      break;
+    }
+    case GET_VARDECL_CODE:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      String code = null;
+      try
+      {
+        code = CodeRepositoryMessages.statementContainerToString(repo.getVariableDeclarationCode());
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), code));
+      break;
+    }
+    case GET_IMPORTED_VARDECL_CODE:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      String code = null;
+      try
+      {
+        code = CodeRepositoryMessages.statementContainerToString(repo.getImportedVariableDeclarationCode());
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), code));
       break;
     }
     default:

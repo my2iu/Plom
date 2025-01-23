@@ -317,8 +317,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<List<ClassDescription>> getAllClassesSorted()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.getAllClassesSorted());
+    return languageServer.sendGetAllClassesSorted();
   }
 
   public ClassDescription addClassAndResetIds(String name)
@@ -378,8 +377,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   public Promise<List<FunctionDescription>> getAllFunctionSorted()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.getAllFunctionSorted());
+    return languageServer.sendGetAllFunctionsSorted();
   }
   
   public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
@@ -390,8 +388,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<StatementContainer> getVariableDeclarationCode()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.getVariableDeclarationCode());
+    return languageServer.sendGetVariableDeclarationCode();
   }
   
   public void setVariableDeclarationCode(StatementContainer code)
@@ -402,8 +399,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   public Promise<StatementContainer> getImportedVariableDeclarationCode()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.getImportedVariableDeclarationCode());
+    return languageServer.sendGetImportedVariableDeclarationCode();
   }
   
 

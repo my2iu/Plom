@@ -1,7 +1,9 @@
 package org.programmingbasics.plom.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
@@ -9,12 +11,16 @@ import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ReplyMessage;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 
 import elemental.events.MessageEvent;
 import elemental.html.Worker;
+import elemental.util.ArrayOf;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -90,8 +96,8 @@ public class LanguageServerClientConnection
     return waitForReplyFor(requestId).thenNow((msg) -> {
       try
       {
-        CodeRepositoryMessages.FunctionDescriptionReplyMessage fdMsg = (CodeRepositoryMessages.FunctionDescriptionReplyMessage)msg;
-        return fdMsg.getFunctionDescription();
+        CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson> fdMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson>)msg;
+        return fdMsg.getPayload().getAsFunctionDescription();
       }
       catch (PlomReadException e)
       {
@@ -128,4 +134,77 @@ public class LanguageServerClientConnection
       return null;
     });
   }
+
+  public Promise<List<ClassDescription>> sendGetAllClassesSorted()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_CLASSES_SORTED, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>>)reply;
+        return CodeRepositoryMessages.arrayOfToList(objReply.getPayload(), (json) -> {
+          return json.getAsClassDescription();
+        });
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new ArrayList<>();
+    });
+  }
+
+  public Promise<List<FunctionDescription>> sendGetAllFunctionsSorted()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_FUNCTIONS_SORTED, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<FunctionDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<FunctionDescriptionJson>>)reply;
+        return CodeRepositoryMessages.arrayOfToList(objReply.getPayload(), (json) -> {
+          return json.getAsFunctionDescription();
+        });
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new ArrayList<>();
+    });
+  }
+
+  public Promise<StatementContainer> sendGetVariableDeclarationCode()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_VARDECL_CODE, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<String> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<String>)reply;
+        return CodeRepositoryMessages.stringToStatementContainer(objReply.getPayload());
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new StatementContainer();
+    });
+  }
+
+  public Promise<StatementContainer> sendGetImportedVariableDeclarationCode()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_IMPORTED_VARDECL_CODE, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<String> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<String>)reply;
+        return CodeRepositoryMessages.stringToStatementContainer(objReply.getPayload());
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new StatementContainer();
+    });
+  }
+
 }
