@@ -207,4 +207,95 @@ public class LanguageServerClientConnection
     });
   }
 
+  public Promise<Void> sendSetVariableDeclarationCode(StatementContainer code)
+  {
+    String requestId = getNextId();
+    try
+    {
+      worker.postMessage(CodeRepositoryMessages.createSetVariableDeclarationCodeMessage(requestId, code));
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+      return WebHelpersShunt.promiseResolve(null);
+    }
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      return null;
+    });
+  }
+
+  public Promise<FunctionDescription> sendMakeNewEmptyFunction()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.MAKE_NEW_EMPTY_FUNCTION, requestId));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson> fdMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson>)msg;
+        return fdMsg.getPayload().getAsFunctionDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+  }
+
+  public Promise<ClassDescription> sendMakeNewEmptyClass()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.MAKE_NEW_EMPTY_CLASS, requestId));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ClassDescriptionJson> clMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<ClassDescriptionJson>)msg;
+        return clMsg.getPayload().getAsClassDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+  }
+
+  public Promise<FunctionDescription> sendMakeNewEmptyMethod(ClassDescription cls, boolean isStatic, boolean isConstructor)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createMakeNewUniqueMethodMessage(requestId, cls.getName(), isStatic, isConstructor));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson> fdMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson>)msg;
+        return fdMsg.getPayload().getAsFunctionDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+  }
+
+  public Promise<String> sendSaveModuleToString(boolean saveClasses)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createSaveModuleToStringMessage(requestId, saveClasses));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.SingleObjectReplyMessage<String> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<String>)reply;
+      return objReply.getPayload();
+    });
+  }
+
+  public Promise<ClassDescription> sendFindClass(String name)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGetFromNameMessage(MessageType.GET_CLASS_DESCRIPTION, requestId, name));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ClassDescriptionJson> clMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<ClassDescriptionJson>)msg;
+        return clMsg.getPayload().getAsClassDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+  }
+
 }

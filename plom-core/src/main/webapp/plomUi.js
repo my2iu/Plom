@@ -66,32 +66,33 @@ function setupPlomUi() {
 	{
 		main.saveCodeToRepository();
 		var repository = makeExecutableRepository();
-		var repoCode = main.getModuleAsString();
-		loadCodeStringIntoExecutableRepository(repoCode, repository);
-		var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
-
-		// Run it
-		var code = Main.makeEntryPointCodeToInvokeMain();
-		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
-		terp.setErrorLogger(errorLogger);
-		isInsidePlomCode = true;
-		try {
-			terp.runNoReturn(function(scope, coreTypes) {
-				StandardLibrary.createGlobals(terp, scope, coreTypes);
-				scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
-  
-				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
-			});
-		}
-		catch (err)
-		{
-			console.log(err);
-			errorLogger.error(err);
-		}
-		finally
-		{
-			isInsidePlomCode = false;
-		}
+		main.getModuleAsString().then((repoCode) => {
+			loadCodeStringIntoExecutableRepository(repoCode, repository);
+			var errorLogger = main.createErrorLoggerForDiv(document.querySelector('.console'));
+	
+			// Run it
+			var code = Main.makeEntryPointCodeToInvokeMain();
+			var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
+			terp.setErrorLogger(errorLogger);
+			isInsidePlomCode = true;
+			try {
+				terp.runNoReturn(function(scope, coreTypes) {
+					StandardLibrary.createGlobals(terp, scope, coreTypes);
+					scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
+	  
+					loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
+				});
+			}
+			catch (err)
+			{
+				console.log(err);
+				errorLogger.error(err);
+			}
+			finally
+			{
+				isInsidePlomCode = false;
+			}
+		});
 	}
 	function runPlomStandalone(repository)
 	{

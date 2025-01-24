@@ -101,13 +101,13 @@ public class ClassPanel
     Element newFunctionAnchor = mainDiv.querySelector(".methodsHeading a");
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName),
-          new StatementContainer());
-      cls.addMethod(func);
-
-      methodSigViewCallback.load(cls, func, true);
+      repository.makeNewUniqueMethod(cls, false, false)
+        .<Void>then((func) -> {
+          return repository.reloadClass(cls).<Void>thenNow((cl) -> {
+            methodSigViewCallback.load(cl, func, true);
+            return null;
+          });
+        });
     }, false);
     
     // List of instance methods
@@ -116,27 +116,26 @@ public class ClassPanel
     // For adding static methods
     mainDiv.querySelector(".staticMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
-              .setIsStatic(true),
-          new StatementContainer());
-      cls.addMethod(func);
-
-      methodSigViewCallback.load(cls, func, true);
+      repository.makeNewUniqueMethod(cls, true, false)
+        .<Void>then((func) -> {
+          return repository.reloadClass(cls).<Void>thenNow((cl) -> {
+            methodSigViewCallback.load(cl, func, true);
+            return null;
+          });
+        });
     }, false);
     
     // For adding constructor methods
     mainDiv.querySelector(".constructorMethodsHeading a").addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      String newMethodName = CodeRepositoryClient.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName)
-              .setIsConstructor(true),
-          new StatementContainer());
-      cls.addMethod(func);
+      repository.makeNewUniqueMethod(cls, false, true)
+        .<Void>then((func) -> {
+          return repository.reloadClass(cls).<Void>thenNow((cl) -> {
+            methodSigViewCallback.load(cl, func, true);
+            return null;
+          });
+        });
 
-      methodSigViewCallback.load(cls, func, true);
     }, false);
     
     // List of static methods

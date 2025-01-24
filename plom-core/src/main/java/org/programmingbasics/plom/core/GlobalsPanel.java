@@ -104,11 +104,12 @@ public class GlobalsPanel implements AutoCloseable
     Element newClassAnchor = mainDiv.querySelector(".classesHeading a");
     newClassAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      // Find a unique class name
-      String newClassName = CodeRepositoryClient.findUniqueName("class", (name) -> !repository.hasClassWithName(name));
-      ClassDescription c = repository.addClassAndResetIds(newClassName);
-      // Switch to view the class
-      classViewCallback.load(c, true);
+      repository.makeNewUniqueClass()
+        .<Void>thenNow((c) -> {
+          // Switch to view the class
+          classViewCallback.load(c, true);
+          return null;
+        });
     }, false);
 
     // List of classes
@@ -134,15 +135,11 @@ public class GlobalsPanel implements AutoCloseable
     Element newFunctionAnchor = mainDiv.querySelector(".functionsHeading a");
     newFunctionAnchor.addEventListener(Event.CLICK, (e) -> {
       e.preventDefault();
-      // Find a unique function name
-      String newFunctionName = CodeRepositoryClient.findUniqueName("function", (name) -> repository.getFunctionWithName(name) == null);
-      FunctionDescription func = new FunctionDescription(
-          FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
-          new StatementContainer());
-      repository.addFunctionAndResetIds(func);
-      
-      if (functionSigCallback != null)
-        functionSigCallback.load(func, true);
+      repository.makeUniqueEmptyFunction().thenNow((func) -> {
+        if (functionSigCallback != null)
+          functionSigCallback.load(func, true);
+        return null;
+      });
     }, false);
     
     // List of functions

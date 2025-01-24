@@ -310,7 +310,7 @@ public class CodeRepositoryMessages
     @JsProperty(name = "methods") ArrayOf<FunctionDescriptionJson> getMethods();
     @JsProperty(name = "methods") void setMethods(ArrayOf<FunctionDescriptionJson> methods);
     @JsProperty(name = "varDecl") String getVariableDeclarationCode();
-    @JsProperty(name = "valDecl") void setVariableDeclarationCode(String code);
+    @JsProperty(name = "varDecl") void setVariableDeclarationCode(String code);
     @JsProperty(name = "builtIn") boolean isBuiltIn();
     @JsProperty(name = "builtIn") void setBuiltIn(boolean builtIn);
     @JsProperty(name = "imported") boolean isImported();
@@ -375,18 +375,74 @@ public class CodeRepositoryMessages
     return list;
   }
 
+  @JsType(isNative = true)
+  public static interface SetVariableDeclarationCodeMessage extends RequestMessage
+  {
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
+    @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
+  }
+
+  public static SetVariableDeclarationCodeMessage createSetVariableDeclarationCodeMessage(String id, StatementContainer code) throws IOException
+  {
+    SetVariableDeclarationCodeMessage msg = (SetVariableDeclarationCodeMessage)createRequestMessage(MessageType.SET_VARDECL_CODE, id);
+    msg.setCodeStatementContainer(code);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface SaveModuleToStringMessage extends RequestMessage
+  {
+    @JsProperty(name = "saveClasses") boolean isSaveClasses();
+    @JsProperty(name = "saveClasses") void setSaveClasses(boolean saveClasses);
+  }
+
+  public static SaveModuleToStringMessage createSaveModuleToStringMessage(String id, boolean saveClasses)
+  {
+    SaveModuleToStringMessage msg = (SaveModuleToStringMessage)createRequestMessage(MessageType.SAVE_MODULE_TO_STRING, id);
+    msg.setSaveClasses(saveClasses);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface MakeNewUniqueMethodMessage extends RequestMessage
+  {
+    @JsProperty(name = "class") String getClassName();
+    @JsProperty(name = "class") void setClassName(String className);
+    @JsProperty(name = "static") boolean isStatic();
+    @JsProperty(name = "static") void setStatic(boolean isStatic);
+    @JsProperty(name = "constructor") boolean isConstructor();
+    @JsProperty(name = "constructor") void setConstructor(boolean isConstructor);
+  }
+
+  public static MakeNewUniqueMethodMessage createMakeNewUniqueMethodMessage(String id, String className, boolean isStatic, boolean isConstructor)
+  {
+    MakeNewUniqueMethodMessage msg = (MakeNewUniqueMethodMessage)createRequestMessage(MessageType.MAKE_NEW_EMPTY_METHOD, id);
+    msg.setClassName(className);
+    msg.setConstructor(isConstructor);
+    msg.setStatic(isStatic);
+    return msg;
+  }
+
   public static enum MessageType
   {
     REPLY("reply"), 
     IMPORT_STDLIB("importStdLib"), 
     LOAD_MODULE("loadModule"),
     GET_FUNCTION_DESCRIPTION("functionDescription"),
+    GET_CLASS_DESCRIPTION("classDescription"),
     IS_STDLIB("isStdLib"),
     SAVE_FUNCTION_CODE("saveFunctionCode"),
     GET_ALL_CLASSES_SORTED("getAllClassesSorted"),
     GET_ALL_FUNCTIONS_SORTED("getAllFunctionsSorted"),
     GET_VARDECL_CODE("getVarDeclCode"),
-    GET_IMPORTED_VARDECL_CODE("getImportedVarDeclCode");
+    GET_IMPORTED_VARDECL_CODE("getImportedVarDeclCode"),
+    SET_VARDECL_CODE("setVarDeclCode"), 
+    MAKE_NEW_EMPTY_FUNCTION("makeNewEmptyFunction"),
+    MAKE_NEW_EMPTY_CLASS("makeNewEmptyClass"),
+    MAKE_NEW_EMPTY_METHOD("makeNewEmptyMethod"),
+    SAVE_MODULE_TO_STRING("saveModuleToString");
     private MessageType(String val)
     {
       this.value = val;

@@ -3,11 +3,14 @@ package org.programmingbasics.plom.core.languageserver;
 import java.io.IOException;
 import java.util.List;
 
+import org.programmingbasics.plom.core.CodeRepositoryClient;
 import org.programmingbasics.plom.core.Main;
 import org.programmingbasics.plom.core.WebHelpers;
 import org.programmingbasics.plom.core.WebHelpersShunt;
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
+import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
@@ -16,7 +19,9 @@ import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageT
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import elemental.client.Browser;
 import elemental.events.MessageEvent;
@@ -186,6 +191,105 @@ public class LanguageServerWorker
         e.printStackTrace();
       }
       postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), code));
+      break;
+    }
+    case SET_VARDECL_CODE:
+    {
+      CodeRepositoryMessages.SetVariableDeclarationCodeMessage requestMsg = (CodeRepositoryMessages.SetVariableDeclarationCodeMessage)msg;
+      try {
+        repo.setVariableDeclarationCode(requestMsg.getCodeStatementContainer());
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+    case MAKE_NEW_EMPTY_FUNCTION:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      // Find a unique function name
+      String newFunctionName = ModuleCodeRepository.findUniqueName("function", (name) -> repo.getFunctionWithName(name) == null);
+      FunctionDescription func = new FunctionDescription(
+          FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
+          new StatementContainer());
+      repo.addFunctionAndResetIds(func);
+      FunctionDescriptionJson fdJson = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      fdJson.setAsFunctionDescription(func);
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), fdJson));
+      break;
+    }
+    case MAKE_NEW_EMPTY_CLASS:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      // Find a unique class name
+      String newClassName = ModuleCodeRepository.findUniqueName("class", (name) -> !repo.hasClassWithName(name));
+      ClassDescription c = repo.addClassAndResetIds(newClassName);
+
+      ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      try {
+      clJson.setAsClassDescription(c);
+      } 
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), clJson));
+      break;
+    }
+    case MAKE_NEW_EMPTY_METHOD:
+    {
+      CodeRepositoryMessages.MakeNewUniqueMethodMessage requestMsg = (CodeRepositoryMessages.MakeNewUniqueMethodMessage)msg;
+
+      ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), true);
+      if (cls == null)
+      {
+        // TODO: Just create the underlying class maybe?
+        break;
+      }
+      String newMethodName = ModuleCodeRepository.findUniqueName("method", (name) -> !cls.hasMethodWithName(name));
+      FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("void"), newMethodName);
+      if (requestMsg.isStatic()) sig.setIsStatic(true);
+      if (requestMsg.isConstructor()) sig.setIsConstructor(true);
+      FunctionDescription func = new FunctionDescription(
+          sig,
+          new StatementContainer());
+      cls.addMethod(func);
+
+      FunctionDescriptionJson fdJson = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      fdJson.setAsFunctionDescription(func);
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), fdJson));
+      break;
+    }
+    case SAVE_MODULE_TO_STRING:
+    {
+      CodeRepositoryMessages.SaveModuleToStringMessage requestMsg = (CodeRepositoryMessages.SaveModuleToStringMessage)msg;
+      StringBuilder out = new StringBuilder();
+      try {
+        repo.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), requestMsg.isSaveClasses());
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), out.toString()));
+      break;
+    }
+    case GET_CLASS_DESCRIPTION:
+    {
+      CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
+      ClassDescription cls = repo.findClassWithName(nameMsg.getName(), true);
+
+      ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      try {
+        clJson.setAsClassDescription(cls);
+      } 
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(nameMsg.getRequestId(), clJson));
       break;
     }
     default:

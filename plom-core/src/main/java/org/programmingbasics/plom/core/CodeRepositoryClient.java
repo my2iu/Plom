@@ -269,10 +269,15 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     localRepo.loadClassIntoModule(lexer);
   }
   
-  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
+//  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
+//  {
+//    toFix();
+//    localRepo.saveModule(out, saveClasses);
+//  }
+  
+  public Promise<String> saveModuleToString(boolean saveClasses)
   {
-    toFix();
-    localRepo.saveModule(out, saveClasses);
+    return languageServer.sendSaveModuleToString(saveClasses);
   }
   
   public boolean isNoStdLibFlag()
@@ -297,12 +302,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     localRepo.setChainedRepository(other);
   }
   
-  public static String findUniqueName(String base, Function<String, Boolean> isNameAvailable)
-  {
-    toFix();
-    return ModuleCodeRepository.findUniqueName(base, isNameAvailable);
-  }
-
   public List<ClassDescription> getDeletedClasses()
   {
     toFix();
@@ -341,7 +340,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   public ClassDescription findClassWithName(String name)
   {
     toFix();
-    return localRepo.findClassWithName(name);
+    return localRepo.findClassWithName(name, false);
   }
   
   public FunctionDescription getFunctionWithName(String name)
@@ -393,8 +392,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public void setVariableDeclarationCode(StatementContainer code)
   {
-    toFix();
-    localRepo.setVariableDeclarationCode(code);
+    languageServer.sendSetVariableDeclarationCode(code);
   }
 
   public Promise<StatementContainer> getImportedVariableDeclarationCode()
@@ -402,5 +400,24 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendGetImportedVariableDeclarationCode();
   }
   
+  public Promise<FunctionDescription> makeUniqueEmptyFunction()
+  {
+    return languageServer.sendMakeNewEmptyFunction();
+  }
 
+  public Promise<ClassDescription> makeNewUniqueClass()
+  {
+    return languageServer.sendMakeNewEmptyClass();
+  }
+
+  public Promise<FunctionDescription> makeNewUniqueMethod(ClassDescription cls, boolean isStatic, boolean isConstructor)
+  {
+    return languageServer.sendMakeNewEmptyMethod(cls, isStatic, isConstructor);
+  }
+
+  public Promise<ClassDescription> reloadClass(ClassDescription cl)
+  {
+    return languageServer.sendFindClass(cl.getName());
+  }
+  
 }

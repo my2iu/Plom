@@ -494,27 +494,25 @@ public class Main
     }
   }
   
-  public String getModuleAsString() throws IOException 
+  public Promise<String> getModuleAsString() throws IOException 
   {
-    StringBuilder out = new StringBuilder();
-    getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
-    return out.toString();
+    return getRepository().saveModuleToString(true);
   }
   
   /** Packages up code in a single .js file that's suitable for running in a web browser */
   public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment, String debuggerTargetOriginUrl) throws IOException
   {
     // Get module contents as a string
-    StringBuilder out = new StringBuilder();
-    getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), true);
-    
-    // Wrap string in js
-    return WebHelpersShunt.promiseResolve("plomEngineLoad = plomEngineLoad.then((repository) => {\n"
-        + (withDebugEnvironment ? "org.programmingbasics.plom.core.Main.configureDebuggerEnvironmentAt('" + debuggerTargetOriginUrl + "');\n" : "")
-        + "var code = `" + PlomTextWriter.escapeTemplateLiteral(out.toString()) + "`;\n"
-        + "var skipPromise = loadCodeStringIntoExecutableRepository(code, repository);\n"
-        + "return repository;\n"
-        + "});\n");
+    return getRepository().saveModuleToString(true)
+      .<String>thenNow((code) -> {
+        // Wrap string in js
+        return "plomEngineLoad = plomEngineLoad.then((repository) => {\n"
+            + (withDebugEnvironment ? "org.programmingbasics.plom.core.Main.configureDebuggerEnvironmentAt('" + debuggerTargetOriginUrl + "');\n" : "")
+            + "var code = `" + PlomTextWriter.escapeTemplateLiteral(code) + "`;\n"
+            + "var skipPromise = loadCodeStringIntoExecutableRepository(code, repository);\n"
+            + "return repository;\n"
+            + "});\n";
+      });
   }
 
   public WebHelpers.Promise<String> getModuleWithFilesAsString() throws IOException 
@@ -541,10 +539,12 @@ public class Main
 
   public WebHelpers.Promise<Void> saveModuleAndClasses(SaveModuleCallback moduleSaver, SaveClassCallback classSaver, DeleteClassCallback classDeleter)
   {
+    Promise<Void> moduleSaved = getRepository().saveModuleToString(false)
+        .thenNow((code) -> {
+          moduleSaver.saveModule(code);
+          return null;
+        });
     try {
-      StringBuilder out = new StringBuilder();
-      getRepository().saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), false);
-      moduleSaver.saveModule(out.toString());
       
       // Delete any classes that no longer exist
       for (ClassDescription cls: getRepository().getDeletedClasses())
@@ -567,7 +567,7 @@ public class Main
       {
         if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
         {
-          out = new StringBuilder();
+          StringBuilder out = new StringBuilder();
           ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
           classSaver.saveClass(cls.getName(), out.toString());
         }
@@ -576,7 +576,7 @@ public class Main
       // Ignore errors
       e.printStackTrace();
     }
-    return WebHelpers.PromiseClass.<Void>resolve(null);
+    return moduleSaved;
   }
   
   /**

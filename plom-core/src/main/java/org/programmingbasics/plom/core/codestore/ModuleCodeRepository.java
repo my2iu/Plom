@@ -673,12 +673,16 @@ public class ModuleCodeRepository
     return false;
   }
   
-  public ClassDescription findClassWithName(String name)
+  public ClassDescription findClassWithName(String name, boolean withImports)
   {
     for (ClassDescription c: classes)
     {
       if (c.getName().equals(name)) 
         return c;
+    }
+    if (withImports && chainedRepository != null)
+    {
+      return chainedRepository.findClassWithName(name, withImports);
     }
     return null;
   }
