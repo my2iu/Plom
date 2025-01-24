@@ -10,7 +10,6 @@ import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.Token.ParameterToken;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
@@ -20,7 +19,6 @@ import org.programmingbasics.plom.core.interpreter.UnboundType;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.util.ArrayOf;
-import elemental.util.ArrayOfString;
 import elemental.util.Collections;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
@@ -185,6 +183,22 @@ public class CodeRepositoryMessages
     return PlomTextReader.readToken(lexer);
   }
 
+  private static String signatureToString(FunctionSignature sig) throws IOException
+  {
+    StringBuilder strBuilder = new StringBuilder();
+    PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
+    ModuleCodeRepository.saveFunctionSignature(out, sig);
+    return strBuilder.toString();
+  }
+  
+  public static FunctionSignature stringToSignature(String str) throws PlomReadException
+  {
+    if (str == null) return null;
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(str);
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    return ModuleCodeRepository.loadFunctionSignature(lexer);
+  }
+  
   @JsType(isNative = true)
   public static interface IsStdLibReplyMessage extends ReplyMessage
   {
@@ -270,11 +284,7 @@ public class CodeRepositoryMessages
     {
       try {
         if (fd == null) return;
-        StringBuilder strBuilder = new StringBuilder();
-        PlomCodeOutputFormatter out = new PlomCodeOutputFormatter(strBuilder);
-        ModuleCodeRepository.saveFunctionSignature(out, fd.sig);
-        setSignature(strBuilder.toString());
-
+        setSignature(signatureToString(fd.sig));
         setImported(fd.isImported);
         setCode(statementContainerToString(fd.code));
       } 
@@ -286,11 +296,8 @@ public class CodeRepositoryMessages
     @JsOverlay default FunctionDescription getAsFunctionDescription() throws PlomReadException
     {
       if (getSignature() == null) return null;
-      
-      PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(getSignature());
-      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
-      FunctionSignature sig = ModuleCodeRepository.loadFunctionSignature(lexer);
 
+      FunctionSignature sig = stringToSignature(getSignature());
       StatementContainer code = stringToStatementContainer(getCode());
       FunctionDescription fd = new FunctionDescription(sig, code);
       fd.setImported(isImported());
@@ -425,6 +432,23 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface ChangeFunctionSignatureRequest extends RequestMessage
+  {
+    @JsProperty(name = "oldSig") String getOldSignature();
+    @JsProperty(name = "oldSig") void setOldSignature(String sig);
+    @JsProperty(name = "newSig") String getNewSignature();
+    @JsProperty(name = "newSig") void setNewSignature(String sig);
+  }
+
+  public static ChangeFunctionSignatureRequest createChangeFunctionSignatureRequest(String id, FunctionSignature newSig, FunctionSignature oldSig) throws IOException
+  {
+    ChangeFunctionSignatureRequest msg = (ChangeFunctionSignatureRequest)createRequestMessage(MessageType.CHANGE_FUNCTION_SIGNATURE, id);
+    msg.setOldSignature(signatureToString(oldSig));
+    msg.setNewSignature(signatureToString(newSig));
+    return msg;
+  }
+
   public static enum MessageType
   {
     REPLY("reply"), 
@@ -442,7 +466,8 @@ public class CodeRepositoryMessages
     MAKE_NEW_EMPTY_FUNCTION("makeNewEmptyFunction"),
     MAKE_NEW_EMPTY_CLASS("makeNewEmptyClass"),
     MAKE_NEW_EMPTY_METHOD("makeNewEmptyMethod"),
-    SAVE_MODULE_TO_STRING("saveModuleToString");
+    SAVE_MODULE_TO_STRING("saveModuleToString"),
+    CHANGE_FUNCTION_SIGNATURE("changeFunctionSignature");
     private MessageType(String val)
     {
       this.value = val;

@@ -67,6 +67,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     Browser.getWindow().getConsole().log("CodeRepositoryClient unfixed call");
   };
 
+  private static void toFixLater() 
+  {
+    Browser.getWindow().getConsole().log("CodeRepositoryClient unfixed call, but will fix later");
+  };
+
   private static void partialFix() 
   {
     Browser.getWindow().getConsole().log("CodeRepositoryClient partially fixed call");
@@ -93,7 +98,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public List<FileDescription> getAllExtraFilesSorted()
   {
-    toFix();
+    toFixLater();
     List<FileDescription> toReturn = new ArrayList<>();
     for (FileDescription f: extraFiles)
       toReturn.add(f);
@@ -111,14 +116,14 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public boolean hasExtraFile(String path)
   {
-    toFix();
+    toFixLater();
     return extraFiles.stream().anyMatch((file) -> file.getPath().equals(path));
   }
 
   /** Refresh the internal list of extra files in the module */
   public void refreshExtraFiles(ExtraFilesManager.EmptyCallback callback)
   {
-    toFix();
+    toFixLater();
     if (fileManager == null) 
     {
       callback.call();
@@ -140,7 +145,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public void setExtraFilesManager(ExtraFilesManager newFileManager)
   {
-    toFix();
+    toFixLater();
     fileManager = newFileManager; 
   }
   
@@ -289,11 +294,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return cachedIsNoStdLib;
   }
   
-  public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
-  {
-    toFix();
-    localRepo.loadBuiltInPrimitives(stdLibClasses, stdLibMethods);
-  }
+//  public void loadBuiltInPrimitives(List<StdLibClass> stdLibClasses, List<StdLibMethod> stdLibMethods)
+//  {
+//    toFix();
+//    localRepo.loadBuiltInPrimitives(stdLibClasses, stdLibMethods);
+//  }
 
 
   public void setChainedRepository(ModuleCodeRepository other)
@@ -319,11 +324,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendGetAllClassesSorted();
   }
 
-  public ClassDescription addClassAndResetIds(String name)
-  {
-    toFix();
-    return localRepo.addClassAndResetIds(name);
-  }
+//  public ClassDescription addClassAndResetIds(String name)
+//  {
+//    toFix();
+//    return localRepo.addClassAndResetIds(name);
+//  }
 
   public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
   {
@@ -331,11 +336,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     localRepo.deleteClassAndResetIds(module, id);
   }
 
-  public boolean hasClassWithName(String name)
-  {
-    toFix();
-    return localRepo.hasClassWithName(name);
-  }
+//  public boolean hasClassWithName(String name)
+//  {
+//    toFix();
+//    return localRepo.hasClassWithName(name);
+//  }
 
   public ClassDescription findClassWithName(String name)
   {
@@ -356,19 +361,20 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<Void> saveFunctionCode(String name, StatementContainer code)
   {
-    partialFix();
-    localRepo.getFunctionDescription(name).code = code;
+//    partialFix();
+//    localRepo.getFunctionDescription(name).code = code;
     // TODO: synchronize things with the promise
     return languageServer.sendSaveFunctionCode(name, code);
   }
   
-  public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)
+  public Promise<Void> changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldFn)
   {
-    toFix();
-    localRepo.changeFunctionSignature(newSig, oldSig);
+    Promise<Void> toReturn = languageServer.sendChangeFunctionSignature(newSig, oldFn.sig);
+    oldFn.sig = newSig;
+    return toReturn;
   }
 
-  public void addFunctionAndResetIds(FunctionDescription func)
+  public void test_addFunctionAndResetIds(FunctionDescription func)
   {
     toFix();
     localRepo.addFunctionAndResetIds(func);

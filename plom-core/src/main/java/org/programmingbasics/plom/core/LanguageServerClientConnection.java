@@ -17,6 +17,7 @@ import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageT
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ReplyMessage;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 
 import elemental.events.MessageEvent;
 import elemental.html.Worker;
@@ -296,6 +297,23 @@ public class LanguageServerClientConnection
         throw new IllegalArgumentException(e);
       }
     });
+  }
+
+  public Promise<Void> sendChangeFunctionSignature(FunctionSignature newSig,
+      FunctionSignature oldSig)
+  {
+    String requestId = getNextId();
+    try {
+      worker.postMessage(CodeRepositoryMessages.createChangeFunctionSignatureRequest(requestId, newSig, oldSig));
+      return waitForReplyFor(requestId).thenNow((msg) -> {
+        CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+        return null;
+      });
+    }
+    catch (IOException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
   }
 
 }

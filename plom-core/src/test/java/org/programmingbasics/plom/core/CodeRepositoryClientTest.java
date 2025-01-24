@@ -34,8 +34,8 @@ public class CodeRepositoryClientTest
     StringBuilder strBuilder = new StringBuilder();
 
     CodeRepositoryClient repository = new CodeRepositoryClient(null);
-    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.addFunctionAndResetIds(new FunctionDescription(
+//    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    repository.test_addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(

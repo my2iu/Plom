@@ -292,6 +292,21 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(nameMsg.getRequestId(), clJson));
       break;
     }
+    case CHANGE_FUNCTION_SIGNATURE:
+    {
+      CodeRepositoryMessages.ChangeFunctionSignatureRequest requestMsg = (CodeRepositoryMessages.ChangeFunctionSignatureRequest)msg;
+      try {
+        FunctionSignature oldSig = CodeRepositoryMessages.stringToSignature(requestMsg.getOldSignature());
+        FunctionSignature newSig = CodeRepositoryMessages.stringToSignature(requestMsg.getNewSignature());
+        repo.getFunctionDescription(oldSig.getLookupName()).sig = newSig;
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;
