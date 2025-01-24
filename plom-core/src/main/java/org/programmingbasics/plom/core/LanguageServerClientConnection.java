@@ -316,6 +316,23 @@ public class LanguageServerClientConnection
     }
   }
 
+  public Promise<Void> sendChangeMethodSignature(ClassDescription cls, FunctionSignature newSig,
+      FunctionSignature oldSig)
+  {
+    String requestId = getNextId();
+    try {
+      worker.postMessage(CodeRepositoryMessages.createChangeMethodSignatureRequest(requestId, cls.getName(), newSig, oldSig));
+      return waitForReplyFor(requestId).thenNow((msg) -> {
+        CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+        return null;
+      });
+    }
+    catch (IOException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   public Promise<Void> sendDeleteFunction(FunctionSignature sig)
   {
     String requestId = getNextId();
@@ -332,6 +349,60 @@ public class LanguageServerClientConnection
     worker.postMessage(CodeRepositoryMessages.createGetFromNameMessage(MessageType.DELETE_CLASS, requestId, cls.getName()));
     return waitForReplyFor(requestId).thenNow((msg) -> {
       CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+      return null;
+    });
+  }
+
+  public Promise<Void> sendUpdateClassBaseInfo(String className,
+      ClassDescription cl)
+  {
+    String requestId = getNextId();
+    try {
+      worker.postMessage(CodeRepositoryMessages.createUpdateClassBaseInfoRequest(requestId, className, cl));
+      return waitForReplyFor(requestId).thenNow((msg) -> {
+        CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+        return null;
+      });
+    }
+    catch (IOException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  public Promise<Void> sendDeleteClassMethod(ClassDescription cls,
+      FunctionDescription fn)
+  {
+    String requestId = getNextId();
+    try {
+      worker.postMessage(CodeRepositoryMessages.createDeleteClassMethodRequest(requestId, cls, fn));
+      return waitForReplyFor(requestId).thenNow((msg) -> {
+        CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+        return null;
+      });
+    }
+    catch (IOException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  public Promise<Void> sendSaveMethodCode(ClassDescription cls,
+      FunctionSignature sig, StatementContainer code)
+  {
+    String requestId = getNextId();
+    CodeRepositoryMessages.SaveMethodCodeMessage msg;
+    try
+    {
+      msg = CodeRepositoryMessages.createSaveMethodCodeMessage(requestId, cls.getName(), sig, code);
+      worker.postMessage(msg);
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+      return WebHelpersShunt.promiseResolve(null);
+    }
+    return waitForReplyFor(requestId).thenNow((reply) -> {
       return null;
     });
   }

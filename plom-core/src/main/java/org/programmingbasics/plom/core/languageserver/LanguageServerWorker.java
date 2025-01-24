@@ -324,6 +324,76 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, nameMsg.getRequestId()));
       break;
     }
+    case UPDATE_CLASS_BASE_INFO:
+    {
+      CodeRepositoryMessages.UpdateClassBaseInfoRequest requestMsg = (CodeRepositoryMessages.UpdateClassBaseInfoRequest)msg;
+      try {
+        String className = requestMsg.getLookupName();
+        ClassDescription newBaseInfo = requestMsg.getClassDescription().getAsClassDescription();
+        ClassDescription cls = repo.findClassWithName(className, false);
+        if (cls != null)
+        {
+          cls.updateBaseInfoFrom(newBaseInfo);
+        }
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+    case DELETE_CLASS_METHOD:
+    {
+      CodeRepositoryMessages.DeleteClassMethodRequest requestMsg = (CodeRepositoryMessages.DeleteClassMethodRequest)msg;
+      try {
+        ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
+        FunctionSignature sig = CodeRepositoryMessages.stringToSignature(requestMsg.getMethodSignature());
+        FunctionDescription fd = cls.findMethod(sig.getLookupName(), sig.isConstructor || sig.isStatic);
+        cls.deleteMethodAndResetIds(fd.id);
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+    case CHANGE_METHOD_SIGNATURE:
+    {
+      CodeRepositoryMessages.ChangeMethodSignatureRequest requestMsg = (CodeRepositoryMessages.ChangeMethodSignatureRequest)msg;
+      try {
+        ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
+        FunctionSignature oldSig = CodeRepositoryMessages.stringToSignature(requestMsg.getOldSignature());
+        FunctionSignature newSig = CodeRepositoryMessages.stringToSignature(requestMsg.getNewSignature());
+        FunctionDescription fd = cls.findMethod(oldSig.getLookupName(), oldSig.isConstructor || oldSig.isStatic);
+        fd.sig = newSig;
+        cls.updateMethod(fd);
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+    case SAVE_METHOD_CODE:
+    {
+      CodeRepositoryMessages.SaveMethodCodeMessage requestMsg = (CodeRepositoryMessages.SaveMethodCodeMessage)msg;
+      try {
+        ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
+        FunctionSignature sig = CodeRepositoryMessages.stringToSignature(requestMsg.getSignature());
+        FunctionDescription fd = cls.findMethod(sig.getLookupName(), sig.isConstructor || sig.isStatic);
+        fd.code = requestMsg.getCodeStatementContainer();
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
+      break;
+    }
+
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;

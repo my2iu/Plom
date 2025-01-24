@@ -436,4 +436,34 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendFindClass(cl.getName());
   }
   
+  /** Updates the info in a class, but not the method information */
+  public Promise<Void> updateClassBaseInfo(String className, ClassDescription cl)
+  {
+    return languageServer.sendUpdateClassBaseInfo(className, cl);
+  }
+
+  public Promise<Void> deleteClassMethod(ClassDescription cls, FunctionDescription fn)
+  {
+    cls.deleteMethodAndResetIds(fn.id);
+    return languageServer.sendDeleteClassMethod(cls, fn);
+  }
+  
+  public Promise<Void> changeMethodSignature(ClassDescription cls, FunctionSignature newSig, FunctionDescription oldFn)
+  {
+    Promise<Void> toReturn = languageServer.sendChangeMethodSignature(cls, newSig, oldFn.sig);
+    oldFn.sig = newSig;
+    cls.updateMethod(oldFn);
+    return toReturn;
+  }
+
+  public Promise<Void> saveMethodCode(ClassDescription cls,
+      FunctionDescription method, StatementContainer code)
+  {
+    // Fill this in properly
+    method.code = code;
+    cls.updateMethod(method);
+    return languageServer.sendSaveMethodCode(cls, method.sig, code);
+
+  }
+
 }

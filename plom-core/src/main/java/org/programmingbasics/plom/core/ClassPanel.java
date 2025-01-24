@@ -67,7 +67,9 @@ public class ClassPanel
     nameAnchor.setValue(cls.getName());
     nameAnchor.addEventListener(Event.CHANGE, (e) -> {
       e.preventDefault();
+      String oldName = cls.getName();
       cls.setName(nameAnchor.getValue());
+      repository.updateClassBaseInfo(oldName, cls);
     }, false);
 
     // For deleting the whole class
@@ -95,7 +97,9 @@ public class ClassPanel
         (context) -> {},
         widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
     extendsField.setChangeListener((newType, isFinal) -> {
+      String oldName = cls.getName();
       cls.setSuperclass(UnboundType.fromToken(newType));
+      repository.updateClassBaseInfo(oldName, cls);
     });
     extendsField.render();
 
@@ -193,7 +197,9 @@ public class ClassPanel
         // necessary since the StatementContainer in the variable area
         // is set to the same object as the one in the repository, but
         // I'm doing an explicit update in case that changes)
+        String oldName = cls.getName();
         cls.setVariableDeclarationCode(variableArea.codeList);
+        repository.updateClassBaseInfo(oldName, cls);
         
         // Update error list
         variableArea.codeErrors.clear();
@@ -246,8 +252,11 @@ public class ClassPanel
       deleteAnchor.setClassName("plomUiRemoveButton");
       deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
         evt.preventDefault();
-        cls.deleteMethodAndResetIds(fn.id);
-        rebuildView(false);
+        repository.deleteClassMethod(cls, fn)
+          .thenNow((unused) -> {
+            rebuildView(false);
+            return null;
+          });
       }, false);
       DivElement div = doc.createDivElement();
       div.appendChild(a);

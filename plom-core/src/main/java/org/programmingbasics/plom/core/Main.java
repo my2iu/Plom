@@ -11,6 +11,7 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
@@ -494,9 +495,7 @@ public class Main
       }
       if (currentMethodBeingViewed != null)
      {
-        // Fill this in properly
-        currentMethodBeingViewed.code = codePanel.codeList;
-        currentMethodClassBeingViewed.updateMethod(currentMethodBeingViewed);
+        getRepository().saveMethodCode(currentMethodClassBeingViewed, currentMethodBeingViewed, codePanel.codeList);
       }
     }
   }
@@ -866,7 +865,11 @@ public class Main
     fillBreadcrumbForClass(breadcrumbEl, cls);
     
     closeCodePanelIfOpen();
-    showClassPanel(cls, isNew);
+    getRepository().reloadClass(cls)
+      .thenNow((refreshedClass) -> {
+        showClassPanel(refreshedClass, isNew);
+        return null;
+      });
   }
 
   void loadMethodCodeView(ClassDescription cls, FunctionDescription m)
@@ -1055,10 +1058,12 @@ public class Main
   {
     methodPanel = new MethodPanel(getMainDiv(), getRepository(), m.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
-      m.sig = newSig;
-      cls.updateMethod(m);
-      if (isFinal)
-        loadMethodCodeView(cls, m);
+      getRepository().changeMethodSignature(cls, newSig, m)
+        .thenNow((unused) -> {
+          if (isFinal)
+            loadMethodCodeView(cls, m);
+          return null;
+        });
     });
   }
 

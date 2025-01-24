@@ -370,6 +370,13 @@ public class ModuleCodeRepository
       return !methods.stream().allMatch(fn -> fn.sig.isBuiltIn);
     }
     public ClassDescription setImported(boolean isImported) { this.isImported = isImported; return this; }
+    public void updateBaseInfoFrom(ClassDescription newBaseInfo)
+    {
+      parent = newBaseInfo.parent;
+      name = newBaseInfo.name;
+      variableDeclarationCode = newBaseInfo.variableDeclarationCode;
+    }
+
   }
   
   /**

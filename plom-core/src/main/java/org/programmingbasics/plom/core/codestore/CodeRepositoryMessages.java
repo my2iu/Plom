@@ -233,6 +233,28 @@ public class CodeRepositoryMessages
   }
 
   @JsType(isNative = true)
+  public static interface SaveMethodCodeMessage extends RequestMessage
+  {
+    @JsProperty(name = "class") String getClassName();
+    @JsProperty(name = "class") void setClassName(String className);
+    @JsProperty(name = "sig") String getSignature();
+    @JsProperty(name = "sig") void setSignature(String sig);
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
+    @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
+  }
+
+  public static SaveMethodCodeMessage createSaveMethodCodeMessage(String id, String className, FunctionSignature sig, StatementContainer code) throws IOException
+  {
+    SaveMethodCodeMessage msg = (SaveMethodCodeMessage)createRequestMessage(MessageType.SAVE_METHOD_CODE, id);
+    msg.setClassName(className);
+    msg.setSignature(signatureToString(sig));
+    msg.setCodeStatementContainer(code);
+    return msg;
+  }
+
+  @JsType(isNative = true)
   public static interface SingleObjectReplyMessage<T> extends ReplyMessage
   {
     @JsProperty(name = "payload") T getPayload();
@@ -351,6 +373,18 @@ public class CodeRepositoryMessages
       setBuiltIn(cl.isBuiltIn);
       setImported(cl.isImported);
     }
+    @JsOverlay default void setAsClassDescriptionWithoutMethods(ClassDescription cl) throws IOException
+    {
+      setName(cl.getName());
+      setOriginalName(cl.getOriginalName());
+      UnboundTypeJson parent = (UnboundTypeJson)createEmptyObject();
+      parent.setAsUnboundType(cl.parent);
+      setParent(parent);
+      setMethods(Collections.arrayOf());
+      setVariableDeclarationCode(statementContainerToString(cl.getVariableDeclarationCode()));
+      setBuiltIn(cl.isBuiltIn);
+      setImported(cl.isImported);
+    }
   }
 
   @FunctionalInterface
@@ -449,6 +483,57 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface ChangeMethodSignatureRequest extends ChangeFunctionSignatureRequest
+  {
+    @JsProperty(name = "class") String getClassName();
+    @JsProperty(name = "class") void setClassName(String className);
+  }
+
+  public static ChangeFunctionSignatureRequest createChangeMethodSignatureRequest(String id, String className, FunctionSignature newSig, FunctionSignature oldSig) throws IOException
+  {
+    ChangeMethodSignatureRequest msg = (ChangeMethodSignatureRequest)createChangeFunctionSignatureRequest(id, newSig, oldSig);
+    msg.setTypeEnum(MessageType.CHANGE_METHOD_SIGNATURE);
+    msg.setClassName(className);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface UpdateClassBaseInfoRequest extends RequestMessage
+  {
+    @JsProperty(name = "name") String getLookupName();
+    @JsProperty(name = "name") void setLookupName(String name);
+    @JsProperty(name = "class") ClassDescriptionJson getClassDescription();
+    @JsProperty(name = "class") void setClassDescription(ClassDescriptionJson cl);
+  }
+
+  public static UpdateClassBaseInfoRequest createUpdateClassBaseInfoRequest(String id, String name, ClassDescription cl) throws IOException
+  {
+    UpdateClassBaseInfoRequest msg = (UpdateClassBaseInfoRequest)createRequestMessage(MessageType.UPDATE_CLASS_BASE_INFO, id);
+    msg.setLookupName(name);
+    ClassDescriptionJson json = (ClassDescriptionJson)createEmptyObject();
+    json.setAsClassDescriptionWithoutMethods(cl);
+    msg.setClassDescription(json);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface DeleteClassMethodRequest extends RequestMessage
+  {
+    @JsProperty(name = "class") String getClassName();
+    @JsProperty(name = "class") void setClassName(String name);
+    @JsProperty(name = "method") String getMethodSignature();
+    @JsProperty(name = "method") void setMethodSignature(String signature);
+  }
+
+  public static DeleteClassMethodRequest createDeleteClassMethodRequest(String id, ClassDescription cl, FunctionDescription fn) throws IOException
+  {
+    DeleteClassMethodRequest msg = (DeleteClassMethodRequest)createRequestMessage(MessageType.DELETE_CLASS_METHOD, id);
+    msg.setClassName(cl.getName());
+    msg.setMethodSignature(signatureToString(fn.sig));
+    return msg;
+  }
+
   public static enum MessageType
   {
     REPLY("reply"), 
@@ -469,7 +554,11 @@ public class CodeRepositoryMessages
     SAVE_MODULE_TO_STRING("saveModuleToString"),
     CHANGE_FUNCTION_SIGNATURE("changeFunctionSignature"),
     DELETE_FUNCTION("deleteFunction"),
-    DELETE_CLASS("deleteClass");
+    DELETE_CLASS("deleteClass"),
+    UPDATE_CLASS_BASE_INFO("updateClassBaseInfo"),
+    DELETE_CLASS_METHOD("deleteClassMethod"), 
+    CHANGE_METHOD_SIGNATURE("changeMethodSignature"), 
+    SAVE_METHOD_CODE("saveMethodCode");
     private MessageType(String val)
     {
       this.value = val;
