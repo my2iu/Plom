@@ -142,6 +142,7 @@ public class Main
     debuggerIdeParentWindowOrigin = ideParentWindowOrigin;
   }
 
+  public static boolean getDebuggerEnvironmentAvailableFlag() { return debuggerEnvironmentAvailableFlag; }
   
   /** The File System Access API uses async iterators, and GWT doesn't
    * work well with async iterators, so to work with them, we need some
@@ -286,34 +287,40 @@ public class Main
       }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() == null)
       {
-        ClassDescription cls = getRepository().findClassWithName(loc.getClassName());
-        if (cls != null)
-        {
-          onLocationJump.onJump();
-          loadClassView(cls, false);
-        }
+        getRepository().findClassWithName(loc.getClassName())
+          .thenNow((cls) -> {
+            if (cls != null)
+            {
+              onLocationJump.onJump();
+              loadClassView(cls, false);
+            }
+            return null;
+          });
       }
       else if (loc.getClassName() != null && loc.getFunctionMethodName() != null)
       {
-        ClassDescription cls = getRepository().findClassWithName(loc.getClassName());
-        if (cls != null)
-        {
-          FunctionDescription method = cls.findMethod(loc.getFunctionMethodName(), loc.isStatic()); 
-          if (method != null)
-          {
-            if (loc.getPosition() != null)
+        getRepository().findClassWithName(loc.getClassName())
+          .thenNow((cls) -> {
+            if (cls != null)
             {
-              onLocationJump.onJump();
-              loadMethodCodeView(cls, method);
-              codePanel.setCursorPosition(loc.getPosition());
+              FunctionDescription method = cls.findMethod(loc.getFunctionMethodName(), loc.isStatic()); 
+              if (method != null)
+              {
+                if (loc.getPosition() != null)
+                {
+                  onLocationJump.onJump();
+                  loadMethodCodeView(cls, method);
+                  codePanel.setCursorPosition(loc.getPosition());
+                }
+                else
+                {
+                  onLocationJump.onJump();
+                  loadMethodSignatureView(cls, method, false);
+                }
+              }
             }
-            else
-            {
-              onLocationJump.onJump();
-              loadMethodSignatureView(cls, method, false);
-            }
-          }
-        }
+            return null;
+          });
       }
     });
     return debugConnection;
@@ -543,39 +550,59 @@ public class Main
         .thenNow((code) -> {
           moduleSaver.saveModule(code);
           return null;
+        })
+        .then((unused) -> getRepository().getDeletedClasses())
+        .thenNow((deletedClasses) -> {
+          // Delete any classes that no longer exist
+          for (ClassDescription cls: deletedClasses)
+          {
+            if (cls.getOriginalName() == null) continue;
+            classDeleter.deleteClass(cls.getOriginalName());
+          }
+          return null;
+        })
+        .then((unused) -> getRepository().getClasses())
+        .thenNow((classes) -> {
+          for (ClassDescription cls: classes)
+          {
+            if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+            {
+              if (cls.getOriginalName() == null) continue;
+              if (cls.getOriginalName().equals(cls.getName())) continue;
+              classDeleter.deleteClass(cls.getOriginalName());
+            }
+          }
+          for (ClassDescription cls: classes)
+          {
+            if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+            {
+              if (cls.getOriginalName() == null) continue;
+              if (cls.getOriginalName().equals(cls.getName())) continue;
+              classDeleter.deleteClass(cls.getOriginalName());
+            }
+          }
+          return null;
+        })
+        .then((unused) -> getRepository().getClasses())
+        .thenNow((classes) -> {
+          // Save all classes
+          try {
+            for (ClassDescription cls: classes)
+            {
+              if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
+              {
+                StringBuilder out = new StringBuilder();
+                ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
+                classSaver.saveClass(cls.getName(), out.toString());
+              }
+            }
+          } catch (IOException e) {
+            // Ignore errors
+            e.printStackTrace();
+          }
+          return null;
         });
-    try {
-      
-      // Delete any classes that no longer exist
-      for (ClassDescription cls: getRepository().getDeletedClasses())
-      {
-        if (cls.getOriginalName() == null) continue;
-        classDeleter.deleteClass(cls.getOriginalName());
-      }
-      for (ClassDescription cls: getRepository().getClasses())
-      {
-        if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
-        {
-          if (cls.getOriginalName() == null) continue;
-          if (cls.getOriginalName().equals(cls.getName())) continue;
-          classDeleter.deleteClass(cls.getOriginalName());
-        }
-      }
-      
-      // Save all classes
-      for (ClassDescription cls: getRepository().getClasses())
-      {
-        if (!cls.isBuiltIn || cls.hasNonBuiltInMethods())
-        {
-          StringBuilder out = new StringBuilder();
-          ModuleCodeRepository.saveClass(new PlomTextWriter.PlomCodeOutputFormatter(out), cls);
-          classSaver.saveClass(cls.getName(), out.toString());
-        }
-      }
-    } catch (IOException e) {
-      // Ignore errors
-      e.printStackTrace();
-    }
+
     return moduleSaved;
   }
   

@@ -166,8 +166,11 @@ public class GlobalsPanel implements AutoCloseable
         deleteAnchor.getStyle().setDisplay(Display.NONE);
       deleteAnchor.addEventListener(Event.CLICK, (evt) -> {
         evt.preventDefault();
-        repository.deleteFunctionAndResetIds(fnName.module, fnName.id);
-        rebuildView();
+        repository.deleteFunction(fnName.sig)
+          .thenNow((unused) -> {
+            rebuildView();
+            return null;
+          });
       }, false);
       div.appendChild(a);
       div.appendChild(doc.createTextNode(" "));

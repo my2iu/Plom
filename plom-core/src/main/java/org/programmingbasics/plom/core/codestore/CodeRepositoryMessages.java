@@ -467,7 +467,9 @@ public class CodeRepositoryMessages
     MAKE_NEW_EMPTY_CLASS("makeNewEmptyClass"),
     MAKE_NEW_EMPTY_METHOD("makeNewEmptyMethod"),
     SAVE_MODULE_TO_STRING("saveModuleToString"),
-    CHANGE_FUNCTION_SIGNATURE("changeFunctionSignature");
+    CHANGE_FUNCTION_SIGNATURE("changeFunctionSignature"),
+    DELETE_FUNCTION("deleteFunction"),
+    DELETE_CLASS("deleteClass");
     private MessageType(String val)
     {
       this.value = val;

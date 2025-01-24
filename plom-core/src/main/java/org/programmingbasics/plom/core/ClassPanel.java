@@ -73,8 +73,11 @@ public class ClassPanel
     // For deleting the whole class
     AnchorElement deleteClassAnchor = (AnchorElement)mainDiv.querySelector(".className a.delete_class");
     deleteClassAnchor.addEventListener(Event.CLICK, (evt) -> {
-      repository.deleteClassAndResetIds(cls.module, cls.id);
-      exitCallback.exit();
+      repository.deleteClass(cls)
+        .thenNow((unused) -> {
+          exitCallback.exit();
+          return null;
+        });
       evt.preventDefault();
     }, false);
     if (cls.isBuiltIn || cls.isImported)

@@ -307,6 +307,23 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
       break;
     }
+    case DELETE_FUNCTION:
+    {
+      CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
+      FunctionDescription fd = repo.getFunctionDescription(nameMsg.getName());
+      repo.deleteFunctionAndResetIds(fd.module, fd.id);
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, nameMsg.getRequestId()));
+      break;
+    }
+    case DELETE_CLASS:
+    {
+      CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
+      ClassDescription cls = repo.findClassWithName(nameMsg.getName(), false);
+      if (cls != null)
+        repo.deleteClassAndResetIds(cls.module, cls.id);
+      postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, nameMsg.getRequestId()));
+      break;
+    }
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;

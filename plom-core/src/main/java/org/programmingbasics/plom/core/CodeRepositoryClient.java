@@ -307,16 +307,16 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     localRepo.setChainedRepository(other);
   }
   
-  public List<ClassDescription> getDeletedClasses()
+  public Promise<List<ClassDescription>> getDeletedClasses()
   {
     toFix();
-    return localRepo.deletedClasses;
+    return WebHelpersShunt.promiseResolve(localRepo.deletedClasses);
   }
   
-  public List<ClassDescription> getClasses()
+  public Promise<List<ClassDescription>> getClasses()
   {
     toFix();
-    return localRepo.classes;
+    return WebHelpersShunt.promiseResolve(localRepo.classes);
   }
   
   public Promise<List<ClassDescription>> getAllClassesSorted()
@@ -330,10 +330,15 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 //    return localRepo.addClassAndResetIds(name);
 //  }
 
-  public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
+//  public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
+//  {
+//    toFix();
+//    localRepo.deleteClassAndResetIds(module, id);
+//  }
+  
+  public Promise<Void> deleteClass(ClassDescription cls)
   {
-    toFix();
-    localRepo.deleteClassAndResetIds(module, id);
+    return languageServer.sendDeleteClass(cls);
   }
 
 //  public boolean hasClassWithName(String name)
@@ -342,13 +347,13 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 //    return localRepo.hasClassWithName(name);
 //  }
 
-  public ClassDescription findClassWithName(String name)
+  public Promise<ClassDescription> findClassWithName(String name)
   {
     toFix();
-    return localRepo.findClassWithName(name, false);
+    return WebHelpersShunt.promiseResolve(localRepo.findClassWithName(name, false));
   }
   
-  public FunctionDescription getFunctionWithName(String name)
+  public FunctionDescription test_getFunctionWithName(String name)
   {
     toFix();
     return localRepo.getFunctionWithName(name);
@@ -385,11 +390,16 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendGetAllFunctionsSorted();
   }
   
-  public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
+  public Promise<Void> deleteFunction(FunctionSignature sig)
   {
-    toFix();
-    localRepo.deleteFunctionAndResetIds(module, id);
+    return languageServer.sendDeleteFunction(sig);
   }
+  
+//  public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
+//  {
+//    toFix();
+//    localRepo.deleteFunctionAndResetIds(module, id);
+//  }
   
   public Promise<StatementContainer> getVariableDeclarationCode()
   {

@@ -316,4 +316,24 @@ public class LanguageServerClientConnection
     }
   }
 
+  public Promise<Void> sendDeleteFunction(FunctionSignature sig)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGetFromNameMessage(MessageType.DELETE_FUNCTION, requestId, sig.getLookupName()));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+      return null;
+    });
+  }
+
+  public Promise<Void> sendDeleteClass(ClassDescription cls)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGetFromNameMessage(MessageType.DELETE_CLASS, requestId, cls.getName()));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
+      return null;
+    });
+  }
+
 }

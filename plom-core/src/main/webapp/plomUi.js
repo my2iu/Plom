@@ -97,7 +97,7 @@ function setupPlomUi() {
 	function runPlomStandalone(repository)
 	{
 		var errorLogger;
-		if (Main.debuggerEnvironmentAvailableFlag) {
+		if (Main.getDebuggerEnvironmentAvailableFlag()) {
 			var debuggerEnv = Main.createDebuggerEnvironment();
 			debuggerEnv.startConnection();
 			errorLogger = debuggerEnv.getErrorLogger();
@@ -236,6 +236,7 @@ function setupPlomUi() {
 		var runHtmlEl = document.querySelector('a.runhtmlbutton');
 		runHtmlEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			main.saveCodeToRepository();
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 			// Register a service worker that can serve data as if
 			// it were a web page sent from a server (even though it's
