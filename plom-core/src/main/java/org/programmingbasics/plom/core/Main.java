@@ -451,9 +451,7 @@ public class Main
                           }
                           else
                           {
-                            PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(code);
-                            PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
-                            newRepo.loadClassIntoModule(lexer);
+                            newRepo.loadClassStringIntoModule(code);
                           }
                         } catch (PlomReadException e)
                         {

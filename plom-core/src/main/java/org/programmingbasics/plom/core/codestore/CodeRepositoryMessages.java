@@ -119,6 +119,13 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  public static LoadModuleMessage createLoadClassMessage(String id, String code)
+  {
+    LoadModuleMessage msg = (LoadModuleMessage)createRequestMessage(MessageType.LOAD_CLASS, id);
+    msg.setCode(code);
+    return msg;
+  }
+
   @JsType(isNative = true)
   public static interface GetFromNameMessage extends RequestMessage
   {
@@ -437,12 +444,15 @@ public class CodeRepositoryMessages
   {
     @JsProperty(name = "saveClasses") boolean isSaveClasses();
     @JsProperty(name = "saveClasses") void setSaveClasses(boolean saveClasses);
+    @JsProperty(name = "open") boolean isOpen();
+    @JsProperty(name = "open") void setOpen(boolean open);
   }
 
-  public static SaveModuleToStringMessage createSaveModuleToStringMessage(String id, boolean saveClasses)
+  public static SaveModuleToStringMessage createSaveModuleToStringMessage(String id, boolean saveClasses, boolean isOpen)
   {
     SaveModuleToStringMessage msg = (SaveModuleToStringMessage)createRequestMessage(MessageType.SAVE_MODULE_TO_STRING, id);
     msg.setSaveClasses(saveClasses);
+    msg.setOpen(isOpen);
     return msg;
   }
 
@@ -558,7 +568,8 @@ public class CodeRepositoryMessages
     UPDATE_CLASS_BASE_INFO("updateClassBaseInfo"),
     DELETE_CLASS_METHOD("deleteClassMethod"), 
     CHANGE_METHOD_SIGNATURE("changeMethodSignature"), 
-    SAVE_METHOD_CODE("saveMethodCode");
+    SAVE_METHOD_CODE("saveMethodCode"), 
+    LOAD_CLASS("loadClass");
     private MessageType(String val)
     {
       this.value = val;

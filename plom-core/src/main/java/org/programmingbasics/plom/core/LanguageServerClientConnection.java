@@ -89,6 +89,19 @@ public class LanguageServerClientConnection
     worker.postMessage(CodeRepositoryMessages.createLoadModuleMessage(requestId, codeStr));
     return waitForReplyFor(requestId);
   }
+  
+  public Promise<Void> sendLoadClass(String code)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createLoadClassMessage(requestId, code));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.StatusReplyMessage statusReply = (CodeRepositoryMessages.StatusReplyMessage)reply;
+      if (!statusReply.isOk())
+        throw new RuntimeException(statusReply.getErrorMessage());
+      return null;
+    });
+  }
+
 
   public Promise<FunctionDescription> sendGetFunctionDescription(String name)
   {
@@ -273,10 +286,10 @@ public class LanguageServerClientConnection
     });
   }
 
-  public Promise<String> sendSaveModuleToString(boolean saveClasses)
+  public Promise<String> sendSaveModuleToString(boolean saveClasses, boolean isOpen)
   {
     String requestId = getNextId();
-    worker.postMessage(CodeRepositoryMessages.createSaveModuleToStringMessage(requestId, saveClasses));
+    worker.postMessage(CodeRepositoryMessages.createSaveModuleToStringMessage(requestId, saveClasses, isOpen));
     return waitForReplyFor(requestId).thenNow((reply) -> {
       CodeRepositoryMessages.SingleObjectReplyMessage<String> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<String>)reply;
       return objReply.getPayload();
@@ -406,5 +419,4 @@ public class LanguageServerClientConnection
       return null;
     });
   }
-
 }

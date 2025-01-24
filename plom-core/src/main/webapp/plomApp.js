@@ -30,9 +30,9 @@ function createPlomRepositoryWithProjectCode(main, bridgeUrl, writeFileHandler)
                     .then((contents) => contents.text())
                     .then((code) => {
             if (filename == 'program.plom')
-                loadCodeStringIntoRepository(code, repo);
+                return loadCodeStringIntoRepository(code, repo);
             else
-                loadClassCodeStringIntoRepository(code, repo);
+                return loadClassCodeStringIntoRepository(code, repo);
             }))))
         .then((done) => {
             if (repo.isNoStdLibFlag)

@@ -92,10 +92,37 @@ public class LanguageServerWorker
           String peek = lex.peekLexInput();
           if ("file".equals(peek)) {
             // Ignore extra files, but it's okay if we encounter them
+            lex.expectToken("file");
+            lex.swallowOptionalNewlineToken();
+            String fileNameString = lex.lexInput();
+            final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
+            lex.swallowOptionalNewlineToken();
+            lex.expectToken("{");
+            String fileData = lex.lexBase64();
+            lex.swallowOptionalNewlineToken();
+            lex.expectToken("}");
+            lex.swallowOptionalNewlineToken();
             return true;
           }
           return false;
         });
+        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), true, null));
+      } 
+      catch (PlomReadException e)
+      {
+        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), false, e.getMessage()));
+        e.printStackTrace();
+      }
+      break;
+    }
+    case LOAD_CLASS:
+    {
+      CodeRepositoryMessages.LoadModuleMessage loadModuleMsg = (CodeRepositoryMessages.LoadModuleMessage)msg;
+      PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(loadModuleMsg.getCode());
+      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+      
+      try {
+        repo.loadClassIntoModule(lexer);
         postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), true, null));
       } 
       catch (PlomReadException e)
@@ -267,7 +294,10 @@ public class LanguageServerWorker
       CodeRepositoryMessages.SaveModuleToStringMessage requestMsg = (CodeRepositoryMessages.SaveModuleToStringMessage)msg;
       StringBuilder out = new StringBuilder();
       try {
-        repo.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), requestMsg.isSaveClasses());
+        if (requestMsg.isOpen())
+          repo.saveOpenModule(new PlomTextWriter.PlomCodeOutputFormatter(out), requestMsg.isSaveClasses());
+        else
+          repo.saveModule(new PlomTextWriter.PlomCodeOutputFormatter(out), requestMsg.isSaveClasses());
       }
       catch (IOException e)
       {

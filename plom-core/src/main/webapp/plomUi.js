@@ -10,16 +10,12 @@ function setupPlomUi() {
 	const SimpleInterpreter = org.programmingbasics.plom.core.interpreter.SimpleInterpreter;
 	const RunException = org.programmingbasics.plom.core.interpreter.RunException;
 	const UnboundType = org.programmingbasics.plom.core.interpreter.UnboundType;
-	// Used to store whether a Plom object has a JS equivalent/proxy
-	const toJS = Symbol();
-	// Used to store whether a JS object has a Plom equivalent/proxy
-	const toPlom = Symbol();
 	// Flag that we set when we're running inside the Plom interpreter. This is useful to differentiate
 	// these two situations:
 	// 1. when we have reentered or were reentrant when calling from Plom to Js and back to Plom 
 	//   vs.
 	// 2. when we've called into Plom, set an event handler, exited, and then called into Plom again
-	var isInsidePlomCode = false;
+	var isInsidePlomCode = {inside: false};
 	// Pass in some external JS code for working with async iterators since GWT can't handle them natively
 	Main.setAsyncIteratorToArray(async (asyncFiles) => {
 		var collectedFiles = [];
@@ -74,13 +70,13 @@ function setupPlomUi() {
 			var code = Main.makeEntryPointCodeToInvokeMain();
 			var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 			terp.setErrorLogger(errorLogger);
-			isInsidePlomCode = true;
+			isInsidePlomCode.inside = true;
 			try {
 				terp.runNoReturn(function(scope, coreTypes) {
 					StandardLibrary.createGlobals(terp, scope, coreTypes);
 					scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
 	  
-					loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
+					loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value, UnboundType, SimpleInterpreter, isInsidePlomCode);
 				});
 			}
 			catch (err)
@@ -90,7 +86,7 @@ function setupPlomUi() {
 			}
 			finally
 			{
-				isInsidePlomCode = false;
+				isInsidePlomCode.inside = false;
 			}
 		});
 	}
@@ -109,13 +105,13 @@ function setupPlomUi() {
 		var code = Main.makeEntryPointCodeToInvokeMain();
 		var terp = new org.programmingbasics.plom.core.interpreter.SimpleInterpreter(code);
 		terp.setErrorLogger(errorLogger);
-		isInsidePlomCode = true;
+		isInsidePlomCode.inside = true;
 		try {
 			terp.runNoReturn(function(scope, coreTypes) {
 				StandardLibrary.createGlobals(terp, scope, coreTypes);
 				scope.setParent(new org.programmingbasics.plom.core.codestore.RepositoryScope(repository, coreTypes, errorLogger));
   
-				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value);
+				loadPlomStdlibPrimitivesIntoInterpreter(terp, coreTypes, CodeUnitLocation, Value, UnboundType, SimpleInterpreter, isInsidePlomCode);
 			});
 		}
 		catch (err)
@@ -125,7 +121,7 @@ function setupPlomUi() {
 		}
 		finally
 		{
-			isInsidePlomCode = false;
+			isInsidePlomCode.inside = false;
 		}
 	}
 	function loadCodeStringIntoExecutableRepository(code, repository)
@@ -140,9 +136,7 @@ function setupPlomUi() {
 	}
 	function loadClassCodeStringIntoRepository(code, repository)
 	{
-		var inStream = new PlomTextReader.StringTextReader(code);
-		var lexer = new PlomTextReader.PlomTextScanner(inStream);
-		repository.loadClassIntoModule(lexer);
+		return repository.loadClassStringIntoModule(code);
 	}
 	// Executable repository is a slimmed down repository specifically for
 	// just running the code (not for an IDE that searches and manipulates

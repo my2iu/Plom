@@ -164,46 +164,49 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public WebHelpers.Promise<Void> saveModuleWithExtraFiles(final PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses, WebHelpers.PromiseCreator promiseCreator, WebHelpers.Promise.All promiseAll, Function<ArrayBuffer, Uint8Array> bufToUint8Array) throws IOException
   {
-    toFix();
     // Save out the module contents
-    localRepo.saveOpenModule(out, saveClasses);
+    return languageServer.sendSaveModuleToString(saveClasses, true)
+      .then((code) -> {
+        out.append(code);
 
-    // Launch promises to get contents of files
-    List<String> filePaths = new ArrayList<>();
-    ArrayOf<WebHelpers.Promise<ArrayBuffer>> fileContentPromises = Collections.arrayOf();
-    for (FileDescription f: extraFiles)
-    {
-      filePaths.add(f.getPath());
-      fileContentPromises.push(promiseCreator.create((resolve, reject) -> {
-        fileManager.getFileContents(f.getPath(), contents -> {
-          resolve.accept(contents);
+        // Launch promises to get contents of files
+        List<String> filePaths = new ArrayList<>();
+        ArrayOf<WebHelpers.Promise<ArrayBuffer>> fileContentPromises = Collections.arrayOf();
+        for (FileDescription f: extraFiles)
+        {
+          filePaths.add(f.getPath());
+          fileContentPromises.push(promiseCreator.create((resolve, reject) -> {
+            fileManager.getFileContents(f.getPath(), contents -> {
+              resolve.accept(contents);
+            });
+          }));
+        }
+        
+        // Wait until all the file contents have been retrieved
+        return promiseAll.all(fileContentPromises).thenNow(fileContents -> {
+          for (int n = 0; n < filePaths.size(); n++)
+          {
+            out.token("file");
+
+            out.append(" ");
+            out.append("\"");
+            out.append(PlomTextWriter.escapeStringLiteral(filePaths.get(n)));
+            out.append("\"");
+
+            out.token("{");
+            ArrayBuffer buf = fileContents.get(n);
+            out.append(WebHelpers.Base64EncoderDecoder.encodeToString(bufToUint8Array.apply(buf), false));
+            out.append("}");
+            out.newline();
+          }
+          
+          // Close out the module
+          out.token("}");
+
+          return null;
         });
-      }));
-    }
-    
-    // Wait until all the file contents have been retrieved
-    return promiseAll.all(fileContentPromises).thenNow(fileContents -> {
-      for (int n = 0; n < filePaths.size(); n++)
-      {
-        out.token("file");
+      });
 
-        out.append(" ");
-        out.append("\"");
-        out.append(PlomTextWriter.escapeStringLiteral(filePaths.get(n)));
-        out.append("\"");
-
-        out.token("{");
-        ArrayBuffer buf = fileContents.get(n);
-        out.append(WebHelpers.Base64EncoderDecoder.encodeToString(bufToUint8Array.apply(buf), false));
-        out.append("}");
-        out.newline();
-      }
-      
-      // Close out the module
-      out.token("}");
-
-      return null;
-    });
     
   }
   
@@ -268,12 +271,12 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
         .thenNow(doneArray -> null);
   }
   
-  public void loadClassIntoModule(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+
+  public Promise<Void> loadClassStringIntoModule(String code) 
   {
-    toFix();
-    localRepo.loadClassIntoModule(lexer);
+    return languageServer.sendLoadClass(code);
   }
-  
+
 //  public void saveModule(PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses) throws IOException
 //  {
 //    toFix();
@@ -282,7 +285,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<String> saveModuleToString(boolean saveClasses)
   {
-    return languageServer.sendSaveModuleToString(saveClasses);
+    return languageServer.sendSaveModuleToString(saveClasses, false);
   }
   
   public boolean isNoStdLibFlag()
@@ -349,8 +352,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   public Promise<ClassDescription> findClassWithName(String name)
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.findClassWithName(name, false));
+    return languageServer.sendFindClass(name);
   }
   
   public FunctionDescription test_getFunctionWithName(String name)

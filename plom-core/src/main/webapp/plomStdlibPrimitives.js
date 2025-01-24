@@ -1,5 +1,10 @@
-function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUnitLocation, Value)
+function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUnitLocation, Value, UnboundType, SimpleInterpreter, isInsidePlomCode)
 {
+	// Used to store whether a Plom object has a JS equivalent/proxy
+	const toJS = Symbol();
+	// Used to store whether a JS object has a Plom equivalent/proxy
+	const toPlom = Symbol();
+
 	// Stuff for @JS object
 	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "get:"),
 			function(blockWait, machine) {
@@ -281,9 +286,9 @@ function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUni
 						var plomArgVals = [];
 						for (var n = 0; n < arguments.length; n++)
 							plomArgVals.push(Value.create(arguments[n], JsObjectType));
-						var isTopLevel = !isInsidePlomCode;
+						var isTopLevel = !isInsidePlomCode.inside;
 						try {
-							isInsidePlomCode = true;
+							isInsidePlomCode.inside = true;
 							var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
 							if (returnVal == null || returnVal.isNull()) 
 								return null;
@@ -303,7 +308,7 @@ function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUni
 						}
 						finally
 						{
-							isInsidePlomCode = !isTopLevel;
+							isInsidePlomCode.inside = !isTopLevel;
 						}
 					};
 					jsProxy[toPlom] = val;
