@@ -88,7 +88,7 @@ public class CodeWidgetInputPanels
     }
   }
   
-  <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     // A simple entry is triggered from the choices div, and the choices div
     // automatically shows the cursor overlay, so the only visibility that
@@ -99,7 +99,7 @@ public class CodeWidgetInputPanels
     simpleEntry.showFor(prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback);
   }
 
-  <U extends Token> void showSimpleEntryFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  <U extends Token> void showSimpleEntryFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     // A simple entry is triggered from the choices div, and the choices div
     // automatically shows the cursor overlay, so the only visibility that

@@ -35,7 +35,7 @@ public class SimpleEntry
   String tokenPrefix = "";
   String tokenDisplayPrefix = "";  // Prefix that is shown in the UI (may be different than the prefix that is prepended to the token)
   String tokenPostfix = "";
-  Suggester suggester;
+  SuggesterClient suggester;
   boolean isEdit;
   Element doNotCoverEl;
   Element doNotCoverPaddingEl;
@@ -119,7 +119,6 @@ public class SimpleEntry
   
   void refillSuggestions(String search)
   {
-    suggestionsContentContainer.setInnerHTML("");
     if (suggester == null) 
     {
       suggestionsContainer.getStyle().setDisplay(Display.NONE);
@@ -129,27 +128,34 @@ public class SimpleEntry
     {
       suggestionsContainer.getStyle().clearDisplay();
     }
-    List<String> suggestions = suggester.gatherSuggestions(search);
-    Document doc = suggestionsContentContainer.getOwnerDocument();
-    int maxSuggestions = 20;
-    if (suggester.shouldShowAllSuggestions())
-      maxSuggestions = 2000;
-    for (int n = Math.min(maxSuggestions, suggestions.size() - 1); n >= 0; n--)
-    {
-      final String suggestionText = suggestions.get(n); 
-      AnchorElement el = (AnchorElement)doc.createElement("a");
-      el.setHref("#");
-      DivElement div = doc.createDivElement();
-      el.appendChild(div);
-      div.setTextContent(suggestionText);
-      suggestionsContentContainer.appendChild(el);
-      el.addEventListener(Event.CLICK, (e) -> {
-        e.preventDefault();
-        simpleEntryInput(suggestionText, true);
-      }, false);
-    }
-    // Scroll to bottom of the list
-    suggestionsContainer.setScrollTop(suggestionsContainer.getScrollHeight());
+    suggester.gatherSuggestions(search, (suggestions) -> {
+      // Check if callback came back too late, and the suggestions panel
+      // isn't even on the screen any more
+      if (!Browser.getDocument().contains(suggestionsContentContainer))
+        return;
+      suggestionsContentContainer.setInnerHTML("");
+      Document doc = suggestionsContentContainer.getOwnerDocument();
+      int maxSuggestions = 20;
+      if (suggester.shouldShowAllSuggestions())
+        maxSuggestions = 2000;
+      for (int n = Math.min(maxSuggestions, suggestions.size() - 1); n >= 0; n--)
+      {
+        final String suggestionText = suggestions.get(n); 
+        AnchorElement el = (AnchorElement)doc.createElement("a");
+        el.setHref("#");
+        DivElement div = doc.createDivElement();
+        el.appendChild(div);
+        div.setTextContent(suggestionText);
+        suggestionsContentContainer.appendChild(el);
+        el.addEventListener(Event.CLICK, (e) -> {
+          e.preventDefault();
+          simpleEntryInput(suggestionText, true);
+        }, false);
+      }
+      // Scroll to bottom of the list
+      suggestionsContainer.setScrollTop(suggestionsContainer.getScrollHeight());
+      
+    });
   }
   
   private void hookSimpleEntry(DivElement simpleEntryDiv)
@@ -227,14 +233,14 @@ public class SimpleEntry
     }, false);
   }
   
-  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     showFor(prefix, prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
         (InputElement)container.querySelector("input"),
         (TextAreaElement)container.querySelector("textarea"));
   }
 
-  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     showFor(displayPrefix, prefix, postfix, prompt, initialValue, token, isEdit, suggester, callback, bkspCallback,
         (InputElement)container.querySelector("input"),
@@ -248,7 +254,7 @@ public class SimpleEntry
         (InputElement)container.querySelector("input"));
   }
 
-  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, Suggester suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
+  <U extends Token> void showFor(String displayPrefix, String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback, Element forInput, Element toHide)
   {
     if (prompt == null || prompt.isEmpty())
     {

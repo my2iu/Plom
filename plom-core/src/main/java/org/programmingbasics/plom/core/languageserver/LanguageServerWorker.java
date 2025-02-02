@@ -178,6 +178,42 @@ public class LanguageServerWorker
       }
       break;
     }
+    case GET_DELETED_CLASSES:
+    {
+      try {
+        CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+        List<ClassDescription> classes = repo.deletedClasses;
+        ArrayOf<ClassDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(classes, (cl) -> {
+          ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+          clJson.setAsClassDescription(cl);
+          return clJson;
+        });
+        postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      break;
+    }
+    case GET_MODULE_CLASSES:
+    {
+      try {
+        CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+        List<ClassDescription> classes = repo.classes;
+        ArrayOf<ClassDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(classes, (cl) -> {
+          ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+          clJson.setAsClassDescription(cl);
+          return clJson;
+        });
+        postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      break;
+    }
     case GET_ALL_FUNCTIONS_SORTED:
     {
       CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;

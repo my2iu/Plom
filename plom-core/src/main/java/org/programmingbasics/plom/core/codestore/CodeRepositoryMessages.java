@@ -555,6 +555,8 @@ public class CodeRepositoryMessages
     SAVE_FUNCTION_CODE("saveFunctionCode"),
     GET_ALL_CLASSES_SORTED("getAllClassesSorted"),
     GET_ALL_FUNCTIONS_SORTED("getAllFunctionsSorted"),
+    GET_DELETED_CLASSES("getDeletedClasses"),
+    GET_MODULE_CLASSES("getModuleClasses"),
     GET_VARDECL_CODE("getVarDeclCode"),
     GET_IMPORTED_VARDECL_CODE("getImportedVarDeclCode"),
     SET_VARDECL_CODE("setVarDeclCode"), 

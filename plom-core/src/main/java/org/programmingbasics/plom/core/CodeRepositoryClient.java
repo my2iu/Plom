@@ -312,14 +312,12 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<List<ClassDescription>> getDeletedClasses()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.deletedClasses);
+    return languageServer.sendGetDeletedClasses();
   }
   
   public Promise<List<ClassDescription>> getClasses()
   {
-    toFix();
-    return WebHelpersShunt.promiseResolve(localRepo.classes);
+    return languageServer.sendGetModuleClasses();
   }
   
   public Promise<List<ClassDescription>> getAllClassesSorted()

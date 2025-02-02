@@ -168,6 +168,44 @@ public class LanguageServerClientConnection
     });
   }
 
+  public Promise<List<ClassDescription>> sendGetDeletedClasses()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_DELETED_CLASSES, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>>)reply;
+        return CodeRepositoryMessages.arrayOfToList(objReply.getPayload(), (json) -> {
+          return json.getAsClassDescription();
+        });
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new ArrayList<>();
+    });
+  }
+
+  public Promise<List<ClassDescription>> sendGetModuleClasses()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_MODULE_CLASSES, requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      try {
+        CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>>)reply;
+        return CodeRepositoryMessages.arrayOfToList(objReply.getPayload(), (json) -> {
+          return json.getAsClassDescription();
+        });
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
+      return new ArrayList<>();
+    });
+  }
+
   public Promise<List<FunctionDescription>> sendGetAllFunctionsSorted()
   {
     String requestId = getNextId();

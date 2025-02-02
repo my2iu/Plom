@@ -250,6 +250,19 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     for (int n = 0; n < symbolOrder.length; n++)
       buttonOrderPriority.put(symbolOrder[n], n);
   }
+  
+  /** When we show predicted tokens, some of the predictions may be
+   * done in a worker thread, so the results/predictions may come
+   * back so late that the user has already typed some other tokens
+   * and the predictions are no longer relevant. The context is 
+   * different, and requests for predictions for this other context 
+   * are likely already queued up for processing in the worker thread.
+   * So this object is used to keep track of what the current
+   * context is. Every time the user types something, a new prediction
+   * context is generated, and we can check incoming predictions against
+   * this context to see if they came from the same context
+   */
+  Object currentPredictedTokenUiContext = new Object();
 
   void showPredictedTokenInput()
   {
@@ -257,6 +270,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     DivElement choicesDiv = focus.choicesDiv;
     choicesDiv.setInnerHTML("");
 
+    // Start a new context, invalidating all old, pending predictions
+    // that are being calculated in the worker thread
+    currentPredictedTokenUiContext = new Object();
+    
     // We have some buttons that float to the right, but on wide displays, those
     // buttons are too far to the right and get lost, so we put everything into
     // a separate inline-block div whose width is just the width of the content,
@@ -370,7 +387,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (showEditButton)
     {
       contentDiv.appendChild(makeButton("\u270e", true, choicesDiv, () -> {
-        Suggester suggester = null;
+        SuggesterClient suggester = null;
         if (currentToken instanceof Token.TokenWithSymbol)
         {
           CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
@@ -379,7 +396,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
             case AtType:
             {
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
-              suggester = new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
+              suggester = SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
               break;
             }
 
@@ -510,9 +527,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (suggestionContext == null)
         suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
-      Suggester dotSuggester = null;
+      SuggesterClient dotSuggester = null;
       if (allowedSymbols.contains(Symbol.DotVariable))
-        dotSuggester = getDotSuggester(suggestionContext, stmtParser.peekExpandedSymbols(Symbol.DotVariable)); 
+        dotSuggester = getDotSuggester(suggestionContext, stmtParser.peekExpandedSymbols(Symbol.DotVariable));
+      Object requestPredictedTokenUiContext = currentPredictedTokenUiContext;
 
       for (QuickSuggestion suggestion: suggestions)
       {
@@ -520,23 +538,35 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         if (suggestion.code.startsWith(".") && allowedSymbols.contains(Symbol.DotVariable))
         {
           // Check if variable would have been suggested here 
-          if (dotSuggester != null && dotSuggester.gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
-            contentDiv.appendChild(makeButton(suggestion.display, true, choicesDiv, () -> {
-              Token newToken = new Token.ParameterToken(
-                  Token.ParameterToken.splitVarAtColons(suggestion.code), 
-                  Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
-                  Symbol.DotVariable);
-              InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
-              NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
-              showPredictedTokenInput();
-              updateCodeView(true);
-              }));
+          if (dotSuggester != null)
+          {
+            dotSuggester.gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
+              if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
+                return;
+              if (!suggestions.contains(suggestion.code.substring(1)))
+                return;
+              contentDiv.appendChild(makeButton(suggestion.display, true, choicesDiv, () -> {
+                Token newToken = new Token.ParameterToken(
+                    Token.ParameterToken.splitVarAtColons(suggestion.code), 
+                    Token.ParameterToken.splitVarAtColonsForPostfix(suggestion.code), 
+                    Symbol.DotVariable);
+                InsertToken.insertTokenIntoStatementContainer(codeList, newToken, cursorPos, 0, false);
+                NextPosition.nextPositionOfStatements(codeList, cursorPos, 0);
+                showPredictedTokenInput();
+                updateCodeView(true);
+                }));
+            });
+          }
         }
         // If the suggestion is for a type
         else if (suggestion.code.startsWith("@") && allowedSymbols.contains(Symbol.AtType))
         {
           // Check if type would have been suggested here 
-          if (new TypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1)).contains(suggestion.code.substring(1)))
+          SuggesterClient.makeTypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
+            if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
+              return;
+            if (!suggestions.contains(suggestion.code.substring(1)))
+              return;
             contentDiv.appendChild(makeButton(suggestion.display, true, choicesDiv, () -> { 
               Token newToken = new Token.ParameterToken(
                   Token.ParameterToken.splitVarAtColons(suggestion.code), 
@@ -547,6 +577,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
               showPredictedTokenInput();
               updateCodeView(true);
               }));
+          });
         }
         // If the suggestion is for a function type
         else if (suggestion.code.startsWith("f@") && allowedSymbols.contains(Symbol.FunctionTypeName))
@@ -659,7 +690,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -669,7 +700,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          new TypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -765,7 +796,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
   }
   
-  void showSimpleEntryForToken(Token newToken, boolean isEdit, Suggester suggester, CodePosition pos)
+  void showSimpleEntryForToken(Token newToken, boolean isEdit, SuggesterClient suggester, CodePosition pos)
   {
     if (newToken == null) return;
     Symbol tokenType = null;
@@ -1046,9 +1077,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       }, false);
   }
 
-  Suggester getDotSuggester(CodeCompletionContext suggestionContext, List<Symbol> parentSymbols)
+  SuggesterClient getDotSuggester(CodeCompletionContext suggestionContext, List<Symbol> parentSymbols)
   {
-    Suggester suggester;
+    SuggesterClient suggester;
     if (parentSymbols.contains(Symbol.DotDeclareIdentifier))
     {
       suggester = null;
@@ -1057,19 +1088,19 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
       {
-        suggester = new StaticMemberSuggester(suggestionContext, true, true);
+        suggester = SuggesterClient.makeStaticMemberSuggester(suggestionContext, true, true);
       }
       else if (parentSymbols.contains(Symbol.SuperCallExpression))
       {
         if (suggestionContext.getIsConstructorMethod())
         {
           // Constructor chaining
-          suggester = new StaticMemberSuggester(suggestionContext, false, true);
+          suggester = SuggesterClient.makeStaticMemberSuggester(suggestionContext, false, true);
         }
         else if (!suggestionContext.getIsConstructorMethod() && !suggestionContext.getIsStaticMethod())
         {
           // Instance method can call instance methods of the parent
-          suggester = new MemberSuggester(suggestionContext);
+          suggester = SuggesterClient.makeMemberSuggester(suggestionContext);
         }
         else
         {
@@ -1079,11 +1110,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       }
       else if (parentSymbols.contains(Symbol.DotMember))
       {
-        suggester = new MemberSuggester(suggestionContext);
+        suggester = SuggesterClient.makeMemberSuggester(suggestionContext);
       }
       else
       {
-        suggester = new VariableSuggester(suggestionContext);
+        suggester = SuggesterClient.makeVariableSuggester(suggestionContext);
       }
     }
     return suggester;
