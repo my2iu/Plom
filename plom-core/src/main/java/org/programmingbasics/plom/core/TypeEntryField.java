@@ -2,8 +2,8 @@ package org.programmingbasics.plom.core;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
+import org.programmingbasics.plom.core.CodeWidgetBase.CodeCompletionSuggester;
 import org.programmingbasics.plom.core.CodeWidgetBase.VariableContextConfigurator;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.Token;
@@ -12,7 +12,6 @@ import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
-import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.CodeRenderer;
 import org.programmingbasics.plom.core.view.GetToken;
 import org.programmingbasics.plom.core.view.HitDetect;
@@ -21,20 +20,18 @@ import org.programmingbasics.plom.core.view.RenderedTokenHitBox;
 import org.programmingbasics.plom.core.view.SetTypeToken;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
-import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.MouseEvent;
 import elemental.html.ClientRect;
 import elemental.html.DivElement;
-import elemental.svg.SVGDocument;
 
 /**
  * Handles UI logic for a field where a type can be entered
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxClientWidth, Element scrollableDiv, Element scrollableExtraPaddingDiv)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, CodeCompletionSuggester codeCompletionSuggester, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxClientWidth, Element scrollableDiv, Element scrollableExtraPaddingDiv)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
@@ -42,6 +39,7 @@ public class TypeEntryField
     fieldDiv = div;
     this.globalConfigurator = globalConfigurator;
     this.variableContextConfigurator = variableContextConfigurator;
+    this.codeCompletionSuggester = codeCompletionSuggester;
     this.widthCalculator = widthCalculator;
     this.maxClientWidth = maxClientWidth;
     this.scrollableDiv = scrollableDiv;
@@ -70,6 +68,9 @@ public class TypeEntryField
 
   /** To configure object variables and function arguments that are accessible for code completion */
   VariableContextConfigurator variableContextConfigurator; 
+
+  /** External interface to a component that can handle code completion suggestions */
+  CodeCompletionSuggester codeCompletionSuggester;
 
   /** 
    * You don't actually need to listen for changes because if there is an
@@ -119,7 +120,7 @@ public class TypeEntryField
       }
       
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
-      CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, globalConfigurator, variableContextConfigurator);
+      CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       simpleEntry.showFor("@", "", null, initialValue, hitToken, true, SuggesterClient.makeTypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput, this::simpleEntryBackspaceAll);
       simpleEntry.scrollForDoNotCover(scrollableDiv, scrollableExtraPaddingDiv, doNotCoverLeft, doNotCoverRight);
       simpleEntry.setEraseButtonVisible(true);

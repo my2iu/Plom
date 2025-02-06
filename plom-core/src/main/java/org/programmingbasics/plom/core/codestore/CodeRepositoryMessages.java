@@ -106,6 +106,20 @@ public class CodeRepositoryMessages
   }
 
   @JsType(isNative = true)
+  public static interface CancellableReplyMessage extends ReplyMessage
+  {
+    @JsProperty(name = "cancelled") boolean isCancelled();
+    @JsProperty(name = "cancelled") void setCancelled(boolean cancelled);
+  }
+
+  public static CancellableReplyMessage createCancellableReplyMessage(MessageType type, String id, boolean cancelled)
+  {
+    CancellableReplyMessage msg = (CancellableReplyMessage)createReplyMessage(type, id);
+    msg.setCancelled(cancelled);
+    return msg;
+  }
+
+  @JsType(isNative = true)
   public static interface LoadModuleMessage extends RequestMessage
   {
     @JsProperty(name = "code") String getCode();
@@ -544,6 +558,30 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface SetCodeCompletionContextRequest extends RequestMessage
+  {
+  }
+
+  public static SetCodeCompletionContextRequest createSetCodeCompletionRequestRequest(String id) throws IOException
+  {
+    SetCodeCompletionContextRequest msg = (SetCodeCompletionContextRequest)createRequestMessage(MessageType.SET_CODE_COMPLETION_CONTEXT, id);
+    return msg;
+  }
+
+//  @JsType(isNative = true)
+//  public static interface SetCodeCompletionContextReplyMessage extends CancellableReplyMessage
+//  {
+//    @JsProperty(name = "cancelled") boolean isCancelled();
+//    @JsProperty(name = "cancelled") void setCancelled(boolean cancelled);
+//  }
+//
+//  public static CancellableReplyMessage createCancellableReplyMessage(MessageType type, String id, boolean cancelled)
+//  {
+//    CancellableReplyMessage msg = (CancellableReplyMessage)createCancellableReplyMessage(type, id, cancelled);
+//    return msg;
+//  }
+
   public static enum MessageType
   {
     REPLY("reply"), 
@@ -571,7 +609,8 @@ public class CodeRepositoryMessages
     DELETE_CLASS_METHOD("deleteClassMethod"), 
     CHANGE_METHOD_SIGNATURE("changeMethodSignature"), 
     SAVE_METHOD_CODE("saveMethodCode"), 
-    LOAD_CLASS("loadClass");
+    LOAD_CLASS("loadClass"),
+    SET_CODE_COMPLETION_CONTEXT("setCodeCompletionContext");
     private MessageType(String val)
     {
       this.value = val;

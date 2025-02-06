@@ -1,11 +1,5 @@
 package org.programmingbasics.plom.core;
 
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
-
 import java.util.List;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
@@ -13,8 +7,11 @@ import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -221,7 +218,8 @@ public class GlobalsPanel implements AutoCloseable
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
         },
-        null);
+        null,
+        repository.makeCodeCompletionSuggesterForTypesOnly());
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

@@ -17,11 +17,14 @@ import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDes
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
+import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 
 import elemental.client.Browser;
 import elemental.events.MessageEvent;
@@ -47,6 +50,10 @@ public class LanguageServerWorker
   }
   
   ModuleCodeRepository repo;
+
+  // Right now, we can generate code completion suggestions for 
+  // only one context at a time.
+  CodeCompletionContext currentCodeCompletionContext;
   
   public void start()
   {
@@ -459,7 +466,27 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
       break;
     }
-
+    case SET_CODE_COMPLETION_CONTEXT:
+    {
+      CodeRepositoryMessages.SetCodeCompletionContextRequest requestMsg = (CodeRepositoryMessages.SetCodeCompletionContextRequest)msg;
+      // Depending on the context of where we are in the code, we should add
+      // different variables to the scope that can be suggested for code completion
+      CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
+      // Store global variables
+      StandardLibrary.createGlobals(null, suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
+      suggestionContextBuilder.currentScope().setParent(new RepositoryScope(repo, suggestionContextBuilder.coreTypes(), null));
+////      if (globalConfigurator != null)
+////        globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
+//      if (variableContextConfigurator != null)
+//        variableContextConfigurator.accept(suggestionContextBuilder);
+//      suggestionContextBuilder.pushNewScope();
+      CodeCompletionContext suggestionContext = suggestionContextBuilder.build();
+//      if (codeList != null && pos != null)
+//        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
+      currentCodeCompletionContext = suggestionContext;
+      postMessage(CodeRepositoryMessages.createCancellableReplyMessage(MessageType.REPLY, requestMsg.getRequestId(), false));
+      break;
+    }
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;

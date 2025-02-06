@@ -6,23 +6,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.LineNumberTracker;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.ParseToAst.ParseException;
-import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
@@ -996,7 +994,8 @@ public class Main
               return null;
             });
           }
-        });
+        },
+        repository.makeCodeCompletionSuggesterFor());
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

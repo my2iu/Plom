@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
+import org.programmingbasics.plom.core.CodeWidgetBase.CodeCompletionSuggester;
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
@@ -19,8 +20,6 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescri
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
@@ -466,4 +465,32 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   }
 
+  // Context to be used for code completion suggestions
+  public Promise<Void> setCodeCompletionContext()
+  {
+    return languageServer.sendSetCodeCompletionContext();
+  }
+  
+  CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterForTypesOnly()
+  {
+    return new CodeWidgetBase.CodeCompletionSuggester() {
+      @Override
+      public Promise<Void> setCodeCompletionContext()
+      {
+        return CodeRepositoryClient.this.setCodeCompletionContext();
+      }
+      
+    };
+  }
+
+  public CodeCompletionSuggester makeCodeCompletionSuggesterFor()
+  {
+    return new CodeWidgetBase.CodeCompletionSuggester() {
+      @Override
+      public Promise<Void> setCodeCompletionContext()
+      {
+        return CodeRepositoryClient.this.setCodeCompletionContext();
+      }
+    };
+  }
 }

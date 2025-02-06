@@ -457,4 +457,21 @@ public class LanguageServerClientConnection
       return null;
     });
   }
+  
+  Promise<Void> sendSetCodeCompletionContext()
+  {
+    String requestId = getNextId();
+    try
+    {
+      worker.postMessage(CodeRepositoryMessages.createSetCodeCompletionRequestRequest(requestId));
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+      return WebHelpersShunt.promiseResolve(null);
+    }
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      return null;
+    });
+  }
 }

@@ -141,7 +141,8 @@ public class MethodPanel
             StandardLibrary.createGlobals(null, scope, coreTypes);
             scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
           },
-          null);
+          null,
+          repository.makeCodeCompletionSuggesterForTypesOnly());
       returnTypeArea.setListener((isCodeChanged) -> {
         if (isCodeChanged)
         {
@@ -424,7 +425,8 @@ public class MethodPanel
           widthCalculator);
       returnArea.setVariableContextConfigurator(
           globalScopeForTypeLookup,
-          null);
+          null,
+          repository.makeCodeCompletionSuggesterForTypesOnly());
         returnArea.setListener((isCodeChanged) -> {
           if (isCodeChanged)
           {

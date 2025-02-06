@@ -2,13 +2,11 @@ package org.programmingbasics.plom.core;
 
 import java.util.List;
 
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
+import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.ast.ParseToAst;
-import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
@@ -89,20 +87,25 @@ public class ClassPanel
     
     // For setting the supertype
     int maxTypeWidth = mainDiv.querySelector(".extends").getClientWidth();
-    TypeEntryField extendsField = new TypeEntryField(cls.parent.mainToken, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
-        },
-        (context) -> {},
-        widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
-    extendsField.setChangeListener((newType, isFinal) -> {
-      String oldName = cls.getName();
-      cls.setSuperclass(UnboundType.fromToken(newType));
-      repository.updateClassBaseInfo(oldName, cls);
-    });
-    extendsField.render();
-
+    // Make sure we aren't working with @object, which doesn't have a parent
+    if (cls.parent != null)
+    {
+      TypeEntryField extendsField = new TypeEntryField(cls.parent.mainToken, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
+          repository.makeCodeCompletionSuggesterForTypesOnly(),
+          (scope, coreTypes) -> {
+            StandardLibrary.createGlobals(null, scope, coreTypes);
+            scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
+          },
+          (context) -> {},
+          widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
+      extendsField.setChangeListener((newType, isFinal) -> {
+        String oldName = cls.getName();
+        cls.setSuperclass(UnboundType.fromToken(newType));
+        repository.updateClassBaseInfo(oldName, cls);
+      });
+      extendsField.render();
+      
+    }
     
     // For adding methods
     Element newFunctionAnchor = mainDiv.querySelector(".methodsHeading a");
@@ -189,7 +192,8 @@ public class ClassPanel
           StandardLibrary.createGlobals(null, scope, coreTypes);
           scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
         },
-        null);
+        null,
+        repository.makeCodeCompletionSuggesterForTypesOnly());
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

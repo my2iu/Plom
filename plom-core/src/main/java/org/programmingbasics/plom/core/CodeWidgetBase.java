@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.ErrorList;
 import org.programmingbasics.plom.core.ast.LL1Parser;
@@ -24,11 +25,6 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
-import org.programmingbasics.plom.core.suggestions.MemberSuggester;
-import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
-import org.programmingbasics.plom.core.suggestions.Suggester;
-import org.programmingbasics.plom.core.suggestions.TypeSuggester;
-import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
 import org.programmingbasics.plom.core.view.EraseLeft;
 import org.programmingbasics.plom.core.view.EraseSelection;
@@ -90,6 +86,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
 
   /** To configure object variables and function arguments that are accessible for code completion */
   VariableContextConfigurator variableContextConfigurator; 
+
+  /** External interface to a component that can handle code completion suggestions */
+  CodeCompletionSuggester codeCompletionSuggester;
   
   /** Errors to show in the code listing (error tokens will be underlined) */
   ErrorList codeErrors = new ErrorList();
@@ -175,15 +174,22 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     updateCodeView(false);
   }
   
-//  @JsFunction
+
+  public static interface CodeCompletionSuggester
+  {
+    public Promise<Void> setCodeCompletionContext();
+    
+  }
+  
   public static interface VariableContextConfigurator {
     public void accept(CodeCompletionContext.Builder contextBuilder);
   }
 //  @JsMethod
-  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator)
+  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator, CodeCompletionSuggester codeCompletionSuggester)
   {
     this.globalConfigurator = globalConfigurator;
     variableContextConfigurator = configurator;
+    this.codeCompletionSuggester = codeCompletionSuggester;
   }
   
   public void updateAfterResize()
@@ -390,7 +396,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         SuggesterClient suggester = null;
         if (currentToken instanceof Token.TokenWithSymbol)
         {
-          CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+          CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
           switch (((Token.TokenWithSymbol)currentToken).getType())
           {
             case AtType:
@@ -495,7 +501,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         && parseContext.tokens.isEmpty())
     {
       if (suggestionContext == null)
-        suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+        suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       Type expectedType = suggestionContext.getExpectedExpressionType();
       if (expectedType != null && expectedType instanceof Type.LambdaFunctionType)
       {
@@ -526,7 +532,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     if (!suggestions.isEmpty())
     {
       if (suggestionContext == null)
-        suggestionContext = calculateSuggestionContext(codeList, cursorPos, globalConfigurator, variableContextConfigurator);
+        suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       SuggesterClient dotSuggester = null;
       if (allowedSymbols.contains(Symbol.DotVariable))
         dotSuggester = getDotSuggester(suggestionContext, stmtParser.peekExpandedSymbols(Symbol.DotVariable));
@@ -542,6 +548,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           {
             dotSuggester.gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
               if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
+                return;
+              if (!Browser.getDocument().contains(contentDiv))
                 return;
               if (!suggestions.contains(suggestion.code.substring(1)))
                 return;
@@ -564,6 +572,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
           // Check if type would have been suggested here 
           SuggesterClient.makeTypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
             if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
+              return;
+            if (!Browser.getDocument().contains(contentDiv))
               return;
             if (!suggestions.contains(suggestion.code.substring(1)))
               return;
@@ -688,7 +698,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case AtType:
     {
       updateCodeView(true);
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
           SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
@@ -698,7 +708,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case FunctionTypeName:
     {
       updateCodeView(true);
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
           SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
@@ -708,7 +718,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case DotVariable:
     {
       updateCodeView(true);
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, globalConfigurator, variableContextConfigurator);
+      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, getDotSuggester(suggestionContext, parentSymbols), pos);
       break;
     }
@@ -728,8 +738,10 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   }
 
   protected static CodeCompletionContext calculateSuggestionContext(StatementContainer codeList, CodePosition pos,
-      ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
+      CodeCompletionSuggester codeCompletionSuggester, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
+    if (codeCompletionSuggester != null)
+      codeCompletionSuggester.setCodeCompletionContext();
     CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
     if (globalConfigurator != null)
       globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
