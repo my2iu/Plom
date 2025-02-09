@@ -25,6 +25,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractor;
 import org.programmingbasics.plom.core.view.EraseLeft;
 import org.programmingbasics.plom.core.view.EraseSelection;
@@ -178,7 +179,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   public static interface CodeCompletionSuggester
   {
     public Promise<Void> setCodeCompletionContext();
-    
+    public SuggesterClient makeTypeSuggester(CodeCompletionContext suggestionContext, boolean allowVoid);
   }
   
   public static interface VariableContextConfigurator {
@@ -402,7 +403,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
             case AtType:
             {
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
-              suggester = SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
+              suggester = codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
               break;
             }
 
@@ -570,7 +571,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         else if (suggestion.code.startsWith("@") && allowedSymbols.contains(Symbol.AtType))
         {
           // Check if type would have been suggested here 
-          SuggesterClient.makeTypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
+          codeCompletionSuggester.makeTypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
             if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
               return;
             if (!Browser.getDocument().contains(contentDiv))
@@ -700,7 +701,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -710,7 +711,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       updateCodeView(true);
       CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
       showSimpleEntryForToken(newToken, false, 
-          SuggesterClient.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }

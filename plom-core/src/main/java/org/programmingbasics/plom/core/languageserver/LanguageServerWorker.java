@@ -24,6 +24,7 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSi
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 
 import elemental.client.Browser;
@@ -484,7 +485,14 @@ public class LanguageServerWorker
 //      if (codeList != null && pos != null)
 //        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
       currentCodeCompletionContext = suggestionContext;
-      postMessage(CodeRepositoryMessages.createCancellableReplyMessage(MessageType.REPLY, requestMsg.getRequestId(), false));
+      postMessage(CodeRepositoryMessages.createCancellableReplyMessage(requestMsg.getRequestId(), false));
+      break;
+    }
+    case GATHER_TYPE_SUGGESTIONS:
+    {
+      CodeRepositoryMessages.GatherSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherSuggestionsRequest)msg;
+      TypeSuggester suggester = new TypeSuggester(currentCodeCompletionContext, false);
+      postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
       break;
     }
     default:

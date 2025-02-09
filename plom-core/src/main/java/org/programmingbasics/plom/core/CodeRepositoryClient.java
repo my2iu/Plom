@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.programmingbasics.plom.core.CodeWidgetBase.CodeCompletionSuggester;
@@ -20,6 +21,8 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescri
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
@@ -462,7 +465,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     method.code = code;
     cls.updateMethod(method);
     return languageServer.sendSaveMethodCode(cls, method.sig, code);
-
   }
 
   // Context to be used for code completion suggestions
@@ -471,21 +473,42 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendSetCodeCompletionContext();
   }
   
+  public Promise<List<String>> gatherTypeSuggestions(String val)
+  {
+    return languageServer.sendGatherTypeSuggestions(val);
+  }
+  
+  private class CodeCompletionSuggesterClient implements CodeWidgetBase.CodeCompletionSuggester {
+    @Override
+    public Promise<Void> setCodeCompletionContext()
+    {
+      return CodeRepositoryClient.this.setCodeCompletionContext();
+    }
+    @Override
+    public SuggesterClient makeTypeSuggester(CodeCompletionContext suggestionContext, boolean allowVoid)
+    {
+      return new SuggesterClient(null, false) {
+        @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
+        {
+          gatherTypeSuggestions(val).thenNow((suggestions) -> {
+            if (suggestions != null)
+              callback.accept(suggestions);
+            return null;
+          });
+        }
+      };
+    }
+    
+  }
+  
   CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterForTypesOnly()
   {
-    return new CodeWidgetBase.CodeCompletionSuggester() {
-      @Override
-      public Promise<Void> setCodeCompletionContext()
-      {
-        return CodeRepositoryClient.this.setCodeCompletionContext();
-      }
-      
-    };
+    return new CodeCompletionSuggesterClient();
   }
 
   public CodeCompletionSuggester makeCodeCompletionSuggesterFor()
   {
-    return new CodeWidgetBase.CodeCompletionSuggester() {
+    return new CodeCompletionSuggesterClient() {
       @Override
       public Promise<Void> setCodeCompletionContext()
       {

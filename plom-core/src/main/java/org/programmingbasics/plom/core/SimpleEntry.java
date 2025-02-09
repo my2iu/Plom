@@ -285,6 +285,7 @@ public class SimpleEntry
     this.suggester = suggester;
     this.callback = (InputCallback<Token>)callback;
     this.backspaceCallback = bkspCallback;
+    suggestionsContentContainer.setInnerHTML("");
     refillSuggestions(initialValue);
     simpleEntryInput(initialValue, false);
   }

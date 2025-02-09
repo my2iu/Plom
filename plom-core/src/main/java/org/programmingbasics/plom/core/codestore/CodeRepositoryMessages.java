@@ -112,9 +112,9 @@ public class CodeRepositoryMessages
     @JsProperty(name = "cancelled") void setCancelled(boolean cancelled);
   }
 
-  public static CancellableReplyMessage createCancellableReplyMessage(MessageType type, String id, boolean cancelled)
+  public static CancellableReplyMessage createCancellableReplyMessage(String id, boolean cancelled)
   {
-    CancellableReplyMessage msg = (CancellableReplyMessage)createReplyMessage(type, id);
+    CancellableReplyMessage msg = (CancellableReplyMessage)createReplyMessage(MessageType.REPLY, id);
     msg.setCancelled(cancelled);
     return msg;
   }
@@ -563,7 +563,7 @@ public class CodeRepositoryMessages
   {
   }
 
-  public static SetCodeCompletionContextRequest createSetCodeCompletionRequestRequest(String id) throws IOException
+  public static SetCodeCompletionContextRequest createSetCodeCompletionRequest(String id) throws IOException
   {
     SetCodeCompletionContextRequest msg = (SetCodeCompletionContextRequest)createRequestMessage(MessageType.SET_CODE_COMPLETION_CONTEXT, id);
     return msg;
@@ -582,6 +582,46 @@ public class CodeRepositoryMessages
 //    return msg;
 //  }
 
+  @JsType(isNative = true)
+  public static interface GatherSuggestionsRequest extends RequestMessage
+  {
+    @JsProperty(name = "query") String getQuery();
+    @JsProperty(name = "query") void setQuery(String query);
+  }
+
+  public static GatherSuggestionsRequest createGatherTypeSuggestionsRequest(String requestId, String query)
+  {
+    GatherSuggestionsRequest msg = (GatherSuggestionsRequest)createRequestMessage(MessageType.GATHER_TYPE_SUGGESTIONS, requestId);
+    msg.setQuery(query);
+    return msg;
+  }
+  
+  @JsType(isNative = true)
+  public static interface GatherSuggestionsReply extends CancellableReplyMessage
+  {
+    @JsProperty(name = "suggestions") ArrayOf<String> getSuggestions();
+    @JsProperty(name = "suggestions") void setSuggestions(ArrayOf<String> suggestions);
+    @JsOverlay default List<String> getSuggestionsList()
+    {
+      if (getSuggestions() == null) return null;
+      return arrayOfToList(getSuggestions(), json -> json);
+    }
+    @JsOverlay default void setSuggestionsList(List<String> suggestions)
+    {
+      if (suggestions != null)
+        setSuggestions(listToArrayOf(suggestions, str -> str));
+    }
+  }
+
+  public static GatherSuggestionsReply createGatherSuggestionsReply(String id, boolean cancelled, List<String> suggestions)
+  {
+    GatherSuggestionsReply msg = (GatherSuggestionsReply)createCancellableReplyMessage(id, cancelled);
+    if (suggestions != null)
+      msg.setSuggestionsList(suggestions);
+    return msg;
+  }
+
+  
   public static enum MessageType
   {
     REPLY("reply"), 
@@ -610,7 +650,8 @@ public class CodeRepositoryMessages
     CHANGE_METHOD_SIGNATURE("changeMethodSignature"), 
     SAVE_METHOD_CODE("saveMethodCode"), 
     LOAD_CLASS("loadClass"),
-    SET_CODE_COMPLETION_CONTEXT("setCodeCompletionContext");
+    SET_CODE_COMPLETION_CONTEXT("setCodeCompletionContext"),
+    GATHER_TYPE_SUGGESTIONS("gatherTypeSuggestions");
     private MessageType(String val)
     {
       this.value = val;

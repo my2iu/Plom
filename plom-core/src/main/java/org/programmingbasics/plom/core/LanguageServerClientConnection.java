@@ -463,7 +463,7 @@ public class LanguageServerClientConnection
     String requestId = getNextId();
     try
     {
-      worker.postMessage(CodeRepositoryMessages.createSetCodeCompletionRequestRequest(requestId));
+      worker.postMessage(CodeRepositoryMessages.createSetCodeCompletionRequest(requestId));
     }
     catch (IOException e)
     {
@@ -472,6 +472,18 @@ public class LanguageServerClientConnection
     }
     return waitForReplyFor(requestId).thenNow((reply) -> {
       return null;
+    });
+  }
+
+  Promise<List<String>> sendGatherTypeSuggestions(String val)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGatherTypeSuggestionsRequest(requestId, val));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.GatherSuggestionsReply suggestionsReply = (CodeRepositoryMessages.GatherSuggestionsReply)reply;
+      if (suggestionsReply.isCancelled())
+        return null;
+      return suggestionsReply.getSuggestionsList();
     });
   }
 }

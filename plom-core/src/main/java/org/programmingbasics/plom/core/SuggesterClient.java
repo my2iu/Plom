@@ -19,7 +19,7 @@ import elemental.client.Browser;
  */
 public class SuggesterClient
 {
-  private SuggesterClient(Suggester suggester, boolean shouldShowAllSuggestions)
+  SuggesterClient(Suggester suggester, boolean shouldShowAllSuggestions)
   {
     this.suggester = suggester;
     this.shouldShowAllSuggestions = shouldShowAllSuggestions;
@@ -47,11 +47,6 @@ public class SuggesterClient
     return new SuggesterClient(new StaticMemberSuggester(context, includeNonConstructors, includeConstructors), true);
   }
 
-  public static SuggesterClient makeTypeSuggester(CodeCompletionContext suggestionContext, boolean allowVoid)
-  {
-    return new SuggesterClient(new TypeSuggester(suggestionContext, allowVoid), false);
-  }
-  
   public static SuggesterClient makeVariableSuggester(CodeCompletionContext context)
   {
     return new SuggesterClient(new VariableSuggester(context), false);
