@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
@@ -458,12 +459,12 @@ public class LanguageServerClientConnection
     });
   }
   
-  Promise<Void> sendSetCodeCompletionContext()
+  Promise<Void> sendSetCodeCompletionContext(String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
   {
     String requestId = getNextId();
     try
     {
-      worker.postMessage(CodeRepositoryMessages.createSetCodeCompletionRequest(requestId));
+      worker.postMessage(CodeRepositoryMessages.createSetCodeCompletionRequest(requestId, currentFunction, currentClass, currentMethod, currentCode, currentPos));
     }
     catch (IOException e)
     {

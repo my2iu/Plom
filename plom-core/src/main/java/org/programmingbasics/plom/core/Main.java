@@ -995,7 +995,7 @@ public class Main
             });
           }
         },
-        repository.makeCodeCompletionSuggesterFor());
+        repository.makeCodeCompletionSuggesterWithContext(currentFunctionBeingViewed, currentMethodClassBeingViewed, currentMethodBeingViewed.sig));
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

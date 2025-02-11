@@ -142,7 +142,7 @@ public class MethodPanel
             scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
           },
           null,
-          repository.makeCodeCompletionSuggesterForTypesOnly());
+          repository.makeCodeCompletionSuggesterNoContext());
       returnTypeArea.setListener((isCodeChanged) -> {
         if (isCodeChanged)
         {
@@ -426,7 +426,7 @@ public class MethodPanel
       returnArea.setVariableContextConfigurator(
           globalScopeForTypeLookup,
           null,
-          repository.makeCodeCompletionSuggesterForTypesOnly());
+          repository.makeCodeCompletionSuggesterNoContext());
         returnArea.setListener((isCodeChanged) -> {
           if (isCodeChanged)
           {

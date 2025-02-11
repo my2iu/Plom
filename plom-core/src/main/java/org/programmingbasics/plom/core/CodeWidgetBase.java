@@ -176,12 +176,16 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
   }
   
 
-  public static interface CodeCompletionSuggester
+  /**
+   * Interface for passing in code completion handlers into the code editor
+   */
+  public static interface CodeCompletionSuggester 
   {
-    public Promise<Void> setCodeCompletionContext();
-    public SuggesterClient makeTypeSuggester(CodeCompletionContext suggestionContext, boolean allowVoid);
+    public Promise<Void> setCodeCompletionContextFor(StatementContainer code, CodePosition pos);
+    public Promise<Void> setCodeCompletionContextForTypes();
+    public SuggesterClient makeTypeSuggester(boolean allowVoid);
   }
-  
+
   public static interface VariableContextConfigurator {
     public void accept(CodeCompletionContext.Builder contextBuilder);
   }
@@ -397,18 +401,19 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         SuggesterClient suggester = null;
         if (currentToken instanceof Token.TokenWithSymbol)
         {
-          CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
           switch (((Token.TokenWithSymbol)currentToken).getType())
           {
             case AtType:
             {
+              CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.AtType);
-              suggester = codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField));
+              suggester = codeCompletionSuggester.makeTypeSuggester(parentSymbols.contains(Symbol.ReturnTypeField));
               break;
             }
 
             case DotVariable:
             {
+              CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, cursorPos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
               List<Symbol> parentSymbols = stmtParser.peekExpandedSymbols(Symbol.DotVariable);
               suggester = getDotSuggester(suggestionContext, parentSymbols);
               break;
@@ -571,7 +576,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
         else if (suggestion.code.startsWith("@") && allowedSymbols.contains(Symbol.AtType))
         {
           // Check if type would have been suggested here 
-          codeCompletionSuggester.makeTypeSuggester(suggestionContext, false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
+          codeCompletionSuggester.makeTypeSuggester(false).gatherSuggestions(suggestion.code.substring(1), (suggestions) -> {
             if (requestPredictedTokenUiContext != currentPredictedTokenUiContext)
               return;
             if (!Browser.getDocument().contains(contentDiv))
@@ -699,9 +704,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case AtType:
     {
       updateCodeView(true);
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
+      codeCompletionSuggester.setCodeCompletionContextForTypes();
       showSimpleEntryForToken(newToken, false, 
-          codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          codeCompletionSuggester.makeTypeSuggester(parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -709,9 +714,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     case FunctionTypeName:
     {
       updateCodeView(true);
-      CodeCompletionContext suggestionContext = calculateSuggestionContext(codeList, pos, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
+      codeCompletionSuggester.setCodeCompletionContextForTypes();
       showSimpleEntryForToken(newToken, false, 
-          codeCompletionSuggester.makeTypeSuggester(suggestionContext, parentSymbols.contains(Symbol.ReturnTypeField)), 
+          codeCompletionSuggester.makeTypeSuggester(parentSymbols.contains(Symbol.ReturnTypeField)), 
           pos);
       break;
     }
@@ -742,7 +747,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       CodeCompletionSuggester codeCompletionSuggester, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator)
   {
     if (codeCompletionSuggester != null)
-      codeCompletionSuggester.setCodeCompletionContext();
+      codeCompletionSuggester.setCodeCompletionContextFor(codeList, pos);
     CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
     if (globalConfigurator != null)
       globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());

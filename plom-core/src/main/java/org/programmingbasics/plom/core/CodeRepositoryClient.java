@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.programmingbasics.plom.core.CodeWidgetBase.CodeCompletionSuggester;
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
@@ -468,9 +469,9 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   }
 
   // Context to be used for code completion suggestions
-  public Promise<Void> setCodeCompletionContext()
+  public Promise<Void> setCodeCompletionContext(String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
   {
-    return languageServer.sendSetCodeCompletionContext();
+    return languageServer.sendSetCodeCompletionContext(currentFunction, currentClass, currentMethod, currentCode, currentPos);
   }
   
   public Promise<List<String>> gatherTypeSuggestions(String val)
@@ -479,13 +480,32 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   }
   
   private class CodeCompletionSuggesterClient implements CodeWidgetBase.CodeCompletionSuggester {
-    @Override
-    public Promise<Void> setCodeCompletionContext()
+    String currentFunctionOrNull;
+    ClassDescription currentClassOrNull;
+    FunctionSignature currentMethodOrNull;
+    
+    private CodeCompletionSuggesterClient() {}
+    private CodeCompletionSuggesterClient(String currentFunctionOrNull, ClassDescription currentClassOrNull, FunctionSignature currentMethodOrNull) {}
     {
-      return CodeRepositoryClient.this.setCodeCompletionContext();
+      this.currentClassOrNull = currentClassOrNull;
+      this.currentFunctionOrNull = currentFunctionOrNull;
+      this.currentMethodOrNull = currentMethodOrNull;
+    }
+    
+    @Override
+    public Promise<Void> setCodeCompletionContextForTypes()
+    {
+      return CodeRepositoryClient.this.setCodeCompletionContext(null, null, null, null, null);
     }
     @Override
-    public SuggesterClient makeTypeSuggester(CodeCompletionContext suggestionContext, boolean allowVoid)
+    public Promise<Void> setCodeCompletionContextFor(StatementContainer code, CodePosition pos)
+    {
+      String className = currentClassOrNull == null ? null : currentClassOrNull.getName();
+      return CodeRepositoryClient.this.setCodeCompletionContext(
+          currentFunctionOrNull, className, currentMethodOrNull, code, pos);
+    }
+    @Override
+    public SuggesterClient makeTypeSuggester(boolean allowVoid)
     {
       return new SuggesterClient(null, false) {
         @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
@@ -498,22 +518,15 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
         }
       };
     }
-    
   }
-  
-  CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterForTypesOnly()
+
+  CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterNoContext()
   {
     return new CodeCompletionSuggesterClient();
   }
 
-  public CodeCompletionSuggester makeCodeCompletionSuggesterFor()
+  public CodeCompletionSuggester makeCodeCompletionSuggesterWithContext(String currentFunctionOrNull, ClassDescription currentClassOrNull, FunctionSignature currentMethodOrNull)
   {
-    return new CodeCompletionSuggesterClient() {
-      @Override
-      public Promise<Void> setCodeCompletionContext()
-      {
-        return CodeRepositoryClient.this.setCodeCompletionContext();
-      }
-    };
+    return new CodeCompletionSuggesterClient(currentFunctionOrNull, currentClassOrNull, currentMethodOrNull);
   }
 }

@@ -219,7 +219,7 @@ public class GlobalsPanel implements AutoCloseable
           scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
         },
         null,
-        repository.makeCodeCompletionSuggesterForTypesOnly());
+        repository.makeCodeCompletionSuggesterNoContext());
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

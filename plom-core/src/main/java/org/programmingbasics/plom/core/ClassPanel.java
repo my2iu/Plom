@@ -91,12 +91,7 @@ public class ClassPanel
     if (cls.parent != null)
     {
       TypeEntryField extendsField = new TypeEntryField(cls.parent.mainToken, (DivElement)mainDiv.querySelector(".extends .typeEntry"), simpleEntry, false,
-          repository.makeCodeCompletionSuggesterForTypesOnly(),
-          (scope, coreTypes) -> {
-            StandardLibrary.createGlobals(null, scope, coreTypes);
-            scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
-          },
-          (context) -> {},
+          repository.makeCodeCompletionSuggesterNoContext(),
           widthCalculator, maxTypeWidth, mainDiv.querySelector(".classdetails"), mainDiv.querySelector(".classdetails .scrollable-interior"));
       extendsField.setChangeListener((newType, isFinal) -> {
         String oldName = cls.getName();
@@ -193,7 +188,7 @@ public class ClassPanel
           scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
         },
         null,
-        repository.makeCodeCompletionSuggesterForTypesOnly());
+        repository.makeCodeCompletionSuggesterNoContext());
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

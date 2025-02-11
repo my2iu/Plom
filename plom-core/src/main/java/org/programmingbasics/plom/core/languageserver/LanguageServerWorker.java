@@ -8,6 +8,7 @@ import org.programmingbasics.plom.core.Main;
 import org.programmingbasics.plom.core.WebHelpers;
 import org.programmingbasics.plom.core.WebHelpersShunt;
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
+import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
@@ -21,8 +22,11 @@ import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
+import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
@@ -470,21 +474,83 @@ public class LanguageServerWorker
     case SET_CODE_COMPLETION_CONTEXT:
     {
       CodeRepositoryMessages.SetCodeCompletionContextRequest requestMsg = (CodeRepositoryMessages.SetCodeCompletionContextRequest)msg;
-      // Depending on the context of where we are in the code, we should add
-      // different variables to the scope that can be suggested for code completion
-      CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
-      // Store global variables
-      StandardLibrary.createGlobals(null, suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
-      suggestionContextBuilder.currentScope().setParent(new RepositoryScope(repo, suggestionContextBuilder.coreTypes(), null));
-////      if (globalConfigurator != null)
-////        globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
-//      if (variableContextConfigurator != null)
-//        variableContextConfigurator.accept(suggestionContextBuilder);
-//      suggestionContextBuilder.pushNewScope();
-      CodeCompletionContext suggestionContext = suggestionContextBuilder.build();
-//      if (codeList != null && pos != null)
-//        GatherCodeCompletionInfo.fromStatements(codeList, suggestionContext, pos, 0);
-      currentCodeCompletionContext = suggestionContext;
+      try {
+        // Depending on the context of where we are in the code, we should add
+        // different variables to the scope that can be suggested for code completion
+        CodeCompletionContext.Builder suggestionContextBuilder = CodeCompletionContext.builder();
+        // Store global variables
+        StandardLibrary.createGlobals(null, suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
+        suggestionContextBuilder.currentScope().setParent(new RepositoryScope(repo, suggestionContextBuilder.coreTypes(), null));
+        ////  if (globalConfigurator != null)
+        ////  globalConfigurator.configure(suggestionContextBuilder.currentScope(), suggestionContextBuilder.coreTypes());
+        // Store any class variables, method parameters
+        ClassDescription currentClass = null;
+        if (requestMsg.getCurrentClass() != null)
+        {
+          currentClass = repo.findClassWithName(requestMsg.getCurrentClass(), true);
+          try {
+            suggestionContextBuilder.setDefinedClassOfMethod(suggestionContextBuilder.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentClass.getName())));
+          }
+          catch (RunException e)
+          {
+            // Ignore any errors when setting this
+          }
+
+          // Create an object scope that will handle this and instance variables
+          try {
+            Value thisValue = new Value();
+            thisValue.type = suggestionContextBuilder.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentClass.getName()));
+            suggestionContextBuilder.pushObjectScope(thisValue);
+          } 
+          catch (RunException e)
+          {
+            // Ignore any errors when setting this
+          }
+        }
+        // If we're in a method, set the method type
+        FunctionSignature currentMethodSignature = null;
+        if (requestMsg.getCurrentMethodSignature() != null)
+        {
+          currentMethodSignature = CodeRepositoryMessages.stringToSignature(requestMsg.getCurrentMethodSignature());
+          suggestionContextBuilder.setIsStaticMethod(currentMethodSignature.isStatic);
+          suggestionContextBuilder.setIsConstructorMethod(currentMethodSignature.isConstructor);
+        }
+
+        // Add in function arguments
+        FunctionDescription fd = null; 
+        if (requestMsg.getCurrentFunction() != null)
+          fd = repo.getFunctionDescription(requestMsg.getCurrentFunction());
+        else if (currentMethodSignature != null)
+          fd = currentClass.findMethod(currentMethodSignature.getLookupName(), currentMethodSignature.isConstructor || currentMethodSignature.isStatic);
+        if (fd != null)
+        {
+          suggestionContextBuilder.pushNewScope();
+          for (int n = 0; n < fd.sig.getNumArgs(); n++)
+          {
+            String name = fd.sig.getArgName(n);
+            UnboundType unboundType = fd.sig.getArgType(n);
+            try {
+              Type type = suggestionContextBuilder.currentScope().typeFromUnboundTypeFromScope(unboundType);
+              suggestionContextBuilder.currentScope().addVariable(name, type, new Value());
+            }
+            catch (RunException e)
+            {
+              // Ignore the argument if it doesn't have a valid type
+            }
+          }
+        }
+        ////      if (variableContextConfigurator != null)
+        ////        variableContextConfigurator.accept(suggestionContextBuilder);
+        suggestionContextBuilder.pushNewScope();
+        CodeCompletionContext suggestionContext = suggestionContextBuilder.build();
+        if (requestMsg.getCode() != null && requestMsg.getCodePositionString() != null)
+          GatherCodeCompletionInfo.fromStatements(requestMsg.getCodeStatementContainer(), suggestionContext, requestMsg.getCodePosition(), 0);
+        currentCodeCompletionContext = suggestionContext;
+      }
+      catch (PlomReadException e)
+      {
+        e.printStackTrace();
+      }
       postMessage(CodeRepositoryMessages.createCancellableReplyMessage(requestMsg.getRequestId(), false));
       break;
     }

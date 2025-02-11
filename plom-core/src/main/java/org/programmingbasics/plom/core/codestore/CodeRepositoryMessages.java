@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
@@ -219,7 +220,7 @@ public class CodeRepositoryMessages
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     return ModuleCodeRepository.loadFunctionSignature(lexer);
   }
-  
+
   @JsType(isNative = true)
   public static interface IsStdLibReplyMessage extends ReplyMessage
   {
@@ -561,11 +562,36 @@ public class CodeRepositoryMessages
   @JsType(isNative = true)
   public static interface SetCodeCompletionContextRequest extends RequestMessage
   {
+    @JsProperty(name = "function") String getCurrentFunction();
+    @JsProperty(name = "function") void setCurrentFunction(String name);
+    @JsProperty(name = "class") String getCurrentClass();
+    @JsProperty(name = "class") void setCurrentClass(String className);
+    @JsProperty(name = "method") String getCurrentMethodSignature();
+    @JsProperty(name = "method") void setCurrentMethodSignature(String signature);
+    @JsProperty(name = "code") String getCode();
+    @JsProperty(name = "code") void setCode(String code);
+    @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
+    @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
+    @JsProperty(name = "pos") String getCodePositionString();
+    @JsProperty(name = "pos") void setCodePositionString(String pos);
+    @JsOverlay default CodePosition getCodePosition() { return CodePosition.fromString(getCodePositionString()); }
+    @JsOverlay default void setCodePosition(CodePosition pos) { setCodePositionString(pos.toString()); }
   }
 
-  public static SetCodeCompletionContextRequest createSetCodeCompletionRequest(String id) throws IOException
+  public static SetCodeCompletionContextRequest createSetCodeCompletionRequest(String id,
+      String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos) throws IOException
   {
     SetCodeCompletionContextRequest msg = (SetCodeCompletionContextRequest)createRequestMessage(MessageType.SET_CODE_COMPLETION_CONTEXT, id);
+    if (currentFunction != null)
+      msg.setCurrentFunction(currentFunction);
+    if (currentClass != null)
+      msg.setCurrentClass(currentClass);
+    if (currentMethod != null)
+      msg.setCurrentMethodSignature(signatureToString(currentMethod));
+    if (currentCode != null)
+      msg.setCodeStatementContainer(currentCode);
+    if (currentPos != null)
+      msg.setCodePosition(currentPos);
     return msg;
   }
 

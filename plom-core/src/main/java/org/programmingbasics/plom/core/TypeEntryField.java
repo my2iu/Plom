@@ -31,14 +31,14 @@ import elemental.html.DivElement;
  */
 public class TypeEntryField
 {
-  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, CodeCompletionSuggester codeCompletionSuggester, ConfigureGlobalScope globalConfigurator, VariableContextConfigurator variableContextConfigurator, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxClientWidth, Element scrollableDiv, Element scrollableExtraPaddingDiv)
+  public TypeEntryField(Token.ParameterToken type, DivElement div, SimpleEntry simpleEntry, boolean isReturnType, CodeCompletionSuggester codeCompletionSuggester, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, int maxClientWidth, Element scrollableDiv, Element scrollableExtraPaddingDiv)
   {
     this.type = type;
     this.simpleEntry = simpleEntry;
     this.isReturnType = isReturnType;
     fieldDiv = div;
-    this.globalConfigurator = globalConfigurator;
-    this.variableContextConfigurator = variableContextConfigurator;
+//    this.globalConfigurator = globalConfigurator;
+//    this.variableContextConfigurator = variableContextConfigurator;
     this.codeCompletionSuggester = codeCompletionSuggester;
     this.widthCalculator = widthCalculator;
     this.maxClientWidth = maxClientWidth;
@@ -64,10 +64,10 @@ public class TypeEntryField
    * Allows for the configuration of what global variables/types there are
    * for type checking.
    * */
-  ConfigureGlobalScope globalConfigurator; 
+//  ConfigureGlobalScope globalConfigurator; 
 
   /** To configure object variables and function arguments that are accessible for code completion */
-  VariableContextConfigurator variableContextConfigurator; 
+//  VariableContextConfigurator variableContextConfigurator; 
 
   /** External interface to a component that can handle code completion suggestions */
   CodeCompletionSuggester codeCompletionSuggester;
@@ -120,8 +120,8 @@ public class TypeEntryField
       }
       
       String initialValue = ((Token.ParameterToken)hitToken).getTextContent().substring(1);
-      CodeCompletionContext suggestionContext = CodePanel.calculateSuggestionContext(null, null, codeCompletionSuggester, globalConfigurator, variableContextConfigurator);
-      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, codeCompletionSuggester.makeTypeSuggester(suggestionContext, isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      codeCompletionSuggester.setCodeCompletionContextForTypes();
+      simpleEntry.showFor("@", "", null, initialValue, hitToken, true, codeCompletionSuggester.makeTypeSuggester(isReturnType && !cursorPos.hasOffset(1)), this::simpleEntryInput, this::simpleEntryBackspaceAll);
       simpleEntry.scrollForDoNotCover(scrollableDiv, scrollableExtraPaddingDiv, doNotCoverLeft, doNotCoverRight);
       simpleEntry.setEraseButtonVisible(true);
 
