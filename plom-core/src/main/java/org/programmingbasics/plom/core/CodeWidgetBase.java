@@ -184,6 +184,9 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     public Promise<Void> setCodeCompletionContextFor(StatementContainer code, CodePosition pos);
     public Promise<Void> setCodeCompletionContextForTypes();
     public SuggesterClient makeTypeSuggester(boolean allowVoid);
+    public SuggesterClient makeVariableSuggester();
+    public SuggesterClient makeMemberSuggester();
+    public SuggesterClient makeStaticMemberSuggester(boolean includeNonConstructors, boolean includeConstructors);
   }
 
   public static interface VariableContextConfigurator {
@@ -1106,19 +1109,19 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (parentSymbols.contains(Symbol.StaticMethodCallExpression))
       {
-        suggester = SuggesterClient.makeStaticMemberSuggester(suggestionContext, true, true);
+        suggester = codeCompletionSuggester.makeStaticMemberSuggester(true, true);
       }
       else if (parentSymbols.contains(Symbol.SuperCallExpression))
       {
         if (suggestionContext.getIsConstructorMethod())
         {
           // Constructor chaining
-          suggester = SuggesterClient.makeStaticMemberSuggester(suggestionContext, false, true);
+          suggester = codeCompletionSuggester.makeStaticMemberSuggester(false, true);
         }
         else if (!suggestionContext.getIsConstructorMethod() && !suggestionContext.getIsStaticMethod())
         {
           // Instance method can call instance methods of the parent
-          suggester = SuggesterClient.makeMemberSuggester(suggestionContext);
+          suggester = codeCompletionSuggester.makeMemberSuggester();
         }
         else
         {
@@ -1128,11 +1131,11 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       }
       else if (parentSymbols.contains(Symbol.DotMember))
       {
-        suggester = SuggesterClient.makeMemberSuggester(suggestionContext);
+        suggester = codeCompletionSuggester.makeMemberSuggester();
       }
       else
       {
-        suggester = SuggesterClient.makeVariableSuggester(suggestionContext);
+        suggester = codeCompletionSuggester.makeVariableSuggester();
       }
     }
     return suggester;

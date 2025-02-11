@@ -615,13 +615,54 @@ public class CodeRepositoryMessages
     @JsProperty(name = "query") void setQuery(String query);
   }
 
-  public static GatherSuggestionsRequest createGatherTypeSuggestionsRequest(String requestId, String query)
+  public static GatherSuggestionsRequest createGatherSuggestionsRequest(MessageType type, String requestId, String query)
   {
-    GatherSuggestionsRequest msg = (GatherSuggestionsRequest)createRequestMessage(MessageType.GATHER_TYPE_SUGGESTIONS, requestId);
+    GatherSuggestionsRequest msg = (GatherSuggestionsRequest)createRequestMessage(type, requestId);
     msg.setQuery(query);
     return msg;
   }
   
+  public static GatherSuggestionsRequest createGatherVariableSuggestionsRequest(String requestId, String query)
+  {
+    return createGatherSuggestionsRequest(MessageType.GATHER_VARIABLE_SUGGESTIONS, requestId, query);
+  }
+
+  public static GatherSuggestionsRequest createGatherMemberSuggestionsRequest(String requestId, String query)
+  {
+    return createGatherSuggestionsRequest(MessageType.GATHER_MEMBER_SUGGESTIONS, requestId, query);
+  }
+  
+  @JsType(isNative = true)
+  public static interface GatherTypeSuggestionsRequest extends GatherSuggestionsRequest
+  {
+    @JsProperty(name = "void") boolean getAllowVoid();
+    @JsProperty(name = "void") void setAllowVoid(boolean allowVoid);
+  }
+
+  public static GatherTypeSuggestionsRequest createGatherTypeSuggestionsRequest(String requestId, String query, boolean allowVoid)
+  {
+    GatherTypeSuggestionsRequest msg = (GatherTypeSuggestionsRequest)createGatherSuggestionsRequest(MessageType.GATHER_TYPE_SUGGESTIONS, requestId, query);
+    msg.setAllowVoid(allowVoid);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface GatherStaticMemberSuggestionsRequest extends GatherSuggestionsRequest
+  {
+    @JsProperty(name = "constructors") boolean getIncludeConstructors();
+    @JsProperty(name = "constructors") void setIncludeConstructors(boolean constructors);
+    @JsProperty(name = "nonconstructors") boolean getIncludeNonConstructors();
+    @JsProperty(name = "nonconstructors") void setIncludeNonConstructors(boolean nonconstructors);
+  }
+
+  public static GatherSuggestionsRequest createGatherStaticMemberSuggestionsRequest(String requestId, String query, boolean includeNonConstructors, boolean includeConstructors)
+  {
+    GatherStaticMemberSuggestionsRequest msg = (GatherStaticMemberSuggestionsRequest)createGatherSuggestionsRequest(MessageType.GATHER_STATIC_MEMBER_SUGGESTIONS, requestId, query);
+    msg.setIncludeConstructors(includeConstructors);
+    msg.setIncludeNonConstructors(includeNonConstructors);
+    return msg;
+  }
+
   @JsType(isNative = true)
   public static interface GatherSuggestionsReply extends CancellableReplyMessage
   {
@@ -677,7 +718,10 @@ public class CodeRepositoryMessages
     SAVE_METHOD_CODE("saveMethodCode"), 
     LOAD_CLASS("loadClass"),
     SET_CODE_COMPLETION_CONTEXT("setCodeCompletionContext"),
-    GATHER_TYPE_SUGGESTIONS("gatherTypeSuggestions");
+    GATHER_TYPE_SUGGESTIONS("gatherTypeSuggestions"), 
+    GATHER_VARIABLE_SUGGESTIONS("gatherVariableSuggestions"), 
+    GATHER_MEMBER_SUGGESTIONS("gatherMemberSuggestions"),
+    GATHER_STATIC_MEMBER_SUGGESTIONS("gatherStaticMemberSuggestions");
     private MessageType(String val)
     {
       this.value = val;

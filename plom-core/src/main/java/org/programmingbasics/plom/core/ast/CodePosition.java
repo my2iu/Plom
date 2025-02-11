@@ -136,10 +136,10 @@ public class CodePosition
   public static CodePosition fromString(String str)
   {
     if (str == null) return null;
-    String [] splits = str.split("[,]");
+    String [] splits = str.split("[\\[,\\]]");
     int [] offsets = new int[splits.length - 2];
-    for (int n = 1; n < splits.length - 1; n++)
-      offsets[n-1] = Integer.parseInt(splits[n]);
+    for (int n = 1; n < splits.length; n++)
+      offsets[n-1] = Integer.parseInt(splits[n].trim());
     return CodePosition.fromOffsets(offsets);
   }
   public CodePosition clone()

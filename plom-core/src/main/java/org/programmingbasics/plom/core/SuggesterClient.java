@@ -35,20 +35,4 @@ public class SuggesterClient
   }
   
   public boolean shouldShowAllSuggestions() { return shouldShowAllSuggestions; }
-
-  
-  public static SuggesterClient makeMemberSuggester(CodeCompletionContext context)
-  {
-    return new SuggesterClient(new MemberSuggester(context), true);
-  }
-  
-  public static SuggesterClient makeStaticMemberSuggester(CodeCompletionContext context, boolean includeNonConstructors, boolean includeConstructors) 
-  {
-    return new SuggesterClient(new StaticMemberSuggester(context, includeNonConstructors, includeConstructors), true);
-  }
-
-  public static SuggesterClient makeVariableSuggester(CodeCompletionContext context)
-  {
-    return new SuggesterClient(new VariableSuggester(context), false);
-  }
 }

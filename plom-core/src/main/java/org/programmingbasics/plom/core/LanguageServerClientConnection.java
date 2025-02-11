@@ -476,10 +476,10 @@ public class LanguageServerClientConnection
     });
   }
 
-  Promise<List<String>> sendGatherTypeSuggestions(String val)
+  Promise<List<String>> sendGatherTypeSuggestions(String val, boolean allowVoid)
   {
     String requestId = getNextId();
-    worker.postMessage(CodeRepositoryMessages.createGatherTypeSuggestionsRequest(requestId, val));
+    worker.postMessage(CodeRepositoryMessages.createGatherTypeSuggestionsRequest(requestId, val, allowVoid));
     return waitForReplyFor(requestId).thenNow((reply) -> {
       CodeRepositoryMessages.GatherSuggestionsReply suggestionsReply = (CodeRepositoryMessages.GatherSuggestionsReply)reply;
       if (suggestionsReply.isCancelled())
@@ -487,4 +487,41 @@ public class LanguageServerClientConnection
       return suggestionsReply.getSuggestionsList();
     });
   }
+  
+  Promise<List<String>> sendGatherVariableSuggestions(String val)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGatherVariableSuggestionsRequest(requestId, val));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.GatherSuggestionsReply suggestionsReply = (CodeRepositoryMessages.GatherSuggestionsReply)reply;
+      if (suggestionsReply.isCancelled())
+        return null;
+      return suggestionsReply.getSuggestionsList();
+    });
+  }
+
+  Promise<List<String>> sendGatherMemberSuggestions(String val)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGatherMemberSuggestionsRequest(requestId, val));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.GatherSuggestionsReply suggestionsReply = (CodeRepositoryMessages.GatherSuggestionsReply)reply;
+      if (suggestionsReply.isCancelled())
+        return null;
+      return suggestionsReply.getSuggestionsList();
+    });
+  }
+
+  Promise<List<String>> sendGatherStaticMemberSuggestions(String val, boolean includeNonConstructors, boolean includeConstructors)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGatherStaticMemberSuggestionsRequest(requestId, val, includeNonConstructors, includeConstructors));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.GatherSuggestionsReply suggestionsReply = (CodeRepositoryMessages.GatherSuggestionsReply)reply;
+      if (suggestionsReply.isCancelled())
+        return null;
+      return suggestionsReply.getSuggestionsList();
+    });
+  }
+
 }

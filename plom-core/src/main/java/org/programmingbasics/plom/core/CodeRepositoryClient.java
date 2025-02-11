@@ -474,11 +474,26 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendSetCodeCompletionContext(currentFunction, currentClass, currentMethod, currentCode, currentPos);
   }
   
-  public Promise<List<String>> gatherTypeSuggestions(String val)
+  public Promise<List<String>> gatherTypeSuggestions(String val, boolean allowVoid)
   {
-    return languageServer.sendGatherTypeSuggestions(val);
+    return languageServer.sendGatherTypeSuggestions(val, allowVoid);
   }
-  
+
+  public Promise<List<String>> gatherVariableSuggestions(String val)
+  {
+    return languageServer.sendGatherVariableSuggestions(val);
+  }
+
+  public Promise<List<String>> gatherMemberSuggestions(String val)
+  {
+    return languageServer.sendGatherMemberSuggestions(val);
+  }
+
+  public Promise<List<String>> gatherStaticMemberSuggestions(String val, boolean includeNonConstructors, boolean includeConstructors)
+  {
+    return languageServer.sendGatherStaticMemberSuggestions(val, includeNonConstructors, includeConstructors);
+  }
+
   private class CodeCompletionSuggesterClient implements CodeWidgetBase.CodeCompletionSuggester {
     String currentFunctionOrNull;
     ClassDescription currentClassOrNull;
@@ -510,7 +525,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
       return new SuggesterClient(null, false) {
         @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
         {
-          gatherTypeSuggestions(val).thenNow((suggestions) -> {
+          gatherTypeSuggestions(val, allowVoid).thenNow((suggestions) -> {
             if (suggestions != null)
               callback.accept(suggestions);
             return null;
@@ -518,6 +533,49 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
         }
       };
     }
+    @Override
+    public SuggesterClient makeVariableSuggester()
+    {
+      return new SuggesterClient(null, false) {
+        @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
+        {
+          gatherVariableSuggestions(val).thenNow((suggestions) -> {
+            if (suggestions != null)
+              callback.accept(suggestions);
+            return null;
+          });
+        }
+      };
+    }
+    @Override
+    public SuggesterClient makeMemberSuggester()
+    {
+      return new SuggesterClient(null, true) {
+        @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
+        {
+          gatherMemberSuggestions(val).thenNow((suggestions) -> {
+            if (suggestions != null)
+              callback.accept(suggestions);
+            return null;
+          });
+        }
+      };
+    }
+    @Override
+    public SuggesterClient makeStaticMemberSuggester(boolean includeNonConstructors, boolean includeConstructors)
+    {
+      return new SuggesterClient(null, true) {
+        @Override void gatherSuggestions(String val, Consumer<List<String>> callback)
+        {
+          gatherStaticMemberSuggestions(val, includeNonConstructors, includeConstructors).thenNow((suggestions) -> {
+            if (suggestions != null)
+              callback.accept(suggestions);
+            return null;
+          });
+        }
+      };
+    }
+
   }
 
   CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterNoContext()

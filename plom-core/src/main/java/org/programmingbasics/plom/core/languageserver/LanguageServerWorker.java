@@ -3,39 +3,35 @@ package org.programmingbasics.plom.core.languageserver;
 import java.io.IOException;
 import java.util.List;
 
-import org.programmingbasics.plom.core.CodeRepositoryClient;
 import org.programmingbasics.plom.core.Main;
-import org.programmingbasics.plom.core.WebHelpers;
-import org.programmingbasics.plom.core.WebHelpersShunt;
-import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
-import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
-import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.MessageType;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
+import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.Type;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
+import org.programmingbasics.plom.core.suggestions.MemberSuggester;
+import org.programmingbasics.plom.core.suggestions.StaticMemberSuggester;
 import org.programmingbasics.plom.core.suggestions.TypeSuggester;
+import org.programmingbasics.plom.core.suggestions.VariableSuggester;
 import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 
 import elemental.client.Browser;
 import elemental.events.MessageEvent;
-import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
-import elemental.util.Collections;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -556,11 +552,33 @@ public class LanguageServerWorker
     }
     case GATHER_TYPE_SUGGESTIONS:
     {
-      CodeRepositoryMessages.GatherSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherSuggestionsRequest)msg;
-      TypeSuggester suggester = new TypeSuggester(currentCodeCompletionContext, false);
+      CodeRepositoryMessages.GatherTypeSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherTypeSuggestionsRequest)msg;
+      TypeSuggester suggester = new TypeSuggester(currentCodeCompletionContext, requestMsg.getAllowVoid());
       postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
       break;
     }
+    case GATHER_VARIABLE_SUGGESTIONS:
+    {
+      CodeRepositoryMessages.GatherSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherSuggestionsRequest)msg;
+      VariableSuggester suggester = new VariableSuggester(currentCodeCompletionContext); 
+      postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
+      break;
+    }
+    case GATHER_MEMBER_SUGGESTIONS:
+    {
+      CodeRepositoryMessages.GatherSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherSuggestionsRequest)msg;
+      MemberSuggester suggester = new MemberSuggester(currentCodeCompletionContext);
+      postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
+      break;
+    }
+    case GATHER_STATIC_MEMBER_SUGGESTIONS:
+    {
+      CodeRepositoryMessages.GatherStaticMemberSuggestionsRequest requestMsg = (CodeRepositoryMessages.GatherStaticMemberSuggestionsRequest)msg;
+      StaticMemberSuggester suggester = new StaticMemberSuggester(currentCodeCompletionContext, requestMsg.getIncludeNonConstructors(), requestMsg.getIncludeConstructors());
+      postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
+      break;
+    }
+      
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;
