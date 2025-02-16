@@ -161,14 +161,19 @@ function setupPlomUi() {
 		newRepository.markAsImported();
 		return newRepository;
 	}
+	var languageServerWorkerUrl = 'languageServerWorker.js'
 	function makeRepositoryWithStdLib(main)
     {
-	    var languageServerWorker = new Worker('languageServerWorker.js');
+	    var languageServerWorker = new Worker(languageServerWorkerUrl);
 	    var languageServerConnection = new org.programmingbasics.plom.core.LanguageServerClientConnection(languageServerWorker);
     	var repo = new CodeRepositoryClient(languageServerConnection);
     	repo.importStdLibRepository();
 		return repo;
     }
+    function setOverrideLanguageServerWorkerUrl(url) {
+    	languageServerWorkerUrl = url;
+    }
+    
     
 	function doLoadWeb(main)
 	{
@@ -543,6 +548,7 @@ function setupPlomUi() {
 	window.hookLoadSave = hookLoadSave;
 	window.hookExportZip = hookExportZip;
 	window.initRepository = initRepository;
+	window.setOverrideLanguageServerWorkerUrl = setOverrideLanguageServerWorkerUrl;
 	window.makeRepositoryWithStdLib = makeRepositoryWithStdLib;
 	window.makeExecutableRepository = makeExecutableRepository;
 	window.loadCodeStringIntoRepository = loadCodeStringIntoRepository;

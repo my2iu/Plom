@@ -3,6 +3,7 @@
 function setupPlomMain(virtualServerAddr, runHtmlCodeTransferHandler, exportZipAsBase64, saveOutBlobHandler)
 {
 	setupPlomUi();
+	setOverrideLanguageServerWorkerUrl('plom/languageServerWorker.js');
 	var main = new org.programmingbasics.plom.core.Main();
 	//initRepository(main);
 	//main.go();
