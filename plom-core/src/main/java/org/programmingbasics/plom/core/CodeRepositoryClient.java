@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
@@ -22,8 +23,6 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescri
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.suggestions.CodeCompletionContext;
-import org.programmingbasics.plom.core.suggestions.TypeSuggester;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
@@ -493,6 +492,15 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   {
     return languageServer.sendGatherStaticMemberSuggestions(val, includeNonConstructors, includeConstructors);
   }
+  
+  /** When making a function lambda, it's hard to remember all the
+   * names and parameters, so this will do a code suggestions of what
+   * tokens are needed to complete a function lambda
+   */
+  public Promise<List<Token>> gatherExpectedTypeTokens()
+  {
+    return languageServer.sendGatherExpectedTypeTokens();
+  }
 
   private class CodeCompletionSuggesterClient implements CodeWidgetBase.CodeCompletionSuggester {
     String currentFunctionOrNull;
@@ -506,7 +514,20 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
       this.currentFunctionOrNull = currentFunctionOrNull;
       this.currentMethodOrNull = currentMethodOrNull;
     }
-    
+    @Override
+    public boolean isCurrentMethodConstructor()
+    {
+      if (currentMethodOrNull != null)
+        return currentMethodOrNull.isConstructor;
+      return false;
+    }
+    @Override
+    public boolean isCurrentMethodStatic()
+    {
+      if (currentMethodOrNull != null)
+        return currentMethodOrNull.isStatic;
+      return false;
+    }   
     @Override
     public Promise<Void> setCodeCompletionContextForTypes()
     {
@@ -575,7 +596,12 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
         }
       };
     }
-
+    
+    @Override
+    public Promise<List<Token>> gatherExpectedTypeTokens()
+    {
+      return CodeRepositoryClient.this.gatherExpectedTypeTokens();
+    }
   }
 
   CodeWidgetBase.CodeCompletionSuggester makeCodeCompletionSuggesterNoContext()

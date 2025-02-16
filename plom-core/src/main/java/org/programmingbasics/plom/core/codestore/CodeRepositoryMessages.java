@@ -688,6 +688,35 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  public static RequestMessage createGatherExpectedTypeTokensRequest(String requestId)
+  {
+    return createRequestMessage(MessageType.GATHER_EXPECTED_TYPE_TOKENS, requestId);
+  }
+
+  @JsType(isNative = true)
+  public static interface GatherExpectedTypeTokensReply extends CancellableReplyMessage
+  {
+    @JsProperty(name = "expectedType") ArrayOf<String> getExpectedType();
+    @JsProperty(name = "expectedType") void setExpectedType(ArrayOf<String> tokens);
+    @JsOverlay default List<Token> getExpectedTypeTokens() throws PlomReadException
+    {
+      if (getExpectedType() == null) return null;
+      return arrayOfToList(getExpectedType(), str -> stringToToken(str));
+    }
+    @JsOverlay default void setExpectedTypeTokens(List<Token> tokens) throws IOException
+    {
+      if (tokens != null)
+        setExpectedType(listToArrayOf(tokens, tok -> tokenToString(tok)));
+    }
+  }
+
+  public static GatherExpectedTypeTokensReply createGatherExpectedTypeTokensReply(String id, boolean cancelled, List<Token> expectedType) throws IOException
+  {
+    GatherExpectedTypeTokensReply msg = (GatherExpectedTypeTokensReply)createCancellableReplyMessage(id, cancelled);
+    msg.setExpectedTypeTokens(expectedType);
+    return msg;
+  }
+
   
   public static enum MessageType
   {
@@ -721,7 +750,8 @@ public class CodeRepositoryMessages
     GATHER_TYPE_SUGGESTIONS("gatherTypeSuggestions"), 
     GATHER_VARIABLE_SUGGESTIONS("gatherVariableSuggestions"), 
     GATHER_MEMBER_SUGGESTIONS("gatherMemberSuggestions"),
-    GATHER_STATIC_MEMBER_SUGGESTIONS("gatherStaticMemberSuggestions");
+    GATHER_STATIC_MEMBER_SUGGESTIONS("gatherStaticMemberSuggestions"),
+    GATHER_EXPECTED_TYPE_TOKENS("gatherExpectedTypeTokens");
     private MessageType(String val)
     {
       this.value = val;

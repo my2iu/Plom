@@ -1,13 +1,16 @@
 package org.programmingbasics.plom.core.languageserver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.programmingbasics.plom.core.Main;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
@@ -578,12 +581,65 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createGatherSuggestionsReply(requestMsg.getRequestId(), false, suggester.gatherSuggestions(requestMsg.getQuery())));
       break;
     }
+    case GATHER_EXPECTED_TYPE_TOKENS:
+    {
+      CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
+      Type expectedType = currentCodeCompletionContext.getExpectedExpressionType();
+      try {
+        if (expectedType != null)
+        {
+          List<Token> toReturn = makeTokensForType(expectedType);
+          postMessage(CodeRepositoryMessages.createGatherExpectedTypeTokensReply(requestMsg.getRequestId(), false, toReturn));
+        }
+        else
+          postMessage(CodeRepositoryMessages.createGatherExpectedTypeTokensReply(requestMsg.getRequestId(), false, null));
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+      break;
+    }
       
     default:
       Browser.getWindow().getConsole().log("Language server received unknown message type " + msg.getType());
       break;
     }
     
+  }
+  
+  /** Given a type, returns a list of tokens that can be used to create that type in some code */
+  static List<Token> makeTokensForType(Type type)
+  {
+    List<Token> toReturn = new ArrayList<>();
+    if (type instanceof Type.LambdaFunctionType)
+    {
+      Type.LambdaFunctionType lambdaType = (Type.LambdaFunctionType)type;
+      Token.ParameterToken newToken = new Token.ParameterToken(
+          Token.ParameterToken.splitVarAtColons("f@" + lambdaType.name), 
+          Token.ParameterToken.splitVarAtColonsForPostfix("f@" + lambdaType.name), 
+          Symbol.FunctionTypeName);
+      for (int n = 0; n < lambdaType.args.size(); n++)
+      {
+        if (lambdaType.optionalArgNames.get(n) != null && !lambdaType.optionalArgNames.get(n).isEmpty())
+        {
+          newToken.parameters.get(n).tokens.add(Token.ParameterToken.fromContents("." + lambdaType.optionalArgNames.get(n), Symbol.DotVariable));
+        }
+        newToken.parameters.get(n).tokens.addAll(makeTokensForType(lambdaType.args.get(n)));
+      }
+      toReturn.add(newToken);
+      
+      if (lambdaType.returnType != null)
+      {
+        toReturn.add(new Token.SimpleToken("returns", Symbol.Returns));
+        toReturn.addAll(makeTokensForType(lambdaType.returnType));
+      }
+    }
+    else if (type instanceof Type)
+    {
+      toReturn.add(Token.ParameterToken.fromContents("@" + type.name, Symbol.AtType));
+    }
+    return toReturn;
   }
   
   /** The version of postMessage() that's specifically available in web workers */

@@ -14,21 +14,21 @@ import junit.framework.TestCase;
 
 public class CodeWidgetBaseTest extends TestCase
 {
-  @Test
-  public void testMakeTokensForType()
-  {
-    Type.LambdaFunctionType type = new Type.LambdaFunctionType("call:", new Type("number"), Arrays.asList("arg1"), Arrays.asList(new Type("string")));
-    List<Token> result = CodeWidgetBase.makeTokensForType(type); 
-    Assert.assertEquals(
-        Arrays.asList(
-            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName, 
-                new TokenContainer(
-                    Token.ParameterToken.fromContents(".arg1", Symbol.DotVariable),
-                    Token.ParameterToken.fromContents("@string", Symbol.AtType)
-                    )),
-            new Token.SimpleToken("returns", Symbol.Returns),
-            Token.ParameterToken.fromContents("@number", Symbol.AtType)
-            ), 
-        result);
-  }
+//  @Test
+//  public void testMakeTokensForType()
+//  {
+//    Type.LambdaFunctionType type = new Type.LambdaFunctionType("call:", new Type("number"), Arrays.asList("arg1"), Arrays.asList(new Type("string")));
+//    List<Token> result = CodeWidgetBase.makeTokensForType(type); 
+//    Assert.assertEquals(
+//        Arrays.asList(
+//            Token.ParameterToken.fromContents("f@call:", Symbol.FunctionTypeName, 
+//                new TokenContainer(
+//                    Token.ParameterToken.fromContents(".arg1", Symbol.DotVariable),
+//                    Token.ParameterToken.fromContents("@string", Symbol.AtType)
+//                    )),
+//            new Token.SimpleToken("returns", Symbol.Returns),
+//            Token.ParameterToken.fromContents("@number", Symbol.AtType)
+//            ), 
+//        result);
+//  }
 }

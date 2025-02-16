@@ -11,6 +11,8 @@ import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
 import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
+import org.programmingbasics.plom.core.ast.Token;
+import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
@@ -521,6 +523,24 @@ public class LanguageServerClientConnection
       if (suggestionsReply.isCancelled())
         return null;
       return suggestionsReply.getSuggestionsList();
+    });
+  }
+
+  public Promise<List<Token>> sendGatherExpectedTypeTokens()
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGatherExpectedTypeTokensRequest(requestId));
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.GatherExpectedTypeTokensReply tokensReply = (CodeRepositoryMessages.GatherExpectedTypeTokensReply)reply;
+      if (tokensReply.isCancelled())
+        return null;
+      try {
+        return tokensReply.getExpectedTypeTokens();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
     });
   }
 
