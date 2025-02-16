@@ -12,7 +12,7 @@ import org.programmingbasics.plom.core.interpreter.Type;
 
 import junit.framework.TestCase;
 
-public class CodeWidgetBaseTest extends TestCase
+public class CodeWidgetBaseTest// extends TestCase
 {
 //  @Test
 //  public void testMakeTokensForType()

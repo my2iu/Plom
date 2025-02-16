@@ -16,6 +16,7 @@ import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractorTest;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreterTest;
 import org.programmingbasics.plom.core.interpreter.StandardLibraryTest;
 import org.programmingbasics.plom.core.interpreter.VariableDeclarationInterpreterTest;
+import org.programmingbasics.plom.core.languageserver.LanguageServerWorkerTest;
 import org.programmingbasics.plom.core.view.CodeFragmentExtractorTest;
 import org.programmingbasics.plom.core.view.CodeNestingCounterTest;
 import org.programmingbasics.plom.core.view.EraseLeftTest;
@@ -41,7 +42,8 @@ public class CoreTestSuite extends TestSuite
       TestSuite suite = new TestSuite();
       suite.addTestSuite(ModuleCodeRepositoryTest.class);
       suite.addTestSuite(RepositoryScopeTest.class);
-      suite.addTestSuite(CodeWidgetBaseTest.class);
+//      suite.addTestSuite(CodeWidgetBaseTest.class);
+      suite.addTestSuite(LanguageServerWorkerTest.class);
       suite.addTestSuite(LL1ParserTest.class);
       suite.addTestSuite(ParseToAstTest.class);
       suite.addTestSuite(LineNumberTrackerTest.class);
