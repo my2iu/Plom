@@ -10,9 +10,9 @@
         android:theme="@style/Theme.Plom">
         <activity android:name=".PlomActivity"
             android:theme="@style/Theme.Plom.NoActionBar">
-
         </activity>
-        <activity android:name=".NewProjectActivity" />
+        <activity android:name=".NewProjectActivity"
+            android:theme="@style/Theme.Plom"/>
         <activity android:name=".ProjectsActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

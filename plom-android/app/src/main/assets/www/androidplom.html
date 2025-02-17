@@ -7,13 +7,13 @@
     <script type="text/javascript" language="javascript" src="plom/gwtPreload.js"></script>
     <script type="text/javascript" language="javascript" src="plom/plomcore/plomdirect.js"></script>
     <!-- <script type="text/javascript" language="javascript" src="plomcore/plomdirect.js"></script> -->
-    <script type="text/javascript" language="javascript" src="plomStdlibPrimitives.js"></script>
+    <script type="text/javascript" language="javascript" src="plom/plomStdlibPrimitives.js"></script>
     <script type="text/javascript" language="javascript" src="plom/plomUi.js"></script>
     <script type="text/javascript" language="javascript" src="plom/plomApp.js"></script>
 	<script>
 		// Run code for initializing the UI
 		addGwtOnLoad(function() {
-		    var main = setupPlomMain('http://webviewbridge.plom.dev/plomweb/',
+		    var main = setupPlomMain('https://webviewbridge.plom.dev/plomweb/',
               // Start virtual web server with the given Plom code
 		      (serverId, code) => {
                 AndroidBridge.startVirtualWebServer(serverId, code);
@@ -29,7 +29,7 @@
 
             // Load in all the code for the project
             createPlomRepositoryWithProjectCode(main,
-              'http://webviewbridge.plom.dev/bridge/',
+              'https://webviewbridge.plom.dev/bridge/',
               // Writing out extra files
               (filename, data) => {
                 throw "Writing out extra files not implemented on Android yet";
@@ -52,7 +52,7 @@
                 if (main.canGoBack())
  		          main.goBack();
                 else
-                  fetch('http://webviewbridge.plom.dev/bridge/exit');
+                  fetch('https://webviewbridge.plom.dev/bridge/exit');
 			};
             document.querySelector('.backbutton').addEventListener('click', function(evt) {
                 evt.preventDefault();
@@ -66,6 +66,21 @@
             window.plomUpdateExtraFileList = function() {
                 main.updateExtraFiles();
             }
+
+            var refreshInsets = function() {
+              let insets = JSON.parse(AndroidBridge.getWindowInsets());
+              console.log(insets);
+              const bodyStyle = document.querySelector('body').style;
+              bodyStyle.setProperty('--window-inset-top', '' + (insets[0] / window.devicePixelRatio) + 'px');
+              bodyStyle.setProperty('--window-inset-right', '' + (insets[1] / window.devicePixelRatio) + 'px');
+              bodyStyle.setProperty('--window-inset-bottom', '' + (insets[2] / window.devicePixelRatio) + 'px');
+              bodyStyle.setProperty('--window-inset-left', '' + (insets[3] / window.devicePixelRatio) + 'px');
+            }
+            window.plomRequestRefreshInsets = function(top, right, bottom, left) {
+              window.setTimeout(refreshInsets, 0);
+            };
+            // Force a refresh of insets on start-up so we get initial inset values
+            refreshInsets();
 		});
 	</script>
 

@@ -4,6 +4,9 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewAssetLoader;
@@ -18,6 +21,7 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.util.Base64;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
@@ -62,6 +66,10 @@ public class PlomActivity extends AppCompatActivity {
 
     // Plom code to run in the virtual web server
     String plomCodeJsToRun;
+
+    // When displaying content edge-to-edge, we store the insets that we must apply
+    // to the rendered content here so that it can be passed in to the JavaScript
+    String windowInsetsJson = "[0,0,0,0]";
 
     public static final String STATE_BUNDLE_KEY_PROJECTNAME = "dev.plom.projectname";
     public static final String STATE_BUNDLE_KEY_PROJECTURI = "dev.plom.projecturi";
@@ -129,7 +137,7 @@ public class PlomActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                if ("http".equals(request.getUrl().getScheme())
+                if ("https".equals(request.getUrl().getScheme())
                     && "webviewbridge.plom.dev".equals(request.getUrl().getHost())) {
                     if (request.getUrl().getPath().startsWith("/bridge/")) {
                         String endpoint = request.getUrl().getPath().substring("/bridge/".length());
@@ -153,7 +161,7 @@ public class PlomActivity extends AppCompatActivity {
                         return handleVirtualWebServerRequest(endpoint, params);
                     }
                 }
-                else if ("http".equals(request.getUrl().getScheme())
+                else if ("https".equals(request.getUrl().getScheme())
                     && "androidwebview.plom.dev".equals(request.getUrl().getHost()))
                 {
                     try {
@@ -173,8 +181,21 @@ public class PlomActivity extends AppCompatActivity {
             webView.setSafeBrowsingWhitelist(Arrays.asList("webviewbridge.plom.dev"), null);
         }
 //        webView.loadUrl("file:///android_asset/www/androidplom.html");
-        webView.loadUrl("http://androidwebview.plom.dev/www/androidplom.html");
+        webView.loadUrl("https://androidwebview.plom.dev/www/androidplom.html");
 
+        // Push insets to the webview
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.webview).getRootView(), (v, windowInsets) -> {
+                    Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+                            | WindowInsetsCompat.Type.ime());
+                    windowInsetsJson = String.format("[%d,%d,%d,%d]", insets.top, insets.right, insets.bottom, insets.left);
+                    // Request a refresh of the insets (assuming that the web page has loaded.
+                    // If not, this will fail, but the page will request insets itself on startup)
+                    webView.evaluateJavascript("window.plomRequestRefreshInsets()", null);
+//                    return windowInsets;
+                    return WindowInsetsCompat.CONSUMED;
+                });
     }
 
     @Override
@@ -371,7 +392,7 @@ public class PlomActivity extends AppCompatActivity {
         // back into Java if it wants to actually exit
         final WebView webView = (WebView) findViewById(R.id.webview);
         webView.evaluateJavascript("window.plomOnAndroidBackPressed()", null);
-//        super.onBackPressed();
+        super.onBackPressed();
     }
 
     DocumentFile getSourceDirectory()
@@ -570,6 +591,12 @@ public class PlomActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return;
             }
+        }
+
+        @JavascriptInterface
+        public String getWindowInsets()
+        {
+            return windowInsetsJson;
         }
     }
 }

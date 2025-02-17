@@ -4,6 +4,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.documentfile.provider.DocumentFile;
 
 import android.app.Activity;
@@ -66,6 +69,14 @@ public class NewProjectActivity extends AppCompatActivity {
                 selectedTemplateIndex = 0;
             }
         });
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.projectName).getRootView(), (v, windowInsets) -> {
+            // Handle insets and cutouts
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout() | WindowInsetsCompat.Type.captionBar());
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+
     }
 
     @Override

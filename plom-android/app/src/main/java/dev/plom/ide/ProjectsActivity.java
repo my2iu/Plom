@@ -24,6 +24,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -131,6 +134,23 @@ public class ProjectsActivity extends AppCompatActivity {
             public int getItemCount() {
                 return projects.size();
             }
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.floatingActionButton).getRootView(), (v, windowInsets) -> {
+            // Handle insets and cutouts
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.floatingActionButton), (v, windowInsets) -> {
+            // Push the floating action button away from bottom
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.bottomMargin = insets.bottom;
+            mlp.rightMargin = insets.right;
+            v.setLayoutParams(mlp);
+            return WindowInsetsCompat.CONSUMED;
         });
     }
 
