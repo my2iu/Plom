@@ -7,6 +7,8 @@ body {
     margin: 0;
     padding: 0;
     border: 0;
+    margin-left: var(--window-inset-left);
+    margin-right: var(--window-inset-left);
 }
 
 input {

@@ -2,6 +2,10 @@ body {
 	/* Temporarily disable side swipes causing a page back navigation
 	 while I figure out how to control pointer events better */
 	overscroll-behavior-x: none;
+	--window-inset-top: 0px;
+	--window-inset-bottom: 0px;
+	--window-inset-left: 0px;
+	--window-inset-right: 0px;
 }
 
 div.main {
@@ -226,6 +230,7 @@ a.breadcrumb-item:visited {
 	height: 50%;
 	touch-action: manipulation;
 	overflow-y: auto;
+	padding-bottom: var(--window-inset-bottom);
 }
 
 .choices:focus {
@@ -239,6 +244,7 @@ a.breadcrumb-item:visited {
 	flex-grow: 0;
 	flex-shrink: 0;
 	padding: 3px;
+	padding-bottom: calc(var(--window-inset-bottom) + 3px);
 }
 
 .simpleentry:focus {
@@ -429,6 +435,7 @@ a.runbutton {
 }
 
 .plomNavigationHeader {
+	padding-top: var(--window-inset-top);
 	border-bottom: 1px solid black;
 	display: flex; 
 	align-items: flex-start;
