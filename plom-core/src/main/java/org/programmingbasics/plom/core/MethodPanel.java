@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.interpreter.ConfigureGlobalScope;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -81,10 +78,7 @@ public class MethodPanel
         new CodeWidgetCursorOverlay((Element)containerDiv.querySelector("svg.cursoroverlay")),
         true);
     methodWidget2 = new MethodNameWidget2(sig, inputPanels, 
-        (scope, coreTypes) -> {
-      StandardLibrary.createGlobals(null, scope, coreTypes);
-      scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
-    }, widthCalculator, 
+        widthCalculator, 
         (Element)containerDiv.querySelector(".nameHeading"),
         maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
     containerDiv.querySelector(".method_name2").setInnerHTML("");
@@ -137,11 +131,6 @@ public class MethodPanel
           (Element)containerDiv.querySelector(".nameHeading"),
           widthCalculator);
       returnTypeArea.setVariableContextConfigurator(
-          (scope, coreTypes) -> {
-            StandardLibrary.createGlobals(null, scope, coreTypes);
-            scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
-          },
-          null,
           repository.makeCodeCompletionSuggesterNoContext());
       returnTypeArea.setListener((isCodeChanged) -> {
         if (isCodeChanged)
@@ -280,7 +269,6 @@ public class MethodPanel
   {
     final Document doc;
     CodeRepositoryClient repository;
-    final ConfigureGlobalScope globalScopeForTypeLookup;
     final DivElement baseDiv;
     FunctionSignature sig;
     List<InputElement> nameEls;
@@ -296,10 +284,9 @@ public class MethodPanel
     Element scrollableInterior;
     CodeWidgetInputPanels inputPanels;
     
-    public MethodNameWidget2(FunctionSignature sig, CodeWidgetInputPanels inputPanels, ConfigureGlobalScope globalScopeForTypeLookup, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
+    public MethodNameWidget2(FunctionSignature sig, CodeWidgetInputPanels inputPanels, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
     {
       doc = Browser.getDocument();
-      this.globalScopeForTypeLookup = globalScopeForTypeLookup;
       this.sig = FunctionSignature.copyOf(sig);
       this.widthCalculator = widthCalculator;
       this.divForDeterminingWindowWidth = divForDeterminingWindowWidth;
@@ -424,8 +411,6 @@ public class MethodPanel
           divForDeterminingWindowWidth,
           widthCalculator);
       returnArea.setVariableContextConfigurator(
-          globalScopeForTypeLookup,
-          null,
           repository.makeCodeCompletionSuggesterNoContext());
         returnArea.setListener((isCodeChanged) -> {
           if (isCodeChanged)

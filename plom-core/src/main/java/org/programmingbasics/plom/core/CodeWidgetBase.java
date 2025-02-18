@@ -79,15 +79,6 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
    */
   boolean isSingleLineMode = false;
   
-  /** 
-   * Allows for the configuration of what global variables/types there are
-   * for type checking.
-   * */
-  ConfigureGlobalScope globalConfigurator; 
-
-  /** To configure object variables and function arguments that are accessible for code completion */
-  VariableContextConfigurator variableContextConfigurator; 
-
   /** External interface to a component that can handle code completion suggestions */
   CodeCompletionSuggester codeCompletionSuggester;
   
@@ -205,10 +196,8 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     public void accept(CodeCompletionContext.Builder contextBuilder);
   }
 //  @JsMethod
-  public void setVariableContextConfigurator(ConfigureGlobalScope globalConfigurator, VariableContextConfigurator configurator, CodeCompletionSuggester codeCompletionSuggester)
+  public void setVariableContextConfigurator(CodeCompletionSuggester codeCompletionSuggester)
   {
-    this.globalConfigurator = globalConfigurator;
-    variableContextConfigurator = configurator;
     this.codeCompletionSuggester = codeCompletionSuggester;
   }
   

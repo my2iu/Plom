@@ -930,72 +930,7 @@ public class Main
       // Normally, the "primitive" keyword isn't available unless we're editing a standard library
       codePanel.setExcludeTokens(Collections.emptyList());
     codePanel.setVariableContextConfigurator(
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(getRepository().localRepo, coreTypes, null));
-        },
-        (context) -> {
-          if (currentFunctionBeingViewed == null && currentMethodBeingViewed == null)
-            return;
-
-          if (currentMethodClassBeingViewed != null)
-          {
-            if (currentMethodBeingViewed != null)
-            {
-              context.setIsStaticMethod(currentMethodBeingViewed.sig.isStatic);
-              context.setIsConstructorMethod(currentMethodBeingViewed.sig.isConstructor);
-            }
-            try {
-              context.setDefinedClassOfMethod(context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName())));
-            }
-            catch (RunException e)
-            {
-              // Ignore any errors when setting this
-            }
-            
-            // Create an object scope that will handle this and instance variables
-            try {
-              Value thisValue = new Value();
-              thisValue.type = context.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName(currentMethodClassBeingViewed.getName()));
-              context.pushObjectScope(thisValue);
-            } 
-            catch (RunException e)
-            {
-              // Ignore any errors when setting this
-            }
-          }
-
-          // Add in function arguments
-          Promise<FunctionDescription> fdWait = null; 
-          if (currentFunctionBeingViewed != null)
-            fdWait = getRepository().getFunctionDescription(currentFunctionBeingViewed);
-          else if (currentMethodBeingViewed != null)
-            fdWait = WebHelpersShunt.promiseResolve(currentMethodBeingViewed);
-          if (fdWait != null)
-          {
-            fdWait.<Void>thenNow((fd) -> {
-              if (fd != null)
-              {
-                context.pushNewScope();
-                for (int n = 0; n < fd.sig.getNumArgs(); n++)
-                {
-                  String name = fd.sig.getArgName(n);
-                  UnboundType unboundType = fd.sig.getArgType(n);
-                  try {
-                    Type type = context.currentScope().typeFromUnboundTypeFromScope(unboundType);
-                    context.currentScope().addVariable(name, type, new Value());
-                  }
-                  catch (RunException e)
-                  {
-                    // Ignore the argument if it doesn't have a valid type
-                  }
-                }
-              }
-              return null;
-            });
-          }
-        },
-        repository.makeCodeCompletionSuggesterWithContext(currentFunctionBeingViewed, currentMethodClassBeingViewed, currentMethodBeingViewed.sig));
+        repository.makeCodeCompletionSuggesterWithContext(currentFunctionBeingViewed, currentMethodClassBeingViewed, (currentMethodBeingViewed == null ? null : currentMethodBeingViewed.sig)));
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {

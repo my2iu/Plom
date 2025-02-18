@@ -81,7 +81,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   public void importStdLibRepository()
   {
-    partialFix();
     languageServer.sendImportStdLibRepository();
     ModuleCodeRepository subRepository = new ModuleCodeRepository();
     subRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
@@ -95,7 +94,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
       e.printStackTrace();
     }
     subRepository.markAsImported();
-    localRepo.setChainedRepository(subRepository);
   }
   
   public List<FileDescription> getAllExtraFilesSorted()
@@ -292,10 +290,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public boolean isNoStdLibFlag()
   {
-    if (cachedIsNoStdLib != localRepo.isNoStdLibFlag)
-    {
-      Browser.getWindow().getConsole().log("isNoStdLibFlag is not synchronized perfectly, due to a race condition probably");
-    }
     return cachedIsNoStdLib;
   }
   
@@ -508,11 +502,10 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     FunctionSignature currentMethodOrNull;
     
     private CodeCompletionSuggesterClient() {}
-    private CodeCompletionSuggesterClient(String currentFunctionOrNull, ClassDescription currentClassOrNull, FunctionSignature currentMethodOrNull) {}
-    {
-      this.currentClassOrNull = currentClassOrNull;
-      this.currentFunctionOrNull = currentFunctionOrNull;
-      this.currentMethodOrNull = currentMethodOrNull;
+    private CodeCompletionSuggesterClient(String forCurrentFunctionOrNull, ClassDescription forCurrentClassOrNull, FunctionSignature forCurrentMethodOrNull) {
+      this.currentClassOrNull = forCurrentClassOrNull;
+      this.currentFunctionOrNull = forCurrentFunctionOrNull;
+      this.currentMethodOrNull = forCurrentMethodOrNull;
     }
     @Override
     public boolean isCurrentMethodConstructor()

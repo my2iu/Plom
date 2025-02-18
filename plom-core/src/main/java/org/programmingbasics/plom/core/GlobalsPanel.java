@@ -214,11 +214,6 @@ public class GlobalsPanel implements AutoCloseable
         (Element)mainDiv.querySelector(".classesHeading"),
         widthCalculator);
     variableArea.setVariableContextConfigurator(
-        (scope, coreTypes) -> {
-          StandardLibrary.createGlobals(null, scope, coreTypes);
-          scope.setParent(new RepositoryScope(repository.localRepo, coreTypes, null));
-        },
-        null,
         repository.makeCodeCompletionSuggesterNoContext());
     variableArea.setListener((isCodeChanged) -> {
       if (isCodeChanged)
