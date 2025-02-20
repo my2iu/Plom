@@ -462,8 +462,8 @@ public class Main
           return WebHelpers.promiseAll(srcFiles);
         })
         .thenNow((done) -> {
-            if (newRepo.isNoStdLibFlag())
-              newRepo.setChainedRepository(null);
+//            if (newRepo.isNoStdLibFlag())
+//              newRepo.setChainedRepository(null);
             setRepository(newRepo);
 
             getRepository().refreshExtraFiles(() -> {

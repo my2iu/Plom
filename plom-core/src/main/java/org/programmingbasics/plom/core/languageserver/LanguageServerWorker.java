@@ -104,6 +104,8 @@ public class LanguageServerWorker
       MapFromStringToString files = elemental.util.Collections.mapFromStringToString();
       try {
         repo.loadModuleCollectExtraFiles(lexer, files);
+        if (repo.isNoStdLibFlag)
+          repo.setChainedRepository(null);
         postMessage(CodeRepositoryMessages.createLoadModuleReply(loadModuleMsg.getRequestId(), true, null, files));
       } 
       catch (PlomReadException e)

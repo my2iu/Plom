@@ -36,8 +36,8 @@ function createPlomRepositoryWithProjectCode(main, bridgeUrl, writeFileHandler)
                 return loadClassCodeStringIntoRepository(code, repo);
             }))))
         .then((done) => {
-            if (repo.isNoStdLibFlag)
-                repo.setChainedRepository(null);
+//            if (repo.isNoStdLibFlag)
+//                repo.setChainedRepository(null);
             main.setRepository(repo);
 
 			main.getRepository().refreshExtraFiles(() => {

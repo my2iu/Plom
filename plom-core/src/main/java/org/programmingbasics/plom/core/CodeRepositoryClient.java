@@ -11,18 +11,14 @@ import org.programmingbasics.plom.core.CodeWidgetBase.CodeCompletionSuggester;
 import org.programmingbasics.plom.core.WebHelpers.Base64EncoderDecoder;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
 import org.programmingbasics.plom.core.ast.CodePosition;
-import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
-import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 
 import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
@@ -36,13 +32,6 @@ import jsinterop.annotations.JsType;
 @JsType
 public class CodeRepositoryClient // extends org.programmingbasics.plom.core.codestore.ModuleCodeRepository
 {
-  /** As part of the movement of the code repository to a secondary
-   * thread, I'll keep a backup local repository here in the UI 
-   * thread that will allow the UI thread to still do code
-   * repository operations until the transition is complete. 
-   */
-  ModuleCodeRepository localRepo;
-  
   /**
    * Cached information about whether the module in the language server
    * has the isNoStdLib flag set or not. (Flag is set if the module
@@ -63,39 +52,24 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   public CodeRepositoryClient(LanguageServerClientConnection clientConnection)
   {
     this.languageServer = clientConnection;
-    localRepo = new ModuleCodeRepository();
+//    localRepo = new ModuleCodeRepository();
   }
-
-  private static void toFix() 
-  {
-    Browser.getWindow().getConsole().log("CodeRepositoryClient unfixed call");
-  };
-
-  private static void toFixLater() 
-  {
-    Browser.getWindow().getConsole().log("CodeRepositoryClient unfixed call, but will fix later");
-  };
-
-  private static void partialFix() 
-  {
-    Browser.getWindow().getConsole().log("CodeRepositoryClient partially fixed call");
-  };
 
   public void importStdLibRepository()
   {
     languageServer.sendImportStdLibRepository();
-    ModuleCodeRepository subRepository = new ModuleCodeRepository();
-    subRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    try {
-      PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(Main.getStdLibCodeText());
-      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
-      subRepository.loadModulePlain(lexer, null);
-    }
-    catch (PlomReadException e)
-    {
-      e.printStackTrace();
-    }
-    subRepository.markAsImported();
+//    ModuleCodeRepository subRepository = new ModuleCodeRepository();
+//    subRepository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+//    try {
+//      PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(Main.getStdLibCodeText());
+//      PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+//      subRepository.loadModulePlain(lexer, null);
+//    }
+//    catch (PlomReadException e)
+//    {
+//      e.printStackTrace();
+//    }
+//    subRepository.markAsImported();
   }
   
   public List<FileDescription> getAllExtraFilesSorted()
@@ -118,7 +92,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public boolean hasExtraFile(String path)
   {
-    toFixLater();
     return extraFiles.stream().anyMatch((file) -> file.getPath().equals(path));
   }
 
@@ -156,13 +129,13 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   /**
    * Marks all the contents of this module as being imported
    */
-  public void markAsImported()
-  {
-    toFix();
-    localRepo.markAsImported();
-    for (FileDescription f: extraFiles)
-      f.setImported(true);
-  }
+//  public void markAsImported()
+//  {
+//    toFix();
+//    localRepo.markAsImported();
+//    for (FileDescription f: extraFiles)
+//      f.setImported(true);
+//  }
   
   public WebHelpers.Promise<Void> saveModuleWithExtraFiles(final PlomTextWriter.PlomCodeOutputFormatter out, boolean saveClasses, WebHelpers.PromiseCreator promiseCreator, WebHelpers.Promise.All promiseAll, Function<ArrayBuffer, Uint8Array> bufToUint8Array) throws IOException
   {
@@ -292,11 +265,11 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 //  }
 
 
-  public void setChainedRepository(ModuleCodeRepository other)
-  {
-    toFix();
-    localRepo.setChainedRepository(other);
-  }
+//  public void setChainedRepository(ModuleCodeRepository other)
+//  {
+//    toFix();
+//    localRepo.setChainedRepository(other);
+//  }
   
   public Promise<List<ClassDescription>> getDeletedClasses()
   {
