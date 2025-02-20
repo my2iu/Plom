@@ -40,6 +40,7 @@ public class CoreTestSuite extends TestSuite
    public static Test suite() 
    {
       TestSuite suite = new TestSuite();
+      suite.addTestSuite(CodeRepositoryClientTest.class);
       suite.addTestSuite(ModuleCodeRepositoryTest.class);
       suite.addTestSuite(RepositoryScopeTest.class);
 //      suite.addTestSuite(CodeWidgetBaseTest.class);

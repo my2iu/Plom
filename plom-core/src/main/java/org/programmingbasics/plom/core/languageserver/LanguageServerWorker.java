@@ -34,7 +34,10 @@ import org.programmingbasics.plom.core.view.GatherCodeCompletionInfo;
 
 import elemental.client.Browser;
 import elemental.events.MessageEvent;
+import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
+import elemental.util.MapFromStringTo;
+import elemental.util.MapFromStringToString;
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -96,32 +99,16 @@ public class LanguageServerWorker
 //      // Loading extra files from a module is done asynchronously, so
 //      // we use promises to keep track of when loading is done.
 //      ArrayOf<WebHelpers.Promise<String>> extraFilesPromises = Collections.arrayOf();
-
+      
       // Load the module, but pass in an extra handler to extract out file information
+      MapFromStringToString files = elemental.util.Collections.mapFromStringToString();
       try {
-        repo.loadModulePlain(lexer, (lex) -> {
-          String peek = lex.peekLexInput();
-          if ("file".equals(peek)) {
-            // Ignore extra files, but it's okay if we encounter them
-            lex.expectToken("file");
-            lex.swallowOptionalNewlineToken();
-            String fileNameString = lex.lexInput();
-            final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
-            lex.swallowOptionalNewlineToken();
-            lex.expectToken("{");
-            String fileData = lex.lexBase64();
-            lex.swallowOptionalNewlineToken();
-            lex.expectToken("}");
-            lex.swallowOptionalNewlineToken();
-            return true;
-          }
-          return false;
-        });
-        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), true, null));
+        repo.loadModuleCollectExtraFiles(lexer, files);
+        postMessage(CodeRepositoryMessages.createLoadModuleReply(loadModuleMsg.getRequestId(), true, null, files));
       } 
       catch (PlomReadException e)
       {
-        postMessage(CodeRepositoryMessages.createStatusReplyMessage(loadModuleMsg.getRequestId(), false, e.getMessage()));
+        postMessage(CodeRepositoryMessages.createLoadModuleReply(loadModuleMsg.getRequestId(), false, e.getMessage(), null));
         e.printStackTrace();
       }
       break;

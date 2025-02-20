@@ -7,16 +7,21 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.programmingbasics.plom.core.WebHelpers.Promise;
+import org.programmingbasics.plom.core.WebHelpers.Promise.Consumer;
 import org.programmingbasics.plom.core.WebHelpers.Promise.PromiseConstructorFunction;
 import org.programmingbasics.plom.core.WebHelpersShunt.ByteArrayUint8Array;
 import org.programmingbasics.plom.core.WebHelpersShunt.JsEmulatedPromise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
+import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.LoadModuleReply;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -25,22 +30,46 @@ import org.programmingbasics.plom.core.interpreter.UnboundType;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
+import elemental.util.MapFromStringToString;
+import junit.framework.TestCase;
 
-public class CodeRepositoryClientTest
+public class CodeRepositoryClientTest extends TestCase
 {
   @Test
   public void testSaveExtraFiles() throws IOException, InterruptedException, ExecutionException
   {
     StringBuilder strBuilder = new StringBuilder();
 
-    CodeRepositoryClient repository = new CodeRepositoryClient(null);
-//    repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.test_addFunctionAndResetIds(new FunctionDescription(
+    // Make a fake language server backend
+    ModuleCodeRepository workerRepo = new ModuleCodeRepository();
+    workerRepo.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
+    workerRepo.addFunctionAndResetIds(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),
                 new Token.SimpleToken("3", Symbol.Number)))));
+    LanguageServerClientConnection connection = new LanguageServerClientConnection() {
+      @Override public Promise<String> sendSaveModuleToString(boolean saveClasses,
+          boolean isOpen)
+      {
+        Assert.assertTrue(isOpen);
+        Assert.assertTrue(saveClasses);
+        StringBuilder out = new StringBuilder();
+        try {
+          workerRepo.saveOpenModule(new PlomTextWriter.PlomCodeOutputFormatter(out), saveClasses);
+          return WebHelpersShunt.promiseResolve(out.toString());
+        }
+        catch (IOException e)
+        {
+          Assert.fail();
+          throw new IllegalArgumentException(e);
+        }
+      }
+    };
+    
+    // Try saving out a repository with extra files in it
+    CodeRepositoryClient repository = new CodeRepositoryClient(connection);
     Promise<Void> promise = new WebHelpersShunt.JsEmulatedPromise<Void>((resolve, reject) -> {
       repository.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
       repository.getExtraFilesManager().insertFile("web/test.txt", 
@@ -107,8 +136,47 @@ public class CodeRepositoryClientTest
     
 //    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(codeStr);
 //    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
-    
-    CodeRepositoryClient loaded = new CodeRepositoryClient(null);
+
+    // Make a fake language server backend
+    ModuleCodeRepository workerRepo = new ModuleCodeRepository();
+    LanguageServerClientConnection connection = new LanguageServerClientConnection() {
+      @Override
+      public Promise<MapFromStringToString> sendLoadModule(String codeStr)
+      {
+        PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(codeStr);
+        PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
+        MapFromStringToString files = elemental.util.Collections.mapFromStringToString();
+        try {
+          workerRepo.loadModuleCollectExtraFiles(lexer, files);
+
+          return WebHelpersShunt.promiseResolve(files);
+        } 
+        catch (PlomReadException e)
+        {
+          return WebHelpersShunt.newPromise(new PromiseConstructorFunction<MapFromStringToString>() {
+            @Override public void call(
+                Consumer<MapFromStringToString> resolve,
+                Consumer<Object> reject)
+            {
+              reject.accept(e);
+            }
+          });
+        }
+      }
+      @Override
+      public Promise<Boolean> sendIsStdLib()
+      {
+        return WebHelpersShunt.promiseResolve(workerRepo.isNoStdLibFlag);
+      }
+      @Override
+      public Promise<StatementContainer> sendGetVariableDeclarationCode()
+      {
+        return WebHelpersShunt.promiseResolve(workerRepo.getVariableDeclarationCode());
+      }
+    };
+
+    // Try loading a module with extra files
+    CodeRepositoryClient loaded = new CodeRepositoryClient(connection);
     loaded.setExtraFilesManager(new ExtraFilesManagerWebInMemory());
     Promise<Void> extraFilesWaiter = loaded.loadModule(codeStr);
     extraFilesWaiter = extraFilesWaiter.then(dummy -> {
@@ -119,7 +187,7 @@ public class CodeRepositoryClientTest
     
     ((JsEmulatedPromise<Void>)extraFilesWaiter).future.get();
     
-    Assert.assertNotNull(loaded.test_getFunctionWithName("get"));
+    Assert.assertNotNull(workerRepo.getFunctionWithName("get"));
     Assert.assertEquals(0, ((WebHelpersShunt.JsEmulatedPromise<StatementContainer>)loaded.getVariableDeclarationCode()).future.join().statements.size());
     Assert.assertEquals(1, loaded.getAllExtraFilesSorted().size());
     Assert.assertEquals("web/test.txt", loaded.getAllExtraFilesSorted().get(0).getPath());

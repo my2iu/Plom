@@ -23,6 +23,9 @@ import org.programmingbasics.plom.core.interpreter.ReturnTypeExtractor;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibClass;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary.StdLibMethod;
+
+import elemental.util.MapFromStringToString;
+
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
 import jsinterop.annotations.JsType;
@@ -901,6 +904,55 @@ public class ModuleCodeRepository
   {
     boolean handleExtraTag(PlomTextReader.PlomTextScanner lexer) throws PlomTextReader.PlomReadException; 
   }
+  
+  public void loadModuleIgnoreExtraFiles(PlomTextReader.PlomTextScanner lexer) throws PlomReadException
+  {
+    loadModulePlain(lexer, (lex) -> {
+      String peek = lex.peekLexInput();
+      if ("file".equals(peek)) {
+        // Ignore extra files, but it's okay if we encounter them
+        lex.expectToken("file");
+        lex.swallowOptionalNewlineToken();
+        String fileNameString = lex.lexInput();
+        final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
+        lex.swallowOptionalNewlineToken();
+        lex.expectToken("{");
+        String fileData = lex.lexBase64();
+        lex.swallowOptionalNewlineToken();
+        lex.expectToken("}");
+        lex.swallowOptionalNewlineToken();
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public void loadModuleCollectExtraFiles(PlomTextReader.PlomTextScanner lexer, MapFromStringToString files) throws PlomReadException
+  {
+    loadModulePlain(lexer, (lex) -> {
+      String peek = lex.peekLexInput();
+      if ("file".equals(peek)) {
+        lex.expectToken("file");
+        lex.swallowOptionalNewlineToken();
+        String fileNameString = lex.lexInput();
+        if (!fileNameString.startsWith("\""))
+          throw new PlomReadException("Expecting a string for file name", lex);
+        if (!fileNameString.endsWith("\""))
+          throw new PlomReadException("Expecting a string for file name", lex);
+        final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
+        lex.swallowOptionalNewlineToken();
+        lex.expectToken("{");
+        String fileData = lex.lexBase64();
+        lex.swallowOptionalNewlineToken();
+        lex.expectToken("}");
+        lex.swallowOptionalNewlineToken();
+        files.put(filePath, fileData);
+        return true;
+      }
+      return false;
+    });
+  }
+
   
   // Loads a module but without handling any extra files (you have to supply an
   // alternate extra files handler to handle those cases)

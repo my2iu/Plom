@@ -12,7 +12,6 @@ import org.programmingbasics.plom.core.ast.CodePosition;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.ClassDescriptionJson;
 import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.FunctionDescriptionJson;
@@ -25,6 +24,8 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSi
 import elemental.events.MessageEvent;
 import elemental.html.Worker;
 import elemental.util.ArrayOf;
+import elemental.util.MapFromStringToString;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -37,13 +38,21 @@ public class LanguageServerClientConnection
   public LanguageServerClientConnection(Worker worker)
   {
     this.worker = worker;
-    worker.addEventListener("message", (evt) -> {
-      evt.preventDefault();
-      MessageEvent mevt = (MessageEvent)evt;
-      handleWorkerMessage(mevt);
-    }, false);
+    if (worker != null)
+    {
+      worker.addEventListener("message", (evt) -> {
+        evt.preventDefault();
+        MessageEvent mevt = (MessageEvent)evt;
+        handleWorkerMessage(mevt);
+      }, false);
+    }
   }
 
+  // For testing
+  protected LanguageServerClientConnection() {
+    this(null);
+  }
+  
   private void handleWorkerMessage(MessageEvent mevt)
   {
     CodeRepositoryMessages.BaseMessage msg = (CodeRepositoryMessages.BaseMessage)mevt.getData();
@@ -86,11 +95,16 @@ public class LanguageServerClientConnection
     worker.postMessage(msg);
   }
 
-  public Promise<CodeRepositoryMessages.ReplyMessage> sendLoadModule(String codeStr)
+  public Promise<MapFromStringToString> sendLoadModule(String codeStr)
   {
     String requestId = getNextId();
     worker.postMessage(CodeRepositoryMessages.createLoadModuleMessage(requestId, codeStr));
-    return waitForReplyFor(requestId);
+    return waitForReplyFor(requestId).thenNow((reply) -> {
+      CodeRepositoryMessages.LoadModuleReply loadReply = (CodeRepositoryMessages.LoadModuleReply)reply;
+      if (!loadReply.isOk())
+        throw new IllegalArgumentException(loadReply.getErrorMessage());
+      return loadReply.getFiles();
+    });
   }
   
   public Promise<Void> sendLoadClass(String code)

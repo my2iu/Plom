@@ -173,7 +173,10 @@ public class WebHelpersShunt
           future.complete(resolvedValue);
         }, 
         errVal -> {
-          // Unhandled
+          if (errVal instanceof Throwable)
+            future.completeExceptionally((Throwable)errVal);
+          else 
+            future.completeExceptionally(new IllegalArgumentException(errVal.toString()));
         });
       });
     }

@@ -21,6 +21,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
+import elemental.util.MapFromStringToString;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -138,6 +139,21 @@ public class CodeRepositoryMessages
   {
     LoadModuleMessage msg = (LoadModuleMessage)createRequestMessage(MessageType.LOAD_CLASS, id);
     msg.setCode(code);
+    return msg;
+  }
+
+  @JsType(isNative = true)
+  public static interface LoadModuleReply extends StatusReplyMessage
+  {
+    @JsProperty(name = "files") MapFromStringToString getFiles();
+    @JsProperty(name = "files") void setFiles(MapFromStringToString files);
+  }
+  
+  public static LoadModuleReply createLoadModuleReply(String replyId, boolean ok, String errorMessage, MapFromStringToString files)
+  {
+    LoadModuleReply msg = (LoadModuleReply)createStatusReplyMessage(replyId, ok, errorMessage);
+    if (files != null)
+      msg.setFiles(files);
     return msg;
   }
 

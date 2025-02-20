@@ -28,7 +28,9 @@ import elemental.client.Browser;
 import elemental.html.ArrayBuffer;
 import elemental.html.Uint8Array;
 import elemental.util.ArrayOf;
+import elemental.util.ArrayOfString;
 import elemental.util.Collections;
+import elemental.util.MapFromStringToString;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -98,7 +100,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public List<FileDescription> getAllExtraFilesSorted()
   {
-    toFixLater();
+//    toFixLater();
     List<FileDescription> toReturn = new ArrayList<>();
     for (FileDescription f: extraFiles)
       toReturn.add(f);
@@ -123,7 +125,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   /** Refresh the internal list of extra files in the module */
   public void refreshExtraFiles(ExtraFilesManager.EmptyCallback callback)
   {
-    toFixLater();
+//    toFixLater();
     if (fileManager == null) 
     {
       callback.call();
@@ -145,7 +147,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public void setExtraFilesManager(ExtraFilesManager newFileManager)
   {
-    toFixLater();
+//    toFixLater();
     fileManager = newFileManager; 
   }
   
@@ -213,58 +215,48 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public WebHelpers.Promise<Void> loadModule(String codeStr) throws PlomReadException
   {
-    partialFix();
+    // Loading extra files from a module is done asynchronously, so
+    // we use promises to keep track of when loading is done.
+    ArrayOf<WebHelpers.Promise<String>> extraFilesPromises = Collections.arrayOf();
+
     Promise<Void> moduleLoad = languageServer.sendLoadModule(codeStr)
-      .<Void>thenNow((reply) -> {
-        if (!((CodeRepositoryMessages.StatusReplyMessage)reply).isOk())
+      .<MapFromStringToString>thenNow((files) -> {
+        // In certain restricted scenarios (web version of Plom where
+        // everything has to be packed in a single file), there might be
+        // entire extra files stored in the Module. The contents of these 
+        // files will be passed back from the language server worker
+        // so that these files can be stored on disk in their proper
+        // location (assuming we're running Plom as an app with storage access) 
+        if (files == null)
+          return null;
+        ArrayOfString keys = files.keys();
+        for (int n = 0; n < keys.length(); n++)
         {
-          Browser.getWindow().getConsole().log(((CodeRepositoryMessages.StatusReplyMessage)reply).getErrorMessage());
+          String filePath = keys.get(n);
+          final Uint8Array rawData = Base64EncoderDecoder.decodeBase64ToUint8Array(files.get(filePath));
+          extraFilesPromises.push(WebHelpersShunt.newPromise((resolve, reject) -> {
+            getExtraFilesManager().insertFile(filePath, rawData.getBuffer(), () -> {
+              resolve.accept(filePath);
+            });
+          }));
         }
         return null;
       })
+      .catchErrNow((err) -> {
+        if (err instanceof String)
+          Browser.getWindow().getConsole().log((String)err);
+        else if (err instanceof Throwable)
+          Browser.getWindow().getConsole().log(((Throwable)err).getMessage());
+        return null;
+      })
       .<Boolean>then((unused) -> {
+        // Cache the stdlib flag of the loaded module
         return languageServer.sendIsStdLib();
       })
       .<Void>thenNow((stdlibFlag) -> {
         cachedIsNoStdLib = stdlibFlag;
         return null;
       });
-
-    PlomTextReader.StringTextReader inStream = new PlomTextReader.StringTextReader(codeStr);
-    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(inStream);
-    
-    // Loading extra files from a module is done asynchronously, so
-    // we use promises to keep track of when loading is done.
-    ArrayOf<WebHelpers.Promise<String>> extraFilesPromises = Collections.arrayOf();
-
-    // Load the module, but pass in an extra handler to extract out file information
-    localRepo.loadModulePlain(lexer, (lex) -> {
-      String peek = lex.peekLexInput();
-      if ("file".equals(peek)) {
-        lex.expectToken("file");
-        lex.swallowOptionalNewlineToken();
-        String fileNameString = lex.lexInput();
-        if (!fileNameString.startsWith("\""))
-          throw new PlomReadException("Expecting a string for file name", lex);
-        if (!fileNameString.endsWith("\""))
-          throw new PlomReadException("Expecting a string for file name", lex);
-        final String filePath = fileNameString.substring(1, fileNameString.length() - 1);
-        lex.swallowOptionalNewlineToken();
-        lex.expectToken("{");
-        String fileData = lex.lexBase64();
-        lex.swallowOptionalNewlineToken();
-        lex.expectToken("}");
-        lex.swallowOptionalNewlineToken();
-        final Uint8Array rawData = Base64EncoderDecoder.decodeBase64ToUint8Array(fileData);
-        extraFilesPromises.push(WebHelpersShunt.newPromise((resolve, reject) -> {
-          getExtraFilesManager().insertFile(filePath, rawData.getBuffer(), () -> {
-            resolve.accept(filePath);
-          });
-        }));
-        return true;
-      }
-      return false;
-    });
     
     return moduleLoad
         .then((unused) -> WebHelpersShunt.promiseAll(extraFilesPromises))
@@ -349,12 +341,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendFindClass(name);
   }
   
-  public FunctionDescription test_getFunctionWithName(String name)
-  {
-    toFix();
-    return localRepo.getFunctionWithName(name);
-  }
-
   public Promise<FunctionDescription> getFunctionDescription(String name)
   {
     return languageServer.sendGetFunctionDescription(name);
@@ -373,12 +359,6 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     Promise<Void> toReturn = languageServer.sendChangeFunctionSignature(newSig, oldFn.sig);
     oldFn.sig = newSig;
     return toReturn;
-  }
-
-  public void test_addFunctionAndResetIds(FunctionDescription func)
-  {
-    toFix();
-    localRepo.addFunctionAndResetIds(func);
   }
 
   public Promise<List<FunctionDescription>> getAllFunctionSorted()
