@@ -230,6 +230,71 @@ function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUni
 				var v = Value.create(new selfVal.val[method](param1, param2, param3), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
 				blockWait.unblockAndReturn(v);
 			});
+	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:and:"),
+			function(blockWait, machine) {
+				var method = machine.currentScope().lookup("method").getStringValue();
+				var param1 = machine.currentScope().lookup("param1").val;
+				var param2 = machine.currentScope().lookup("param2").val;
+				var param3 = machine.currentScope().lookup("param3").val;
+				var param4 = machine.currentScope().lookup("param4").val;
+				var selfVal = machine.currentScope().lookupThis();
+				var v = Value.create(new selfVal.val[method](param1, param2, param3, param4), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+				blockWait.unblockAndReturn(v);
+			});
+	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:and:and:"),
+			function(blockWait, machine) {
+				var method = machine.currentScope().lookup("method").getStringValue();
+				var param1 = machine.currentScope().lookup("param1").val;
+				var param2 = machine.currentScope().lookup("param2").val;
+				var param3 = machine.currentScope().lookup("param3").val;
+				var param4 = machine.currentScope().lookup("param4").val;
+				var param4 = machine.currentScope().lookup("param5").val;
+				var selfVal = machine.currentScope().lookupThis();
+				var v = Value.create(new selfVal.val[method](param1, param2, param3, param4, param5), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+				blockWait.unblockAndReturn(v);
+			});
+	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:and:and:and:"),
+			function(blockWait, machine) {
+				var method = machine.currentScope().lookup("method").getStringValue();
+				var param1 = machine.currentScope().lookup("param1").val;
+				var param2 = machine.currentScope().lookup("param2").val;
+				var param3 = machine.currentScope().lookup("param3").val;
+				var param4 = machine.currentScope().lookup("param4").val;
+				var param4 = machine.currentScope().lookup("param5").val;
+				var param4 = machine.currentScope().lookup("param6").val;
+				var selfVal = machine.currentScope().lookupThis();
+				var v = Value.create(new selfVal.val[method](param1, param2, param3, param4, param5, param6), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+				blockWait.unblockAndReturn(v);
+			});
+	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:and:and:and:and:"),
+			function(blockWait, machine) {
+				var method = machine.currentScope().lookup("method").getStringValue();
+				var param1 = machine.currentScope().lookup("param1").val;
+				var param2 = machine.currentScope().lookup("param2").val;
+				var param3 = machine.currentScope().lookup("param3").val;
+				var param4 = machine.currentScope().lookup("param4").val;
+				var param4 = machine.currentScope().lookup("param5").val;
+				var param4 = machine.currentScope().lookup("param6").val;
+				var param4 = machine.currentScope().lookup("param7").val;
+				var selfVal = machine.currentScope().lookupThis();
+				var v = Value.create(new selfVal.val[method](param1, param2, param3, param4, param5, param6, param7), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+				blockWait.unblockAndReturn(v);
+			});
+	coreTypes.addPrimitive(CodeUnitLocation.forMethod("JS object", "new:with:and:and:and:and:and:and:and:"),
+			function(blockWait, machine) {
+				var method = machine.currentScope().lookup("method").getStringValue();
+				var param1 = machine.currentScope().lookup("param1").val;
+				var param2 = machine.currentScope().lookup("param2").val;
+				var param3 = machine.currentScope().lookup("param3").val;
+				var param4 = machine.currentScope().lookup("param4").val;
+				var param4 = machine.currentScope().lookup("param5").val;
+				var param4 = machine.currentScope().lookup("param6").val;
+				var param4 = machine.currentScope().lookup("param7").val;
+				var param4 = machine.currentScope().lookup("param8").val;
+				var selfVal = machine.currentScope().lookupThis();
+				var v = Value.create(new selfVal.val[method](param1, param2, param3, param4, param5, param6, param7, param8), machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object"))); 
+				blockWait.unblockAndReturn(v);
+			});
 	coreTypes.addPrimitive(CodeUnitLocation.forStaticMethod("JS object", "globals"),
 			function(blockWait, machine) {
 				var v = Value.create(window, machine.currentScope().typeFromUnboundTypeFromScope(UnboundType.forClassLookupName("JS object")));

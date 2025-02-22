@@ -94,6 +94,21 @@
  function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } } } { @ {JS object } } { } {
  primitive
  }
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } }and: { . {param4 } @ {JS object } } } { @ {JS object } } { } {
+ primitive
+ }
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } }and: { . {param4 } @ {JS object } }and: { . {param5 } @ {JS object } } } { @ {JS object } } { } {
+ primitive
+ }
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } }and: { . {param4 } @ {JS object } }and: { . {param5 } @ {JS object } }and: { . {param6 } @ {JS object } } } { @ {JS object } } { } {
+ primitive
+ }
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } }and: { . {param4 } @ {JS object } }and: { . {param5 } @ {JS object } }and: { . {param6 } @ {JS object } }and: { . {param7 } @ {JS object } } } { @ {JS object } } { } {
+ primitive
+ }
+ function . {new: { . {method } @ {string } }with: { . {param1 } @ {JS object } }and: { . {param2 } @ {JS object } }and: { . {param3 } @ {JS object } }and: { . {param4 } @ {JS object } }and: { . {param5 } @ {JS object } }and: { . {param6 } @ {JS object } }and: { . {param7 } @ {JS object } }and: { . {param8 } @ {JS object } } } { @ {JS object } } { } {
+ primitive
+ }
  function . {passthrough to Plom } { @ {object } } { } {
  primitive
  }
