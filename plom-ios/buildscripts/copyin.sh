@@ -9,3 +9,4 @@ cp src/main/webapp/plomweb.html ../plom-ios/html/templates/simple/web/index.html
 cd ../plom-ios/html/plom
 mv plomcore/*.cache.js plomcore/plomdirect.js
 sed -i '' -e "s/plomcore.nocache.js/plomdirect.js/g" index.html
+echo "importScripts('plomcore/plomdirect.js');" > plomcore/plomcore.webworker.nocache.js

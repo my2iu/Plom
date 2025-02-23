@@ -158,6 +158,8 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
                         switch (path) {
                         case "plomUi.js":
                             try serveAppFileForUrlScheme(file: htmlPath.appending("plom/plomUi.js"), urlScheme: urlSchemeTask)
+                        case "plomStdlibPrimitives.js":
+                            try serveAppFileForUrlScheme(file: htmlPath.appending("plom/plomStdlibPrimitives.js"), urlScheme: urlSchemeTask)
                         case "plomdirect.js":
                             try serveAppFileForUrlScheme(file: htmlPath.appending("plom/plomcore/plomdirect.js"), urlScheme: urlSchemeTask)
                         case "main.plom.js":
