@@ -351,6 +351,16 @@ public class PlomActivity extends AppCompatActivity {
                     return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
                 }
             }
+            else if ("plomStdlibPrimitives.js".equals(path))
+            {
+                try {
+                    return new WebResourceResponse("application/javascript", null, getAssets().open("www/plom/plomStdlibPrimitives.js"));
+                }
+                catch (IOException e)
+                {
+                    return new WebResourceResponse("text/plain", "utf-8", 404, "Could not read file", null, new ByteArrayInputStream(new byte[0]));
+                }
+            }
             else if ("plomdirect.js".equals(path))
             {
                 try {

@@ -69,7 +69,6 @@
 
             var refreshInsets = function() {
               let insets = JSON.parse(AndroidBridge.getWindowInsets());
-              console.log(insets);
               const bodyStyle = document.querySelector('body').style;
               bodyStyle.setProperty('--window-inset-top', '' + (insets[0] / window.devicePixelRatio) + 'px');
               bodyStyle.setProperty('--window-inset-right', '' + (insets[1] / window.devicePixelRatio) + 'px');
