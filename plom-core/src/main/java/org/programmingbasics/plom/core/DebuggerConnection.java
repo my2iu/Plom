@@ -72,13 +72,19 @@ public abstract class DebuggerConnection
         MessageEvent m = (MessageEvent)evt;
         
         // Check if the message comes from the iframe where we're running the Plom program
-        if (!m.getSource().equals(iframe.getContentWindow())) return;
+        // (This doesn't work because it's disallowed for cross-origin domains,
+        // and I serve the debugged program from its own domain for security)
+//        if (!m.getSource().equals(iframe.getContentWindow())) return;
+        
+        
         // Check if the message is what we expect
         if (!Js.isTruthy(m.getData()))
           return;
         JsonObject msgObj = ((JavaScriptObject)m.getData()).cast();
         if (!msgObj.hasKey("type")) return;
         if (!DebuggerEnvironment.INITIAL_ESTABLISH_CONNECTION_STRING.equals(msgObj.getString("type"))) return;
+        if (!msgObj.hasKey("id")) return;
+        if (!msgObj.getString("id").equals(iframe.getAttribute("data-debugger-execution-id"))) return;
         if (m.getPorts().length() < 1) return;
         m.preventDefault();
 

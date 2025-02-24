@@ -68,6 +68,9 @@ TODO:
 - when editing methods, type fields should use new svg rendering
 - when editing methods, have a quick erase button for auto-resizing text input?
 
+- when you run the code, it doesn't save your edits first (you have to leave the code editor screen to force a save)
+- current default rendering does not emphasize the actual code text enough (too much emphasis on structure and blocks)
+  - make text bold? demphasize the lines and background colours?
 
 TODO list from TOJam 2023
 - [?] iOS New project in external folder doesn’t copy external files or other files

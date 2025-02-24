@@ -44,9 +44,10 @@ public abstract class DebuggerEnvironment
    */
   public static class ServiceWorkerDebuggerEnvironment extends DebuggerEnvironment
   {
-    ServiceWorkerDebuggerEnvironment(String targetOriginUrl)
+    ServiceWorkerDebuggerEnvironment(String targetOriginUrl, String id)
     {
       this.targetOriginUrl = targetOriginUrl;
+      this.id = id;
     }
     
     /**
@@ -56,6 +57,10 @@ public abstract class DebuggerEnvironment
      */
     String targetOriginUrl;
 
+    /**
+     * ID string used to identify ourselves to the debugger
+     */
+    String id;
     
     ErrorLogger errorLogger = new ErrorLogger() {
       private void logErr(Object err, LogLevel logLevel)
@@ -163,6 +168,7 @@ public abstract class DebuggerEnvironment
       // it's the IDE)
       JsonObject msgObj = Json.createObject();
       msgObj.put("type", INITIAL_ESTABLISH_CONNECTION_STRING);
+      msgObj.put("id", id);
       ArrayOf<MessagePort> ports = Collections.arrayOf();
       ports.push(channel.getPort1());
       Browser.getWindow().getParent().postMessage(msgObj, targetOriginUrl, (Indexable) ports);

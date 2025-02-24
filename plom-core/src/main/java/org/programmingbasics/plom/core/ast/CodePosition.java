@@ -137,6 +137,8 @@ public class CodePosition
   {
     if (str == null) return null;
     String [] splits = str.split("[\\[,\\]]");
+    if (splits.length < 2)
+      return new CodePosition();
     int [] offsets = new int[splits.length - 2];
     for (int n = 1; n < splits.length; n++)
       offsets[n-1] = Integer.parseInt(splits[n].trim());

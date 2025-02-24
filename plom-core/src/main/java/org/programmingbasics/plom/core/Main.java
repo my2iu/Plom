@@ -131,14 +131,21 @@ public class Main
    * to
    */
   static String debuggerIdeParentWindowOrigin;
+  
+  /**
+   * An id string that identifies which instance of the debugger execution
+   * this is 
+   */
+  static String debuggerExecutionId;
 
-  public static void configureDebuggerEnvironmentAt(String ideParentWindowOrigin)
+  public static void configureDebuggerEnvironmentAt(String ideParentWindowOrigin, String debuggerExecutionId)
   {
     // I'm having problems writing these static variables from JS
     // (the values written don't seem to be picked up the Java side),
     // so I'm using a static method to set them.
     debuggerEnvironmentAvailableFlag = true;
     debuggerIdeParentWindowOrigin = ideParentWindowOrigin;
+    Main.debuggerExecutionId = debuggerExecutionId;
   }
 
   public static boolean getDebuggerEnvironmentAvailableFlag() { return debuggerEnvironmentAvailableFlag; }
@@ -250,7 +257,7 @@ public class Main
     {
       // Running from a service worker
     }
-    return new DebuggerEnvironment.ServiceWorkerDebuggerEnvironment(debuggerIdeParentWindowOrigin);
+    return new DebuggerEnvironment.ServiceWorkerDebuggerEnvironment(debuggerIdeParentWindowOrigin, debuggerExecutionId);
   }
   
   /**
@@ -502,14 +509,14 @@ public class Main
   }
   
   /** Packages up code in a single .js file that's suitable for running in a web browser */
-  public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment, String debuggerTargetOriginUrl) throws IOException
+  public WebHelpers.Promise<String> getModuleAsJsonPString(boolean withDebugEnvironment, String debuggerTargetOriginUrl, String executionId) throws IOException
   {
     // Get module contents as a string
     return getRepository().saveModuleToString(true)
       .<String>thenNow((code) -> {
         // Wrap string in js
         return "plomEngineLoad = plomEngineLoad.then((repository) => {\n"
-            + (withDebugEnvironment ? "org.programmingbasics.plom.core.Main.configureDebuggerEnvironmentAt('" + debuggerTargetOriginUrl + "');\n" : "")
+            + (withDebugEnvironment ? "org.programmingbasics.plom.core.Main.configureDebuggerEnvironmentAt('" + debuggerTargetOriginUrl + "', '" + executionId + "');\n" : "")
             + "var code = `" + PlomTextWriter.escapeTemplateLiteral(code) + "`;\n"
             + "var skipPromise = loadCodeStringIntoExecutableRepository(code, repository);\n"
             + "return repository;\n"
@@ -644,7 +651,7 @@ public class Main
     
     // Main Plom code
     try {
-      zip.filePromiseString("main.plom.js", getModuleAsJsonPString(false, null));
+      zip.filePromiseString("main.plom.js", getModuleAsJsonPString(false, null, null));
           // Insert BOM at the beginning to label it as UTF-8 
 //          .thenNow(str -> "\ufeff" + str));
           // Actually, the BOM is not appreciated by some browsers when served from some servers

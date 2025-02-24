@@ -114,7 +114,7 @@
   <div class="main">
   </div>
 
-  <div class="runWebView" style="position: absolute; display: none; flex-direction: column; top: 1em; bottom: 1em; left: 1em; right: 1em; background-color: white; border: 1px solid black;">
+  <div class="runWebView" style="position: absolute; display: none; flex-direction: column; top: calc(1em + var(--window-inset-top)); bottom: calc(1em + var(--window-inset-bottom)); left: calc(1em + var(--window-inset-left)); right: calc(1em + var(--window-inset-right)); background-color: white; border: 1px solid black;">
   	<div class="runWebViewMenuBar" style="border-bottom: 1px solid black; text-align: right; "><a class="plomUiButton" style="font-size: 1.5em;" href="#">&#x25BC;</a></div>
   	<div class="runWebViewConsoleLog"></div>
   	<iframe style="flex-grow: 1; border: 0px;"></iframe>

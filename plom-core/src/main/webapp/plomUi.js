@@ -255,6 +255,7 @@ function setupPlomUi() {
 					var webViewDiv = document.querySelector('.runWebView');
 					webViewDiv.style.display = 'flex';
 					var iframe = webViewDiv.querySelector('iframe');
+					iframe.setAttribute('data-debugger-execution-id', localServerId);
 					var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
 					consoleDiv.innerHTML = '';
 					var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv,
@@ -365,7 +366,7 @@ function setupPlomUi() {
 						data: buf
 					}, [buf]));
 			} else if (evt.data.path == 'main.plom.js') {
-				main.getModuleAsJsonPString(true, window.location.origin).then((str) => {
+				main.getModuleAsJsonPString(true, window.location.origin, localServerId).then((str) => {
 					// Insert BOM at the beginning to label it as UTF-8 
 					str = "\ufeff" + str; 
 					localServerServiceWorker.postMessage({
@@ -414,7 +415,7 @@ function setupPlomUi() {
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 
 			// Generate a random id for the url that we'll serve data from
-			localServerId = Math.floor(Math.random() * 1000000000).toString();
+			var localServerId = Math.floor(Math.random() * 1000000000).toString();
 			
 			// Group all the Plom code together into a big blob that can
 			// be sent over to the web view (this could be done in native
@@ -422,7 +423,7 @@ function setupPlomUi() {
 			// but we'll do it here in JavaScript for convenience for now,
 			// though this may be slow on Android with the need to push all
 			// the code from JS to native)
-			main.getModuleAsJsonPString(true, window.location.origin).then((str) => {
+			main.getModuleAsJsonPString(true, window.location.origin, localServerId).then((str) => {
 				// Insert BOM at the beginning to label it as UTF-8 
 				str = "\ufeff" + str; 
 				
@@ -432,6 +433,7 @@ function setupPlomUi() {
 				var webViewDiv = document.querySelector('.runWebView');
 				webViewDiv.style.display = 'flex';
 				var iframe = webViewDiv.querySelector('iframe'); 
+				iframe.setAttribute('data-debugger-execution-id', localServerId);
 				var consoleDiv =  webViewDiv.querySelector('.runWebViewConsoleLog');
 				consoleDiv.innerHTML = '';
 				var debugConnection = main.makeDebuggerConnection(iframe, consoleDiv, 
