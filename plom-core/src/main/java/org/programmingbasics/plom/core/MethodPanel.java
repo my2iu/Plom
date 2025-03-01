@@ -78,6 +78,7 @@ public class MethodPanel
         new CodeWidgetCursorOverlay((Element)containerDiv.querySelector("svg.cursoroverlay")),
         true);
     methodWidget2 = new MethodNameWidget2(sig, inputPanels, 
+        repository.makeCodeCompletionSuggesterNoContext(),
         widthCalculator, 
         (Element)containerDiv.querySelector(".nameHeading"),
         maxTypeWidth, containerDiv.querySelector(".methoddetails"), containerDiv.querySelector(".methoddetails .scrollable-interior"));
@@ -268,8 +269,8 @@ public class MethodPanel
   static class MethodNameWidget2
   {
     final Document doc;
-    CodeRepositoryClient repository;
     final DivElement baseDiv;
+    CodeWidgetBase.CodeCompletionSuggester codeCompletionSuggester;
     FunctionSignature sig;
     List<InputElement> nameEls;
     List<SubCodeArea> argCodeAreas;
@@ -284,7 +285,7 @@ public class MethodPanel
     Element scrollableInterior;
     CodeWidgetInputPanels inputPanels;
     
-    public MethodNameWidget2(FunctionSignature sig, CodeWidgetInputPanels inputPanels, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
+    public MethodNameWidget2(FunctionSignature sig, CodeWidgetInputPanels inputPanels, CodeWidgetBase.CodeCompletionSuggester codeCompletionSuggester, SvgCodeRenderer.SvgTextWidthCalculator widthCalculator, Element divForDeterminingWindowWidth, int maxTypeWidth, Element scrollableDiv, Element scrollableInterior)
     {
       doc = Browser.getDocument();
       this.sig = FunctionSignature.copyOf(sig);
@@ -294,6 +295,7 @@ public class MethodPanel
       this.scrollableDiv = scrollableDiv;
       this.scrollableInterior = scrollableInterior;
       this.inputPanels = inputPanels;
+      this.codeCompletionSuggester = codeCompletionSuggester;
       
       // Create initial layout
       baseDiv = doc.createDivElement();
@@ -410,8 +412,7 @@ public class MethodPanel
           scrollableDiv, 
           divForDeterminingWindowWidth,
           widthCalculator);
-      returnArea.setVariableContextConfigurator(
-          repository.makeCodeCompletionSuggesterNoContext());
+      returnArea.setVariableContextConfigurator(codeCompletionSuggester);
         returnArea.setListener((isCodeChanged) -> {
           if (isCodeChanged)
           {
