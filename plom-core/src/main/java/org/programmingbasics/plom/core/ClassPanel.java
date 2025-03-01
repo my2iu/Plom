@@ -173,9 +173,7 @@ public class ClassPanel
         mainDiv.querySelector(".varsCode"), 
         new CodeWidgetInputPanels(
             (DivElement)mainDiv.querySelector("div.choices"),
-            new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
-                (DivElement)mainDiv.querySelector("div.sidechoices"),
-                (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
+            simpleEntry,
             new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
             true),
         (Element)mainDiv.querySelector(".scrollable-interior"),
