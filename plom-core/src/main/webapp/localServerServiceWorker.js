@@ -95,7 +95,7 @@ self.addEventListener('message', (event) => {
 		};
 		if (event.data.data) {
 			if (event.data.headers)
-				resolve(new Response(event.data.data), {status: 200, headers: event.data.headers});
+				resolve(new Response(event.data.data, {status: 200, headers: event.data.headers}));
 			else
 				resolve(new Response(event.data.data));
 		} else {

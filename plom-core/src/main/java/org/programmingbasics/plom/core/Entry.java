@@ -106,7 +106,7 @@ TODO list from TOJam 2023
 - [ ] Possible problem with resources loading in out of order in compiled .js (if something is delayed, then it doesn’t load correctly?)
 - [ ] Method return type and extends should use proper code widget
 - [ ] Undo support
-- [ ] Slow performance on slow Android phones maybe with larger projects?
+- [X] Slow performance on slow Android phones maybe with larger projects?
 - [ ] Allow extra blank lines in saved Plom files in case of hand editing
 - [X] Add meta viewport tag to default index.html
 - [X] Empty return in @void method not allowed

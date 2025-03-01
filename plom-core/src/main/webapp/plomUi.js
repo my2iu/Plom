@@ -295,6 +295,10 @@ function setupPlomUi() {
 							mime = 'image/jpeg';
 						else if (evt.data.path.endsWith('.png'))
 							mime = 'image/png';
+						else if (evt.data.path.endsWith('.js'))
+							mime = 'application/javascript';
+						else if (evt.data.path.endsWith('.html'))
+							mime = 'text/html';
 							
 						localServerServiceWorker.postMessage({
 							type: 'GET',
