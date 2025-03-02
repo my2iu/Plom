@@ -53,7 +53,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     override func viewWillDisappear(_ animated: Bool) {
         UIView.setAnimationsEnabled(true)
         super.viewWillDisappear(animated)
-        webView.evaluateJavaScript("plomPrepareToUnload()", completionHandler: nil)
+        webView.evaluateJavaScript("plomPrepareToUnload(false)", completionHandler: nil)
         navigationController?.setNavigationBarHidden(oldNavigationBarHidden, animated: false)
     }
     
@@ -64,6 +64,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     @objc
     func keyboardWillShow(_ notification: NSNotification) {
         var keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+//        UIView.setAnimationsEnabled(false);
         keyboardFrame = self.view.convert(keyboardFrame, from: self.view.window)
         self.bottomConstraint.constant = keyboardFrame.size.height
         self.view.layoutIfNeeded()
@@ -236,7 +237,7 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
     // Called from the scene delegate when going into the background so that the current project can be saved
     func prepareForBackground() {
         // This may be redundant because I also hook viewDidDisappear, but I'll also do a save here just in case viewDidDisappear isn't called or we aren't given enough time there to save
-        webView.evaluateJavaScript("plomPrepareToUnload()", completionHandler: nil)
+        webView.evaluateJavaScript("plomPrepareToUnload(true)", completionHandler: nil)
     }
 
 }

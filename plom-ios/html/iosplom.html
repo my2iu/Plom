@@ -62,7 +62,7 @@
                 });
                 
             // Callback to save on exit
-            window.plomPrepareToUnload = function() {
+            window.plomPrepareToUnload = function(saveOnly) {
                 main.saveModuleAndClasses(function(contents) {
                     fetch('/bridge/saveModule', {method: 'POST', body: contents});
                 }, function(name, contents) {
@@ -70,7 +70,8 @@
                 }, function(name) {
                     fetch('/bridge/deleteClass?name=' + encodeURIComponent(name));
                 }).then(() => {
-                    fetch('/bridge/preparedToUnload');
+                    if (!saveOnly)
+                        fetch('/bridge/preparedToUnload');
                 });
             };
 
