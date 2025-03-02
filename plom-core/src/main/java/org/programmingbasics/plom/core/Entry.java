@@ -71,6 +71,7 @@ TODO:
 - when you run the code, it doesn't save your edits first (you have to leave the code editor screen to force a save)
 - current default rendering does not emphasize the actual code text enough (too much emphasis on structure and blocks)
   - make text bold? demphasize the lines and background colours?
+- if you enter an invalid number (1sdfad, .1, adf), then Plom can't serialize and deserialize code properly and can't save it
 
 TODO list from TOJam 2023
 - [?] iOS New project in external folder doesn’t copy external files or other files

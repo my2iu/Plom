@@ -151,7 +151,8 @@ a.breadcrumb-item:visited {
 	top: 0;
 	bottom: 0;
 	width: 20%;
-	min-width: 8em;	
+	min-width: 8em;
+	display: flex;
 }
 
 .sidechoices:focus {
@@ -223,14 +224,17 @@ a.breadcrumb-item:visited {
 }
 
 .choices {
+	--choices-bottom-padding: max(2em, var(--window-inset-bottom));
+	
 	background-color: #eee;
 	border-top: 1px solid black;
 	flex-grow: 0;
 	flex-shrink: 0;
-	height: 50%;
+	height: auto;
+	max-height: calc(50% - var(--choices-bottom-padding));
 	touch-action: manipulation;
 	overflow-y: auto;
-	padding-bottom: var(--window-inset-bottom);
+	padding-bottom: var(--choices-bottom-padding);
 }
 
 .choices:focus {
