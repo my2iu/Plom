@@ -20,6 +20,7 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
+import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
@@ -988,6 +989,7 @@ public class Main
     methodPanel = new MethodPanel(getMainDiv(), getRepository(), sig.sig, isNew);
     methodPanel.setListener((newSig, isFinal) -> {
       getRepository().changeFunctionSignature(newSig, sig);
+      sig.sig = FunctionSignature.copyOf(newSig);
       if (isFinal)
         loadFunctionCodeView(newSig.getLookupName());
     });
@@ -999,6 +1001,7 @@ public class Main
     methodPanel.setListener((newSig, isFinal) -> {
       getRepository().changeMethodSignature(cls, newSig, m)
         .thenNow((unused) -> {
+          m.sig = FunctionSignature.copyOf(newSig);
           if (isFinal)
             loadMethodCodeView(cls, m);
           return null;
