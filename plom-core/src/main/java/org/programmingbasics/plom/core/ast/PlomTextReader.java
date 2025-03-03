@@ -97,6 +97,41 @@ public class PlomTextReader
     return toMatch.matches("[-]?([0-9]+|[0-9]+[.][0-9]*)");
   }
 
+  // Users can type any string in a number field, but we only
+  // support numbers with certain number formats when reading
+  // numbers back from files, so we need to ensure that strings
+  // match the expected format
+  public static String coerceToNumberMatch(String str)
+  {
+    // Restrict the string to only digits, minus, and decimal point
+    String onlyAllowedSymbols = str.replaceAll("[^-0-9.]", "");
+    
+    // Move minus sign to the beginning
+    String optionalMinus = (onlyAllowedSymbols.contains("-") ? "-" : "");
+    String noMinus = onlyAllowedSymbols.replaceAll("-", "");
+    
+    // Only a single decimal point
+    int firstDecimal = noMinus.indexOf('.');
+    String beforeDecimal = noMinus;
+    String afterDecimal = "";
+    if (firstDecimal >= 0) {
+      String noDecimal = beforeDecimal.replaceAll("[.]", "");
+      beforeDecimal = noDecimal.substring(0, firstDecimal);
+      afterDecimal = noDecimal.substring(firstDecimal); 
+    }
+    
+    // Remove extra 0s before the decimal
+    while (beforeDecimal.startsWith("0"))
+      beforeDecimal = beforeDecimal.substring(1);
+    
+    // Ensure that there is at least a 0 before the decimal
+    // if there are no other digits
+    if (beforeDecimal.isEmpty())
+      beforeDecimal = "0";
+    return optionalMinus + beforeDecimal 
+        + (afterDecimal.isEmpty() ? "" : "." + afterDecimal);
+  }
+  
   private static boolean isKeywordPatternMatch(String toMatch)
   {
     RegExp regex;

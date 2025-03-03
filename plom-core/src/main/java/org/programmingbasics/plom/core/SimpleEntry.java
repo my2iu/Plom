@@ -1,9 +1,6 @@
 package org.programmingbasics.plom.core;
 
-import java.util.List;
-
 import org.programmingbasics.plom.core.ast.Token;
-import org.programmingbasics.plom.core.suggestions.Suggester;
 
 import com.google.gwt.regexp.shared.RegExp;
 
