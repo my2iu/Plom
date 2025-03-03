@@ -1,3 +1,15 @@
+/* Safari needs a workaround because it prefers to keep the
+webpage viewport and screen size the same when the soft keyboard 
+is shown and to simply scroll the whole webpage to the cursor
+location (as opposed to telling the webpage that the viewport
+has shrunk and letting it resize itself). It's theoretically
+possible to use the new Visual Viewport API to detect this, but
+apparently the Safari implementation is very janky, and using
+it is such a pain that it might be better to simply get something
+that sort of works in the web browser but save the best iOS
+experience for apps, which is what Apple wants anyway.
+*/
+
 .codemain, 
 .methodpanel, 
 .globalspanel, 

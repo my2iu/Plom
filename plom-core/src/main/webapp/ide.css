@@ -9,8 +9,8 @@ body {
 }
 
 div.main {
-	width: calc(100vw - 2em);
-	height: calc(100vh - 7em);
+	width: calc(100dvw - 2em);
+	height: calc(100dvh - 7em);
 	background-color: #fafafa;
 	position: relative;
 }
@@ -230,8 +230,9 @@ a.breadcrumb-item:visited {
 	border-top: 1px solid black;
 	flex-grow: 0;
 	flex-shrink: 0;
-	height: auto;
-	max-height: calc(50% - var(--choices-bottom-padding));
+	height: calc(39% - var(--choices-bottom-padding));
+/*	height: auto;
+	max-height: calc(50% - var(--choices-bottom-padding));*/
 	touch-action: manipulation;
 	overflow-y: auto;
 	padding-bottom: var(--choices-bottom-padding);
