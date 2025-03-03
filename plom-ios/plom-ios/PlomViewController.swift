@@ -66,14 +66,22 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         var keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
 //        UIView.setAnimationsEnabled(false);
         keyboardFrame = self.view.convert(keyboardFrame, from: self.view.window)
-        self.bottomConstraint.constant = keyboardFrame.size.height
-        self.view.layoutIfNeeded()
+        // Tell the HTML to add some space at the bottom to account for the keyboard
+        // (Keyboard size includes the bottom inset, but we already position the webview
+        // outside the safe area, so we need to remove the safe area from the keyboard size)
+        var bottomInset = keyboardFrame.size.height
+        bottomInset -= view.safeAreaInsets.bottom
+        webView.evaluateJavaScript("plomSetBottomInset(\(bottomInset))", completionHandler: nil)
+//        self.bottomConstraint.constant = keyboardFrame.size.height
+//        self.view.layoutIfNeeded()
     }
     
     @objc
     func keyboardWillHide(_ notification: NSNotification) {
-        self.bottomConstraint.constant = 0
-        self.view.layoutIfNeeded()
+//        self.bottomConstraint.constant = 0
+        // Tell the HTML to remove the space at the bottom that we left for the keyboard
+        webView.evaluateJavaScript("plomSetBottomInset(\(0))", completionHandler: nil)
+//        self.view.layoutIfNeeded()
     }
     
     func callWebViewFunction(_ name: String, json: Any, completionHandler: ((Any?, Error?) -> Void)? = nil) {
@@ -114,6 +122,11 @@ class PlomViewController : UIViewController, WKURLSchemeHandler {
         webViewHolder.addSubview(webView)
         
         self.webView.load(URLRequest(url: URL(string: "plombridge://app/iosplom.html")!))
+        
+        // Disable the webview's automatic handling of the keyboard being shown
+        NotificationCenter.default.removeObserver(webView!, name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.removeObserver(webView!, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(webView!, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     func extensionToMime(_ ending:String) -> String {

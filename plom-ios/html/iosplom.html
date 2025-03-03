@@ -89,6 +89,16 @@
             window.plomUpdateExtraFileList = function() {
                 main.updateExtraFiles();
             }
+            
+            window.plomSetBottomInset = function(bottomInset) {
+//                let insets = JSON.parse(AndroidBridge.getWindowInsets());
+                const bodyStyle = document.querySelector('body').style;
+                bodyStyle.setProperty('--window-inset-bottom', '' + (bottomInset) + 'px');
+//                bodyStyle.setProperty('--window-inset-top', '' + (insets[0] / window.devicePixelRatio) + 'px');
+//                bodyStyle.setProperty('--window-inset-right', '' + (insets[1] / window.devicePixelRatio) + 'px');
+//                bodyStyle.setProperty('--window-inset-bottom', '' + (insets[2] / window.devicePixelRatio) + 'px');
+//                bodyStyle.setProperty('--window-inset-left', '' + (insets[3] / window.devicePixelRatio) + 'px');
+            };
 		});
 	</script>
 
