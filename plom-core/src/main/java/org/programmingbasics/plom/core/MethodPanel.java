@@ -16,6 +16,7 @@ import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
 import elemental.events.Event;
+import elemental.events.UIEvent;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
 import elemental.html.InputElement;
@@ -316,6 +317,7 @@ public class MethodPanel
       firstNamePartEl.addEventListener(Event.CHANGE, (evt) -> {
         onCommittedChangeInUi();
       }, false);
+      Main.hookFastAndroidKeyboard(firstNamePartEl);
       nameEls.add(firstNamePartEl);
       firstNamePartEl.setValue(sig.nameParts.get(0));
 
@@ -369,6 +371,7 @@ public class MethodPanel
         namePartEl.addEventListener(Event.CHANGE, (evt) -> {
           onCommittedChangeInUi();
         }, false);
+        Main.hookFastAndroidKeyboard(namePartEl);
         nameEls.add(namePartEl);
 
         SubCodeArea codeArea = createCodeArea(dummyDiv.querySelector(".methodParameterCode"), n);
@@ -402,7 +405,7 @@ public class MethodPanel
           baseDiv.appendChild(dummyDiv.getFirstChild());
       }
     }
-
+    
     private SubCodeArea createCodeArea(Element div, int argIdx)
     {
       SubCodeArea returnArea = SubCodeArea.forMethodParameterField(

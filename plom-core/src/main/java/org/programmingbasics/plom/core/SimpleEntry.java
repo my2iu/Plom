@@ -228,6 +228,9 @@ public class SimpleEntry
           deleteEntryInput();
       }
     }, false);
+    // Bypass the default keyboard animation on Android and show/hide the keyboard faster
+    Main.hookFastAndroidKeyboard(inputEl);
+    Main.hookFastAndroidKeyboard(textAreaEl);
   }
   
   <U extends Token> void showFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)

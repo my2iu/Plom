@@ -67,6 +67,10 @@
                 main.updateExtraFiles();
             }
 
+            main.setAndroidKeyboardAnimator(
+                () => AndroidBridge.fastAnimateKeyboard(true),
+                () => AndroidBridge.fastAnimateKeyboard(false));
+
             var refreshInsets = function() {
               let insets = JSON.parse(AndroidBridge.getWindowInsets());
               const bodyStyle = document.querySelector('body').style;

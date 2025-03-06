@@ -3,9 +3,14 @@ package dev.plom.ide;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsAnimationControlListenerCompat;
+import androidx.core.view.WindowInsetsAnimationControllerCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.webkit.WebSettingsCompat;
@@ -21,7 +26,6 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.util.Base64;
-import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
@@ -186,17 +190,25 @@ public class PlomActivity extends AppCompatActivity {
         // Push insets to the webview
         ViewCompat.setOnApplyWindowInsetsListener(
                 findViewById(R.id.webview).getRootView(), (v, windowInsets) -> {
-                    Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
-                            | WindowInsetsCompat.Type.displayCutout()
-                            | WindowInsetsCompat.Type.ime());
-                    windowInsetsJson = String.format("[%d,%d,%d,%d]", insets.top, insets.right, insets.bottom, insets.left);
-                    // Request a refresh of the insets (assuming that the web page has loaded.
-                    // If not, this will fail, but the page will request insets itself on startup)
-                    webView.evaluateJavascript("window.plomRequestRefreshInsets()", null);
+                    notifyInsets(windowInsets);
 //                    return windowInsets;
                     return WindowInsetsCompat.CONSUMED;
                 });
     }
+
+    void notifyInsets(WindowInsetsCompat windowInsets)
+    {
+        final WebView webView = (WebView) findViewById(R.id.webview);
+        Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+                | WindowInsetsCompat.Type.displayCutout()
+                | WindowInsetsCompat.Type.ime());
+        windowInsetsJson = String.format("[%d,%d,%d,%d]", insets.top, insets.right, insets.bottom, insets.left);
+        // Request a refresh of the insets (assuming that the web page has loaded.
+        // If not, this will fail, but the page will request insets itself on startup)
+        webView.evaluateJavascript("window.plomRequestRefreshInsets()", null);
+    }
+
+
 
     @Override
     protected void onStop() {
@@ -405,6 +417,42 @@ public class PlomActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    void fastAnimateKeyboard(boolean isShow)
+    {
+        WindowCompat.getInsetsController(getWindow(), findViewById(R.id.webview).getRootView())
+                .controlWindowInsetsAnimation(WindowInsetsCompat.Type.ime(),
+                        0,
+                        null,
+                        null,
+                        new WindowInsetsAnimationControlListenerCompat() {
+                            @Override
+                            public void onReady(@NonNull WindowInsetsAnimationControllerCompat controller, int types) {
+                                if (isShow)
+                                    controller.setInsetsAndAlpha(controller.getShownStateInsets(), 1.0f, 1.0f);
+                                else
+                                    controller.setInsetsAndAlpha(controller.getHiddenStateInsets(), 1.0f, 1.0f);
+                                controller.finish(isShow);
+
+//                                notifyInsets(ViewCompat.getRootWindowInsets(getWindow().getDecorView()));
+                            }
+
+                            @Override
+                            public void onFinished(@NonNull WindowInsetsAnimationControllerCompat controller) {
+
+                            }
+
+                            @Override
+                            public void onCancelled(@Nullable WindowInsetsAnimationControllerCompat controller) {
+
+                            }
+                        }
+
+                );
+//        ViewCompat.getWindowInsetsController()
+//        WindowInsetsAnimationCompat.
+    }
+
+
     DocumentFile getSourceDirectory()
     {
         DocumentFile projectFile;
@@ -607,6 +655,16 @@ public class PlomActivity extends AppCompatActivity {
         public String getWindowInsets()
         {
             return windowInsetsJson;
+        }
+
+        @JavascriptInterface
+        public void fastAnimateKeyboard(boolean isShow)
+        {
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    PlomActivity.this.fastAnimateKeyboard(isShow);
+                }
+            });
         }
     }
 }

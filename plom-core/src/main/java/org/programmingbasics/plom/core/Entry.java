@@ -69,6 +69,7 @@ TODO:
 - when editing methods, have a quick erase button for auto-resizing text input?
 
 - when you run the code, it doesn't save your edits first (you have to leave the code editor screen to force a save)
+- more intermediate saving (not just when exiting project), and after an intermediate save, it should resync the repository with the saves (clear the list of deleted files and class renames)
 - current default rendering does not emphasize the actual code text enough (too much emphasis on structure and blocks)
   - make text bold? demphasize the lines and background colours?
 

@@ -398,7 +398,7 @@ public class Main
       list.add(array.get(n));
     return list;
   }
-  
+
   /** Helper method for JavaScript to show a file chooser */
   public static void jsShowFileChooser(String acceptExtension, boolean asString, ShowFileChooserCallback loadCallback)
   {
@@ -481,11 +481,48 @@ public class Main
             });
             return null;
         });
-    
-    
-    
   }
-    
+
+  /** Allows you to set special helper functions for fast-animating the software keyboard on Android */
+  public void setAndroidKeyboardAnimator(KeyboardAnimator show, KeyboardAnimator hide)
+  {
+    showKeyboard = show;
+    hideKeyboard = hide;
+  }
+  @JsFunction
+  public static interface KeyboardAnimator
+  {
+    void animate();
+  }
+  static KeyboardAnimator showKeyboard, hideKeyboard;
+  
+  static void hookFastAndroidKeyboard(Element el)
+  {
+    el.addEventListener(Event.FOCUS, (e) -> {
+      if (Main.showKeyboard != null)
+        Main.showKeyboard.animate();
+    }, false);
+    el.addEventListener(Event.BLUR, (e) -> {
+      if (Main.hideKeyboard == null)
+        return;
+
+      // See if we're switching focus to another input element or textarea,
+      // meaning we don't have to hide the keyboard just to reshow it again
+      Element newFocus = (Element)Js.asPropertyMap(e).get("relatedTarget");
+      if ("INPUT".equals(newFocus.getTagName())
+          || "TEXTAREA".equals(newFocus.getTagName())
+          || "PLOM-AUTORESIZING-INPUT".equals(newFocus.getTagName()))
+      {
+        // Don't do anything. Let the keyboard stay visible
+      }
+      else
+      {
+        Main.hideKeyboard.animate();
+      }
+    }, false);
+  }
+
+  
   /** If any code is currently being displayed in the code panel, save it
    * to the repository
    */

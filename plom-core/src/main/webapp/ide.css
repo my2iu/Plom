@@ -231,6 +231,7 @@ a.breadcrumb-item:visited {
 	flex-grow: 0;
 	flex-shrink: 0;
 	height: calc(39% - var(--choices-bottom-padding));
+/*	height: 39%; */
 /*	height: auto;
 	max-height: calc(50% - var(--choices-bottom-padding));*/
 	touch-action: manipulation;
