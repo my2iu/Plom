@@ -73,7 +73,6 @@ TODO:
 - current default rendering does not emphasize the actual code text enough (too much emphasis on structure and blocks)
   - make text bold? demphasize the lines and background colours?
 - size of the Plom keyboard (the "choices" area) should be adjustable
-- Android scrolling through list of side choices isn't working
 - When specifying a new @f, the side suggestions are the wrong type
 - Android back button is closing the activity
 - Should automatically remove extra spaces at end of variable names and method name parts because Android keeps inserting them after doing a spellcheck

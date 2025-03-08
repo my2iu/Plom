@@ -153,6 +153,7 @@ a.breadcrumb-item:visited {
 	width: 20%;
 	min-width: 8em;
 	display: flex;
+	flex-direction: column-reverse;
 }
 
 .sidechoices:focus {
@@ -163,7 +164,6 @@ a.breadcrumb-item:visited {
 .sidechoices .sidechoicescontent {
 	display: flex;
 	flex-direction: column;
-	justify-content: flex-end;
 }
 
 .codesidesplit svg.cursoroverlay,
