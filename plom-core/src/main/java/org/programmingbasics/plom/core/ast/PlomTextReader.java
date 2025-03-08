@@ -101,7 +101,7 @@ public class PlomTextReader
   // support numbers with certain number formats when reading
   // numbers back from files, so we need to ensure that strings
   // match the expected format
-  public static String coerceToNumberMatch(String str)
+  public static String sanitizeForNumberMatch(String str)
   {
     // Restrict the string to only digits, minus, and decimal point
     String onlyAllowedSymbols = str.replaceAll("[^-0-9.]", "");

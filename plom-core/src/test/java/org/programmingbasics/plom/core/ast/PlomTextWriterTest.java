@@ -216,4 +216,35 @@ public class PlomTextWriterTest extends TestCase
     StatementContainer read = PlomTextReader.readStatementContainer(lexer);
     Assert.assertEquals(code, read);
   }
+  
+  @Test
+  public void testMultilineComments() throws IOException, PlomTextReader.PlomReadException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.WideToken("// This is a long: comment\nThat ({spans}) multiple lines {\nand has strange symbols in it}", Symbol.DUMMY_COMMENT),
+            new Token.SimpleToken("123", Symbol.Number)
+            )
+        );
+    PlomTextWriter writer = new PlomTextWriter();
+    StringBuilder out = new StringBuilder();
+    writer.writeStatementContainer(new PlomCodeOutputFormatter(out), code);
+
+    Assert.assertEquals(" // This is a long: comment\\nThat ({spans}) multiple lines {\\nand has strange symbols in it}\n"
+        + " 123\n", out.toString());
+
+    // Check if we can read back the output
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    StatementContainer read = PlomTextReader.readStatementContainer(lexer);
+    Assert.assertEquals(code, read);
+  }
+
+  @Test
+  public void testEscapeTemplateLiteral()
+  {
+    Assert.assertEquals("hello", PlomTextWriter.escapeTemplateLiteral("hello"));
+    Assert.assertEquals("newline\nNewline pre-escaped\\\\n", PlomTextWriter.escapeTemplateLiteral("newline\nNewline pre-escaped\\n"));
+    Assert.assertEquals("And has \\` symbols in it", PlomTextWriter.escapeTemplateLiteral("And has ` symbols in it"));
+  }
 }

@@ -906,7 +906,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     {
       if (((Token.SimpleToken)token).type == Symbol.Number)
       {
-        val = PlomTextReader.coerceToNumberMatch(val);
+        val = PlomTextReader.sanitizeForNumberMatch(val);
       }
       ((Token.SimpleToken)token).contents = val;
       if (advanceToNext && isFinal)

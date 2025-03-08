@@ -9,28 +9,28 @@ import junit.framework.TestCase;
 public class PlomTextReaderTest extends TestCase
 {
   @Test
-  public void testCoerceToNumberMatch()
+  public void testSanitizeForNumberMatch()
   {
     Assert.assertEquals("-23.2398", 
-        PlomTextReader.coerceToNumberMatch("0023-ad..f,,j\n\r 2398"));
+        PlomTextReader.sanitizeForNumberMatch("0023-ad..f,,j\n\r 2398"));
     Assert.assertEquals("-232398", 
-        PlomTextReader.coerceToNumberMatch("0023-2398.."));
+        PlomTextReader.sanitizeForNumberMatch("0023-2398.."));
     Assert.assertEquals("0.55", 
-        PlomTextReader.coerceToNumberMatch(".55"));
+        PlomTextReader.sanitizeForNumberMatch(".55"));
     Assert.assertEquals("-0.25", 
-        PlomTextReader.coerceToNumberMatch("-.25"));
+        PlomTextReader.sanitizeForNumberMatch("-.25"));
     Assert.assertEquals("0", 
-        PlomTextReader.coerceToNumberMatch("0000000"));
+        PlomTextReader.sanitizeForNumberMatch("0000000"));
     Assert.assertEquals("0.003300", 
-        PlomTextReader.coerceToNumberMatch("0000000.003300"));
+        PlomTextReader.sanitizeForNumberMatch("0000000.003300"));
     Assert.assertEquals("3", 
-        PlomTextReader.coerceToNumberMatch("00000003"));
+        PlomTextReader.sanitizeForNumberMatch("00000003"));
     Assert.assertEquals("3.000200", 
-        PlomTextReader.coerceToNumberMatch("00000003.000200"));
+        PlomTextReader.sanitizeForNumberMatch("00000003.000200"));
     Assert.assertEquals("0", 
-        PlomTextReader.coerceToNumberMatch("adsfasd"));
+        PlomTextReader.sanitizeForNumberMatch("adsfasd"));
     Assert.assertEquals("2.0308", 
-        PlomTextReader.coerceToNumberMatch("002fs.03zd08adsfasd."));
+        PlomTextReader.sanitizeForNumberMatch("002fs.03zd08adsfasd."));
   }
   
   @Test

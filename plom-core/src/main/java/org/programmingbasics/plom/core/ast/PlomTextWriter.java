@@ -35,7 +35,7 @@ public class PlomTextWriter
 
   public static String escapeTemplateLiteral(String str)
   {
-    return str.replace("`", "\\`").replace("$", "\\$");
+    return str.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$");
   }
 
   static final Map<Symbol, String> symbolTokenMap = new HashMap<>();
