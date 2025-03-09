@@ -1,5 +1,6 @@
 package dev.plom.ide;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -194,6 +195,18 @@ public class PlomActivity extends AppCompatActivity {
 //                    return windowInsets;
                     return WindowInsetsCompat.CONSUMED;
                 });
+
+        // Handle back button
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Intercept the back button and let the JavaScript handle it. The JS can call
+                // back into Java if it wants to actually exit
+//                    final WebView webView = (WebView) findViewById(R.id.webview);
+                webView.evaluateJavascript("window.plomOnAndroidBackPressed()", null);
+
+            }
+        });
     }
 
     void notifyInsets(WindowInsetsCompat windowInsets)
@@ -406,15 +419,6 @@ public class PlomActivity extends AppCompatActivity {
 
         }
         return null;
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Intercept the back button and let the JavaScript handle it. The JS can call
-        // back into Java if it wants to actually exit
-        final WebView webView = (WebView) findViewById(R.id.webview);
-        webView.evaluateJavascript("window.plomOnAndroidBackPressed()", null);
-        super.onBackPressed();
     }
 
     void fastAnimateKeyboard(boolean isShow)

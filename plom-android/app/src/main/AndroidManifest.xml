@@ -12,8 +12,10 @@
             android:theme="@style/Theme.Plom.NoActionBar">
         </activity>
         <activity android:name=".NewProjectActivity"
+            android:enableOnBackInvokedCallback="true"
             android:theme="@style/Theme.Plom"/>
-        <activity android:name=".ProjectsActivity" android:exported="true">
+        <activity android:name=".ProjectsActivity"
+            android:enableOnBackInvokedCallback="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
