@@ -222,8 +222,7 @@ public class ClassPanel
     // you can immediately set a name for the class
     if (isNew)
     {
-      nameAnchor.focus();  // Documentation is unclear as to whether select() also sets focus or not
-      nameAnchor.select();
+      Main.forceFocusAndShowKeyboard(nameAnchor, true);
     }
   }
 

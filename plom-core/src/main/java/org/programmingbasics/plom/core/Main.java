@@ -522,6 +522,26 @@ public class Main
     }, false);
   }
 
+  /**
+   * Mobile Safari sometimes gives focus to an element, but it
+   * doesn't deploy the soft keyboard. Here, I'll try different
+   * ways to give focus to an element
+   */
+  public static void forceFocusAndShowKeyboard(Element e, boolean withSelect)
+  {
+    e.focus();  // Documentation is unclear as to whether select() also sets focus or not
+    if (withSelect)
+      ((InputElement)e).select();
+    // It turns out that Mobile Safari won't let you control focus
+    // unless it happens as a result of a user interaction, but some
+    // of the UI updates are done in promises, so they don't qualify
+    // for programmatically taking focus
+//    if (Browser.getWindow().getNavigator().getVendor().contains("Apple Computer"))
+//    {
+//      // Not sure what to do here
+//    }
+  }
+  
   
   /** If any code is currently being displayed in the code panel, save it
    * to the repository

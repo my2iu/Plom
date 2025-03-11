@@ -465,8 +465,7 @@ public class MethodPanel
       }
       else
       {
-        nameEls.get(nameEls.size() - 1).focus();
-        nameEls.get(nameEls.size() - 1).select();
+        Main.forceFocusAndShowKeyboard(nameEls.get(nameEls.size() - 1), true);
       }
       onCommittedChangeInUi();
     }
@@ -503,8 +502,7 @@ public class MethodPanel
     
     public void focusAndSelectFirstName()
     {
-      nameEls.get(0).focus();  // Documentation is unclear as to whether select() also sets focus or not
-      nameEls.get(0).select();
+      Main.forceFocusAndShowKeyboard(nameEls.get(0), true);
     }
     
     public FunctionSignature getNameSig()

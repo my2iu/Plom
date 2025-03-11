@@ -78,7 +78,7 @@ X- when you run the code, it doesn't save your edits first (you have to leave th
 - It shouldn't be@js object.set:to: but put:at:
 
 - Add a close button on the run window so you don’t need to have the running program keep running in the background
-- Mobile Safari still isn’t putting keyboard focus on the right elements when creating a new class or method. Maybe double down by trying to impose focus a second time after a delay
+- Mobile Safari still isn’t putting keyboard focus on the right elements when creating a new class or method. Not really fixable because focus can only be controlled in iOS Safari during a user interaction
 - If you create two methods on a class, maybe the first one doesn’t save?
 - Seems like it happens when you create a method .x and then try to create one .x: because there will temporarily be a name conflict
 - Allow editing of HTML files from within Plom editor

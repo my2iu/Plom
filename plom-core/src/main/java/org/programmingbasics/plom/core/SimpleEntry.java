@@ -181,13 +181,13 @@ public class SimpleEntry
         inputEl.setValue("");
         simpleEntryInput(inputEl.getValue(), false);
         refillSuggestions(inputEl.getValue());
-        inputEl.focus();
+        Main.forceFocusAndShowKeyboard(inputEl, false);
       }
       else
       {
         textAreaEl.setValue("");
         simpleEntryInput(textAreaEl.getValue(), false);
-        textAreaEl.focus();
+        Main.forceFocusAndShowKeyboard(textAreaEl, false);
       }
     }, false);
     // handle text being typed into the input
@@ -276,7 +276,7 @@ public class SimpleEntry
       ((InputElement)forInput).setValue("");
     // In Safari, just setting focus won't cause the soft keyboard to trigger. I think a cursor also has to be placed to trigger the keyboard reliably.
     ((InputElement)forInput).setSelectionRange(((InputElement)forInput).getValue().length(), ((InputElement)forInput).getValue().length());
-    forInput.focus();
+    Main.forceFocusAndShowKeyboard(forInput, false);
     simpleEntryToken = token;
     this.tokenPrefix = prefix;
     this.tokenDisplayPrefix = displayPrefix;
