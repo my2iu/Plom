@@ -217,7 +217,8 @@ public class ProjectsActivity extends AppCompatActivity {
                     listWidget.getAdapter().notifyDataSetChanged();
                     saveProjectList();
                     // Fill the project with template contents
-                    fillDirWithTemplate(dir, templateDir);
+                    if (templateDir != null && !templateDir.isEmpty())
+                        fillDirWithTemplate(dir, templateDir);
                     // Start an activity for the new project
                     Intent intent = new Intent(ProjectsActivity.this, PlomActivity.class);
                     intent.putExtra("name", projectName);

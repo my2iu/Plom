@@ -348,6 +348,7 @@ public class PlomActivity extends AppCompatActivity {
             }
             case "exit":
                 finish();
+                return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("exiting".getBytes(StandardCharsets.UTF_8)));
         }
         return null;
 

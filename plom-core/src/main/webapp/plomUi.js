@@ -416,6 +416,7 @@ function setupPlomUi() {
 		var runHtmlEl = document.querySelector('a.runhtmlbutton');
 		runHtmlEl.addEventListener('click', function(evt) {
 			evt.preventDefault();
+			main.saveCodeToRepository();
 			if (hamburgerMenuDiv) hamburgerMenuDiv.style.display = 'none';
 
 			// Generate a random id for the url that we'll serve data from
