@@ -340,6 +340,8 @@ public class CodeRepositoryMessages
     @JsProperty(name = "code") void setCode(String code);
     @JsProperty(name = "imported") boolean isImported();
     @JsProperty(name = "imported") void setImported(boolean imported);
+    @JsProperty(name = "functionId") int getId();
+    @JsProperty(name = "functionId") void setId(int id);
     @JsOverlay default void setAsFunctionDescription(FunctionDescription fd)
     {
       try {
@@ -347,6 +349,7 @@ public class CodeRepositoryMessages
         setSignature(signatureToString(fd.sig));
         setImported(fd.isImported);
         setCode(statementContainerToString(fd.code));
+        setId(fd.getId());
       } 
       catch (IOException e)
       {
@@ -359,7 +362,7 @@ public class CodeRepositoryMessages
 
       FunctionSignature sig = stringToSignature(getSignature());
       StatementContainer code = stringToStatementContainer(getCode());
-      FunctionDescription fd = new FunctionDescription(sig, code);
+      FunctionDescription fd = FunctionDescription.withForcedId(sig, code, getId());
       fd.setImported(isImported());
       return fd;
     }
@@ -382,10 +385,12 @@ public class CodeRepositoryMessages
     @JsProperty(name = "builtIn") void setBuiltIn(boolean builtIn);
     @JsProperty(name = "imported") boolean isImported();
     @JsProperty(name = "imported") void setImported(boolean isImported);
+    @JsProperty(name = "classId") int getId();
+    @JsProperty(name = "classId") void setId(int id);
     
     @JsOverlay default ClassDescription getAsClassDescription() throws PlomReadException
     {
-      ClassDescription cl = new ClassDescription(getName(), getOriginalName());
+      ClassDescription cl = ClassDescription.withForcedId(getName(), getOriginalName(), getId());
       cl.parent = getParent().getAsUnboundType();
       cl.methods = arrayOfToList(getMethods(), (FunctionDescriptionJson json) -> {
         return json.getAsFunctionDescription();
@@ -410,6 +415,7 @@ public class CodeRepositoryMessages
       setVariableDeclarationCode(statementContainerToString(cl.getVariableDeclarationCode()));
       setBuiltIn(cl.isBuiltIn);
       setImported(cl.isImported);
+      setId(cl.getId());
     }
     @JsOverlay default void setAsClassDescriptionWithoutMethods(ClassDescription cl) throws IOException
     {
@@ -422,6 +428,7 @@ public class CodeRepositoryMessages
       setVariableDeclarationCode(statementContainerToString(cl.getVariableDeclarationCode()));
       setBuiltIn(cl.isBuiltIn);
       setImported(cl.isImported);
+      setId(cl.getId());
     }
   }
 

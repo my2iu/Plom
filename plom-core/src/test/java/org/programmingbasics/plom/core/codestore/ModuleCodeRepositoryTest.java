@@ -34,13 +34,13 @@ public class ModuleCodeRepositoryTest extends TestCase
             )
         ));
 //    repository.addGlobalVarAndResetIds("var", Token.ParameterToken.fromContents("@string", Symbol.AtType));
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),
                 new Token.SimpleToken("3", Symbol.Number)))));
-    ClassDescription testClass = repository.addClassAndResetIds("test class");
+    ClassDescription testClass = repository.addClass("test class");
     testClass.setSuperclass(null);
     testClass.addMethod(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "at x:y:",
@@ -232,7 +232,7 @@ public class ModuleCodeRepositoryTest extends TestCase
     PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
     
     ModuleCodeRepository loaded = new ModuleCodeRepository();
-    loaded.addClassAndResetIds("test class 2").setBuiltIn(true);
+    loaded.addClass("test class 2").setBuiltIn(true);
     loaded.loadModulePlain(lexer, null);
     
     Assert.assertTrue(loaded.getFunctionWithName("get") != null);

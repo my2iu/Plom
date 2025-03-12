@@ -145,13 +145,13 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(
                 new Token.SimpleToken("return", Symbol.Return),
                 new Token.SimpleToken("3", Symbol.Number)))));
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("unknown type"), "bad return"),
         new StatementContainer(
             new TokenContainer(
@@ -187,7 +187,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents("@asdf2", Symbol.AtType))), null),
         new StatementContainer(
             new TokenContainer(
@@ -222,7 +222,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@number", Symbol.AtType)), Arrays.asList("test"), Arrays.asList(new TokenContainer(ParameterToken.fromContents(".asdf1", Symbol.DotVariable), ParameterToken.fromContents(".asdf2", Symbol.DotVariable))), null),
         new StatementContainer(
             new TokenContainer(
@@ -296,7 +296,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("classB"));
     classA.setVariableDeclarationCode(new StatementContainer(
         new TokenContainer(
@@ -314,7 +314,7 @@ public class RepositoryScopeTest extends TestCase
             Token.ParameterToken.fromContents("@badtype", Symbol.AtType)
             )
         ));
-    ClassDescription classB = repository.addClassAndResetIds("classB");
+    ClassDescription classB = repository.addClass("classB");
     classB.setSuperclass(UnboundType.forClassLookupName("object"));
     classB.setVariableDeclarationCode(new StatementContainer(
         new TokenContainer(
@@ -359,7 +359,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
     
     FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("badType"), "badf");
@@ -413,7 +413,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "test"),
         new StatementContainer(
             new TokenContainer(
@@ -446,7 +446,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
     
     FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("number"), "badf");
@@ -504,7 +504,7 @@ public class RepositoryScopeTest extends TestCase
   {
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
     
     FunctionSignature sig = FunctionSignature.from(UnboundType.forSimpleFunctionType("void", "has bad method call"), "make lambda");
@@ -564,10 +564,10 @@ public class RepositoryScopeTest extends TestCase
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
     
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
 
-    repository.addFunctionAndResetIds(new FunctionDescription(
+    repository.addFunction(new FunctionDescription(
         FunctionSignature.from(new TokenContainer(ParameterToken.fromContents("@void", Symbol.AtType)), Arrays.asList("test"), Collections.emptyList(), null),
         new StatementContainer(
             new TokenContainer(),
@@ -612,7 +612,7 @@ public class RepositoryScopeTest extends TestCase
     
     ModuleCodeRepository repository = new ModuleCodeRepository();
     repository.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    ClassDescription classA = repository.addClassAndResetIds("classA");
+    ClassDescription classA = repository.addClass("classA");
     classA.setSuperclass(UnboundType.forClassLookupName("object"));
     
     FunctionSignature sig = FunctionSignature.from(UnboundType.forClassLookupName("void"), "make");

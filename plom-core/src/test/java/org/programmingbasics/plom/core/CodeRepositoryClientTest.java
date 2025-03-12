@@ -12,16 +12,14 @@ import org.programmingbasics.plom.core.WebHelpers.Promise.PromiseConstructorFunc
 import org.programmingbasics.plom.core.WebHelpersShunt.ByteArrayUint8Array;
 import org.programmingbasics.plom.core.WebHelpersShunt.JsEmulatedPromise;
 import org.programmingbasics.plom.core.ast.PlomTextReader;
-import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextReader.PlomReadException;
+import org.programmingbasics.plom.core.ast.PlomTextWriter;
 import org.programmingbasics.plom.core.ast.PlomTextWriter.PlomCodeOutputFormatter;
 import org.programmingbasics.plom.core.ast.StatementContainer;
 import org.programmingbasics.plom.core.ast.Token;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
-import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository;
-import org.programmingbasics.plom.core.codestore.CodeRepositoryMessages.LoadModuleReply;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
 import org.programmingbasics.plom.core.interpreter.StandardLibrary;
@@ -43,7 +41,7 @@ public class CodeRepositoryClientTest extends TestCase
     // Make a fake language server backend
     ModuleCodeRepository workerRepo = new ModuleCodeRepository();
     workerRepo.loadBuiltInPrimitives(StandardLibrary.stdLibClasses, StandardLibrary.stdLibMethods);
-    workerRepo.addFunctionAndResetIds(new FunctionDescription(
+    workerRepo.addFunction(new FunctionDescription(
         FunctionSignature.from(UnboundType.forClassLookupName("number"), "get"),
         new StatementContainer(
             new TokenContainer(

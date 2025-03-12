@@ -28,6 +28,7 @@ import elemental.util.MapFromStringToString;
 
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
 @JsType
@@ -256,18 +257,47 @@ public class ModuleCodeRepository
     }
   }
 
+  // All classes, methods, and functions in the repository will have a unique
+  // id within the process. Because there might be multiple
+  // functions or methods with the same name, ids should be used
+  // to find methods within the repository for the purposes of
+  // editing things in the UI. If different modules are stored in
+  // different processes, then there might be IDs that overlap for
+  // objects from the different processes (i.e. the language server workers)
   public static class DescriptionWithId
   {
-    public int id;
+    private int id;
+    private static int nextId = 0;
+    public DescriptionWithId()
+    {
+      id = nextId;
+      nextId++;
+    }
+    protected DescriptionWithId(int forcedId)
+    {
+      id = forcedId;
+//      nextId = Math.max(id + 1, nextId);
+    }
+    public int getId() { return id; }
   }
   
-  @JsType
   public static class FunctionDescription extends DescriptionWithId
   {
     public FunctionDescription(FunctionSignature sig, StatementContainer code)
     {
       this.sig = sig;
       this.code = code;
+    }
+    @JsIgnore
+    private FunctionDescription(FunctionSignature sig, StatementContainer code, int forcedId)
+    {
+      super(forcedId);
+      this.sig = sig;
+      this.code = code;
+    }
+    public static FunctionDescription withForcedId(FunctionSignature sig, StatementContainer code, int forcedId)
+    {
+      return new FunctionDescription(sig, code, forcedId);
     }
     public FunctionSignature sig;
     public StatementContainer code;
@@ -294,6 +324,18 @@ public class ModuleCodeRepository
       this.name = name;
       this.originalName = originalName;
     }
+    @JsIgnore
+    private ClassDescription(String name, String originalName, int forcedId)
+    {
+      super(forcedId);
+      this.name = name;
+      this.originalName = originalName;
+    }
+    public static ClassDescription withForcedId(String name, String originalName, int forcedId)
+    {
+      return new ClassDescription(name, originalName, forcedId);
+    }
+    
     public List<FunctionDescription> getInstanceMethods()
     {
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
@@ -322,12 +364,11 @@ public class ModuleCodeRepository
     }
     public void addMethod(FunctionDescription f)
     {
-      f.id = methods.size();
       methods.add(f);
     }
-    public void deleteMethodAndResetIds(int id)
+    public void deleteMethod(int id)
     {
-      methods.remove(id);
+      methods.removeIf((m) -> m.getId() == id);
     }
     public boolean hasMethodWithName(String name)
     {
@@ -530,12 +571,15 @@ public class ModuleCodeRepository
 
   public static <U extends DescriptionWithId> List<U> getSortedWithIds(List<U> unsorted, Comparator<U> comparator)
   {
+    // Note: This method only sorts. It does not assign any IDs any more
+    // since IDs are assigned when the objects are created and never change
+    
     // Assign ids to all the items and put them in a sorted list
     List<U> toReturn = new ArrayList<>();
     for (int n = 0; n < unsorted.size(); n++)
     {
       U cls = unsorted.get(n);
-      cls.id = n;
+//      cls.id = n;
       toReturn.add(cls);
     }
     toReturn.sort(comparator);
@@ -560,18 +604,18 @@ public class ModuleCodeRepository
     return null;
   }
   
-  public void addFunctionAndResetIds(FunctionDescription func)
+  public void addFunction(FunctionDescription func)
   {
     func.module = this;
     functions.add(0, func);
   }
   
-  public void deleteFunctionAndResetIds(ModuleCodeRepository module, int id)
+  public void deleteFunction(ModuleCodeRepository module, int id)
   {
     // This only works if only the current module can delete things, and the current module's functions are inserted into the merged function list first 
     if (module != this)
       throw new IllegalArgumentException("Not deleting class from correct chained module");
-    functions.remove(id);
+    functions.removeIf(f -> f.getId() == id);
   }
 
   private void fillChainedFunctionNames(List<String> mergedFunctions)
@@ -607,11 +651,18 @@ public class ModuleCodeRepository
     return names;
   }
   
-  public void changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldSig)
+  public void changeFunctionSignature(FunctionSignature newSig, int functionId)
   {
 //    FunctionDescription func = functions.remove(oldSig.getLookupName());
-    if (oldSig.id < functions.size())
-      functions.get(oldSig.id).sig = newSig;
+    for (FunctionDescription func: functions)
+    {
+      if (func.getId() == functionId)
+      {
+        func.sig = newSig;
+      }
+    }
+//    if (oldSig.id < functions.size())
+//      functions.get(oldSig.id).sig = newSig;
 //    functions.put(func.sig.getLookupName(), func);
   }
   
@@ -654,23 +705,28 @@ public class ModuleCodeRepository
     return getSortedWithIds(mergedClassList, Comparator.comparing((ClassDescription v) -> v.getName()));
   }
 
-  public ClassDescription addClassAndResetIds(String name)
+  public ClassDescription addClass(String name)
   {
     ClassDescription cls = new ClassDescription(name, name);
     cls.module = this;
     cls.parent = UnboundType.forClassLookupName("object");
     classes.add(0, cls);
-    cls.id = 0;
     return cls;
   }
   
-  public void deleteClassAndResetIds(ModuleCodeRepository module, int id)
+  public void deleteClass(ModuleCodeRepository module, int id)
   {
     // This only works if only the current module can delete things, and the current module's classes are inserted into the merged class list first 
     if (module != this)
       throw new IllegalArgumentException("Not deleting class from correct chained module");
-    deletedClasses.add(classes.get(id));
-    classes.remove(id);
+    for (ClassDescription cls: classes)
+    {
+      if (cls.getId() == id)
+      {
+        deletedClasses.add(cls);
+        classes.remove(cls);
+      }
+    }
   }
   
   public boolean hasClassWithName(String name)
@@ -724,7 +780,7 @@ public class ModuleCodeRepository
     for (StdLibClass clsdef: stdLibClasses)
     {
       if (classMap.containsKey(clsdef.name)) continue;
-      ClassDescription c = addClassAndResetIds(clsdef.name)
+      ClassDescription c = addClass(clsdef.name)
           .setBuiltIn(true);
       classMap.put(clsdef.name, c);
       if (clsdef.parent != null)
@@ -973,7 +1029,7 @@ public class ModuleCodeRepository
       if ("function".equals(peek))
       {
         FunctionDescription fn = loadFunction(lexer);
-        addFunctionAndResetIds(fn);
+        addFunction(fn);
       }
       else if ("class".equals(peek))
       {
@@ -1036,7 +1092,7 @@ public class ModuleCodeRepository
       }
     }
     if (cls == null)
-      cls = addClassAndResetIds(loaded.getName());
+      cls = addClass(loaded.getName());
     if (!augmentClass)
     {
       cls.setSuperclass(loaded.parent);

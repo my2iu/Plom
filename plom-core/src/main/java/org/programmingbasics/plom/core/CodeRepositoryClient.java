@@ -393,7 +393,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
 
   public Promise<Void> deleteClassMethod(ClassDescription cls, FunctionDescription fn)
   {
-    cls.deleteMethodAndResetIds(fn.id);
+    cls.deleteMethod(fn.getId());
     return languageServer.sendDeleteClassMethod(cls, fn);
   }
   

@@ -277,7 +277,7 @@ public class LanguageServerWorker
       FunctionDescription func = new FunctionDescription(
           FunctionSignature.from(UnboundType.forClassLookupName("void"), newFunctionName),
           new StatementContainer());
-      repo.addFunctionAndResetIds(func);
+      repo.addFunction(func);
       FunctionDescriptionJson fdJson = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
       fdJson.setAsFunctionDescription(func);
       postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), fdJson));
@@ -288,7 +288,7 @@ public class LanguageServerWorker
       CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
       // Find a unique class name
       String newClassName = ModuleCodeRepository.findUniqueName("class", (name) -> !repo.hasClassWithName(name));
-      ClassDescription c = repo.addClassAndResetIds(newClassName);
+      ClassDescription c = repo.addClass(newClassName);
 
       ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
       try {
@@ -377,7 +377,7 @@ public class LanguageServerWorker
     {
       CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
       FunctionDescription fd = repo.getFunctionDescription(nameMsg.getName());
-      repo.deleteFunctionAndResetIds(fd.module, fd.id);
+      repo.deleteFunction(fd.module, fd.getId());
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, nameMsg.getRequestId()));
       break;
     }
@@ -386,7 +386,7 @@ public class LanguageServerWorker
       CodeRepositoryMessages.GetFromNameMessage nameMsg = (CodeRepositoryMessages.GetFromNameMessage)msg; 
       ClassDescription cls = repo.findClassWithName(nameMsg.getName(), false);
       if (cls != null)
-        repo.deleteClassAndResetIds(cls.module, cls.id);
+        repo.deleteClass(cls.module, cls.getId());
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, nameMsg.getRequestId()));
       break;
     }
@@ -416,7 +416,7 @@ public class LanguageServerWorker
         ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
         FunctionSignature sig = CodeRepositoryMessages.stringToSignature(requestMsg.getMethodSignature());
         FunctionDescription fd = cls.findMethod(sig.getLookupName(), sig.isConstructor || sig.isStatic);
-        cls.deleteMethodAndResetIds(fd.id);
+        cls.deleteMethod(fd.getId());
       }
       catch (PlomReadException e)
       {
