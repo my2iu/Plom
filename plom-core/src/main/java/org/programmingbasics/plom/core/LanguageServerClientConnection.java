@@ -368,11 +368,11 @@ public class LanguageServerClientConnection
   }
 
   public Promise<Void> sendChangeFunctionSignature(FunctionSignature newSig,
-      FunctionSignature oldSig)
+      int functionId)
   {
     String requestId = getNextId();
     try {
-      worker.postMessage(CodeRepositoryMessages.createChangeFunctionSignatureRequest(requestId, newSig, oldSig));
+      worker.postMessage(CodeRepositoryMessages.createChangeFunctionSignatureRequest(requestId, newSig, functionId));
       return waitForReplyFor(requestId).thenNow((msg) -> {
         CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
         return null;
@@ -385,11 +385,11 @@ public class LanguageServerClientConnection
   }
 
   public Promise<Void> sendChangeMethodSignature(ClassDescription cls, FunctionSignature newSig,
-      FunctionSignature oldSig)
+      int functionId)
   {
     String requestId = getNextId();
     try {
-      worker.postMessage(CodeRepositoryMessages.createChangeMethodSignatureRequest(requestId, cls.getName(), newSig, oldSig));
+      worker.postMessage(CodeRepositoryMessages.createChangeMethodSignatureRequest(requestId, cls.getName(), newSig, functionId));
       return waitForReplyFor(requestId).thenNow((msg) -> {
         CodeRepositoryMessages.ReplyMessage replyMsg = (CodeRepositoryMessages.ReplyMessage)msg;
         return null;

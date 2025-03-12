@@ -329,7 +329,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<Void> changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldFn)
   {
-    Promise<Void> toReturn = languageServer.sendChangeFunctionSignature(newSig, oldFn.sig);
+    Promise<Void> toReturn = languageServer.sendChangeFunctionSignature(newSig, oldFn.getId());
     oldFn.sig = newSig;
     return toReturn;
   }
@@ -399,7 +399,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   
   public Promise<Void> changeMethodSignature(ClassDescription cls, FunctionSignature newSig, FunctionDescription oldFn)
   {
-    Promise<Void> toReturn = languageServer.sendChangeMethodSignature(cls, newSig, oldFn.sig);
+    Promise<Void> toReturn = languageServer.sendChangeMethodSignature(cls, newSig, oldFn.getId());
     oldFn.sig = newSig;
     cls.updateMethod(oldFn);
     return toReturn;

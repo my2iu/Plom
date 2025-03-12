@@ -68,7 +68,6 @@ TODO:
 - when editing methods, type fields should use new svg rendering
 - when editing methods, have a quick erase button for auto-resizing text input?
 
-X- when you run the code, it doesn't save your edits first (you have to leave the code editor screen to force a save)
 - more intermediate saving (not just when exiting project), and after an intermediate save, it should resync the repository with the saves (clear the list of deleted files and class renames)
 - current default rendering does not emphasize the actual code text enough (too much emphasis on structure and blocks)
   - make text bold? demphasize the lines and background colours?
@@ -79,10 +78,7 @@ X- when you run the code, it doesn't save your edits first (you have to leave th
 
 - Add a close button on the run window so you don’t need to have the running program keep running in the background
 - Mobile Safari still isn’t putting keyboard focus on the right elements when creating a new class or method. Not really fixable because focus can only be controlled in iOS Safari during a user interaction
-- If you create two methods on a class, maybe the first one doesn’t save?
-- Seems like it happens when you create a method .x and then try to create one .x: because there will temporarily be a name conflict
 - Allow editing of HTML files from within Plom editor
-X- Simple and stdlib are still being copied into empty projects for external directories
 - Android run web window doesn't scroll?
 - Android keyboard doesn't have numbers in number mode. Does number input now have a period available? Maybe have a custom number keyboard?
 

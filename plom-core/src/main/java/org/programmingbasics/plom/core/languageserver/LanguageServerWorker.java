@@ -362,9 +362,8 @@ public class LanguageServerWorker
     {
       CodeRepositoryMessages.ChangeFunctionSignatureRequest requestMsg = (CodeRepositoryMessages.ChangeFunctionSignatureRequest)msg;
       try {
-        FunctionSignature oldSig = CodeRepositoryMessages.stringToSignature(requestMsg.getOldSignature());
         FunctionSignature newSig = CodeRepositoryMessages.stringToSignature(requestMsg.getNewSignature());
-        repo.getFunctionDescription(oldSig.getLookupName()).sig = newSig;
+        repo.changeFunctionSignature(newSig, requestMsg.getFunctionId());
       }
       catch (PlomReadException e)
       {
@@ -430,9 +429,8 @@ public class LanguageServerWorker
       CodeRepositoryMessages.ChangeMethodSignatureRequest requestMsg = (CodeRepositoryMessages.ChangeMethodSignatureRequest)msg;
       try {
         ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
-        FunctionSignature oldSig = CodeRepositoryMessages.stringToSignature(requestMsg.getOldSignature());
         FunctionSignature newSig = CodeRepositoryMessages.stringToSignature(requestMsg.getNewSignature());
-        FunctionDescription fd = cls.findMethod(oldSig.getLookupName(), oldSig.isConstructor || oldSig.isStatic);
+        FunctionDescription fd = cls.findMethodWithId(requestMsg.getFunctionId());
         fd.sig = newSig;
         cls.updateMethod(fd);
       }

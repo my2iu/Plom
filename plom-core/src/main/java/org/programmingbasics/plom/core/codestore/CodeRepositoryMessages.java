@@ -517,16 +517,16 @@ public class CodeRepositoryMessages
   @JsType(isNative = true)
   public static interface ChangeFunctionSignatureRequest extends RequestMessage
   {
-    @JsProperty(name = "oldSig") String getOldSignature();
-    @JsProperty(name = "oldSig") void setOldSignature(String sig);
+    @JsProperty(name = "functionId") int getFunctionId();
+    @JsProperty(name = "functionId") void setFunctionId(int id);
     @JsProperty(name = "newSig") String getNewSignature();
     @JsProperty(name = "newSig") void setNewSignature(String sig);
   }
 
-  public static ChangeFunctionSignatureRequest createChangeFunctionSignatureRequest(String id, FunctionSignature newSig, FunctionSignature oldSig) throws IOException
+  public static ChangeFunctionSignatureRequest createChangeFunctionSignatureRequest(String id, FunctionSignature newSig, int functionId) throws IOException
   {
     ChangeFunctionSignatureRequest msg = (ChangeFunctionSignatureRequest)createRequestMessage(MessageType.CHANGE_FUNCTION_SIGNATURE, id);
-    msg.setOldSignature(signatureToString(oldSig));
+    msg.setFunctionId(functionId);
     msg.setNewSignature(signatureToString(newSig));
     return msg;
   }
@@ -538,9 +538,9 @@ public class CodeRepositoryMessages
     @JsProperty(name = "class") void setClassName(String className);
   }
 
-  public static ChangeFunctionSignatureRequest createChangeMethodSignatureRequest(String id, String className, FunctionSignature newSig, FunctionSignature oldSig) throws IOException
+  public static ChangeFunctionSignatureRequest createChangeMethodSignatureRequest(String id, String className, FunctionSignature newSig, int functionId) throws IOException
   {
-    ChangeMethodSignatureRequest msg = (ChangeMethodSignatureRequest)createChangeFunctionSignatureRequest(id, newSig, oldSig);
+    ChangeMethodSignatureRequest msg = (ChangeMethodSignatureRequest)createChangeFunctionSignatureRequest(id, newSig, functionId);
     msg.setTypeEnum(MessageType.CHANGE_METHOD_SIGNATURE);
     msg.setClassName(className);
     return msg;

@@ -356,6 +356,15 @@ public class ModuleCodeRepository
       return getSortedWithIds(methods, Comparator.comparing((FunctionDescription v) -> v.sig.getLookupName()))
           .stream().filter(fn -> fn.sig.isConstructor).collect(Collectors.toList());
     }
+    public FunctionDescription findMethodWithId(int id)
+    {
+      for (FunctionDescription m: methods)
+      {
+        if (m.getId() == id)
+          return m;
+      }
+      return null;
+    }
     public FunctionDescription findMethod(String name, boolean isStaticOrConstructor)
     {
       return methods.stream().filter(fn -> 
