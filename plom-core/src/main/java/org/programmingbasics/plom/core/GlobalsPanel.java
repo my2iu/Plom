@@ -10,8 +10,6 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 
 import elemental.client.Browser;
@@ -20,6 +18,7 @@ import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
+import elemental.html.ArrayBuffer;
 import elemental.html.DivElement;
 import elemental.svg.SVGDocument;
 import elemental.svg.SVGSVGElement;
@@ -38,15 +37,17 @@ public class GlobalsPanel implements AutoCloseable
   LoadFunctionCodeViewCallback viewSwitchCallback;
   LoadFunctionSigViewCallback functionSigCallback;
   LoadClassViewCallback classViewCallback;
+  LoadTextEditorViewCallback textEditorViewCallback;
   SvgCodeRenderer.SvgTextWidthCalculator widthCalculator;
   
-  GlobalsPanel(DivElement mainDiv, CodeRepositoryClient repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback)
+  GlobalsPanel(DivElement mainDiv, CodeRepositoryClient repository, LoadFunctionCodeViewCallback callback, LoadFunctionSigViewCallback functionSigCallback, LoadClassViewCallback classViewCallback, LoadTextEditorViewCallback textEditorViewCallback)
   {
     this.mainDiv = mainDiv;
     this.repository = repository;
     this.viewSwitchCallback = callback;
     this.functionSigCallback = functionSigCallback;
     this.classViewCallback = classViewCallback;
+    this.textEditorViewCallback = textEditorViewCallback;
     widthCalculator = new SvgCodeRenderer.SvgTextWidthCalculator((SVGDocument)Browser.getDocument());
     rebuildView();
   }
@@ -290,8 +291,18 @@ public class GlobalsPanel implements AutoCloseable
       a.setClassName("plomUiButton");
       a.setHref("#");
       a.setTextContent(file.getPath());
+      String fileName = file.getPath();
       a.addEventListener(Event.CLICK, (e) -> {
         e.preventDefault();
+        if (fileName.endsWith(".html")
+            || fileName.endsWith(".txt")
+            || fileName.endsWith(".js"))
+        {
+          repository.getExtraFilesManager().getFileContents(fileName, (ArrayBuffer arrbuf) -> {
+            String contents = WebHelpers.decoder.decode(arrbuf);
+            textEditorViewCallback.load(fileName, contents);
+          });
+        }
 //        viewSwitchCallback.load(fnName);
       }, false);
       DivElement div = doc.createDivElement();
@@ -385,6 +396,11 @@ public class GlobalsPanel implements AutoCloseable
   public static interface LoadFunctionCodeViewCallback
   {
     void load(FunctionDescription fnName);
+  }
+  @JsFunction
+  public static interface LoadTextEditorViewCallback
+  {
+    void load(String fileName, String contents);
   }
   
   @Override public void close()

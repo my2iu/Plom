@@ -21,15 +21,10 @@ import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescr
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FileDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
 import org.programmingbasics.plom.core.interpreter.ProgramCodeLocation;
 import org.programmingbasics.plom.core.interpreter.RunException;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.ErrorLogger;
 import org.programmingbasics.plom.core.interpreter.SimpleInterpreter.LogLevel;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
-import org.programmingbasics.plom.core.interpreter.Type;
-import org.programmingbasics.plom.core.interpreter.UnboundType;
-import org.programmingbasics.plom.core.interpreter.Value;
 import org.programmingbasics.plom.core.view.LineForPosition;
 
 import elemental.client.Browser;
@@ -111,6 +106,7 @@ public class Main
   CodeWidgetBase codePanel;
   MethodPanel methodPanel;
   ClassPanel classPanel;
+  TextEditorPanel textEditorPanel;
   GlobalsPanel globalsPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
   String currentFunctionBeingViewed = null;
@@ -880,6 +876,24 @@ public class Main
     breadcrumbEl.appendChild(a);
   }
 
+  void fillBreadcrumbForExtraFiles(Element breadcrumbEl, String fileName)
+  {
+    fillBreadcrumbForGlobals(breadcrumbEl);
+    setBackBreadcrumb(this::loadGlobalsView);
+    Document doc = Browser.getDocument();
+    
+    breadcrumbEl.appendChild(doc.createTextNode(" "));
+    AnchorElement a = (AnchorElement)doc.createElement("a");
+    a.setClassName("breadcrumb-item");
+    a.setTextContent(fileName);
+    a.setHref("#");
+    a.addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      loadTextEditorView(fileName, "this is incomplete");
+    }, false);
+    breadcrumbEl.appendChild(a);
+  }
+
   private static DivElement getMainDiv()
   {
     return (DivElement)Browser.getDocument().querySelector("div.main");
@@ -955,6 +969,17 @@ public class Main
     showMethodPanel(cls, m, isNew);
   }
 
+  public void loadTextEditorView(String fileName, String fileContents)
+  {
+    Element breadcrumbEl = getBreadcrumbEl(); 
+    breadcrumbEl.setInnerHTML("");
+    fillBreadcrumbForExtraFiles(breadcrumbEl, fileName);
+    
+//    closeCodePanelIfOpen();
+//    showGlobalsPanel();
+    showTextEditorPanel(fileName, fileContents);
+  }
+  
   public void loadGlobalsView()
   {
     Element breadcrumbEl = getBreadcrumbEl(); 
@@ -1037,7 +1062,8 @@ public class Main
     globalsPanel = new GlobalsPanel(mainDiv, getRepository(),
         (FunctionDescription fnName) -> Main.this.loadFunctionCodeView(fnName.sig.getLookupName()),
         (FunctionDescription sig, boolean isNew) -> loadFunctionSignatureView(sig, isNew),
-        (ClassDescription cls, boolean isNew) -> loadClassView(cls, isNew)
+        (ClassDescription cls, boolean isNew) -> loadClassView(cls, isNew),
+        (String fileName, String fileContents) -> loadTextEditorView(fileName, fileContents)
         );
   }
   
@@ -1073,6 +1099,24 @@ public class Main
         (ClassDescription c, FunctionDescription method, boolean isNewMethod) -> loadMethodSignatureView(c, method, isNewMethod),
         () -> loadGlobalsView(),
         isNew);
+  }
+
+  private void showTextEditorPanel(String fileName, String fileContents)
+  {
+    textEditorPanel = new TextEditorPanel(getMainDiv(), getRepository(), 
+        () -> loadGlobalsView(),
+        fileContents, 
+        false);
+//    methodPanel = new MethodPanel(getMainDiv(), getRepository(), m.sig, isNew);
+//    methodPanel.setListener((newSig, isFinal) -> {
+//      getRepository().changeMethodSignature(cls, newSig, m)
+//        .thenNow((unused) -> {
+//          m.sig = FunctionSignature.copyOf(newSig);
+//          if (isFinal)
+//            loadMethodCodeView(cls, m);
+//          return null;
+//        });
+//    });
   }
 
   

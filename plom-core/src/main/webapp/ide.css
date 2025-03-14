@@ -72,7 +72,8 @@ a.breadcrumb-item:visited {
 .codemain, 
 .methodpanel, 
 .globalspanel, 
-.classpanel {
+.classpanel,
+.texteditorpanel {
 	width: 100%;
 	height: 100%;
 	display: flex;
@@ -392,6 +393,12 @@ a.breadcrumb-item:visited {
 .sidechoices a:active {
 	text-decoration: underline;
 	color: black;
+}
+
+.texteditorpanel textarea {
+	margin-bottom: var(--window-inset-bottom);
+	flex-grow: 1;
+	resize: none;
 }
 
 .testbuttons {

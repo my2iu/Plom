@@ -6,8 +6,6 @@ import org.programmingbasics.plom.core.ast.ParseToAst;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.ClassDescription;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionDescription;
-import org.programmingbasics.plom.core.codestore.RepositoryScope;
-import org.programmingbasics.plom.core.interpreter.StandardLibrary;
 import org.programmingbasics.plom.core.interpreter.UnboundType;
 import org.programmingbasics.plom.core.view.SvgCodeRenderer;
 

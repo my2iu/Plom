@@ -43,4 +43,8 @@ public interface UIResources extends ClientBundle
    
    @Source("autoresizinginput.html")
    TextResource getAutoResizingInputHtml();
+   
+   @Source("extrafilestextpanel.html")
+   TextResource getExtraFilesTextPanelHtml();
+
 }
