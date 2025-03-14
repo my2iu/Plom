@@ -318,13 +318,18 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   {
     return languageServer.sendGetFunctionDescription(name);
   }
-  
-  public Promise<Void> saveFunctionCode(String name, StatementContainer code)
+
+  public Promise<FunctionDescription> getFunctionDescriptionWithId(int id)
+  {
+    return languageServer.sendGetFunctionDescriptionFromId(id);
+  }
+
+  public Promise<Void> saveFunctionCode(int id, StatementContainer code)
   {
 //    partialFix();
 //    localRepo.getFunctionDescription(name).code = code;
     // TODO: synchronize things with the promise
-    return languageServer.sendSaveFunctionCode(name, code);
+    return languageServer.sendSaveFunctionCode(id, code);
   }
   
   public Promise<Void> changeFunctionSignature(FunctionSignature newSig, FunctionDescription oldFn)
@@ -415,7 +420,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   }
 
   // Context to be used for code completion suggestions
-  public Promise<Void> setCodeCompletionContext(String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
+  public Promise<Void> setCodeCompletionContext(Integer currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
   {
     return languageServer.sendSetCodeCompletionContext(currentFunction, currentClass, currentMethod, currentCode, currentPos);
   }
@@ -450,12 +455,12 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
   }
 
   private class CodeCompletionSuggesterClient implements CodeWidgetBase.CodeCompletionSuggester {
-    String currentFunctionOrNull;
+    Integer currentFunctionOrNull;
     ClassDescription currentClassOrNull;
     FunctionSignature currentMethodOrNull;
     
     private CodeCompletionSuggesterClient() {}
-    private CodeCompletionSuggesterClient(String forCurrentFunctionOrNull, ClassDescription forCurrentClassOrNull, FunctionSignature forCurrentMethodOrNull) {
+    private CodeCompletionSuggesterClient(Integer forCurrentFunctionOrNull, ClassDescription forCurrentClassOrNull, FunctionSignature forCurrentMethodOrNull) {
       this.currentClassOrNull = forCurrentClassOrNull;
       this.currentFunctionOrNull = forCurrentFunctionOrNull;
       this.currentMethodOrNull = forCurrentMethodOrNull;
@@ -555,7 +560,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return new CodeCompletionSuggesterClient();
   }
 
-  public CodeCompletionSuggester makeCodeCompletionSuggesterWithContext(String currentFunctionOrNull, ClassDescription currentClassOrNull, FunctionSignature currentMethodOrNull)
+  public CodeCompletionSuggester makeCodeCompletionSuggesterWithContext(Integer currentFunctionOrNull, ClassDescription currentClassOrNull, FunctionSignature currentMethodOrNull)
   {
     return new CodeCompletionSuggesterClient(currentFunctionOrNull, currentClassOrNull, currentMethodOrNull);
   }

@@ -136,7 +136,24 @@ public class LanguageServerClientConnection
       }
     });
   }
-  
+
+  public Promise<FunctionDescription> sendGetFunctionDescriptionFromId(int id)
+  {
+    String requestId = getNextId();
+    worker.postMessage(CodeRepositoryMessages.createGetFromIdMessage(MessageType.GET_FUNCTION_DESCRIPTION_FROM_ID, requestId, id));
+    return waitForReplyFor(requestId).thenNow((msg) -> {
+      try
+      {
+        CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson> fdMsg = (CodeRepositoryMessages.SingleObjectReplyMessage<FunctionDescriptionJson>)msg;
+        return fdMsg.getPayload().getAsFunctionDescription();
+      }
+      catch (PlomReadException e)
+      {
+        throw new IllegalArgumentException(e);
+      }
+    });
+  }
+
   public Promise<Boolean> sendIsStdLib()
   {
     String requestId = getNextId();
@@ -147,13 +164,13 @@ public class LanguageServerClientConnection
     });
   }
 
-  public Promise<Void> sendSaveFunctionCode(String name, StatementContainer code)
+  public Promise<Void> sendSaveFunctionCode(int functionId, StatementContainer code)
   {
     String requestId = getNextId();
     CodeRepositoryMessages.SaveFunctionCodeMessage msg;
     try
     {
-      msg = CodeRepositoryMessages.createSaveFunctionCodeMessage(requestId, name, code);
+      msg = CodeRepositoryMessages.createSaveFunctionCodeMessage(requestId, functionId, code);
       worker.postMessage(msg);
     }
     catch (IOException e)
@@ -475,7 +492,7 @@ public class LanguageServerClientConnection
     });
   }
   
-  Promise<Void> sendSetCodeCompletionContext(String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
+  Promise<Void> sendSetCodeCompletionContext(Integer currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos)
   {
     String requestId = getNextId();
     try

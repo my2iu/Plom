@@ -612,7 +612,25 @@ public class ModuleCodeRepository
     }
     return null;
   }
+
+  public FunctionDescription getFunctionDescriptionWithId(int id)
+  {
+    FunctionDescription fn = getFunctionWithId(id);
+    if (fn == null && chainedRepository != null)
+      return chainedRepository.getFunctionDescriptionWithId(id);
+    return fn;
+  }
   
+  public FunctionDescription getFunctionWithId(int id)
+  {
+    for (FunctionDescription fn: functions)
+    {
+      if (fn.getId() == id) 
+        return fn;
+    }
+    return null;
+  }
+
   public void addFunction(FunctionDescription func)
   {
     func.module = this;

@@ -141,6 +141,15 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(nameMsg.getRequestId(), json));
       break;
     }
+    case GET_FUNCTION_DESCRIPTION_FROM_ID:
+    {
+      CodeRepositoryMessages.GetFromIdMessage idMsg = (CodeRepositoryMessages.GetFromIdMessage)msg; 
+      FunctionDescription fd = repo.getFunctionDescriptionWithId(idMsg.getId());
+      FunctionDescriptionJson json = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
+      json.setAsFunctionDescription(fd);
+      postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(idMsg.getRequestId(), json));
+      break;
+    }
     case IS_STDLIB:
     {
       CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg; 
@@ -151,7 +160,7 @@ public class LanguageServerWorker
     {
       CodeRepositoryMessages.SaveFunctionCodeMessage requestMsg = (CodeRepositoryMessages.SaveFunctionCodeMessage)msg;
       try {
-        repo.getFunctionDescription(requestMsg.getName()).code = requestMsg.getCodeStatementContainer();
+        repo.getFunctionDescriptionWithId(requestMsg.getFunctionId()).code = requestMsg.getCodeStatementContainer();
       }
       catch (PlomReadException e)
       {
@@ -505,7 +514,7 @@ public class LanguageServerWorker
         // Add in function arguments
         FunctionDescription fd = null; 
         if (requestMsg.getCurrentFunction() != null)
-          fd = repo.getFunctionDescription(requestMsg.getCurrentFunction());
+          fd = repo.getFunctionDescriptionWithId(requestMsg.getCurrentFunction());
         else if (currentMethodSignature != null)
           fd = currentClass.findMethod(currentMethodSignature.getLookupName(), currentMethodSignature.isConstructor || currentMethodSignature.isStatic);
         if (fd != null)

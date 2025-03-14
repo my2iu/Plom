@@ -171,6 +171,20 @@ public class CodeRepositoryMessages
     return msg;
   }
 
+  @JsType(isNative = true)
+  public static interface GetFromIdMessage extends RequestMessage
+  {
+    @JsProperty(name = "id") int getId();
+    @JsProperty(name = "id") void setId(int id);
+  }
+
+  public static GetFromIdMessage createGetFromIdMessage(MessageType type, String requestId, int id)
+  {
+    GetFromIdMessage msg = (GetFromIdMessage)createRequestMessage(type, requestId);
+    msg.setId(id);
+    return msg;
+  }
+
   public static String statementContainerToString(StatementContainer code) throws IOException
   {
     StringBuilder strBuilder = new StringBuilder();
@@ -254,18 +268,20 @@ public class CodeRepositoryMessages
   @JsType(isNative = true)
   public static interface SaveFunctionCodeMessage extends RequestMessage
   {
-    @JsProperty(name = "name") String getName();
-    @JsProperty(name = "name") void setName(String name);
+//    @JsProperty(name = "name") String getName();
+//    @JsProperty(name = "name") void setName(String name);
+    @JsProperty(name = "functionId") int getFunctionId();
+    @JsProperty(name = "functionId") void setFunctionId(int id);
     @JsProperty(name = "code") String getCode();
     @JsProperty(name = "code") void setCode(String code);
     @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
     @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
   }
 
-  public static SaveFunctionCodeMessage createSaveFunctionCodeMessage(String id, String name, StatementContainer code) throws IOException
+  public static SaveFunctionCodeMessage createSaveFunctionCodeMessage(String id, int functionId, StatementContainer code) throws IOException
   {
     SaveFunctionCodeMessage msg = (SaveFunctionCodeMessage)createRequestMessage(MessageType.SAVE_FUNCTION_CODE, id);
-    msg.setName(name);
+    msg.setFunctionId(functionId);
     msg.setCodeStatementContainer(code);
     return msg;
   }
@@ -585,8 +601,8 @@ public class CodeRepositoryMessages
   @JsType(isNative = true)
   public static interface SetCodeCompletionContextRequest extends RequestMessage
   {
-    @JsProperty(name = "function") String getCurrentFunction();
-    @JsProperty(name = "function") void setCurrentFunction(String name);
+    @JsProperty(name = "function") Integer getCurrentFunction();
+    @JsProperty(name = "function") void setCurrentFunction(Integer fnId);
     @JsProperty(name = "class") String getCurrentClass();
     @JsProperty(name = "class") void setCurrentClass(String className);
     @JsProperty(name = "method") String getCurrentMethodSignature();
@@ -602,7 +618,7 @@ public class CodeRepositoryMessages
   }
 
   public static SetCodeCompletionContextRequest createSetCodeCompletionRequest(String id,
-      String currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos) throws IOException
+      Integer currentFunction, String currentClass, FunctionSignature currentMethod, StatementContainer currentCode, CodePosition currentPos) throws IOException
   {
     SetCodeCompletionContextRequest msg = (SetCodeCompletionContextRequest)createRequestMessage(MessageType.SET_CODE_COMPLETION_CONTEXT, id);
     if (currentFunction != null)
@@ -747,6 +763,7 @@ public class CodeRepositoryMessages
     IMPORT_STDLIB("importStdLib"), 
     LOAD_MODULE("loadModule"),
     GET_FUNCTION_DESCRIPTION("functionDescription"),
+    GET_FUNCTION_DESCRIPTION_FROM_ID("functionDescriptionFromId"),
     GET_CLASS_DESCRIPTION("classDescription"),
     IS_STDLIB("isStdLib"),
     SAVE_FUNCTION_CODE("saveFunctionCode"),

@@ -109,7 +109,8 @@ public class Main
   TextEditorPanel textEditorPanel;
   GlobalsPanel globalsPanel;
   LineNumberTracker lineNumbers = new LineNumberTracker();
-  String currentFunctionBeingViewed = null;
+//  String currentFunctionBeingViewed = null;
+  Integer currentFunctionIdBeingViewed = null;
   ClassDescription currentMethodClassBeingViewed = null;
   FunctionDescription currentMethodBeingViewed = null;
 //  private ErrorLogger errorLogger = createErrorLoggerForConsole(Browser.getDocument().querySelector(".console"));
@@ -546,9 +547,9 @@ public class Main
   {
     if (codePanel != null) 
     {
-      if (currentFunctionBeingViewed != null)
+      if (currentFunctionIdBeingViewed != null)
       {
-        getRepository().saveFunctionCode(currentFunctionBeingViewed, codePanel.codeList);
+        getRepository().saveFunctionCode(currentFunctionIdBeingViewed, codePanel.codeList);
       }
       if (currentMethodBeingViewed != null)
      {
@@ -908,15 +909,23 @@ public class Main
     return breadcrumbEl;
   }
   
-  public Promise<Void> loadFunctionCodeView(String fnName)
+  public Promise<Void> loadFunctionCodeView(String name)
   {
-    return getRepository().getFunctionDescription(fnName).<Void>thenNow((fd) -> {
+    return getRepository().getFunctionDescription(name)
+        .<Void>then((fd) -> {
+          return loadFunctionCodeViewFromFunctionId(fd.getId());
+        });
+  }
+  
+  public Promise<Void> loadFunctionCodeViewFromFunctionId(int fnId)
+  {
+    return getRepository().getFunctionDescriptionWithId(fnId).<Void>thenNow((fd) -> {
       Element breadcrumbEl = getBreadcrumbEl(); 
       breadcrumbEl.setInnerHTML("");
       fillBreadcrumbForFunction(breadcrumbEl, fd);
       
       closeCodePanelIfOpen();
-      currentFunctionBeingViewed = fnName;
+      currentFunctionIdBeingViewed = fnId;
       showCodePanel(fd.code);
       return null;
     });
@@ -996,7 +1005,7 @@ public class Main
     {
       codePanel.close();
     }
-    currentFunctionBeingViewed = null;
+    currentFunctionIdBeingViewed = null;
     currentMethodBeingViewed = null;
     currentMethodClassBeingViewed = null;
     codePanel = null;
@@ -1020,7 +1029,7 @@ public class Main
       // Normally, the "primitive" keyword isn't available unless we're editing a standard library
       codePanel.setExcludeTokens(Collections.emptyList());
     codePanel.setVariableContextConfigurator(
-        repository.makeCodeCompletionSuggesterWithContext(currentFunctionBeingViewed, currentMethodClassBeingViewed, (currentMethodBeingViewed == null ? null : currentMethodBeingViewed.sig)));
+        repository.makeCodeCompletionSuggesterWithContext(currentFunctionIdBeingViewed, currentMethodClassBeingViewed, (currentMethodBeingViewed == null ? null : currentMethodBeingViewed.sig)));
     codePanel.setListener((isCodeChanged) -> {
       if (isCodeChanged)
       {
@@ -1060,7 +1069,7 @@ public class Main
     DivElement mainDiv = getMainDiv();
     
     globalsPanel = new GlobalsPanel(mainDiv, getRepository(),
-        (FunctionDescription fnName) -> Main.this.loadFunctionCodeView(fnName.sig.getLookupName()),
+        (FunctionDescription fnName) -> Main.this.loadFunctionCodeViewFromFunctionId(fnName.getId()),
         (FunctionDescription sig, boolean isNew) -> loadFunctionSignatureView(sig, isNew),
         (ClassDescription cls, boolean isNew) -> loadClassView(cls, isNew),
         (String fileName, String fileContents) -> loadTextEditorView(fileName, fileContents)
@@ -1074,7 +1083,7 @@ public class Main
       getRepository().changeFunctionSignature(newSig, sig);
       sig.sig = FunctionSignature.copyOf(newSig);
       if (isFinal)
-        loadFunctionCodeView(newSig.getLookupName());
+        loadFunctionCodeViewFromFunctionId(sig.getId());
     });
   }
 
