@@ -455,8 +455,10 @@ public class LanguageServerWorker
       CodeRepositoryMessages.SaveMethodCodeMessage requestMsg = (CodeRepositoryMessages.SaveMethodCodeMessage)msg;
       try {
         ClassDescription cls = repo.findClassWithName(requestMsg.getClassName(), false);
-        FunctionSignature sig = CodeRepositoryMessages.stringToSignature(requestMsg.getSignature());
-        FunctionDescription fd = cls.findMethod(sig.getLookupName(), sig.isConstructor || sig.isStatic);
+        int methodId = requestMsg.getMethodId();
+//        FunctionSignature sig = CodeRepositoryMessages.stringToSignature(requestMsg.getSignature());
+//        FunctionDescription fd = cls.findMethod(sig.getLookupName(), sig.isConstructor || sig.isStatic);
+        FunctionDescription fd = cls.findMethodWithId(methodId);
         fd.code = requestMsg.getCodeStatementContainer();
       }
       catch (PlomReadException e)

@@ -416,7 +416,7 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     // Fill this in properly
     method.code = code;
     cls.updateMethod(method);
-    return languageServer.sendSaveMethodCode(cls, method.sig, code);
+    return languageServer.sendSaveMethodCode(cls, method.getId(), code);
   }
 
   // Context to be used for code completion suggestions

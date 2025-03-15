@@ -291,19 +291,22 @@ public class CodeRepositoryMessages
   {
     @JsProperty(name = "class") String getClassName();
     @JsProperty(name = "class") void setClassName(String className);
-    @JsProperty(name = "sig") String getSignature();
-    @JsProperty(name = "sig") void setSignature(String sig);
+    @JsProperty(name = "methodId") Integer getMethodId();
+    @JsProperty(name = "methodId") void setMethodId(Integer id);
+//    @JsProperty(name = "sig") String getSignature();
+//    @JsProperty(name = "sig") void setSignature(String sig);
     @JsProperty(name = "code") String getCode();
     @JsProperty(name = "code") void setCode(String code);
     @JsOverlay default StatementContainer getCodeStatementContainer() throws PlomReadException { return stringToStatementContainer(getCode()); }
     @JsOverlay default void setCodeStatementContainer(StatementContainer code) throws IOException { setCode(statementContainerToString(code)); }
   }
 
-  public static SaveMethodCodeMessage createSaveMethodCodeMessage(String id, String className, FunctionSignature sig, StatementContainer code) throws IOException
+  public static SaveMethodCodeMessage createSaveMethodCodeMessage(String id, String className, int methodId, StatementContainer code) throws IOException
   {
     SaveMethodCodeMessage msg = (SaveMethodCodeMessage)createRequestMessage(MessageType.SAVE_METHOD_CODE, id);
     msg.setClassName(className);
-    msg.setSignature(signatureToString(sig));
+    msg.setMethodId(methodId);
+//    msg.setSignature(signatureToString(sig));
     msg.setCodeStatementContainer(code);
     return msg;
   }

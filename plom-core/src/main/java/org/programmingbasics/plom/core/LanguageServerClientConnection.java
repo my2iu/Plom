@@ -473,13 +473,13 @@ public class LanguageServerClientConnection
   }
 
   public Promise<Void> sendSaveMethodCode(ClassDescription cls,
-      FunctionSignature sig, StatementContainer code)
+      int methodId, StatementContainer code)
   {
     String requestId = getNextId();
     CodeRepositoryMessages.SaveMethodCodeMessage msg;
     try
     {
-      msg = CodeRepositoryMessages.createSaveMethodCodeMessage(requestId, cls.getName(), sig, code);
+      msg = CodeRepositoryMessages.createSaveMethodCodeMessage(requestId, cls.getName(), methodId, code);
       worker.postMessage(msg);
     }
     catch (IOException e)
