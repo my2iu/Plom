@@ -53,7 +53,21 @@ public class WebHelpers
   }
 
   static TextDecoder decoder = new TextDecoderClass();
-  
+
+  @JsType(isNative = true, namespace = JsPackage.GLOBAL)
+  public static interface TextEncoder
+  {
+    Uint8Array encode(String str);
+  }
+  @JsType(isNative = true, name = "TextEncoder", namespace = JsPackage.GLOBAL)
+  public static class TextEncoderClass implements TextEncoder
+  {
+    public TextEncoderClass() {}
+    @Override public native Uint8Array encode(String str);
+  }
+
+  static TextEncoder encoder = new TextEncoderClass();
+
   public static class Base64EncoderDecoder
   {
      static char[] encodeLookup = {

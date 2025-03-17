@@ -556,6 +556,10 @@ public class Main
         getRepository().saveMethodCode(currentMethodClassBeingViewed, currentMethodBeingViewed, codePanel.codeList);
       }
     }
+    if (textEditorPanel != null)
+    {
+      textEditorPanel.save();
+    }
   }
   
   public Promise<String> getModuleAsString() throws IOException 
@@ -1014,6 +1018,11 @@ public class Main
       globalsPanel.close();
       globalsPanel = null;
     }
+    if (textEditorPanel != null)
+    {
+      textEditorPanel.close();
+      textEditorPanel = null;
+    }
   }
   
   private void closeCodePanelIfOpen()
@@ -1114,6 +1123,7 @@ public class Main
   {
     textEditorPanel = new TextEditorPanel(getMainDiv(), getRepository(), 
         () -> loadGlobalsView(),
+        fileName,
         fileContents, 
         false);
 //    methodPanel = new MethodPanel(getMainDiv(), getRepository(), m.sig, isNew);

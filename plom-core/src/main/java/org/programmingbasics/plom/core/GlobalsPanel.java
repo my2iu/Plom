@@ -296,6 +296,7 @@ public class GlobalsPanel implements AutoCloseable
         e.preventDefault();
         if (fileName.endsWith(".html")
             || fileName.endsWith(".txt")
+            || fileName.endsWith(".md")
             || fileName.endsWith(".js"))
         {
           repository.getExtraFilesManager().getFileContents(fileName, (ArrayBuffer arrbuf) -> {
