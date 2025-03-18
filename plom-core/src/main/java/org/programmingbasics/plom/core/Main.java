@@ -1124,18 +1124,7 @@ public class Main
     textEditorPanel = new TextEditorPanel(getMainDiv(), getRepository(), 
         () -> loadGlobalsView(),
         fileName,
-        fileContents, 
-        false);
-//    methodPanel = new MethodPanel(getMainDiv(), getRepository(), m.sig, isNew);
-//    methodPanel.setListener((newSig, isFinal) -> {
-//      getRepository().changeMethodSignature(cls, newSig, m)
-//        .thenNow((unused) -> {
-//          m.sig = FunctionSignature.copyOf(newSig);
-//          if (isFinal)
-//            loadMethodCodeView(cls, m);
-//          return null;
-//        });
-//    });
+        fileContents);
   }
 
   

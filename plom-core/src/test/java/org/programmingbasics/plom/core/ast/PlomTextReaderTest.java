@@ -34,6 +34,26 @@ public class PlomTextReaderTest extends TestCase
   }
   
   @Test
+  public void testSanitizeDotVariable()
+  {
+    Assert.assertEquals(".sdf sdf:go:and that  df  go:", 
+        PlomTextReader.sanitizeDotVariable("  \r \nsdf\n sdf : go: and that { df } go :  "));
+    Assert.assertEquals(".does this work", 
+        PlomTextReader.sanitizeDotVariable("  does this work "));
+    Assert.assertEquals(".spaces after initial period", 
+        PlomTextReader.sanitizeDotVariable(".   spaces after initial. period"));
+    Assert.assertEquals(".spaces after initial   period", 
+        PlomTextReader.sanitizeDotVariable("  .   spaces after initial  . period"));
+  }
+  
+  @Test
+  public void testSanitizeMethodNamePart()
+  {
+    Assert.assertEquals("doesthis sdf work", 
+        PlomTextReader.sanitizeMethodNamePart("  \r does\nthis {sdf}: work. "));
+  }
+  
+  @Test
   public void testReadKeywords() throws PlomTextReader.PlomReadException
   {
     PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader("var} if{+-/*/ *\"hello\"0.23--36//");

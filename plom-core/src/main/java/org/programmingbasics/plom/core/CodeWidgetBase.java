@@ -922,6 +922,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     }
     else if (token instanceof Token.ParameterToken && ((Token.ParameterToken)token).type == Symbol.DotVariable)
     {
+      val = PlomTextReader.sanitizeDotVariable(val);
       ((Token.ParameterToken)token).setContents(
           Token.ParameterToken.splitVarAtColons(val),
           Token.ParameterToken.splitVarAtColonsForPostfix(val));

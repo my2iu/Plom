@@ -73,12 +73,10 @@ TODO:
   - make text bold? demphasize the lines and background colours?
 - size of the Plom keyboard (the "choices" area) should be adjustable
 - When specifying a new @f, the side suggestions are the wrong type
-- Should automatically remove extra spaces at end of variable names and method name parts because Android keeps inserting them after doing a spellcheck
 - It shouldn't be@js object.set:to: but put:at:
 
 - Add a close button on the run window so you don’t need to have the running program keep running in the background
 - Mobile Safari still isn’t putting keyboard focus on the right elements when creating a new class or method. Not really fixable because focus can only be controlled in iOS Safari during a user interaction
-- Allow editing of HTML files from within Plom editor
 - Android run web window doesn't scroll?
 - Android keyboard doesn't have numbers in number mode. Does number input now have a period available? Maybe have a custom number keyboard?
 

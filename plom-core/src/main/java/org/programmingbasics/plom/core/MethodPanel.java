@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.programmingbasics.plom.core.ast.ParseToAst;
+import org.programmingbasics.plom.core.ast.PlomTextReader;
 import org.programmingbasics.plom.core.ast.TokenContainer;
 import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.codestore.ModuleCodeRepository.FunctionSignature;
@@ -491,7 +492,7 @@ public class MethodPanel
     public void syncFromUi()
     {
       for (int n = 0; n < nameEls.size(); n++)
-        sig.nameParts.set(n, nameEls.get(n).getValue());
+        sig.nameParts.set(n, PlomTextReader.sanitizeMethodNamePart(nameEls.get(n).getValue()));
       for (int n = 0; n < argCodeAreas.size(); n++)
       {
         sig.setArgCode(n, argCodeAreas.get(n).getSingleLineCode(), null);

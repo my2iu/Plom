@@ -131,6 +131,38 @@ public class PlomTextReader
     return optionalMinus + beforeDecimal 
         + (afterDecimal.isEmpty() ? "" : "." + afterDecimal);
   }
+
+  // Sanitizes user input of a dot variable name (this is particularly
+  // needed for mobile, which adds in extra spaces when autocompleting
+  // words).
+  public static String sanitizeDotVariable(String val)
+  {
+    // Remove \r \n { } trailing and leading whitespace
+    // Remove whitespace before and after a colon?
+    // Consolidate whitespace?
+    val = val.replaceAll("[\\r]", "").replaceAll("[\\n]", "")
+        .replaceAll("[{]", "").replaceAll("[}]", "")
+        .replaceAll("\\s*:\\s*", ":")
+        .replaceAll("[.]", "")
+        .trim();
+    // Remove all periods (including the one at the beginning if there is one
+    // there) and then put a period back at the beginning
+    val = "." + val;
+    return val;
+  }
+  
+  // Sanitizes user input of part of a method name (this is particularly
+  // needed for mobile, which adds in extra spaces when autocompleting
+  // words).
+  public static String sanitizeMethodNamePart(String val)
+  {
+    val = val.replaceAll("[\r]", "").replaceAll("[\n]", "")
+        .replaceAll("[{]", "").replaceAll("[}]", "")
+        .replaceAll("[:]", "").replaceAll("[.]", "")
+        .trim();
+    return val;
+  }
+
   
   private static boolean isKeywordPatternMatch(String toMatch)
   {
