@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -616,6 +617,22 @@ public class PlomActivity extends AppCompatActivity {
         @JavascriptInterface
         public void deleteClass(String name) {
             deleteSourceFile("@" + name + ".plom");
+        }
+
+        @JavascriptInterface
+        public void saveBase64File(String path, String base64Contents)
+        {
+            byte [] data = Base64.decode(base64Contents, Base64.DEFAULT);
+            try {
+                File f = new File(path);
+                String baseDir = f.getParent();
+                String fileName = f.getName();
+                writeProjectFile(baseDir, fileName, new ByteArrayInputStream(data));
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
 
         @JavascriptInterface

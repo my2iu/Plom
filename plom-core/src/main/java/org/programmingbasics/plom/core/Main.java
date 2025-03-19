@@ -33,6 +33,7 @@ import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.html.AnchorElement;
+import elemental.html.ArrayBuffer;
 import elemental.html.DivElement;
 import elemental.html.FileReader;
 import elemental.html.IFrameElement;
@@ -328,6 +329,11 @@ public class Main
       }
     });
     return debugConnection;
+  }
+  
+  public static String base64Encode(ArrayBuffer buf)
+  {
+    return WebHelpers.Base64EncoderDecoder.encodeToString(Browser.getWindow().newUint8Array(buf, 0, buf.getByteLength()), false);
   }
   
   public CodeRepositoryClient getRepository()

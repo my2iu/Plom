@@ -32,7 +32,9 @@
               'https://webviewbridge.plom.dev/bridge/',
               // Writing out extra files
               (filename, data) => {
-                throw "Writing out extra files not implemented on Android yet";
+            	let base64 = org.programmingbasics.plom.core.Main.base64Encode(data);
+            	AndroidBridge.saveBase64File(filename, base64);
+            	return Promise.resolve("");
               })
 
             window.plomPrepareToUnload = function() {

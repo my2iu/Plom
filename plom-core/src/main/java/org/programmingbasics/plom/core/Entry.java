@@ -74,6 +74,7 @@ TODO:
 - size of the Plom keyboard (the "choices" area) should be adjustable
 - When specifying a new @f, the side suggestions are the wrong type
 - It shouldn't be@js object.set:to: but put:at:
+- add Android and iOS support for writing extra files
 
 - Add a close button on the run window so you don’t need to have the running program keep running in the background
 - Mobile Safari still isn’t putting keyboard focus on the right elements when creating a new class or method. Not really fixable because focus can only be controlled in iOS Safari during a user interaction
