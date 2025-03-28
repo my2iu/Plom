@@ -81,6 +81,8 @@ TODO:
 - Android run web window doesn't scroll?
 - Android keyboard doesn't have numbers in number mode. Does number input now have a period available? Maybe have a custom number keyboard?
 
+- for loops aren't saving
+X- textarea on Android is too close to edges of the screen
 
 TODO list from TOJam 2023
 - [?] iOS New project in external folder doesn’t copy external files or other files

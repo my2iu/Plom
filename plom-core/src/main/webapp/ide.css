@@ -396,6 +396,8 @@ a.breadcrumb-item:visited {
 }
 
 .texteditorpanel textarea {
+	padding-left: 1.25em;
+	padding-right: 1.25em;
 	margin-bottom: var(--window-inset-bottom);
 	flex-grow: 1;
 	resize: none;
