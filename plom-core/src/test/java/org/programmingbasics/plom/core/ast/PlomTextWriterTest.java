@@ -216,6 +216,31 @@ public class PlomTextWriterTest extends TestCase
     StatementContainer read = PlomTextReader.readStatementContainer(lexer);
     Assert.assertEquals(code, read);
   }
+
+  @Test
+  public void testWriteFor() throws IOException, PlomTextReader.PlomReadException
+  {
+    StatementContainer code = new StatementContainer(
+        new TokenContainer(
+            new Token.OneExpressionOneBlockToken("for", Symbol.COMPOUND_FOR, 
+                new TokenContainer(), 
+                new StatementContainer())
+            )
+        );
+    PlomTextWriter writer = new PlomTextWriter();
+    StringBuilder out = new StringBuilder();
+    writer.writeStatementContainer(new PlomCodeOutputFormatter(out), code);
+
+    Assert.assertEquals(" for { } {\n" + 
+        " }\n" + 
+        "\n", out.toString());
+
+    // Check if we can read back the output
+    PlomTextReader.StringTextReader in = new PlomTextReader.StringTextReader(out.toString());
+    PlomTextReader.PlomTextScanner lexer = new PlomTextReader.PlomTextScanner(in);
+    StatementContainer read = PlomTextReader.readStatementContainer(lexer);
+    Assert.assertEquals(code, read);
+  }
   
   @Test
   public void testMultilineComments() throws IOException, PlomTextReader.PlomReadException

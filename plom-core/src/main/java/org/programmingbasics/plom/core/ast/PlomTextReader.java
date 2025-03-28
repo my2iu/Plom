@@ -450,6 +450,7 @@ public class PlomTextReader
       case COMPOUND_IF:
       case COMPOUND_ELSEIF:
       case COMPOUND_WHILE:
+      case COMPOUND_FOR:
       case FunctionLiteral:
       {
         lexer.lexInput();
