@@ -583,6 +583,7 @@ public class MachineContext
       // bottom until we hit one with an associated token
       for (AstNode node = ip.peekNode(idx); node != null; idx++)
       {
+        e.addProgramLocationFromNodeIfNeeded(node, this);
         Token errorToken = node.scanForToken();
         if (errorToken != null)
         {
