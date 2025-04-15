@@ -63,7 +63,7 @@ public abstract class DebuggerEnvironment
     String id;
     
     ErrorLogger errorLogger = new ErrorLogger() {
-      private void logErr(Object err, LogLevel logLevel)
+      private void logErr(Object err, LogLevel logLevel, ProgramCodeLocation location)
       {
         String msgString;
         if (err instanceof ParseException)
@@ -71,7 +71,7 @@ public abstract class DebuggerEnvironment
           ParseException parseErr = (ParseException)err;
 //          int lineNo = lineNumbers.tokenLine.getOrDefault(parseErr.token, 0);
 //          if (lineNo == 0)
-            log("Syntax Error", logLevel, null);
+            log("Syntax Error", logLevel, location);
 //          else
 //            msgString = "Syntax Error (line " + lineNo + ")";
         }
@@ -88,24 +88,26 @@ public abstract class DebuggerEnvironment
 //          if (lineNo == 0)
 //          else
 //            msgString = errString + " (line " + lineNo + ")";
-            log(errString, logLevel, runErr.getErrorLocation());
+          if (location == null)
+            location = runErr.getErrorLocation();
+          log(errString, logLevel, location);
         }
         else if (err instanceof Throwable && ((Throwable)err).getMessage() != null && !((Throwable)err).getMessage().isEmpty())
         {
-          log(((Throwable)err).getMessage(), logLevel, null);
+          log(((Throwable)err).getMessage(), logLevel, location);
         }
         else
         {
-          log(err.toString(), logLevel, null);
+          log(err.toString(), logLevel, location);
         }
       }
       @Override public void warn(Object err)
       {
-        logErr(err, WARN);
+        logErr(err, WARN, null);
       }
-      @Override public void error(Object err)
+      @Override public void error(Object err, ProgramCodeLocation location)
       {
-        logErr(err, ERROR);
+        logErr(err, ERROR, location);
       }
       String gatherChainedErrorMessages(Throwable e)
       {

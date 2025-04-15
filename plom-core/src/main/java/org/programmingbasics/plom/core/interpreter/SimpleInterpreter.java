@@ -436,7 +436,7 @@ public class SimpleInterpreter
   @JsType
   public static abstract class ErrorLogger
   {
-    public abstract void error(Object errObj);
+    public abstract void error(Object errObj, ProgramCodeLocation location);
     public abstract void debugLog(Object value);
     public abstract void warn(Object errObj);
     public abstract void log(String msg, LogLevel logLevel, ProgramCodeLocation location);
@@ -467,7 +467,7 @@ public class SimpleInterpreter
 
   public static class NullErrorLogger extends ErrorLogger
   {
-    @Override public void error(Object errObj) {}
+    @Override public void error(Object errObj, ProgramCodeLocation location) {}
     @Override public void warn(Object errObj) {}
     @Override public void debugLog(Object value) {}
     @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location) {}
@@ -492,7 +492,24 @@ public class SimpleInterpreter
     catch (Throwable e)
     {
       if (errorLogger != null)
-        errorLogger.error(e);
+      {
+        ProgramCodeLocation location = null;
+        if (!(e instanceof RunException))
+        {
+          int idx = 0;
+          // Walk through the nodes from the top of the stack to the
+          // bottom until we hit one with an associated token
+          for (AstNode node = ctx.ip.peekNode(idx); node != null && location == null; idx++)
+          {
+            location = RunException.locationFromNode(node, ctx);
+          }
+        }
+        else
+        {
+          location = ((RunException)e).getErrorLocation();
+        }
+          errorLogger.error(e, location);
+      }
     }
   }
 
@@ -512,7 +529,24 @@ public class SimpleInterpreter
     catch (Throwable e)
     {
       if (errorLogger != null)
-        errorLogger.error(e);
+      {
+        ProgramCodeLocation location = null;
+        if (!(e instanceof RunException))
+        {
+          int idx = 0;
+          // Walk through the nodes from the top of the stack to the
+          // bottom until we hit one with an associated token
+          for (AstNode node = ctx.ip.peekNode(idx); node != null && location == null; idx++)
+          {
+            location = RunException.locationFromNode(node, ctx);
+          }
+        }
+        else
+        {
+          location = ((RunException)e).getErrorLocation();
+        }
+          errorLogger.error(e, location);
+      }
       else
         throw e;
     }

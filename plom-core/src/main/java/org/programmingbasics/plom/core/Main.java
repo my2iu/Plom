@@ -159,7 +159,7 @@ public class Main
   public static ErrorLogger createErrorLoggerForConsole()
   {
     return new ErrorLogger() {
-      @Override public void error(Object err)
+      @Override public void error(Object err, ProgramCodeLocation location)
       {
         Browser.getWindow().getConsole().log(err);
       }
@@ -218,7 +218,7 @@ public class Main
         }
         debugLog(msgString);
       }
-      @Override public void error(Object err)
+      @Override public void error(Object err, ProgramCodeLocation location)
       {
         logErr(err, ERROR);
       }

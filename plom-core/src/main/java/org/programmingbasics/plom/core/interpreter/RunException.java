@@ -60,21 +60,29 @@ public class RunException extends Exception
   {
     if (getErrorLocation() == null)
     {
-      if (node != null)
-      {
-        Token errorToken = node.scanForToken();
-        if (errorToken != null)
-        {
-          CodePosition errorPos = null;
-          if (machine.getTopStackFrame().sourceLookup.isPresent())
-            errorPos = FindToken.tokenToPosition(errorToken, machine.getTopStackFrame().sourceLookup.get());
-          setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, errorPos));
-        }
-      }
-      else
-        setErrorLocation(ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, null));
+      ProgramCodeLocation location = locationFromNode(node, machine);
+      if (location != null)
+        setErrorLocation(location);
     }
     return this;
+  }
+  
+  public static ProgramCodeLocation locationFromNode(AstNode node, MachineContext machine)
+  {
+    if (node != null)
+    {
+      Token errorToken = node.scanForToken();
+      if (errorToken != null)
+      {
+        CodePosition errorPos = null;
+        if (machine.getTopStackFrame().sourceLookup.isPresent())
+          errorPos = FindToken.tokenToPosition(errorToken, machine.getTopStackFrame().sourceLookup.get());
+        return ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, errorPos);
+      }
+      return null;
+    }
+    else
+      return ProgramCodeLocation.fromCodeUnit(machine.getTopStackFrame().codeUnit, null);
   }
   
   /**

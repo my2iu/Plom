@@ -54,7 +54,7 @@ public class RepositoryScopeTest extends TestCase
   static class ErrorLoggerSaver extends SimpleInterpreter.ErrorLogger
   {
     List<Object> errs = new ArrayList<>();
-    @Override public void error(Object errObj) { errs.add(errObj); }
+    @Override public void error(Object errObj, ProgramCodeLocation location) { errs.add(errObj); }
     @Override public void debugLog(Object value) { errs.add(value); }
     @Override public void warn(Object errObj) { errs.add(errObj); }
     @Override public void log(String msg, LogLevel logLevel, ProgramCodeLocation location) { errs.add(msg); }
