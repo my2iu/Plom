@@ -166,6 +166,21 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     updateCodeView(false);
   }
   
+  private CodePosition getSelectionTopMostPos()
+  {
+    if (cursorPos.isBefore(selectionCursorPos))
+      return cursorPos;
+    else
+      return selectionCursorPos;
+  }
+
+  private CodePosition getSelectionBottomMostPos()
+  {
+    if (cursorPos.isBefore(selectionCursorPos))
+      return selectionCursorPos;
+    else
+      return cursorPos;
+  }
 
   /**
    * Interface for passing in code completion handlers into the code editor
@@ -309,39 +324,30 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
     // specific to working with selections 
     if (selectionCursorPos != null) 
     {
+      contentDiv.appendChild(makeButton("Cut", true, choicesDiv, () -> {
+        CodePosition start = getSelectionTopMostPos();
+        CodePosition end = getSelectionBottomMostPos();
+        String fragment = CodeFragmentExtractor.extractFromStatements(codeList, start, end);
+        Clipboard.instance.putCodeFragment(fragment);
+        EraseSelection.fromStatements(codeList, start, end);
+        cursorPos = start;
+        selectionCursorPos = null;
+        showPredictedTokenInput();
+        updateCodeView(true);
+      }));
       contentDiv.appendChild(makeButton("Copy", true, choicesDiv, () -> {
         // We need to show some feedback that a "Copy" has occurred because
         // this is the only button that doesn't change the code when it is
         // pressed.
         showToast("Copied.");
-        CodePosition start;
-        CodePosition end;
-        if (cursorPos.isBefore(selectionCursorPos))
-        {
-          start = cursorPos;
-          end = selectionCursorPos;
-        }
-        else
-        {
-          start = selectionCursorPos;
-          end = cursorPos;
-        }
+        CodePosition start = getSelectionTopMostPos();
+        CodePosition end = getSelectionBottomMostPos();
         String fragment = CodeFragmentExtractor.extractFromStatements(codeList, start, end);
         Clipboard.instance.putCodeFragment(fragment);
       }));
       contentDiv.appendChild(makeButton("Erase", true, choicesDiv, () -> {
-        CodePosition start;
-        CodePosition end;
-        if (cursorPos.isBefore(selectionCursorPos))
-        {
-          start = cursorPos;
-          end = selectionCursorPos;
-        }
-        else
-        {
-          start = selectionCursorPos;
-          end = cursorPos;
-        }
+        CodePosition start = getSelectionTopMostPos();
+        CodePosition end = getSelectionBottomMostPos();
         EraseSelection.fromStatements(codeList, start, end);
         cursorPos = start;
         selectionCursorPos = null;
