@@ -512,9 +512,10 @@ public class Main
       // See if we're switching focus to another input element or textarea,
       // meaning we don't have to hide the keyboard just to reshow it again
       Element newFocus = (Element)Js.asPropertyMap(e).get("relatedTarget");
-      if ("INPUT".equals(newFocus.getTagName())
+      if (newFocus != null && 
+          ("INPUT".equals(newFocus.getTagName())
           || "TEXTAREA".equals(newFocus.getTagName())
-          || "PLOM-AUTORESIZING-INPUT".equals(newFocus.getTagName()))
+          || "PLOM-AUTORESIZING-INPUT".equals(newFocus.getTagName())))
       {
         // Don't do anything. Let the keyboard stay visible
       }
