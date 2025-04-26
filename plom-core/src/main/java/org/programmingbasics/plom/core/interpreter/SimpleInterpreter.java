@@ -15,6 +15,7 @@ import org.programmingbasics.plom.core.ast.gen.Symbol;
 import org.programmingbasics.plom.core.interpreter.MachineContext.MachineNodeVisitor;
 
 import elemental.util.ArrayOf;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -572,11 +573,11 @@ public class SimpleInterpreter
    * run that lambda, it ends up in this method to actually start up an 
    * interpreter to run it.
    */
-  public static Value callPlomLambdaFromJs(MachineContext oldCtx, LambdaFunction lambda, ArrayOf<Value> arguments) throws RunException
+  public static Value callPlomLambdaFromJs(MachineContext oldCtx, LambdaFunction lambda, ArrayOf<Value> arguments, ExtraReturnValues extraReturnValues) throws RunException
   {
+    // Create a new interpreter / MachineContext (we're too lazy to check if we can reuse an existing one for now)
+    SimpleInterpreter terp = new SimpleInterpreter(null);
     try {
-      // Create a new interpreter / MachineContext (we're too lazy to check if we can reuse an existing one for now)
-      SimpleInterpreter terp = new SimpleInterpreter(null);
       // Reuse the global scope from the context where the lambda was created
       terp.ctx = MachineContext.fromOutsideContext(oldCtx.coreTypes(), oldCtx.getGlobalScope());
       terp.ctx.setErrorLogger(terp.getErrorLogger());
@@ -606,8 +607,34 @@ public class SimpleInterpreter
 //      if (errorLogger != null)
 //        errorLogger.error(e);
 //      else
-        throw e;
+      ProgramCodeLocation location = null;
+      if (!(e instanceof RunException))
+      {
+        int idx = 0;
+        // Walk through the nodes from the top of the stack to the
+        // bottom until we hit one with an associated token
+        for (AstNode node = terp.ctx.ip.peekNode(idx); node != null && location == null; idx++)
+        {
+          location = RunException.locationFromNode(node, terp.ctx);
+        }
+      }
+      else
+      {
+        location = ((RunException)e).getErrorLocation();
+      }
+      // Augment the thrown error with information about where in the Plom
+      // code the error originated from. Stick this error location
+      // information as side data that the caller can use
+      if (extraReturnValues != null)
+        extraReturnValues.setErrorLocation(location);
+      throw e;
     }
+  }
+  
+  @JsType(isNative = true)
+  public static interface ExtraReturnValues
+  {
+    @JsProperty(name = "errorLocation") void setErrorLocation(Object obj);
   }
   
 //  public void run(ConfigureGlobalScope globalConfigurator) throws ParseException, RunException

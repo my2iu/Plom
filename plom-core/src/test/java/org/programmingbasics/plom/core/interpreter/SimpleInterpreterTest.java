@@ -2159,7 +2159,7 @@ public class SimpleInterpreterTest extends TestCase
     Value lambda = vars.globalScope.lookup("fun");
     ArrayOf<Value> arguments = new JreArrayOf<>();
     arguments.push(Value.createNumberValue(oldTerp.ctx.coreTypes(), 10));
-    Value returned = SimpleInterpreter.callPlomLambdaFromJs(oldTerp.ctx, (LambdaFunction)lambda.val, arguments);
+    Value returned = SimpleInterpreter.callPlomLambdaFromJs(oldTerp.ctx, (LambdaFunction)lambda.val, arguments, null);
     Assert.assertEquals(16, returned.getNumberValue(), 0.01);
   }
 

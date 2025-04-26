@@ -354,7 +354,8 @@ function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUni
 						var isTopLevel = !isInsidePlomCode.inside;
 						try {
 							isInsidePlomCode.inside = true;
-							var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals);
+							var extraReturnVals = {};
+							var returnVal = SimpleInterpreter.callPlomLambdaFromJs(machine, val.val, plomArgVals, extraReturnVals);
 							if (returnVal == null || returnVal.isNull()) 
 								return null;
 							else 
@@ -367,7 +368,10 @@ function loadPlomStdlibPrimitivesIntoInterpreter(interpreter, coreTypes, CodeUni
 							if (isTopLevel)
 							{
 								var errorLogger = machine.getErrorLogger();
-								errorLogger.error(err);
+								if (extraReturnVals.errorLocation)
+									errorLogger.error(err, extraReturnVals.errorLocation);
+								else
+									errorLogger.error(err);
 							}
 							throw(err);
 						}
