@@ -90,6 +90,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
         new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
             (DivElement)mainDiv.querySelector("div.sidechoices"),
             (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
+        new NumberEntry((DivElement)mainDiv.querySelector("div.numberentry")),
         new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
         false);
   }
@@ -113,6 +114,7 @@ public class CodePanel extends CodeWidgetBase.CodeWidgetBaseSvg
           new SimpleEntry((DivElement)mainDiv.querySelector("div.simpleentry"),
               (DivElement)mainDiv.querySelector("div.sidechoices"),
               (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent")),
+          new NumberEntry((DivElement)mainDiv.querySelector("div.numberentry")),
           new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
           false);
     }

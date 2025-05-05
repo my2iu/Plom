@@ -40,7 +40,10 @@ public interface UIResources extends ClientBundle
    
    @Source("simpleentrycontents.html")
    TextResource getSimpleEntryContentsHtml();
-   
+
+   @Source("numberentrycontents.html")
+   TextResource getNumberEntryContentsHtml();
+
    @Source("autoresizinginput.html")
    TextResource getAutoResizingInputHtml();
    

@@ -18,6 +18,7 @@ import elemental.html.DivElement;
 public class CodeWidgetInputPanels
 {
   SimpleEntry simpleEntry;
+  NumberEntry numberEntry;
   DivElement choicesDiv;
   CodeWidgetCursorOverlay cursorOverlay;
   
@@ -29,11 +30,12 @@ public class CodeWidgetInputPanels
    * by touching on the choices div, "focus" isn't lost */
   boolean forceChoicesDivFocus;
 
-  CodeWidgetInputPanels(DivElement choicesDiv, SimpleEntry simpleEntry, CodeWidgetCursorOverlay cursorOverlay, boolean forceChoicesDivFocus)
+  CodeWidgetInputPanels(DivElement choicesDiv, SimpleEntry simpleEntry, NumberEntry numberEntry, CodeWidgetCursorOverlay cursorOverlay, boolean forceChoicesDivFocus)
   {
     this.choicesDiv = choicesDiv;
     this.cursorOverlay = cursorOverlay;
     this.simpleEntry = simpleEntry;
+    this.numberEntry = numberEntry;
     this.forceChoicesDivFocus = forceChoicesDivFocus;
   }
   
@@ -87,7 +89,20 @@ public class CodeWidgetInputPanels
       updateCursorVisibilityIfFocused();
     }
   }
-  
+
+  <U extends Token> void showNumberEntryFor(String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
+  {
+    // A simple entry is triggered from the choices div, and the choices div
+    // automatically shows the cursor overlay, so the only visibility that
+    // needs to change when starting up the simpleEntry is to hide the
+    // choices div
+    hideChoicesDiv();
+
+    numberEntry.showFor(initialValue, token, isEdit, callback, bkspCallback);
+//    simpleEntry.showFor("", "", "number: ", initialValue, token, isEdit, suggester, callback, bkspCallback);
+  }
+
+
   <U extends Token> void showSimpleEntryFor(String prefix, String postfix, String prompt, String initialValue, U token, boolean isEdit, SuggesterClient suggester, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     // A simple entry is triggered from the choices div, and the choices div
@@ -124,6 +139,7 @@ public class CodeWidgetInputPanels
   void hideSimpleEntry()
   {
     simpleEntry.setVisible(false);
+    numberEntry.setVisible(false);
   }
   
   void updateCursorVisibilityIfFocused()

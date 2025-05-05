@@ -884,7 +884,7 @@ public abstract class CodeWidgetBase implements CodeWidgetCursorOverlay.CursorMo
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case Number:
-      focus.showSimpleEntryFor("", "", "number: ", "", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
+      focus.showNumberEntryFor("", newToken, isEdit, suggester, this::simpleEntryInput, this::simpleEntryBackspaceAll);
       scrollSimpleEntryToNotCover(doNotCoverLeft, doNotCoverRight);
       break;
     case String:

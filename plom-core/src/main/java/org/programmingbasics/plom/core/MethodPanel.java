@@ -38,6 +38,8 @@ public class MethodPanel
         (DivElement)mainDiv.querySelector("div.sidechoices"),
         (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent"));
     simpleEntry.setVisible(false);
+    numberEntry = new NumberEntry((DivElement)mainDiv.querySelector("div.numberentry"));
+    numberEntry.setVisible(false);
     
     showMethod(mainDiv, sig, isNew);
   }
@@ -46,6 +48,7 @@ public class MethodPanel
   SignatureListener listener;
   CodeRepositoryClient repository;
   SimpleEntry simpleEntry;
+  NumberEntry numberEntry;
 //  MethodNameWidget methodWidget;
   MethodNameWidget2 methodWidget2;
   FunctionSignature originalSig;
@@ -76,7 +79,7 @@ public class MethodPanel
     
     CodeWidgetInputPanels inputPanels = new CodeWidgetInputPanels(
         (DivElement)containerDiv.querySelector("div.choices"),
-        simpleEntry,
+        simpleEntry, numberEntry,
         new CodeWidgetCursorOverlay((Element)containerDiv.querySelector("svg.cursoroverlay")),
         true);
     methodWidget2 = new MethodNameWidget2(sig, inputPanels, 

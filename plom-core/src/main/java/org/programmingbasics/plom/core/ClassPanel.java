@@ -27,6 +27,7 @@ public class ClassPanel
 {
   Document doc = Browser.getDocument();
   SimpleEntry simpleEntry;
+  NumberEntry numberEntry;
   DivElement mainDiv;
   CodeRepositoryClient repository; 
   ClassDescription cls;
@@ -57,6 +58,8 @@ public class ClassPanel
         (DivElement)mainDiv.querySelector("div.sidechoices"),
         (DivElement)mainDiv.querySelector("div.sidechoices div.sidechoicescontent"));
     simpleEntry.setVisible(false);
+    numberEntry = new NumberEntry((DivElement)mainDiv.querySelector("div.numberentry"));
+    numberEntry.setVisible(false);
 
     // For setting class name
     InputElement nameAnchor = (InputElement)mainDiv.querySelector(".className plom-autoresizing-input");
@@ -172,6 +175,7 @@ public class ClassPanel
         new CodeWidgetInputPanels(
             (DivElement)mainDiv.querySelector("div.choices"),
             simpleEntry,
+            numberEntry,
             new CodeWidgetCursorOverlay((Element)mainDiv.querySelector("svg.cursoroverlay")),
             true),
         (Element)mainDiv.querySelector(".scrollable-interior"),

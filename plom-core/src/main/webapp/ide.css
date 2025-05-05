@@ -292,6 +292,52 @@ a.breadcrumb-item:visited {
 	color: #ccc;
 }
 
+.numberentry {
+	padding-bottom: calc(var(--window-inset-bottom) + 3px);
+	display: none;
+/*
+	background-color: #fff;
+	flex-grow: 0;
+	flex-shrink: 0;
+	padding: 3px;
+	padding-bottom: calc(var(--window-inset-bottom) + 3px);
+*/
+}
+
+.numberentry .numberpadgrid {
+	grid-template-columns: repeat(5, 2em);
+	grid-template-rows: repeat(5, 2em);
+}
+
+.numberentry .numberpadgrid .numpadgrid_7 { grid-area: 2 / 2; }
+.numberentry .numberpadgrid .numpadgrid_8 { grid-area: 2 / 3; }
+.numberentry .numberpadgrid .numpadgrid_9 { grid-area: 2 / 4; }
+.numberentry .numberpadgrid .numpadgrid_4 { grid-area: 3 / 2; }
+.numberentry .numberpadgrid .numpadgrid_5 { grid-area: 3 / 3; }
+.numberentry .numberpadgrid .numpadgrid_6 { grid-area: 3 / 4; }
+.numberentry .numberpadgrid .numpadgrid_1 { grid-area: 4 / 2; }
+.numberentry .numberpadgrid .numpadgrid_2 { grid-area: 4 / 3; }
+.numberentry .numberpadgrid .numpadgrid_3 { grid-area: 4 / 4; }
+.numberentry .numberpadgrid .numpadgrid_0 { grid-area: 5 / 2 / 5 / 4; }
+.numberentry .numberpadgrid .numpadgrid_dot { grid-area: 5 / 4; }
+
+.numberentry .numberpadgrid .numpadgrid_enter { grid-area: 4 / 5 / 6 / 6; }
+.numberentry .numberpadgrid .numpadgrid_bksp { grid-area: 2 / 5 / 3 / 6; }
+
+.numberentry .numberpadgrid .numpadgrid_plusminus { grid-area: 2 / 1; }
+.numberentry .numberpadgrid .numpadgrid_kb { grid-area: 5 / 1; }
+
+.numberentry .numberpadgrid .numpadgrid_output { 
+	grid-area: 1 / 1 / 2 / 6; 
+	border: 1px solid black;
+	background-color: white;
+	border-radius: 2px;
+	padding: 3px;
+	display: flex;
+	justify-content: end;
+	align-items: center;
+}
+
 .codemain .code .tokenline {
 	padding-left: 2em;
 	text-indent: -2em;
@@ -381,6 +427,21 @@ a.breadcrumb-item:visited {
 	margin-left: 0.5em;
 	margin-right: 0.5em;
 	line-height: 1.2em;
+}
+
+.numberentry a:link,
+.numberentry a:visited,
+.numberentry a:hover,
+.numberentry a:active {
+	text-decoration: none;
+	background-color: #fff;
+	padding: 0.2em;
+	border-radius: 0.2em;
+	border: 1px solid #ccc;
+	box-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .sidechoices a div {
