@@ -29,6 +29,7 @@ public class SimpleEntry
   Token simpleEntryToken;  // token being edited by simple entry
   InputCallback<Token> callback;
   BackspaceAllCallback backspaceCallback;
+  Runnable onKeyboardSwitchClick;
   String tokenPrefix = "";
   String tokenDisplayPrefix = "";  // Prefix that is shown in the UI (may be different than the prefix that is prepended to the token)
   String tokenPostfix = "";
@@ -38,6 +39,7 @@ public class SimpleEntry
   Element doNotCoverPaddingEl;
   String doNotCoverElOldRightPadding;
   double doNotCoverElOldScrollLeft;
+  String currentText = "";
   
   SimpleEntry(DivElement el, DivElement suggestionsEl, DivElement suggestionsContentEl)
   {
@@ -86,7 +88,18 @@ public class SimpleEntry
     else
       container.querySelector(".simpleentry_erase").getStyle().setDisplay(Display.NONE);
   }
-  
+
+  void enableKeyboardSwitchButton(Runnable onClick)
+  {
+    container.querySelector(".simpleentry_kb").getStyle().setDisplay(Display.BLOCK);
+    onKeyboardSwitchClick = onClick;
+  }
+
+  void hideKeyboardSwitchButton()
+  {
+    container.querySelector(".simpleentry_kb").getStyle().clearDisplay();
+  }
+
   public void forceSafariBlur()
   {
     // Safari seems like it sometimes doesn't close the soft keyboard if the
@@ -97,6 +110,7 @@ public class SimpleEntry
   
   void simpleEntryInput(String val, boolean isFinal)
   {
+    currentText = val;
     if (callback != null)
     {
       callback.input(tokenPrefix + val + tokenPostfix, isFinal, simpleEntryToken, isEdit);
@@ -190,6 +204,13 @@ public class SimpleEntry
         Main.forceFocusAndShowKeyboard(textAreaEl, false);
       }
     }, false);
+    // Keyboard switch button pressed
+    formEl.querySelector(".simpleentry_kb").addEventListener(Event.CLICK, (e) -> {
+      e.preventDefault();
+      if (onKeyboardSwitchClick != null)
+        onKeyboardSwitchClick.run();
+    }, false);
+
     // handle text being typed into the input
     inputEl.addEventListener(Event.INPUT, (e) -> {
       simpleEntryInput(inputEl.getValue(), false);
@@ -268,6 +289,8 @@ public class SimpleEntry
     }
     setEraseButtonVisible(false);
     setVisible(true);
+    hideKeyboardSwitchButton();
+    onKeyboardSwitchClick = null;
     toHide.getStyle().setDisplay(Display.NONE);
     forInput.getStyle().setDisplay(Display.INLINE);
     if (initialValue != null)

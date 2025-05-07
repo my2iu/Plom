@@ -7,20 +7,11 @@ import org.programmingbasics.plom.core.SimpleEntry.BackspaceAllCallback;
 import org.programmingbasics.plom.core.SimpleEntry.InputCallback;
 import org.programmingbasics.plom.core.ast.Token;
 
-import com.google.gwt.regexp.shared.RegExp;
-
-import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
-import elemental.css.CSSStyleDeclaration.Unit;
-import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
-import elemental.events.KeyboardEvent;
 import elemental.html.AnchorElement;
 import elemental.html.DivElement;
-import elemental.html.FormElement;
-import elemental.html.InputElement;
-import elemental.html.TextAreaElement;
 
 /**
  * The default number entry UI on mobile isn't great for code, so
@@ -190,6 +181,8 @@ public class NumberEntry
         break;
       case "numpadgrid_kb":
         configureNumPadButton(a, container, () -> {
+          if (onKeyboardSwitchClick != null)
+            onKeyboardSwitchClick.run();
         });
         break;
       case "numpadgrid_enter":
@@ -365,9 +358,26 @@ public class NumberEntry
 //    simpleEntryInput(initialValue, false);
 //  }
 
+  Runnable onKeyboardSwitchClick;
+
+  void enableKeyboardSwitchButton(Runnable onClick)
+  {
+    container.querySelector(".numberpadgrid .numpadgrid_kb").getStyle().setDisplay(Display.BLOCK);
+    onKeyboardSwitchClick = onClick;
+  }
+
+  void hideKeyboardSwitchButton()
+  {
+    container.querySelector(".numberpadgrid .numpadgrid_kb").getStyle().clearDisplay();
+    onKeyboardSwitchClick = null;
+  }
+
+  
   <U extends Token> void showFor(String initialValue, U token, boolean isEdit, InputCallback<U> callback, BackspaceAllCallback bkspCallback)
   {
     setVisible(true);
+    hideKeyboardSwitchButton();
+    onKeyboardSwitchClick = null;
 //    container.
 //    forInput.getStyle().setDisplay(Display.INLINE);
     if (initialValue != null)

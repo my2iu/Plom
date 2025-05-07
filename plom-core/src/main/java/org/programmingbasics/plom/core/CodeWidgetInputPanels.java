@@ -30,6 +30,12 @@ public class CodeWidgetInputPanels
    * by touching on the choices div, "focus" isn't lost */
   boolean forceChoicesDivFocus;
 
+  /** Stored preference of whether Plom's custom numberpad keyboard
+   * should be used for entering numbers (vs. using the default
+   * virtual keyboard)
+   */
+  private static boolean useCustomNumberPad = true;
+  
   CodeWidgetInputPanels(DivElement choicesDiv, SimpleEntry simpleEntry, NumberEntry numberEntry, CodeWidgetCursorOverlay cursorOverlay, boolean forceChoicesDivFocus)
   {
     this.choicesDiv = choicesDiv;
@@ -98,8 +104,24 @@ public class CodeWidgetInputPanels
     // choices div
     hideChoicesDiv();
 
-    numberEntry.showFor(initialValue, token, isEdit, callback, bkspCallback);
-//    simpleEntry.showFor("", "", "number: ", initialValue, token, isEdit, suggester, callback, bkspCallback);
+    if (useCustomNumberPad)
+    {
+      numberEntry.showFor(initialValue, token, isEdit, callback, bkspCallback);
+      numberEntry.enableKeyboardSwitchButton(() -> {
+        hideSimpleEntry();
+        useCustomNumberPad = false;
+        showNumberEntryFor(numberEntry.enteredText, token, isEdit, suggester, callback, bkspCallback);
+      });
+    }
+    else
+    {
+      simpleEntry.showFor("", "", "number: ", initialValue, token, isEdit, suggester, callback, bkspCallback);
+      simpleEntry.enableKeyboardSwitchButton(() -> {
+        hideSimpleEntry();
+        useCustomNumberPad = true;
+        showNumberEntryFor(simpleEntry.currentText, token, isEdit, suggester, callback, bkspCallback);
+      });
+    }
   }
 
 

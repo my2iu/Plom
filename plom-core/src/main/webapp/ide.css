@@ -292,6 +292,15 @@ a.breadcrumb-item:visited {
 	color: #ccc;
 }
 
+.simpleentry_kb:link,
+.simpleentry_kb:visited,
+.simpleentry_kb {
+	padding-left: 0.25em;
+	padding-right: 0.25em;
+	color: #ccc;
+	display: none;
+}
+
 .numberentry {
 	padding-bottom: calc(var(--window-inset-bottom) + 3px);
 	display: none;
@@ -325,7 +334,7 @@ a.breadcrumb-item:visited {
 .numberentry .numberpadgrid .numpadgrid_bksp { grid-area: 2 / 5 / 3 / 6; }
 
 .numberentry .numberpadgrid .numpadgrid_plusminus { grid-area: 2 / 1; }
-.numberentry .numberpadgrid .numpadgrid_kb { grid-area: 5 / 1; }
+.numberentry .numberpadgrid .numpadgrid_kb { grid-area: 5 / 1; display: none; }
 
 .numberentry .numberpadgrid .numpadgrid_output { 
 	grid-area: 1 / 1 / 2 / 6; 
