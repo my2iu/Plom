@@ -1,0 +1,25 @@
+ class @ { number range iterator exclusive } extends @ {number iterator } {
+ vardecls {
+ var . {current } @ {number }
+
+ var . {start } @ {number }
+
+ var . {end } @ {number }
+ }
+ function . {at end } { @ {boolean } } { } {
+ return . {current } >= . {end }
+ }
+ function . {next } { @ {number range iterator exclusive } } { } {
+ . {current } := . {current } + 1
+ return this
+ }
+ function . {value } { @ {number } } { } {
+ return . {current }
+ }
+ constructor . {start: { . {start number } @ {number } }<: { . {end range } @ {number } } } { } {
+ super . {new }
+ . {start } := . {start number }
+ . {end } := . {end range }
+ . {current } := . {start }
+ }
+ }

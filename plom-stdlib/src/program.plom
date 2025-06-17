@@ -26,6 +26,9 @@
  function . {range from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {number iterator } } { } {
  return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
  }
+ function . {range start: { . {start } @ {number } }<: { . {end } @ {number } } } { @ {number iterator } } { } {
+ return @ {number range iterator exclusive } . {start: { . {start } }<: { . {end } } }
+ }
  function . {test: { . {arg1 } @ {number } } } { @ {number } } { } {
  }
  }

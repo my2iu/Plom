@@ -9,7 +9,7 @@
  function . {at end } { @ {boolean } } { } {
  return . {current } > . {end }
  }
- function . {next } { @ {number } } { } {
+ function . {next } { @ {number range iterator } } { } {
  . {current } := . {current } + 1
  return this
  }

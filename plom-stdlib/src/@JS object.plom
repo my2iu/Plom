@@ -52,6 +52,9 @@
  function . {get: { . {key } @ {string } } } { @ {JS object } } { } {
  primitive
  }
+ function . {get: { . {key } @ {string } }put: { . {value } @ {object } } } { @ {void } } { } {
+ this . {set: { . {key } }to: { . {value } } }
+ }
  function . {new: { . {method } @ {string } } } { @ {JS object } } { } {
  primitive
  }
