@@ -26,6 +26,9 @@
  function . {range from: { . {from } @ {number } }to: { . {to } @ {number } } } { @ {number iterator } } { } {
  return @ {number range iterator } . {from: { . {from } }to: { . {to } } }
  }
+ function . {range start: { . {start } @ {number } }<: { . {end } @ {number } } } { @ {number iterator } } { } {
+ return @ {number range iterator exclusive } . {start: { . {start } }<: { . {end } } }
+ }
  function . {test: { . {arg1 } @ {number } } } { @ {number } } { } {
  }
  class @ { JS object } extends @ {object } {
@@ -81,6 +84,9 @@
  }
  function . {get: { . {key } @ {string } } } { @ {JS object } } { } {
  primitive
+ }
+ function . {get: { . {key } @ {string } }put: { . {value } @ {object } } } { @ {void } } { } {
+ this . {set: { . {key } }to: { . {value } } }
  }
  function . {new: { . {method } @ {string } } } { @ {JS object } } { } {
  primitive
@@ -181,6 +187,60 @@
  function . {/: { . {val } @ {number } } } { @ {number } } { } {
  primitive
  }
+ function . {absolute } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"abs" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {arccosine } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"acos" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {arcsine } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"asin" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {arctangent } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"atan" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {ceiling } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"ceil" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {cosine } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"cos" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {floor } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"floor" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {ln } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"log" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {log 10 } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"log10" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {log 2 } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"log2" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {round } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"round" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {sine } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"sin" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {square root } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"sqrt" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {tangent } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"tan" }with: { @ {JS object } . {from number: { this } } } } . {as number }
+ }
+ function . {to power: { . {x } @ {number } } } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"pow" }with: { @ {JS object } . {from number: { this } } }and: { @ {JS object } . {from number: { . {x } } } } } . {as number }
+ }
+ classfunction . {arctangent of y: { . {y } @ {number } }x: { . {x } @ {number } } } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {call: {"atan2" }with: { @ {JS object } . {from number: { . {y } } } }and: { @ {JS object } . {from number: { . {x } } } } } . {as number }
+ }
+ classfunction . {e } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {get: {"E" } } . {as number }
+ }
+ classfunction . {pi } { @ {number } } { } {
+ return @ {JS object } . {globals } . {get: {"Math" } } . {get: {"PI" } } . {as number }
+ }
  }
  class @ { number iterator } extends @ {object } {
  vardecls {
@@ -209,7 +269,7 @@
  function . {at end } { @ {boolean } } { } {
  return . {current } > . {end }
  }
- function . {next } { @ {number } } { } {
+ function . {next } { @ {number range iterator } } { } {
  . {current } := . {current } + 1
  return this
  }
@@ -220,6 +280,31 @@
  super . {new }
  . {start } := . {from }
  . {end } := . {to }
+ . {current } := . {start }
+ }
+ }
+ class @ { number range iterator exclusive } extends @ {number iterator } {
+ vardecls {
+ var . {current } @ {number }
+
+ var . {start } @ {number }
+
+ var . {end } @ {number }
+ }
+ function . {at end } { @ {boolean } } { } {
+ return . {current } >= . {end }
+ }
+ function . {next } { @ {number range iterator exclusive } } { } {
+ . {current } := . {current } + 1
+ return this
+ }
+ function . {value } { @ {number } } { } {
+ return . {current }
+ }
+ constructor . {start: { . {start number } @ {number } }<: { . {end range } @ {number } } } { } {
+ super . {new }
+ . {start } := . {start number }
+ . {end } := . {end range }
  . {current } := . {start }
  }
  }
