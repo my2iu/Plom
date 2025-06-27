@@ -604,14 +604,13 @@ public class SvgCodeRenderer
       String text = token.contents;
       if (token.getType() == Symbol.Returns && text.equals("returns"))
         text = "\u2192";
-      text = escapeStringForHtml(text);
       double textWidth = widthCalculator.calculateWidth(text);
       toReturn.reset();
       double x = positioning.x;
       double y = positioning.lineTop;
       int totalVertPadding = (positioning.maxNestingForLine - positioning.currentNestingInLine) * vertPadding;
       toReturn.svgString = "<rect x='" + x + "' y='" + (y + positioning.currentNestingInLine * vertPadding) + "' width='" + (textWidth + horzPadding * 2) + "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>"
-          + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+          + "<text x='" + (x + horzPadding) + "' y='" + (y + textHeight + positioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + escapeStringForHtml(text) + "</text>";
       if (positioning.showNestingAccent)
         toReturn.svgString += "<path d=\"M" + x + " " + (y + positioning.currentNestingInLine * vertPadding + textHeight + descenderHeight + totalVertPadding * 2) + " l" + (textWidth + horzPadding * 2) + " 0\" class=\"tokenslot\"/>"; 
       else if (positioning.showWideExpresionAccent)
@@ -853,7 +852,7 @@ public class SvgCodeRenderer
         TokenRendererPositioning paramNamePositioning, boolean isFirstParameterNameOnLine, String classList) {
       if (!isFirstParameterNameOnLine) paramNamePositioning.x += horzPadding;
       paramNamePositioning.maxBottom(textHeight + descenderHeight + (paramNamePositioning.maxNestingForLine * 2) * vertPadding);
-      String nameText = "<text x='" + (paramNamePositioning.x) + "' y='" + (paramNamePositioning.lineTop + textHeight + paramNamePositioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      String nameText = "<text x='" + (paramNamePositioning.x) + "' y='" + (paramNamePositioning.lineTop + textHeight + paramNamePositioning.maxNestingForLine * vertPadding) + "' class='" + classList + "'>" + escapeStringForHtml(text) + "</text>";
       paramNamePositioning.x += widthCalculator.calculateWidth(text);
       return nameText;
     }
@@ -897,7 +896,7 @@ public class SvgCodeRenderer
       double lineY = y;
       for (String text: textLines)
       {
-        toReturn.svgString += "<text x='" + (x + horzPadding) + "' y='" + (lineY + textHeight + vertPadding) + "' class='" + textClassList + "'>" + text + "</text>";
+        toReturn.svgString += "<text x='" + (x + horzPadding) + "' y='" + (lineY + textHeight + vertPadding) + "' class='" + textClassList + "'>" + escapeStringForHtml(text) + "</text>";
         lineY += textHeight + descenderHeight;
       }
       toReturn.width = width;
@@ -1060,7 +1059,7 @@ public class SvgCodeRenderer
       double width = expressionWidth + horzPadding;
       toReturn.svgString = "<path d=\'M" + startX + " " + startY + " l " + width + " 0 l 0 "+  (expressionHeight) + " l -" + (width - INDENT) + " 0 L " + (startX + INDENT) + " " + positioning.lineBottom + " L " + (startX) + " " + positioning.lineBottom + " z\' class='" + classList + "'/>"; 
 //      toReturn.svgString = "<rect x='" + startX + "' y='" + y + "' width='" + (width)+ "' height='" + (textHeight + descenderHeight + totalVertPadding * 2) + "' class='" + classList + "'/>";
-      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (startY + textHeight + totalVertPadding) + "' class='" + classList + "'>" + text + "</text>";
+      toReturn.svgString += "<text x='" + (startX + horzPadding) + "' y='" + (startY + textHeight + totalVertPadding) + "' class='" + classList + "'>" + escapeStringForHtml(text) + "</text>";
       toReturn.svgString += startBracketSvg;
       toReturn.svgString += wideSvg;
       toReturn.svgString += endBracketSvg;
