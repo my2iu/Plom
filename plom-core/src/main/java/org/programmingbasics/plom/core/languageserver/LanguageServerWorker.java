@@ -169,14 +169,14 @@ public class LanguageServerWorker
       postMessage(CodeRepositoryMessages.createReplyMessage(MessageType.REPLY, requestMsg.getRequestId()));
       break;
     }
-    case GET_ALL_CLASSES_SORTED:
+    case GET_ALL_CLASSES_NO_METHODS_SORTED:
     {
       try {
         CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
         List<ClassDescription> classes = repo.getAllClassesSorted();
         ArrayOf<ClassDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(classes, (cl) -> {
           ClassDescriptionJson clJson = (ClassDescriptionJson)CodeRepositoryMessages.createEmptyObject();
-          clJson.setAsClassDescription(cl);
+          clJson.setAsClassDescriptionWithoutMethods(cl);
           return clJson;
         });
         postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));
@@ -223,13 +223,13 @@ public class LanguageServerWorker
       }
       break;
     }
-    case GET_ALL_FUNCTIONS_SORTED:
+    case GET_ALL_FUNCTIONS_NO_CODE_SORTED:
     {
       CodeRepositoryMessages.RequestMessage requestMsg = (CodeRepositoryMessages.RequestMessage)msg;
       List<FunctionDescription> fns = repo.getAllFunctionSorted();
       ArrayOf<FunctionDescriptionJson> json = CodeRepositoryMessages.listToArrayOf(fns, (fd) -> {
         FunctionDescriptionJson fdJson = (FunctionDescriptionJson)CodeRepositoryMessages.createEmptyObject();
-        fdJson.setAsFunctionDescription(fd);
+        fdJson.setAsFunctionDescriptionNoCode(fd);
         return fdJson;
       });
       postMessage(CodeRepositoryMessages.createSingleObjectReplyMessage(requestMsg.getRequestId(), json));

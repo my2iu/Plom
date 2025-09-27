@@ -183,10 +183,10 @@ public class LanguageServerClientConnection
     });
   }
 
-  public Promise<List<ClassDescription>> sendGetAllClassesSorted()
+  public Promise<List<ClassDescription>> sendGetAllClassesNoMethodsSorted()
   {
     String requestId = getNextId();
-    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_CLASSES_SORTED, requestId));
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_CLASSES_NO_METHODS_SORTED, requestId));
     return waitForReplyFor(requestId).thenNow((reply) -> {
       try {
         CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<ClassDescriptionJson>>)reply;
@@ -240,10 +240,10 @@ public class LanguageServerClientConnection
     });
   }
 
-  public Promise<List<FunctionDescription>> sendGetAllFunctionsSorted()
+  public Promise<List<FunctionDescription>> sendGetAllFunctionsNoCodeSorted()
   {
     String requestId = getNextId();
-    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_FUNCTIONS_SORTED, requestId));
+    worker.postMessage(CodeRepositoryMessages.createRequestMessage(MessageType.GET_ALL_FUNCTIONS_NO_CODE_SORTED, requestId));
     return waitForReplyFor(requestId).thenNow((reply) -> {
       try {
         CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<FunctionDescriptionJson>> objReply = (CodeRepositoryMessages.SingleObjectReplyMessage<ArrayOf<FunctionDescriptionJson>>)reply;

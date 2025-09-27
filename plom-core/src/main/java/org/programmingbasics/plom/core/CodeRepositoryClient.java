@@ -281,9 +281,9 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return languageServer.sendGetModuleClasses();
   }
   
-  public Promise<List<ClassDescription>> getAllClassesSorted()
+  public Promise<List<ClassDescription>> getAllClassesNoMethodsSorted()
   {
-    return languageServer.sendGetAllClassesSorted();
+    return languageServer.sendGetAllClassesNoMethodsSorted();
   }
 
 //  public ClassDescription addClassAndResetIds(String name)
@@ -339,9 +339,9 @@ public class CodeRepositoryClient // extends org.programmingbasics.plom.core.cod
     return toReturn;
   }
 
-  public Promise<List<FunctionDescription>> getAllFunctionSorted()
+  public Promise<List<FunctionDescription>> getAllFunctionsNoCodeSorted()
   {
-    return languageServer.sendGetAllFunctionsSorted();
+    return languageServer.sendGetAllFunctionsNoCodeSorted();
   }
   
   public Promise<Void> deleteFunction(FunctionSignature sig)

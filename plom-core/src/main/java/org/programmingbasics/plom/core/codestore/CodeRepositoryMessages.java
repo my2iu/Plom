@@ -375,6 +375,20 @@ public class CodeRepositoryMessages
         e.printStackTrace();
       }
     }
+    @JsOverlay default void setAsFunctionDescriptionNoCode(FunctionDescription fd)
+    {
+      try {
+        if (fd == null) return;
+        setSignature(signatureToString(fd.sig));
+        setImported(fd.isImported);
+        setCode("");
+        setId(fd.getId());
+      } 
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+    }
     @JsOverlay default FunctionDescription getAsFunctionDescription() throws PlomReadException
     {
       if (getSignature() == null) return null;
@@ -770,8 +784,8 @@ public class CodeRepositoryMessages
     GET_CLASS_DESCRIPTION("classDescription"),
     IS_STDLIB("isStdLib"),
     SAVE_FUNCTION_CODE("saveFunctionCode"),
-    GET_ALL_CLASSES_SORTED("getAllClassesSorted"),
-    GET_ALL_FUNCTIONS_SORTED("getAllFunctionsSorted"),
+    GET_ALL_CLASSES_NO_METHODS_SORTED("getAllClassesSorted"),
+    GET_ALL_FUNCTIONS_NO_CODE_SORTED("getAllFunctionsSorted"),
     GET_DELETED_CLASSES("getDeletedClasses"),
     GET_MODULE_CLASSES("getModuleClasses"),
     GET_VARDECL_CODE("getVarDeclCode"),

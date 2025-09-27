@@ -65,11 +65,11 @@ public class GlobalsPanel implements AutoCloseable
     GatheredInfo gatheredData = new GatheredInfo();
 
     ArrayOf<Promise<Void>> promises = elemental.util.Collections.arrayOf();
-    promises.push(repository.getAllClassesSorted().<Void>thenNow((classes) -> {
+    promises.push(repository.getAllClassesNoMethodsSorted().<Void>thenNow((classes) -> {
       gatheredData.allClasses = classes;
       return null;
     }));
-    promises.push(repository.getAllFunctionSorted().<Void>thenNow((fns) -> {
+    promises.push(repository.getAllFunctionsNoCodeSorted().<Void>thenNow((fns) -> {
       gatheredData.allFunctions = fns;
       return null;
     }));
